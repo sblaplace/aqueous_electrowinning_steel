@@ -1,0 +1,5 @@
+run_id,coupon_id,characterization_id,technique,analyte,value,unit,uncertainty,basis,instrument,calibration_date,analysis_file,notes
+P2-YYYYMMDD-001,PANEL-01,P2-YYYYMMDD-001-EDS-01,SEM_EDS,Fe,98.2,wt%,0.5,dry-deposit area average,SEM/EDS manufacturer-model-asset,YYYY-MM-DD,raw/P2-YYYYMMDD-001_eds_export.csv,Template/example row: replace all identifiers and value with measured result
+P2-YYYYMMDD-001,PANEL-01,P2-YYYYMMDD-001-EDS-01,SEM_EDS,O,1.8,wt%,0.3,dry-deposit area average,SEM/EDS manufacturer-model-asset,YYYY-MM-DD,raw/P2-YYYYMMDD-001_eds_export.csv,Report measurement locations and coating/substrate interaction
+P3-YYYYMMDD-001,C-01,P3-YYYYMMDD-001-COMB-01,COMBUSTION,C,0.35,wt%,0.03,bulk dry deposit,combustion analyzer manufacturer-model-asset,YYYY-MM-DD,raw/P3-YYYYMMDD-001_combustion_export.csv,Use certified reference material and report blank correction
+P3-YYYYMMDD-001,C-01,P3-YYYYMMDD-001-XRD-01,XRD,alpha-Fe,82,relative intensity %,2,phase identification,XRD manufacturer-model-asset,YYYY-MM-DD,raw/P3-YYYYMMDD-001_xrd_export.xy,Example phase metric only; retain raw diffraction scan and refinement details

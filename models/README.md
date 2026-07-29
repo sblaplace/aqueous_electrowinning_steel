@@ -20,6 +20,9 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `anode.py` | OER/CER anode kinetics, bubble resistance, and full-cell voltage coupling |
 | `closed_loop.py` | Phase IV charge-throughput anode wear, CSTR electrolyte balances, process costs and QA flags |
 | `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
+| `campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
+| `calibration.py` | QA-gated Phase-I LSV total-current calibration and EIS consistency fit, with traceable parameter reports |
+| `characterization.py` | SEM/EDS, combustion, and XRD long-form record validation and composition QA summaries |
 | `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
 | `scenarios.py` | Four literature-anchored operating scenarios |
 
@@ -33,6 +36,7 @@ python -m models.run_transport          # Nernst-Planck migration analysis
 python -m models.run_pulse              # Pulse-reverse transient dynamics & comparison
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                # Synthetic EIS spectrum & Randles equivalent-circuit fitting
+python -m models.run_calibration         # QA-gated real-data LSV calibration (requires manifest/options)
 python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
 python -m models.run_co_deposition      # Phase III Fe–Ni/carbon incorporation screen
 python -m models.run_closed_loop        # Phase IV durability + closed-loop CSTR example
