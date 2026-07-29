@@ -2,7 +2,6 @@
 
 [![Research](https://img.shields.io/badge/status-research--in--progress-blue)](https://github.com/)
 [![Sustainability](https://img.shields.io/badge/focus-decarbonization-green)](https://github.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Low-temperature aqueous electrodeposition of iron and steel from renewable electricity**
 
@@ -56,7 +55,6 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 .
 ├── README.md                          # This file
 ├── RESEARCH_REPORT.md                 # Comprehensive technical report
-├── LICENSE                            # MIT License
 ├── requirements.txt                   # Python dependencies
 ├── .gitignore                         # Git ignore rules
 ├── docs/
@@ -107,7 +105,7 @@ We welcome contributions from electrochemists, metallurgists, materials scientis
 
 ## License
 
-This work is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+*License TBD.*
 
 ---
 
