@@ -68,7 +68,7 @@ BOF steel: $300–500/t. Our model: $800–2000/t. The gap is electricity cost, 
 
 Each item below can be done on a computer, without a wet lab. They reduce uncertainty in the screening models and identify the most promising experimental targets.
 
-### Phase A: Microstructure Simulation (Weeks 1–4)
+### Phase A: Microstructure Simulation
 
 | Task | Method | Output | Reduces Uncertainty In |
 |------|--------|--------|----------------------|
@@ -77,7 +77,7 @@ Each item below can be done on a computer, without a wet lab. They reduce uncert
 | A3. Stress evolution during deposition | FEM coupled to microstructure | Stress vs thickness, cracking threshold | Deposit design limits |
 | A4. Carbon particle–matrix interface | DFT (VASP, Quantum ESPRESSO) | Interface energy, cohesion | `co_deposition.py` Guglielmi parameters |
 
-### Phase B: Transport and Kinetics (Weeks 2–5)
+### Phase B: Transport and Kinetics
 
 | Task | Method | Output | Reduces Uncertainty In |
 |------|--------|--------|----------------------|
@@ -86,7 +86,7 @@ Each item below can be done on a computer, without a wet lab. They reduce uncert
 | B3. Fe–Ni anomalous co-deposition | Phase-field + kinetic Monte Carlo | Ni content vs j, pH | `co_deposition.py` anomalous model |
 | B4. Carbon particle transport in boundary layer | CFD + Lagrangian particle tracking | Deposition rate vs particle size/loading | `co_deposition.py` Guglielmi σ |
 
-### Phase C: Heat Treatment (Weeks 3–6)
+### Phase C: Heat Treatment
 
 | Task | Method | Output | Reduces Uncertainty In |
 |------|--------|--------|----------------------|
@@ -95,7 +95,7 @@ Each item below can be done on a computer, without a wet lab. They reduce uncert
 | C3. Quench cracking risk | Thermo-mechanical FEM | Stress vs cooling rate, geometry | Process design limits |
 | C4. Retained austenite stability | CALPHAD (Thermo-Calc, OpenCALPHAD) | RA fraction vs composition, T | `tempering.py` Ms, RA model |
 
-### Phase D: Hydrogen and Degradation (Weeks 4–7)
+### Phase D: Hydrogen and Degradation
 
 | Task | Method | Output | Reduces Uncertainty In |
 |------|--------|--------|----------------------|
@@ -104,7 +104,7 @@ Each item below can be done on a computer, without a wet lab. They reduce uncert
 | D3. HE threshold for nanocrystalline Fe | Cohesive zone FEM + H concentration | Critical H for fracture | Design limits |
 | D4. Anode degradation kinetics | DFT + electrochemical kinetics | DSA coating dissolution rate | `anode.py`, `closed_loop.py` |
 
-### Phase E: Process Optimization (Weeks 6–8)
+### Phase E: Process Optimization
 
 | Task | Method | Output | Reduces Uncertainty In |
 |------|--------|--------|----------------------|
@@ -140,20 +140,20 @@ Each item below can be done on a computer, without a wet lab. They reduce uncert
 
 Once the computational program identifies the most promising conditions:
 
-### Round 1: Garage Lab ($1,500 budget)
+### Round 1: Garage Lab
 - 3 current densities × 3 pulse conditions × 3 replicates = 27 deposits
 - Characterization: weight (FE), thickness (rate), visual (density), hardness (if tester available)
 - Feed measurements into calibration pipeline → calibrated models
 - See `docs/garage_lab/` for shopping list and protocols
 
-### Round 2: Targeted Validation ($5,000 budget)
+### Round 2: Targeted Validation
 - Pack carburize the best deposits from Round 1
 - Cross-section metallography (optical microscope)
 - Hardness traverse (Vickers)
 - Feed into Bayesian calibration → posterior parameter distributions
 - Run confidence report → P(meet ASTM A36)
 
-### Round 3: Pilot Demonstration ($50,000 budget)
+### Round 3: Pilot Demonstration
 - 10× scale-up from garage rig
 - Continuous operation for 1 week
 - Full characterization: SEM, EBSD, tensile, ICP-OES
