@@ -1,6 +1,6 @@
 {
   "title": "Tempering & retained austenite screening",
-  "date": "2026-07-29T19:29:11.075219",
+  "date": "2026-07-29T15:05:04.588821",
   "example_alloy": {
     "C": 0.8,
     "Mn": 0.3,
@@ -8,12 +8,12 @@
     "f_RA_as_quenched_pct": 40.62932863495781
   },
   "figures": [
-    "/home/user/aqueous_electrowinning_steel/docs/figures/retained_austenite.png",
-    "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_curve.png",
-    "/home/user/aqueous_electrowinning_steel/docs/figures/case_tempered_hardness.png",
-    "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_energy.png"
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/retained_austenite.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/tempering_curve.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/case_tempered_hardness.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/tempering_energy.png"
   ],
-  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_tempering.csv",
+  "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_tempering.csv",
   "model_notes": [
     "Ms via Andrews: Ms=539-423C-30.4Mn-17.7Ni-12.1Cr-7.5Mo-7.5Si+10Co (\u00b0C)",
     "RA via Koistinen-Marburger: f_RA=exp(-0.011*(Ms-Tq)), f_M=1-f_RA",

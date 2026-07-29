@@ -18,19 +18,19 @@
   },
   "tafel_fits": {
     "her": {
-      "slope_V_decade": 0.14101811261057026,
-      "intercept_log10_A": -5.718779252453457,
-      "exchange_current_A": 1.9108242646535464e-06,
-      "r_squared": 0.7513733607904101,
+      "slope_V_decade": 0.1410181126105702,
+      "intercept_log10_A": -5.718779252453458,
+      "exchange_current_A": 1.9108242646535426e-06,
+      "r_squared": 0.7513733607904097,
       "n_points": 20,
       "potential_min_V": -0.5453857116461375,
       "potential_max_V": -0.4500868582798425
     },
     "iron": {
-      "slope_V_decade": 0.08894382669736,
+      "slope_V_decade": 0.08894382669736003,
       "intercept_log10_A": -4.192387001399749,
       "exchange_current_A": 6.42115271036085e-05,
-      "r_squared": 0.9921691208962566,
+      "r_squared": 0.9921691208962568,
       "n_points": 10,
       "potential_min_V": -0.7256348909273962,
       "potential_max_V": -0.6743032191418423
