@@ -1,0 +1,103 @@
+{
+  "pourbaix": {
+    "activity_M": 1.0,
+    "temperature_C": 60.0,
+    "pH_Fe2_to_FeOH2": 5.85,
+    "pH_Fe3_to_FeOH3": 1.15,
+    "pH_FeOH2_to_HFeO2": 18.3,
+    "by_pH": {
+      "0.0": {
+        "E_deposition (V vs SHE)": -0.44,
+        "E_HER (V vs SHE)": -0.0,
+        "HER margin (V)": 0.44,
+        "stable Fe species above E_dep": "Fe2+"
+      },
+      "2.0": {
+        "E_deposition (V vs SHE)": -0.44,
+        "E_HER (V vs SHE)": -0.132,
+        "HER margin (V)": 0.308,
+        "stable Fe species above E_dep": "Fe2+"
+      },
+      "7.0": {
+        "E_deposition (V vs SHE)": -0.51,
+        "E_HER (V vs SHE)": -0.463,
+        "HER margin (V)": 0.047,
+        "stable Fe species above E_dep": "Fe(OH)2(s)"
+      },
+      "10.0": {
+        "E_deposition (V vs SHE)": -0.708,
+        "E_HER (V vs SHE)": -0.661,
+        "HER margin (V)": 0.047,
+        "stable Fe species above E_dep": "Fe(OH)2(s)"
+      },
+      "14.0": {
+        "E_deposition (V vs SHE)": -0.972,
+        "E_HER (V vs SHE)": -0.925,
+        "HER margin (V)": 0.047,
+        "stable Fe species above E_dep": "Fe(OH)2(s)"
+      }
+    }
+  },
+  "kinetics": {
+    "Acidic active cathode": {
+      "j applied (mA/cm²)": 100.0,
+      "E cathode (V vs SHE)": -0.831,
+      "η_Fe (V)": 0.391,
+      "i_Fe (A/m²)": 18.0,
+      "i_HER (A/m²)": 982.0,
+      "i_lim,Fe (A/m²)": 2778.8,
+      "Current efficiency (%)": 1.8,
+      "Deposition rate (µm/hr)": 2.4,
+      "H₂ flux (mol/m²/hr)": 18.32,
+      "specific energy @2.6 V (kWh/t Fe)": 138303.0
+    },
+    "Acidic + HER inhibitor": {
+      "j applied (mA/cm²)": 100.0,
+      "E cathode (V vs SHE)": -1.06,
+      "η_Fe (V)": 0.62,
+      "i_Fe (A/m²)": 957.8,
+      "i_HER (A/m²)": 42.2,
+      "i_lim,Fe (A/m²)": 2778.8,
+      "Current efficiency (%)": 95.8,
+      "Deposition rate (µm/hr)": 126.7,
+      "H₂ flux (mol/m²/hr)": 0.79,
+      "specific energy @2.6 V (kWh/t Fe)": 2606.0
+    },
+    "Mildly acidic complexed": {
+      "j applied (mA/cm²)": 150.0,
+      "E cathode (V vs SHE)": -1.101,
+      "η_Fe (V)": 0.661,
+      "i_Fe (A/m²)": 1496.8,
+      "i_HER (A/m²)": 3.2,
+      "i_lim,Fe (A/m²)": 2778.8,
+      "Current efficiency (%)": 99.8,
+      "Deposition rate (µm/hr)": 198.0,
+      "H₂ flux (mol/m²/hr)": 0.06,
+      "specific energy @2.6 V (kWh/t Fe)": 2501.0
+    },
+    "Transport-limited (stagnant)": {
+      "j applied (mA/cm²)": 100.0,
+      "E cathode (V vs SHE)": -1.314,
+      "η_Fe (V)": 0.874,
+      "i_Fe (A/m²)": 69.4,
+      "i_HER (A/m²)": 930.6,
+      "i_lim,Fe (A/m²)": 69.5,
+      "Current efficiency (%)": 6.9,
+      "Deposition rate (µm/hr)": 9.2,
+      "H₂ flux (mol/m²/hr)": 17.36,
+      "specific energy @2.6 V (kWh/t Fe)": 35937.0
+    },
+    "Transport-limited (agitated)": {
+      "j applied (mA/cm²)": 100.0,
+      "E cathode (V vs SHE)": -1.248,
+      "η_Fe (V)": 0.808,
+      "i_Fe (A/m²)": 685.9,
+      "i_HER (A/m²)": 314.1,
+      "i_lim,Fe (A/m²)": 694.7,
+      "Current efficiency (%)": 68.6,
+      "Deposition rate (µm/hr)": 90.7,
+      "H₂ flux (mol/m²/hr)": 5.86,
+      "specific energy @2.6 V (kWh/t Fe)": 3639.0
+    }
+  }
+}

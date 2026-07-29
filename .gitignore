@@ -43,3 +43,6 @@ Thumbs.db
 !models/*.py
 
 # Generated figures are tracked in git (small enough for GitHub)
+
+# Test artifacts
+.pytest_cache/
