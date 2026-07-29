@@ -1,98 +1,161 @@
-# Dark Mill — Equipment Shopping List
+# Dark Mill — Equipment List
 
-Everything below gets you from zero to first iron deposit with FE measurement.
-Sorted by priority: buy the first section this week, the rest when ready.
+Everything below gets you from zero to first iron deposit with FE measurement. Revised with technical feedback on power supply sizing, anode chemistry, FE measurement, and missing items.
 
-## Tier A: Start plating this week (~$500–800)
+**Before ordering:** Paste each ASIN into Amazon and verify the specific variant. Amazon parent listings often resolve to different child ASINs. Prices on niche lab gear swing — recheck at order time.
 
-| Item | What | Why | Where | ~$ |
-|------|------|-----|-------|-----|
-| DC power supply | 30V/50A, constant-current + constant-voltage | Runs the cell | Amazon/McMaster | 150–300 |
-| Hull cell | 267 mL standard Hull cell kit | Maps 2 decades of j in one 10-minute deposit | Caswell, Amazon | 100–200 |
-| FeSO₄·7H₂O | Ferrous sulfate heptahydrate, 2–5 kg | Electrolyte source of Fe²⁺ | Amazon, chemical supplier | 20–40 |
-| H₂SO₄ (dilute) | 10% sulfuric acid, 1 L | pH adjustment | Amazon, hardware store | 10–20 |
-| H₃BO₃ | Boric acid, 500 g | Buffer for surface pH control | Amazon | 10 |
-| Stainless steel cathodes | 316 SS sheet, 0.5 mm, cut to Hull cell size | Cathode substrate, peels easily | McMaster, OnlineMetals | 20–40 |
-| Graphite anode | Graphite plate or rod | Cheap, works for initial tests | Amazon | 10–20 |
-| Alligator clip leads | Heavy-duty, 10A+ rated | Connect power supply to electrodes | Amazon | 10 |
-| Beakers | 1 L borosilicate, ×3 | Electrolyte containers | Amazon | 15 |
-| pH strips | Wide-range pH 0–14 | Quick pH checks | Amazon | 8 |
-| Digital pH meter | Basic pen-style | Accurate pH for experiments | Amazon | 15–30 |
-| Thermometer | Digital, 0–100°C | Bath temperature | Amazon | 8 |
-| Magnetic stirrer + hot plate | Basic model, 1000 RPM | Agitation + temperature control | Amazon | 40–80 |
-| Precision scale | 0.001 g resolution | Weigh deposits for FE calculation | Amazon | 40–80 |
-| Safety gear | Nitrile goggles, acid-resistant gloves, lab coat | H₂SO₄ and metal salts | Amazon | 30 |
+---
 
-**Total: ~$480–880**
+## Tier A: Start Plating (~$350-450)
 
-## Tier B: FE measurement with hydrogen volumetry (~$100–200 additional)
+### Power Supply — 30V/10A CC/CV (~$80)
 
-| Item | What | Why | Where | ~$ |
-|------|------|-----|-------|-----|
-| Inverted graduated cylinder | 100 mL, glass | Collect H₂ gas over cathode | Amazon, lab supply | 15 |
-| Rubber stopper + tubing | Fits cylinder, connects to collection | Gas collection setup | Amazon | 10 |
-| Mineral oil or electrolyte | For water displacement in collection | Seal the gas column | Amazon | 5 |
-| Stopwatch | Any | Time-resolved FE measurement | Phone works | 0 |
-| Graduated cylinder (small) | 10 mL, for calibration | Volume calibration | Amazon | 5 |
-| Rubber tubing | Silicone, 6mm ID | Connect cylinder to collection vessel | Amazon | 5 |
+NOT 30V/50A. A 50A supply at 2% load has poor regulation and coarse current resolution at 0.5-3A where you'll live. A 30V/10A with 0.01A steps is more accurate and costs less.
 
-**Total: ~$40–40**
+- New: search Amazon for "30V 10A adjustable DC power supply CC/CV" — ~$70-90
+- Used: BK Precision, Kepco, or Sorensen on eBay — ~$50-150, excellent regulation
 
-H₂ volumetry is better than weighing for FE because:
-- Continuous, real-time (not endpoint)
-- More sensitive at high FE (small H₂ signal)
-- No need to dry and weigh deposit mid-experiment
+### Hull Cell (~$100-150)
 
-## Tier C: Stress measurement (~$50–100 additional)
+Amazon does NOT sell complete 267ml Hull cell kits. Order from Caswell Plating (caswellplating.com):
+- Hull cell body — ~$80-120
+- Hull cell test panels, stack of 50+ — ~$30-50 (consumable, brass or steel)
 
-| Item | What | Why | Where | ~$ |
-|------|------|-----|-------|-----|
-| Thin SS shims | 301 SS, 0.1 mm, 100×15 mm strips ×10 | Stoney substrate — deposit on one face, measure curvature | McMaster | 20 |
-| Dial gauge | 0.01 mm resolution, magnetic base | Measure shim curvature | Amazon, McMaster | 30–50 |
-| Flat reference surface | Granite surface plate (small) or glass plate | Reference for curvature measurement | Amazon | 15–30 |
+### Anodes — Soluble Iron, NOT Graphite (~$30-45)
 
-**Total: ~$65–100**
+Graphite sheds particulates and is an insoluble anode that oxidizes Fe(II)→Fe(III), killing the bath in days. Use soluble iron anodes as primary.
 
-Deposit on one face of the shim. Internal stress causes curvature. Measure deflection at center vs edges. Stoney equation gives stress in MPa as a function of thickness and curvature. Real-time, in-situ, answers Problem 4 in hours.
+- **Pure iron or low-carbon steel bar/plate** — OnlineMetals.com, ~$15-30. Dissolves to replenish Fe(II).
+- **Polypropylene anode bags** — Amazon "anode bag polypropylene", ~$10-15. Keeps sludge out.
+- **Graphite rods** (B07YFGPMHZ, ~$10) — throwaway for first tests only. Expect particulates.
 
-## Tier D: Divided cell (~$100–300 additional)
+### Cathode Substrates (~$20-30)
 
-| Item | What | Why | Where | ~$ |
-|------|------|-----|-------|-----|
-| Cation exchange membrane | Nafion 117 or cheaper alternative (Fumasep FKE) | Separates anolyte from catholyte, blocks Fe³⁺ crossover | Fuel Cell Store, Amazon | 50–150 |
-| Two-compartment cell | H-cell or split beaker with membrane clamp | Divided cell geometry | Lab supply, or DIY with acrylic | 30–80 |
-| Graphite or DSA anode | For anolyte compartment | Anode reaction control | Amazon, specialty | 20–50 |
-| NaOH or Na₂SO₄ | For anolyte | Anolyte electrolyte | Amazon | 10 |
+- **316 SS sheet 1mm** (NOT 0.5mm — thinner warps) — OnlineMetals.com, cut to Hull cell size with tin snips.
 
-**Total: ~$110–290**
+### Chemicals (~$65-80)
 
-The divided cell is critical: in undivided mode, Fe²⁺→Fe³⁺ at the anode creates a redox shuttle that kills FE. The membrane blocks this.
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| FeSO₄·7H₂O 5 lb | B007ODUNJ4, $14.99, 4.6★/430 reviews | $15 | Verify variant is heptahydrate |
+| Boric acid 5 lb | Duda Diesel or Amazon | $20-25 | Need 30-45 g/L. 5 lb covers ~50L bath. NOT 100g. |
+| Battery acid 35% | Auto parts store | $10/gal | pH down. Cheaper/safer than lab H₂SO₄. |
+| Sodium carbonate (washing soda) | Grocery store | $5 | pH up. |
+| Ascorbic acid (vitamin C) | Amazon or grocery | $10 | Antioxidant — prevents Fe(II)→Fe(III) oxidation. |
+| Citric acid | Amazon or grocery | $10 | Also helps chelate. |
+| Distilled water, several gallons | Grocery store | $5-10 | NEVER use tap water. |
 
-## Tier E: Later (when you have deposits worth characterizing)
+### Electrical (~$45-55)
 
-| Item | What | Why | ~$ |
-|------|------|-----|-----|
-| Muffle furnace | 1100°C, used | Carburization, tempering | 500–1500 |
-| Pack carburizing supplies | Charcoal + BaCO₃ + sealed steel box | Carbon addition | 50–100 |
-| Vickers hardness tester | Used | Mechanical characterization | 500–2000 |
-| Optical microscope | 100–400×, used | Grain structure, cross-sections | 100–400 |
-| Vernier calipers | Digital, 0.01 mm | Deposit thickness | 20–30 |
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| Coulomb counter / DC Ah meter | Amazon "dc energy meter ah" | $15-25 | CRITICAL. FE = charge passed, not current setpoint. |
+| Multimeter | Amazon "digital multimeter" | $15-25 | Measure actual cell voltage independently. |
+| Alligator clip leads, 10A+ rated | Amazon | $10 | Connect supply to electrodes. |
 
-**Total: ~$1,170–4,030**
+### Glassware (~$12)
 
-## Grand total: $700–1,300 to start plating with FE measurement
+- **Borosilicate beaker 1000ml** — B0CZMC5L9Q, $12.36, 4.6★/780 reviews.
 
-That gets you:
-- Hull cell screening (one afternoon, maps full j range)
-- FE measurement by H₂ volumetry (continuous, real-time)
-- Stress measurement by Stoney method (answers Problem 4 in hours)
-- Divided cell operation (suppresses Fe³⁺ shuttle)
-- First 27 deposits with quantified FE, stress, and deposit quality
+### Substrate Prep (~$25)
 
-## What you DON'T need yet
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| Acetone or IPA | Hardware store | $8 | Degrease cathode before plating. |
+| Alconox or Simple Green | Amazon | $10 | Lab detergent. |
+| Abrasive pads (Scotch-Brite) | Grocery/hardware | $5 | Surface activation for cathode. |
 
-- SEM/EDS (university access when you have deposits worth imaging)
-- RDE (buy later when the 1D model needs Tafel slope calibration)
-- Potentiostat (nice but the DC power supply + shunt resistor gets you 80% of the way)
-- Gas carburizing setup (pack carburizing is safer and cheaper for garage)
-- Tensile testing frame (hardness correlates with YS, use Vickers for now)
+### Safety (~$50)
+
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| Nitrile gloves chemical resistant | B0CYZT25WR, $40, 4.6★ | $40 | 20 pairs, 15 mil heavy duty. |
+| Safety goggles splash-proof | B07T6H8G5V, $8, 4.5★ | $8 | |
+| Sodium bicarbonate (baking soda) | Grocery | $3 | Spill neutralizer. Keep nearby. |
+| Ventilation | — | — | REQUIRED. You are generating H₂. NOT in an unventilated closet. |
+| Thermometer | B01IHHLB7W | $8-12 | -50 to 300°C. |
+
+---
+
+## Tier B: FE Measurement (~$50-120)
+
+**Primary method: mass gain** on the precision scale. Run longer deposits to make mass change large relative to scale noise.
+
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| Precision scale 0.001g | B07Q5JHKBL | $80-120 | Draft shield. Reality: sub-$150 "0.001g" scales resolve ~0.01g. Used Mettler/Sartorius on eBay ($200-400) is better if FE accuracy matters. |
+| Magnetic stirrer + hot plate | B0BYJWFZS5 | $49 | Verify it actually heats. Check if PTFE stir bar included. |
+| PTFE stir bars | Amazon | $8 | If not included with stirrer. |
+
+**Cross-check method: H₂ volumetry (optional, later)**
+- Inverted burette or eudiometer — NOT a graduated cylinder
+- Gas-tight tubing + stopper
+- Temperature/pressure/water-vapor corrections
+
+---
+
+## Tier C: Divided Cell + Calibration (~$100-150)
+
+The membrane is the easy part. You need a cell body to mount it in.
+
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| H-cell body | Amazon "H-cell electrochemistry" | $30-50 | Two compartments with frit/membrane mount. |
+| DIY PVC divided cell | Hardware store | $25 | PVC pipe flanges + gasket + clamp. Works fine. |
+| Nafion N117 5×5cm | Amazon | $30-40 | Or Fumasep FKE-50 from Laborxing.com (~$66/10×10cm). |
+| pH meter | B01J1DNJQW, Apera AI209 | $50-60 | ±0.01 pH, 4.5K+ reviews. |
+| pH 4.00 buffer solution | Amazon | $8-10 | REQUIRED for calibration. Meter is useless without it. |
+| pH 7.00 buffer solution | Amazon | $8-10 | REQUIRED. |
+| KCl storage solution | Amazon | $8-10 | Probe dies if stored dry. |
+
+---
+
+## Tier D: Upgrades (When Ready)
+
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| Ag/AgCl reference electrode | Amazon | $50 | Three-electrode measurement. Worth it for mechanism studies. |
+| Muffle furnace (used) | eBay | $500-1500 | For carburization and tempering. |
+| Pack carburizing supplies | — | $50-100 | Charcoal + BaCO₃ + sealed steel box. |
+| Vickers hardness tester (used) | eBay | $500-2000 | Mechanical characterization. |
+| Optical microscope (used) | eBay | $100-400 | Grain structure, cross-sections. |
+| MMO/platinized titanium mesh | Specialty | $50-100 | Clean insoluble anode for later experiments. |
+
+---
+
+## Budget Summary
+
+| Tier | What You Get | Cost |
+|------|-------------|------|
+| A | First deposits, Hull cell screening, proper bath chemistry | $350-450 |
+| B | Quantified FE by mass gain + stirring | $50-120 |
+| C | Divided cell, pH control, three-electrode option | $100-150 |
+| **Total A+B+C** | **Full experimental capability** | **$500-720** |
+
+---
+
+## What Changed from v1
+
+| Old (v1) | New (v2) | Why |
+|----------|----------|-----|
+| 30V/50A supply ($150-480) | 30V/10A (~$80) | Better regulation at 0.5-3A where you live |
+| Graphite anode | Soluble iron + anode bag | Graphite sheds, oxidizes Fe(II)→Fe(III) |
+| 100g boric acid ($14) | 5 lb (~$22) | 100g covers 2L. Need 30-45 g/L. |
+| 1M H₂SO₄ ($18) | Battery acid 35% ($10/gal) | Better value, same function |
+| Graduated cylinder for H₂ | Mass gain primary, burette optional | Graduated cylinder isn't a eudiometer |
+| No coulomb counter | DC Ah meter ($20) | FE = charge passed, not current setpoint |
+| No pH buffers | pH 4.00/7.00 + KCl ($25) | pH meter useless without calibration |
+| No divided cell body | H-cell or DIY PVC ($25-30) | Membrane needs a home |
+| No substrate prep | Acetone, Alconox, pads ($25) | Bad prep = peeling deposits = wasted weeks |
+| No multimeter | Digital multimeter ($20) | Independent cell voltage measurement |
+| 0.5mm SS cathode | 1mm SS cathode | Thinner warps |
+
+---
+
+## Safety (Read This)
+
+- **Hydrogen gas.** Electrolysis produces H₂. Ventilate your workspace. Never collect gas in a sealed vessel near the power supply.
+- **Acid.** Battery acid is corrosive. Gloves + goggles always. Baking soda nearby for spills.
+- **Iron sulfate.** Mild irritant. Not acutely toxic but avoid ingestion.
+- **Electrical.** DC at 10A can cause burns. Don't touch electrodes while powered.
+- **Bath management.** Keep bath covered when not in use. Add ascorbic acid to slow Fe(II)→Fe(III). Filter if anodes shed.
