@@ -1,0 +1,48 @@
+{
+  "provenance": "Synthetic membrane fouling screening; not experimental data.",
+  "model_scope": "Hermia-based flux decline with four parallel fouling mechanisms (Fe(OH)\u2083, CaSO\u2084, organic, biofilm), cleaning cycle optimization, and impurity-rejection coupling in a CSTR loop.",
+  "summary": {
+    "flux_decline": {
+      "duration_hr": 4000.0,
+      "initial_flux_L_m2_hr": 100.0,
+      "final_flux_L_m2_hr": 30.317055073524863,
+      "flux_decline_pct": 69.68294492647513,
+      "final_total_resistance": 1.1934597581130655,
+      "final_rejection": 0.9444896838409813,
+      "final_impurity_M": 0.0009007334754996989
+    },
+    "n_cleanings": 4,
+    "total_cleaning_cost": 260.0,
+    "total_membrane_cost": 0.0,
+    "optimal_cleaning_interval_hr": 818.1632653061224,
+    "economics": {
+      "membrane_area_m2": 10.0,
+      "duration_hr": 4000.0,
+      "total_throughput_L": 3526080.405801936,
+      "average_flux_L_m2_hr": 881.520101450484,
+      "total_cleaning_cost": 260.0,
+      "total_membrane_cost": 0.0,
+      "total_downtime_hr": 2.0,
+      "effective_operating_hr": 3998.0,
+      "cost_per_L_treated": 7.373626522304679e-05,
+      "n_cleanings": 4
+    }
+  },
+  "hermia_variants": [
+    "complete_blocking",
+    "intermediate_blocking",
+    "standard_blocking",
+    "cake_filtration"
+  ],
+  "fouling_mechanisms": [
+    "fe_oh3",
+    "caso4",
+    "organic",
+    "biofilm"
+  ],
+  "membrane_params": {
+    "area_m2": 10.0,
+    "clean_water_flux_L_m2_hr": 100.0,
+    "membrane_cost_per_m2": 200.0
+  }
+}
