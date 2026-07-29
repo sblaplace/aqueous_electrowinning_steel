@@ -41,6 +41,7 @@ pip install -r requirements.txt
 python -m models.run_electrochemistry   # Pourbaix diagram + HER-competition kinetics
 python -m models.run_technoeconomic     # Base-case CAPEX/OPEX/LCOFe
 python -m models.run_scenarios          # Four-scenario comparison
+python -m models.run_transport          # Nernst-Planck transport: migration effects
 
 # Run the test suite
 pytest tests -q
@@ -57,6 +58,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
 | `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
 | `models/boundary_layer.py` | Local cathode pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
+| `models/transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, multi-ion profiles, migration-corrected limiting current |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
@@ -76,8 +78,39 @@ Galvanostatic kinetics at 100 mA/cm² illustrate that HER suppression is the dom
 | Transport-limited, stagnant (0.1 M Fe²⁺) | 6.9% | 9 µm/hr | ~35,900 kWh/t |
 | Same bath, agitated (δ 200→20 µm) | 68.6% | 91 µm/hr | ~3,600 kWh/t |
 
+### Transport: Migration Matters in Weakly Supported Baths
+
+`models/transport.py` replaces the linear stagnant-film closure with a steady 1-D
+Nernst–Planck solve (diffusion **+ migration**) over Fe²⁺, H⁺, OH⁻, Na⁺ and SO₄²⁻,
+closed by pointwise electroneutrality and fast water autoprotolysis.
+
+Iron baths are often run with little inert salt, and there the electric field does
+real work — it drags Fe²⁺ inward and lifts the transport limit well above the
+Levich value:
+
+| Supporting Na₂SO₄ | t(Fe²⁺) | i_lim / i_Levich |
+|---|---|---|
+| 0 (unsupported) | 0.40 | **2.00** |
+| 0.5 M | 0.27 | 1.34 |
+| 2 M | 0.14 | 1.13 |
+| 10 M | 0.04 | 1.03 |
+
+The unsupported value of exactly 2.00× is the analytical result for a symmetric
+2:2 binary salt, and the heavily supported end recovers pure diffusion — the model
+is pinned at both limits.
+
+Adding migration also **overturns the film model's local-pH prediction**. With no
+mechanism to resupply protons, the diffusion-only film puts a pH-2 bath's cathode
+surface at pH ≈ 11.5; carrying H⁺ transport properly keeps it near pH 2.7 at
+100 mA/cm², which is far more consistent with acidic baths plating iron at all:
+
+| j (mA/cm²) | Surface pH (Nernst–Planck) | Surface pH (film) |
+|---|---|---|
+| 5 | 2.04 | 9.54 |
+| 100 | 2.69 | 11.51 |
+| 200 | 3.32 | 11.69 |
+
 ### Next Steps (Planned)
-- Nernst-Planck transport and migration (the current release includes a steady film approximation)
 - Pulse-reverse electrodeposition (transient) modeling
 - Experimental data logging templates and voltammetry parsers
 
