@@ -158,6 +158,13 @@ from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
 )
+from .calibration_pipeline import (
+    run_calibration_pipeline,
+    load_calibrated_params,
+    apply_calibrated_params,
+    CalibrationReport,
+    FitResult,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -289,4 +296,10 @@ __all__ = [
     "surface_pH_from_current",
     "surface_pH_from_pulse",
     "effective_mass_transport_enhancement",
+    # ── Calibration pipeline ─────────────────────────────────────────
+    "run_calibration_pipeline",
+    "load_calibrated_params",
+    "apply_calibrated_params",
+    "CalibrationReport",
+    "FitResult",
 ]
