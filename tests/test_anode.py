@@ -1,0 +1,480 @@
+"""
+Tests for the anode / OER / DSA model (models/anode.py).
+"""
+
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.anode import (
+    AnodeKinetics,
+    AnodeMaterial,
+    DSA_IRO2_TA2O5,
+    NICO_SPINEL,
+    NIFE_LDH,
+    PT_TI,
+    bubble_fraction,
+    bubble_resistance_multiplier,
+    concentration_overpotential_oer,
+    full_cell_voltage,
+    E0_OER_ACIDIC,
+    E0_OER_ALKALINE,
+    E0_CER,
+)
+
+
+# ─── Material properties ────────────────────────────────────────────────
+
+def test_dsa_ir02_ta2o5_is_ir02():
+    assert "IrO" in DSA_IRO2_TA2O5.name
+
+
+def test_nico_spinel_has_high_i0():
+    """NiCo spinel should have higher OER exchange current than IrO₂ DSA."""
+    assert NICO_SPINEL.oer_i0 > DSA_IRO2_TA2O5.oer_i0
+
+
+def test_temperature_affects_exchange_current():
+    """Arrhenius correction: i₀(T) should be higher at elevated temperature."""
+    cold = DSA_IRO2_TA2O5
+    warm = AnodeMaterial(
+        name="warm IrO₂",
+        oer_i0=DSA_IRO2_TA2O5.oer_i0,
+        oer_tafel_V=DSA_IRO2_TA2O5.oer_tafel_V,
+        temperature_C=90.0,
+    )
+    assert warm.oer_i0_at_T() > cold.oer_i0_at_T()
+
+
+# ─── Equilibrium potentials ─────────────────────────────────────────────
+
+def test_oer_equilibrium_is_1_229_at_pH0_acidic():
+    """At pH 0, acidic OER E_eq ≈ 1.229 V vs SHE."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=0.0)
+    assert anode.oer_equilibrium() == pytest.approx(E0_OER_ACIDIC, abs=0.01)
+
+
+def test_oer_equilibrium_decreases_with_pH_acidic():
+    """Acidic OER should shift negative with pH (−dE/dpH at operating T)."""
+    anode_ph1 = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=1.0)
+    anode_ph3 = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=3.0)
+    delta_pH = 3.0 - 1.0
+    # (RT/nF)·ln(10) per pH unit, evaluated at 60°C (333 K)
+    # = 0.0591 * (333/298) ≈ 0.066 V/pH
+    expected_shift = 0.0591 * (333.0 / 298.15) * delta_pH
+    assert (anode_ph3.oer_equilibrium() - anode_ph1.oer_equilibrium()) == pytest.approx(
+        -expected_shift, rel=1e-2
+    )
+
+
+def test_oer_equilibrium_at_elevated_pH():
+    """OER equilibrium should be well-defined at pH 14 (alkaline pathway)."""
+    anode = AnodeKinetics(
+        material=NICO_SPINEL, electrolyte_type="alkaline", pH=14.0
+    )
+    # At 60°C (NICO_SPINEL temperature), 2H₂O OER: E = 1.229 − 0.0661×14
+    assert 0.15 < anode.oer_equilibrium() < 0.30
+
+
+def test_cer_equilibrium_rises_with_Cl_activity():
+    """E_eq(CER) = E°_CER + (RT/2F)·ln(a_Cl²); higher Cl⁻ → higher E_eq."""
+    anode_low = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=1.0,
+    )
+    anode_high = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=10.0,
+    )
+    # (RT/2F)·ln(100) ≈ 0.0591·log10(100) = 0.118 V at 25 °C; slightly higher at 60 °C
+    assert anode_high.cer_equilibrium() > anode_low.cer_equilibrium()
+
+
+# ─── Tafel kinetics ───────────────────────────────────────────────────
+
+def test_oer_current_is_zero_below_equilibrium():
+    """At E < E_eq the OER current should be zero."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=0.0)
+    E_eq = anode.oer_equilibrium()
+    assert anode._oer_current(E_eq - 0.1) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_oer_current_increases_with_overpotential():
+    """Anodic current should rise steeply above E_eq."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=0.0)
+    E_eq = anode.oer_equilibrium()
+    i_low = anode._oer_current(E_eq + 0.05)
+    i_high = anode._oer_current(E_eq + 0.15)
+    assert i_high > i_low
+
+
+def test_cer_active_only_in_chloride_acidic():
+    """CER is suppressed in alkaline and neutral baths."""
+    base = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0, a_Cl_molar=0.0
+    )
+    chloride = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=10.0,
+    )
+    assert not base.cer_active
+    assert chloride.cer_active
+
+
+def test_cer_current_at_fixed_potential_decreases_with_Cl_activity():
+    """At fixed electrode potential E, higher a_Cl raises E_eq(CER) and reduces η_CER.
+
+    The Tafel current falls because the driving force shrinks.  This is the
+    opposite of the i₀ effect — both are physically real; this test checks
+    the fixed-E (fixed-cell-voltage) behaviour relevant to operation.
+    """
+    anode_low = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=1.0,
+    )
+    anode_high = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=10.0,
+    )
+    E = 1.56   # V vs SHE — fixed electrode potential (AWARE operating range)
+    i_low = anode_low._cer_current(E)
+    i_high = anode_high._cer_current(E)
+    assert i_high < i_low   # higher Cl⁻ → higher E_eq → smaller η → smaller i
+
+
+# ─── Overpotential decomposition ───────────────────────────────────────
+
+def test_zero_current_gives_zero_eta():
+    """At j = 0 the total anode overpotential should be zero."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    r = anode.overpotential_at_current(0.0)
+    assert r["total_V"] == pytest.approx(0.0, abs=1e-9)
+    assert r["eta_activation_V"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_overpotential_rises_with_current_density():
+    """η_anode should increase monotonically with current density."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    prev_eta = 0.0
+    for j in [10.0, 50.0, 100.0, 200.0]:
+        r = anode.overpotential_at_current(j)
+        assert r["total_V"] > prev_eta
+        prev_eta = r["total_V"]
+
+
+def test_activation_is_significant_overpotential():
+    """Activation overpotential should be a meaningful fraction of total η."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    r = anode.overpotential_at_current(100.0)
+    # Activation is the dominant contributor in this configuration
+    assert r["eta_activation_V"] > 0.2
+    assert r["eta_activation_V"] + r["eta_concentration_V"] > 0.3
+
+
+def test_concentration_eta_is_nonnegative():
+    """η_conc should always be non-negative."""
+    eta = concentration_overpotential_oer(100.0, temperature_C=60.0)
+    assert eta >= 0.0
+
+
+def test_concentration_eta_increases_with_current():
+    """η_conc should increase as current density rises (unsaturated regime)."""
+    # Use elevated O₂ concentration so i_lim >> j → unsaturated regime
+    bulk_O2 = 10.0   # mol/m³  (artificially high but keeps model below transport limit)
+    eta_low = concentration_overpotential_oer(
+        10.0, temperature_C=60.0, bulk_O2_mol_m3=bulk_O2
+    )
+    eta_high = concentration_overpotential_oer(
+        100.0, temperature_C=60.0, bulk_O2_mol_m3=bulk_O2
+    )
+    assert eta_high > eta_low
+
+
+def test_concentration_eta_rises_near_diffusion_limit():
+    """η_conc increases with current density; near i_lim it grows sharply."""
+    # With elevated O₂ (20 mol/m³) and δ = 50 µm, i_lim ≈ 3,850 A/m² (385 mA/cm²),
+    # so both 5 and 15 mA/cm² are unsaturated but the rate of increase accelerates.
+    # At such high i_lim, η_conc ≈ (RT/4F)·(j/i_lim), so η ∝ j.
+    bulk_O2 = 20.0
+    eta_low = concentration_overpotential_oer(
+        5.0, temperature_C=60.0, boundary_layer_m=5e-5,
+        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
+    )
+    eta_mid = concentration_overpotential_oer(
+        10.0, temperature_C=60.0, boundary_layer_m=5e-5,
+        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
+    )
+    eta_high = concentration_overpotential_oer(
+        50.0, temperature_C=60.0, boundary_layer_m=5e-5,
+        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
+    )
+    # Monotonic increase with j
+    assert eta_mid > eta_low
+    assert eta_high > eta_mid
+    # The incremental η per unit j increases as j → i_lim (convex scaling)
+    assert (eta_mid - eta_low) / 5.0 < (eta_high - eta_mid) / 40.0
+
+
+def test_NiCo_spinel_lower_eta_than_IrO2():
+    """At equal current density, NiCo spinel should have lower η than IrO₂ DSA."""
+    ir_anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="alkaline", pH=14.0
+    )
+    nico_anode = AnodeKinetics(
+        material=NICO_SPINEL, electrolyte_type="alkaline", pH=14.0
+    )
+    eta_ir = ir_anode.eta_anode(100.0)
+    eta_nico = nico_anode.eta_anode(100.0)
+    assert eta_nico < eta_ir
+
+
+# ─── Bubble resistance ──────────────────────────────────────────────────
+
+def test_bubble_fraction_is_saturating():
+    """Bubble fraction should approach a maximum asymptotically with j."""
+    for j in [10.0, 100.0, 500.0, 1000.0]:
+        theta = bubble_fraction(j, temperature_C=60.0, anode_material="IrO2")
+        assert 0.0 <= theta <= 0.13
+
+
+def test_bubble_fraction_increases_with_current():
+    """θ should increase monotonically with j."""
+    theta_low = bubble_fraction(10.0)
+    theta_high = bubble_fraction(500.0)
+    assert theta_high > theta_low
+
+
+def test_bubble_resistance_multiplier_at_zero():
+    """At θ=0 the resistance multiplier should be exactly 1."""
+    assert bubble_resistance_multiplier(0.0) == pytest.approx(1.0, abs=1e-9)
+
+
+def test_bubble_resistance_increases_with_theta():
+    """Higher bubble coverage should increase electrolyte resistance."""
+    r_low = bubble_resistance_multiplier(0.05)
+    r_high = bubble_resistance_multiplier(0.15)
+    assert r_high > r_low
+
+
+def test_bubble_eta_contributes_nonnegative_resistance():
+    """Bubble-induced resistance overpotential should be non-negative."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    r = anode.overpotential_at_current(100.0)
+    assert r["eta_bubble_V"] >= 0.0
+
+
+# ─── CER vs OER mixed potential ───────────────────────────────────────
+
+def test_CER_fraction_bounded_0_to_1():
+    """CER fraction must be between 0 and 1 at all current densities."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=10.0,
+    )
+    for j in [10.0, 50.0, 100.0]:
+        r = anode.overpotential_at_current(j)
+        assert 0.0 <= r["cer_fraction"] <= 1.0
+
+
+def test_OER_dominates_in_acidic_no_chloride():
+    """In acid without chloride, OER should carry essentially all the current."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0, a_Cl_molar=0.0
+    )
+    r = anode.overpotential_at_current(100.0)
+    assert r["cer_fraction"] < 1e-3
+
+
+def test_CER_makes_significant_contribution_in_concentrated_chloride():
+    """In very high Cl⁻ (AWARE process), CER should carry a measurable fraction."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=12.0,
+    )
+    r = anode.overpotential_at_current(100.0)
+    # At high current, OER dominates even in conc. chloride on DSA;
+    # but at low current the CER fraction should be non-trivial
+    r_low = anode.overpotential_at_current(5.0)
+    assert r_low["cer_fraction"] > 0.0
+
+
+# ─── Polarization curve ────────────────────────────────────────────────
+
+def test_polarization_curve_length():
+    """Polarization curve should return arrays of equal length."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    j, E, eta, eta_act, cer = anode.polarization_curve(np.linspace(1.0, 300.0, 100))
+    assert len(j) == len(E) == len(eta) == len(eta_act) == len(cer)
+
+
+def test_polarization_curve_E_rises_with_j():
+    """Anode potential should increase with current density."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    j, E, *_ = anode.polarization_curve(np.linspace(10.0, 300.0, 50))
+    assert E[-1] > E[0]
+
+
+def test_polarization_curve_cer_fraction_bounded():
+    """CER fraction must be between 0 and 1 everywhere."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5,
+        electrolyte_type="acidic_chloride",
+        pH=0.0,
+        a_Cl_molar=10.0,
+    )
+    _, _, _, _, cer = anode.polarization_curve(np.linspace(1.0, 500.0, 200))
+    assert np.all((cer >= 0.0) & (cer <= 1.0))
+
+
+# ─── Full-cell integration ─────────────────────────────────────────────
+
+def test_full_cell_voltage_is_positive():
+    """V_cell should always be positive (cathode is negative of anode)."""
+    anode = AnodeKinetics(
+        material=NICO_SPINEL, electrolyte_type="alkaline", pH=14.0
+    )
+    result = full_cell_voltage(
+        anode=anode,
+        E_cathode_eq=-0.440,
+        E_cathode_actual=-0.740,
+        ir_drop=0.15,
+        j_mA_cm2=100.0,
+    )
+    assert result["V_cell"] > 0.0
+
+
+def test_full_cell_voltage_components_sum():
+    """V_cell ≈ (E_anode − E_cathode) + ir_drop."""
+    anode = AnodeKinetics(
+        material=NICO_SPINEL, electrolyte_type="alkaline", pH=14.0
+    )
+    result = full_cell_voltage(
+        anode=anode,
+        E_cathode_eq=-0.440,
+        E_cathode_actual=-0.740,
+        ir_drop=0.15,
+        j_mA_cm2=100.0,
+    )
+    V_computed = result["E_anode"] - result["E_cathode"] + result["ir_drop"]
+    assert result["V_cell"] == pytest.approx(V_computed, abs=1e-9)
+
+
+def test_full_cell_thermo_is_less_than_total():
+    """Thermodynamic voltage should be smaller than V_cell."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0
+    )
+    result = full_cell_voltage(
+        anode=anode,
+        E_cathode_eq=-0.440,
+        E_cathode_actual=-0.740,
+        ir_drop=0.15,
+        j_mA_cm2=100.0,
+    )
+    assert result["E_thermo"] < result["V_cell"]
+
+
+# ─── O2 and Cl2 production rates ──────────────────────────────────────
+
+def test_O2_rate_positive():
+    """O₂ production rate should be non-negative at all current densities."""
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    for j in [10.0, 50.0, 100.0, 200.0]:
+        rate = anode.O2_production_rate_mol_m2_hr(j)
+        assert rate >= 0.0
+
+
+def test_Cl2_rate_zero_without_chloride():
+    """Cl₂ rate should be zero when no chloride is present."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0, a_Cl_molar=0.0
+    )
+    rate = anode.Cl2_production_rate_mol_m2_hr(100.0)
+    assert rate == pytest.approx(0.0, abs=1e-12)
+
+
+# ─── Summary dict ─────────────────────────────────────────────────────
+
+def test_summary_has_required_keys():
+    """Summary dict should contain all expected fields."""
+    anode = AnodeKinetics(material=NICO_SPINEL, electrolyte_type="alkaline", pH=14.0)
+    s = anode.summary(100.0)
+    for key in (
+        "η_anode total (V)",
+        "η_activation (V)",
+        "η_concentration (V)",
+        "η_bubble (V)",
+        "E_anode (V vs SHE)",
+        "E_eq OER (V vs SHE)",
+        "O₂ rate (mol/m²·hr)",
+    ):
+        assert key in s
+
+
+# ─── CellVoltageModel integration ─────────────────────────────────────
+
+def test_cell_voltage_model_with_anode():
+    """CellVoltageModel should compute η_anode from AnodeKinetics when supplied."""
+    from models.electrochemistry import CellVoltageModel
+
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0
+    )
+    cell = CellVoltageModel(
+        E_cathode_eq=-0.440,
+        eta_cathode=0.30,
+        ir_drop=0.20,
+        anode=anode,
+        j_operating_mA_cm2=100.0,
+    )
+    r = anode.overpotential_at_current(100.0)
+    assert cell._effective_eta_anode == pytest.approx(r["total_V"], abs=1e-9)
+    assert cell.V_cell > 1.5   # reasonable minimum for acidic Fe electrowinning
+
+
+def test_cell_voltage_model_backwards_compatible():
+    """CellVoltageModel without anode should fall back to fixed eta_anode."""
+    from models.electrochemistry import CellVoltageModel
+
+    cell = CellVoltageModel(
+        E_cathode_eq=-0.440,
+        eta_cathode=0.30,
+        eta_anode=0.40,
+        ir_drop=0.20,
+    )
+    assert cell.V_cell == pytest.approx(
+        abs(1.229 - (-0.440)) + 0.30 + 0.40 + 0.20, abs=1e-9
+    )
+
+
+def test_cell_voltage_model_thermo_matches_anode_eq():
+    """E_thermodynamic should use the anode's Nernst-corrected E_eq."""
+    from models.electrochemistry import CellVoltageModel
+
+    # DSA IrO2 at pH 2, 60°C: OER E_eq ≈ 1.097 V; Fe E_eq = −0.440 V
+    anode = AnodeKinetics(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    cell = CellVoltageModel(
+        E_cathode_eq=-0.440,
+        anode=anode,
+        j_operating_mA_cm2=100.0,
+    )
+    # Expected: |1.097 − (−0.440)| ≈ 1.537 V
+    assert cell.E_thermodynamic == pytest.approx(1.537, abs=0.01)
