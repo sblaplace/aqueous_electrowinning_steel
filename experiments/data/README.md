@@ -156,3 +156,22 @@ Verify deposit identity and dryness (e.g., retain/inspect rinse residues and
 pair with SEM/EDS when available).  Do not cap a result above 100%; it is a QA
 signal that can indicate retained electrolyte, oxidation, codeposition, a
 charge-sign problem, or weighing/drying error.
+
+## Phase IV durability and closed-loop series
+
+Use `phase4_durability_template.csv` for synchronized accelerated-life and
+inventory measurements. Required columns are `time_hr`, `current_A`,
+`anode_area_m2`, `cell_voltage_V`, `fe_M`, `ligand_M`, `impurity_M`, and
+`anode_mass_loss_mg_m2`. Time must be strictly increasing; current is positive
+anodic current. Recommended metadata include chloride, temperature, pH,
+electrolyte ID, anode lot/coating loading, analytical methods, and notes.
+
+Mass loss should be cumulative per geometric anode area and independently
+verified where possible (e.g. dissolved-metal analysis versus coupon mass).
+The included rows demonstrate the schema only and are not experimental claims.
+Analyze a mapped copy while retaining raw instrument and ICP/OES files:
+
+```bash
+python experiments/notebooks/phase4_closed_loop.py \
+  experiments/data/phase4_durability_template.csv
+```

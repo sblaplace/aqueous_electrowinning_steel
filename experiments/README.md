@@ -70,3 +70,18 @@ not represented.
 
 See `data/README.md` for exact headers and units, and run the synthetic example
 with `python -m models.run_hull_cell` to verify the complete toolchain.
+
+## Phase IV: Anode Durability and Closed-Loop Operation
+
+Use `data/phase4_durability_template.csv` for synchronized anode mass-loss,
+cell-voltage, and electrolyte-composition observations. Summarize a run with:
+
+```bash
+python experiments/notebooks/phase4_closed_loop.py path/to/phase4_run.csv
+```
+
+The analysis reports charge-normalized coating wear and voltage drift without
+claiming a service-life mechanism. Run `python -m models.run_closed_loop` for a
+synthetic ideal-CSTR example. Its wear, precipitation, impurity, and cost
+coefficients are assumptions to be replaced by measured values; generated
+outputs are explicitly labeled as synthetic.

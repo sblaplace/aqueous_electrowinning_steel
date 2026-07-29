@@ -91,6 +91,13 @@ from .co_deposition import (
     PhaseIIICoDeposition,
     build_phase3_model,
 )
+from .closed_loop import (
+    AnodeDurabilityParams,
+    ClosedLoopParams,
+    PhaseIVOperatingPoint,
+    PhaseIVResult,
+    PhaseIVClosedLoop,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -162,4 +169,10 @@ __all__ = [
     "AnomalousFeNiKinetics",
     "PhaseIIICoDeposition",
     "build_phase3_model",
+    # ── Phase IV durability / closed-loop model ───────────────────────
+    "AnodeDurabilityParams",
+    "ClosedLoopParams",
+    "PhaseIVOperatingPoint",
+    "PhaseIVResult",
+    "PhaseIVClosedLoop",
 ]

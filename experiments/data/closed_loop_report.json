@@ -1,0 +1,29 @@
+{
+  "provenance": "Synthetic Phase IV screening output; not wet-lab data.",
+  "model_scope": "Constant-volume ideal CSTR plus empirical charge-throughput anode wear. Calibrate wear, precipitation, speciation and impurity parameters before design use.",
+  "summary": {
+    "duration_hr": 4000.0,
+    "final_fe_M": 0.36385494417549974,
+    "final_ligand_M": 1.4925373134328332,
+    "final_impurity_M": 0.00020088872333150621,
+    "final_coating_remaining_fraction": 0.40751777899561326,
+    "initial_cell_voltage_V": 1.5027228879317804,
+    "final_cell_voltage_V": 1.5469088383010585,
+    "final_specific_energy_kWh_t": 1562.9518942300388,
+    "cumulative_precipitated_fe_mol": 0.0,
+    "flagged_time_points": 0,
+    "end_of_life_hr": null
+  },
+  "process_metrics": {
+    "iron_produced_t": 3.95894165140154,
+    "electricity_kWh": 6088.903003786316,
+    "average_specific_energy_kWh_t": 1538.012817549541,
+    "electricity_cost": 243.55612015145263,
+    "purge_volume_m3": 80.0,
+    "purge_treatment_cost": 640.0,
+    "ligand_makeup_mol": 120000.0,
+    "ligand_makeup_cost": 18000.0,
+    "anode_consumption_cost": 88.87233315065801,
+    "modeled_variable_cost_per_t": 4792.298074558768
+  }
+}
