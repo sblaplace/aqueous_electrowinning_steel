@@ -1,0 +1,4 @@
+timestamp_s,current_A,cell_voltage_V,working_electrode_area_cm2,temperature_C,pH,fe2_concentration_M,electrolyte_id,current_sign_convention,notes
+0,-1.000,2.60,50.0,60.0,3.0,1.0,EXAMPLE-FE-SO4,cathodic_negative,Replace with unmodified instrument export after mapping its columns to this schema
+1800,-1.000,2.62,50.0,60.0,3.0,1.0,EXAMPLE-FE-SO4,cathodic_negative,Use at least two chronological records; cathodic current is negative
+3600,-1.000,2.61,50.0,60.0,3.0,1.0,EXAMPLE-FE-SO4,cathodic_negative,Mass entry is held in hull_cell_gravimetry_template.csv

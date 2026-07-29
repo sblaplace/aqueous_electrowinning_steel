@@ -172,6 +172,19 @@ A structured four-phase program is proposed to systematically address the challe
 - Methods: Hull cell tests, long-duration galvanostatic runs
 - Output: Faradaic efficiency, SEM-EDS morphology, grain size analysis
 
+**Executable screening and mass-balance tooling.** `models/hull_cell.py`
+provides a transparent primary-current map for a straight angled cathode facing
+a planar anode. It distributes the applied current according to the inverse
+local solution gap and is intended to assign Hull-panel positions to
+current-density windows. It is not a calibrated cell simulation: edge/shield
+effects, electrode kinetics, transport, bubble coverage, and conductivity
+gradients remain experimental calibration questions. The same workflow
+integrates cathodic charge and compares the Faraday-predicted Fe mass with a
+blank-corrected dry coupon mass gain. This is reported as **apparent
+gravimetric Fe Faradaic efficiency** until deposit composition and dryness are
+verified. Actual SEM/EDS observations remain planned experimental evidence;
+the repository does not synthesize or label simulated images as microscopy.
+
 ### Phase III: Carbon and Alloy Co-Deposition Trials
 - Variables: Carbon particle loading (0.1–5 g/L), surfactants, hydrodynamics
 - Methods: Composite plating, post-carburization trials

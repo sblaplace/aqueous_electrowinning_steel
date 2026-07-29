@@ -1,17 +1,23 @@
 # Experimental data
 
-Use `voltammetry_template.csv` as the canonical long-form schema for CV/LSV
-exports. Keep raw instrument files unchanged and record the conversion in the
-run notes. One row represents one measurement point.
+Keep raw instrument files unchanged.  Convert a copy into the canonical CSV
+schemas below and record the conversion, instrument, calibration, and sample
+identifiers in run notes.  One row represents one measurement point unless
+otherwise noted.
 
-## Required columns
+## Phase I voltammetry
+
+Use `voltammetry_template.csv` as the canonical long-form schema for CV/LSV
+exports.
+
+### Required columns
 
 - `timestamp_s` — elapsed time from the start of the run
 - `potential_V_vs_ref` — applied/working-electrode potential, V vs the stated reference
 - `current_A` — signed measured current (cathodic current is negative by convention)
 - `working_electrode_area_cm2` — geometric area used for current-density conversion
 
-## Recommended metadata columns
+### Recommended metadata columns
 
 `cycle`, `segment`, `temperature_C`, `pH`, `fe2_concentration_M`,
 `electrolyte_id`, `reference_electrode`, and `notes`.
@@ -49,13 +55,13 @@ Use `eis_template.csv` as the canonical schema for impedance exports: one
 frequency point per row. Frequencies are swept high → low, and the imaginary
 part `z_imag_ohm` is negative for the capacitive (faradaic) semicircle.
 
-## Required columns
+### Required columns
 
 - `frequency_hz`
 - `z_real_ohm`
 - `z_imag_ohm`
 
-## Recommended metadata columns
+### Recommended metadata columns
 
 `z_magnitude_ohm`, `phase_deg`, `working_electrode_area_cm2`, `dc_bias_V_vs_ref`,
 `temperature_C`, `pH`, `fe2_concentration_M`, `electrolyte_id`,
@@ -78,3 +84,75 @@ Compare fits with and without the Warburg diffusion element (χ² ratio) before
 reporting Rct; a low-frequency diffusion tail inflates Rct if modeled as a
 plain semicircle. Convert Rct to an exchange current only for spectra measured
 near an equilibrium potential.
+
+## Phase II galvanostatic trace
+
+Use `hull_cell_galvanostatic_template.csv` for the current history associated
+with a Hull-cell or galvanostatic deposition run.  It is a separate file from
+the weighing record so that unmodified time-series exports and auditable
+pre/post measurements can be preserved.
+
+### Required columns
+
+- `timestamp_s` — elapsed time, seconds; chronological and non-decreasing
+- `current_A` — signed cell/cathode current, A; **negative is cathodic** in the
+  repository convention
+
+### Recommended metadata columns
+
+`cell_voltage_V`, `working_electrode_area_cm2`, `temperature_C`, `pH`,
+`fe2_concentration_M`, `electrolyte_id`, `current_sign_convention`, and
+`notes`.
+
+`models.hull_cell.load_galvanostatic_trace` validates these fields and derives
+signed current-density columns when `working_electrode_area_cm2` is supplied.
+The gravimetric calculation clips the non-cathodic portion before integrating
+charge, which allows a documented pulse/reverse trace to be analyzed without
+counting anodic charge as iron-reduction charge.
+
+## Phase II gravimetry
+
+Use `hull_cell_gravimetry_template.csv` for **one row per weighed coupon/run**.
+The record must identify the coupon that matches the trace and document a
+consistent rinse/dry procedure.
+
+### Required columns
+
+- `mass_before_g` — dry coupon mass before deposition, g
+- `mass_after_g` — dry coupon mass after deposition, g
+
+### Recommended columns
+
+- `run_id`, `coupon_id` — linkage to trace and physical coupon
+- `blank_mass_change_g` — matched blank mass change, g, subtracted from coupon
+  mass gain; use zero only when no justified blank correction is used
+- `mass_uncertainty_g` — one-standard-deviation uncertainty of **each** coupon
+  weighing, g
+- `blank_mass_uncertainty_g` — uncertainty of the blank correction, g
+- `electrode_area_cm2`, `drying_protocol`, `notes`
+
+Calculate the result with:
+
+```python
+from models.hull_cell import (
+    analyze_gravimetric_efficiency, load_galvanostatic_trace, load_gravimetry,
+)
+trace = load_galvanostatic_trace("experiments/data/hull_cell_galvanostatic_template.csv")
+weighing = load_gravimetry("experiments/data/hull_cell_gravimetry_template.csv")
+result = analyze_gravimetric_efficiency(trace, weighing, cathodic_sign="negative")
+print(result.summary())
+```
+
+The calculation is
+
+\[
+\mathrm{FE}_{\mathrm{app}} =
+\frac{m_{\mathrm{after}}-m_{\mathrm{before}}-m_{\mathrm{blank}}}
+{Q_{\mathrm{cathodic}} M_{\mathrm{Fe}}/(2F)}.
+\]
+
+It is **apparent gravimetric Fe FE**, not a substitute for composition analysis.
+Verify deposit identity and dryness (e.g., retain/inspect rinse residues and
+pair with SEM/EDS when available).  Do not cap a result above 100%; it is a QA
+signal that can indicate retained electrolyte, oxidation, codeposition, a
+charge-sign problem, or weighing/drying error.

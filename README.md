@@ -45,6 +45,7 @@ python -m models.run_transport          # Nernst-Planck transport: migration eff
 python -m models.run_pulse              # Transient pulse & pulse-reverse dynamics
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                # Synthetic EIS spectrum & Randles fitting
+python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
 
 # Run the test suite
 pytest tests -q
@@ -66,6 +67,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
 | `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
 | `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
+| `models/hull_cell.py` | Phase II variable-gap angled-panel primary-current screen and gravimetric apparent Fe Faradaic efficiency |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
@@ -125,6 +127,26 @@ pulsed electrodeposition. During the pulse-off and reverse-pulse periods ($t_\te
 surface Fe²⁺ concentration recovers and local pH spikes relax, enabling higher peak current densities
 without Fe(OH)₂ precipitation or hydrogen embrittlement.
 
+### Phase II Hull-Cell Screen & Gravimetric Efficiency
+
+`models/hull_cell.py` provides the first executable Phase II workflow:
+
+- A variable-gap **primary current** map across a 10 × 5 cm angled panel.  It
+  normalizes local strip conductance ($j\propto1/g$) to the applied current,
+  so positions can be assigned to current-density windows.
+- A canonical galvanostatic trace plus pre/post-weighing schema and
+  blank-corrected gravimetric calculation,
+  $\mathrm{FE}_{app}=m_{net}/[Q_{cathodic}M_{Fe}/(2F)]$.
+- A synthetic, reproducible example with a JSON report and figures.  It does
+  **not** claim wet-lab performance or fabricate microscopy data.
+
+The current map is a screening aid rather than a calibrated Hull-cell solver:
+it omits edge/shielding effects, electrode kinetics, mass transfer, bubbles,
+and conductivity gradients.  Gravimetric output is **apparent** Fe FE until
+deposit composition and dry mass are verified; an FE above 100% is retained as
+a QA flag rather than hidden.  See `models/README.md` and
+`experiments/data/README.md` for the model scope and procedure.
+
 ---
 
 ## Repository Structure
@@ -150,6 +172,7 @@ without Fe(OH)₂ precipitation or hydrogen embrittlement.
 │   ├── voltammetry.py                 # CV/LSV analysis helpers
 │   ├── tafel.py                       # Tafel fitting and exchange current estimation
 │   ├── eis.py                         # EIS equivalent circuits and spectrum fitting
+│   ├── hull_cell.py                   # Phase II Hull-current map and gravimetric FE
 │   ├── experimental_data.py           # Long-form experimental data loader
 │   ├── technoeconomic.py              # CAPEX / OPEX / LCOFe
 │   └── scenarios.py                   # Operating scenario definitions
