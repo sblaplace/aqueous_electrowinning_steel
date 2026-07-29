@@ -158,6 +158,22 @@ from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
 )
+from .scale_up import (
+    wagner_number,
+    primary_current_distribution,
+    uniformity_index,
+    secondary_current_distribution,
+    SecondaryCurrentResult,
+    boundary_layer_thickness,
+    mass_transport_scaling,
+    MassTransportResult,
+    thermal_management,
+    ThermalResult,
+    optimize_geometry,
+    GeometryResult,
+    scale_up_analysis,
+    ScaleUpResult,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -289,4 +305,19 @@ __all__ = [
     "surface_pH_from_current",
     "surface_pH_from_pulse",
     "effective_mass_transport_enhancement",
+    # ── Scale-up model ───────────────────────────────────────────────
+    "wagner_number",
+    "primary_current_distribution",
+    "uniformity_index",
+    "secondary_current_distribution",
+    "SecondaryCurrentResult",
+    "boundary_layer_thickness",
+    "mass_transport_scaling",
+    "MassTransportResult",
+    "thermal_management",
+    "ThermalResult",
+    "optimize_geometry",
+    "GeometryResult",
+    "scale_up_analysis",
+    "ScaleUpResult",
 ]

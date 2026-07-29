@@ -1,0 +1,92 @@
+{
+  "model": {
+    "description": "Scale-up model: primary/secondary current distribution, mass transport scaling, thermal management, geometry optimization",
+    "components": [
+      "Primary current distribution (Wagner number, conformal mapping)",
+      "Secondary current distribution (1-D Poisson + Butler-Volmer)",
+      "Mass transport scaling (boundary-layer growth, Levich-type)",
+      "Thermal management (Joule heating, convective + radiative cooling)",
+      "Geometry optimization (energy minimisation, uniformity constraint)"
+    ]
+  },
+  "wagner_comparison": {
+    "lab_10cm2": {
+      "area_m2": 0.001,
+      "wagner_number": 0.0316,
+      "primary_uniformity": 0.1996,
+      "T_cell_C": 245.8,
+      "j_lim_min_A_m2": 9208.0
+    },
+    "pilot_1000cm2": {
+      "area_m2": 0.1,
+      "wagner_number": 0.0032,
+      "primary_uniformity": 0.1956,
+      "T_cell_C": 468.9,
+      "j_lim_min_A_m2": 2912.0
+    }
+  },
+  "thermal_sensitivity": [
+    {
+      "j_A_m2": 500,
+      "T_cell_C": 26.1,
+      "boiling_risk": false
+    },
+    {
+      "j_A_m2": 1000,
+      "T_cell_C": 29.4,
+      "boiling_risk": false
+    },
+    {
+      "j_A_m2": 2000,
+      "T_cell_C": 42.6,
+      "boiling_risk": false
+    },
+    {
+      "j_A_m2": 3000,
+      "T_cell_C": 64.5,
+      "boiling_risk": false
+    },
+    {
+      "j_A_m2": 5000,
+      "T_cell_C": 134.3,
+      "boiling_risk": true
+    }
+  ],
+  "geometry_optimization": [
+    {
+      "total_current_A": 100,
+      "optimal_gap_mm": 1.0,
+      "uniformity": 0.189,
+      "energy_kWh_per_kg": 2.26
+    },
+    {
+      "total_current_A": 1100,
+      "optimal_gap_mm": 1.0,
+      "uniformity": 0.189,
+      "energy_kWh_per_kg": 2.26
+    },
+    {
+      "total_current_A": 2100,
+      "optimal_gap_mm": 1.0,
+      "uniformity": 0.189,
+      "energy_kWh_per_kg": 2.26
+    },
+    {
+      "total_current_A": 3100,
+      "optimal_gap_mm": 1.0,
+      "uniformity": 0.189,
+      "energy_kWh_per_kg": 2.26
+    },
+    {
+      "total_current_A": 4100,
+      "optimal_gap_mm": 1.0,
+      "uniformity": 0.189,
+      "energy_kWh_per_kg": 2.26
+    }
+  ],
+  "uniformity_index": {
+    "description": "Fraction of cathode area within ±10% of j_avg",
+    "lab_10cm2": 0.1996,
+    "pilot_1000cm2": 0.1956
+  }
+}

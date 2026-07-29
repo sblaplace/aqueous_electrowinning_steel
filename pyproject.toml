@@ -36,6 +36,7 @@ aq-steel-tempering = "models.run_tempering:main"
 aq-steel-techno = "models.run_technoeconomic:main"
 aq-steel-scenarios = "models.run_scenarios:main"
 aq-steel-all-quick = "models.run_all:cli"
+aq-steel-scaleup = "models.run_scale_up:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"
