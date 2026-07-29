@@ -154,6 +154,20 @@ from .foil_calibration import (
     fit_tempering_softening,
     fit_mechanical_hall_petch,
 )
+from .pilot_costing import (
+    estimate_capex,
+    capex_at_all_scales,
+    capex_by_category,
+    capex_sensitivity_tornado,
+    PilotOPEXModel,
+    PilotCAPEXResult,
+    EquipmentItem,
+    six_tenths_scale,
+    equipment_table,
+    SCALE_LAB,
+    SCALE_PILOT,
+    SCALE_PRODUCTION,
+)
 from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
@@ -285,6 +299,19 @@ __all__ = [
     # ── Pilot P&ID ────────────────────────────────────────────────────
     "generate_pid_overview",
     "generate_pid_detailed",
+    # ── Pilot CAPEX/OPEX ─────────────────────────────────────────────
+    "estimate_capex",
+    "capex_at_all_scales",
+    "capex_by_category",
+    "capex_sensitivity_tornado",
+    "PilotOPEXModel",
+    "PilotCAPEXResult",
+    "EquipmentItem",
+    "six_tenths_scale",
+    "equipment_table",
+    "SCALE_LAB",
+    "SCALE_PILOT",
+    "SCALE_PRODUCTION",
     # ── Pulse-aware co-deposition coupling ────────────────────────────
     "surface_pH_from_current",
     "surface_pH_from_pulse",
