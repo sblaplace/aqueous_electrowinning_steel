@@ -20,6 +20,10 @@ from .kinetics import (
     TafelBranch,
     limiting_current_density,
 )
+from .boundary_layer import (
+    CathodeBoundaryLayer,
+    BoundaryLayerState,
+)
 from .technoeconomic import (
     ElectrolyzerParams,
     CAPEXModel,
@@ -43,6 +47,8 @@ __all__ = [
     "DepositionKinetics",
     "TafelBranch",
     "limiting_current_density",
+    "CathodeBoundaryLayer",
+    "BoundaryLayerState",
     "ElectrolyzerParams",
     "CAPEXModel",
     "OPEXModel",

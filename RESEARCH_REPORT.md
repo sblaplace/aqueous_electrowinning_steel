@@ -187,8 +187,9 @@ See `docs/figures/polarization_curves.png` and `docs/figures/current_efficiency_
   Phase I voltammetry should replace them with measured i₀ and Tafel slopes.
 - The Pourbaix treatment uses 298 K standard potentials with a Nernst temperature term
   only; it does not include the full ΔC_p correction of Beverskog & Puigdomenech.
-- Local cathode-surface pH excursion caused by HER (and consequent hydroxide
-  precipitation) is not yet modeled — this is the highest-value next addition.
+- A steady-film local cathode-pH model is now provided in `models/boundary_layer.py`; it
+  couples HER-generated OH⁻, Fe²⁺ depletion, and Fe(OH)₂ solubility. It remains a screening
+  approximation: migration, convection, and transient precipitation are not yet modeled.
 - Complexed-iron speciation (citrate, glycine) is approximated only through effective
   activity and equilibrium-potential shifts.
 

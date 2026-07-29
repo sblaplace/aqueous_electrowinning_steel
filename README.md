@@ -56,6 +56,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/electrochemistry.py` | Faraday's law, cell-voltage decomposition, specific energy |
 | `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
 | `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
+| `models/boundary_layer.py` | Local cathode pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
@@ -76,7 +77,7 @@ Galvanostatic kinetics at 100 mA/cm² illustrate that HER suppression is the dom
 | Same bath, agitated (δ 200→20 µm) | 68.6% | 91 µm/hr | ~3,600 kWh/t |
 
 ### Next Steps (Planned)
-- Nernst-Planck transport & local-pH boundary-layer model
+- Nernst-Planck transport and migration (the current release includes a steady film approximation)
 - Pulse-reverse electrodeposition (transient) modeling
 - Experimental data logging templates and voltammetry parsers
 
