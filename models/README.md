@@ -26,6 +26,7 @@ python -m models.run_technoeconomic     # Base-case techno-economics
 python -m models.run_scenarios          # Scenario comparison
 python -m models.run_transport          # Nernst-Planck migration analysis
 python -m models.run_pulse              # Pulse-reverse transient dynamics & comparison
+python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 ```
 
 ## Transport Model Notes

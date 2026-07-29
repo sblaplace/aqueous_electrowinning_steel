@@ -43,6 +43,7 @@ python -m models.run_technoeconomic     # Base-case CAPEX/OPEX/LCOFe
 python -m models.run_scenarios          # Four-scenario comparison
 python -m models.run_transport          # Nernst-Planck transport: migration effects
 python -m models.run_pulse              # Transient pulse & pulse-reverse dynamics
+python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 
 # Run the test suite
 pytest tests -q
