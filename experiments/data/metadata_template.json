@@ -1,0 +1,15 @@
+{
+  "sample_id": "P1-YYYYMMDD-001",
+  "operator": "family-name or lab identifier",
+  "instrument": "manufacturer, model, and asset ID",
+  "calibration_date": "YYYY-MM-DD",
+  "electrolyte_id": "bath formulation/batch ID",
+  "working_electrode": "material, geometry, and geometric area",
+  "counter_electrode": "material and geometry",
+  "reference_electrode": "type, filling solution, and verification",
+  "temperature_C": 25.0,
+  "agitation": "method and setpoint",
+  "preparation": "solution preparation, coupon cleaning, and conditioning",
+  "raw_export_sha256": "optional checksum of immutable raw export",
+  "notes": "Include scan limits/rate, gas control, and deviations as applicable."
+}

@@ -1,0 +1,3 @@
+run_id,phase,technique,status,raw_file,processed_file,metadata_file,characterization_file,notes
+P1-YYYYMMDD-001,I,LSV,planned,raw/P1-YYYYMMDD-001_lsv_vendor.csv,processed/P1-YYYYMMDD-001_lsv.csv,metadata/P1-YYYYMMDD-001.json,,Replace YYYYMMDD; retain raw export unchanged and map a copy to the canonical schema.
+P2-YYYYMMDD-001,II,galvanostatic,planned,raw/P2-YYYYMMDD-001_galvanostatic_vendor.csv,processed/P2-YYYYMMDD-001_galvanostatic.csv,metadata/P2-YYYYMMDD-001.json,characterization/P2-YYYYMMDD-001_eds.csv,Link coupon gravimetry and SEM-EDS records in characterization file or its run notes.

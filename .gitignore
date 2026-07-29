@@ -26,6 +26,10 @@ env/
 *.swo
 *~
 
+# Raw experimental exports are immutable and may be large or proprietary.
+# Keep their paths/checksums in campaign manifests; commit only mapped, reviewed data.
+experiments/data/raw/
+
 # Large output data (keep structure, exclude bulky files)
 *.h5
 *.hdf5

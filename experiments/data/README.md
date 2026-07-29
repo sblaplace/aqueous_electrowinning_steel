@@ -5,6 +5,30 @@ schemas below and record the conversion, instrument, calibration, and sample
 identifiers in run notes.  One row represents one measurement point unless
 otherwise noted.
 
+## Campaign manifest and run metadata
+
+Before acquiring data, copy `campaign_manifest_template.csv` to a dated campaign
+manifest and give each experiment a permanent, unique `run_id`. The manifest
+links the immutable vendor export, mapped analysis CSV, metadata JSON, and any
+characterization record. Keep vendor exports in `experiments/data/raw/` (ignored
+by Git); keep mapped, reviewed data under `processed/` and record a SHA-256 hash
+in metadata when practical. Start every sidecar from `metadata_template.json`.
+
+A run marked `complete` must have all file links and the required instrument,
+calibration, electrode, electrolyte, temperature, agitation, and preparation
+metadata. It also requires a characterization link; for a Phase-I-only run this
+may be a deliberately documented "not applicable" characterization record.
+Validate the record and produce an auditable QA report with:
+
+```bash
+python -m models.campaign experiments/data/campaign_manifest.csv \
+  --output experiments/data/campaign_qa_report.json
+```
+
+The validator does not alter raw files or infer scientific validity. Its
+`ready_for_analysis` result confirms only that an explicitly complete record has
+all required links and metadata.
+
 ## Phase I voltammetry
 
 Use `voltammetry_template.csv` as the canonical long-form schema for CV/LSV

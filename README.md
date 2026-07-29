@@ -74,6 +74,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
+| `models/campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
