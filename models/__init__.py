@@ -94,6 +94,14 @@ from .co_deposition import (
     surface_pH_from_pulse,
     effective_mass_transport_enhancement,
 )
+from .impurity_codeposition import (
+    ImpurityCoDeposition,
+    BathKinetics,
+    compare_bath_types,
+    SULFATE_KINETICS,
+    CHLORIDE_KINETICS,
+    CU_HOT_SHORTNESS_WT,
+)
 from .closed_loop import (
     AnodeDurabilityParams,
     ClosedLoopParams,
@@ -345,6 +353,13 @@ __all__ = [
     "AnomalousFeNiKinetics",
     "PhaseIIICoDeposition",
     "build_phase3_model",
+    # ── Impurity co-deposition ───────────────────────────────────────
+    "ImpurityCoDeposition",
+    "BathKinetics",
+    "compare_bath_types",
+    "SULFATE_KINETICS",
+    "CHLORIDE_KINETICS",
+    "CU_HOT_SHORTNESS_WT",
     # ── Phase IV durability / closed-loop model ───────────────────────
     "AnodeDurabilityParams",
     "ClosedLoopParams",
