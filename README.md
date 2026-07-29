@@ -44,6 +44,7 @@ python -m models.run_scenarios          # Four-scenario comparison
 python -m models.run_transport          # Nernst-Planck transport: migration effects
 python -m models.run_pulse              # Transient pulse & pulse-reverse dynamics
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
+python -m models.run_eis                # Synthetic EIS spectrum & Randles fitting
 
 # Run the test suite
 pytest tests -q
@@ -64,6 +65,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |
 | `models/voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
 | `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
+| `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
@@ -147,6 +149,7 @@ without Fe(OH)₂ precipitation or hydrogen embrittlement.
 │   ├── pulse.py                       # Transient pulse & pulse-reverse electrodeposition
 │   ├── voltammetry.py                 # CV/LSV analysis helpers
 │   ├── tafel.py                       # Tafel fitting and exchange current estimation
+│   ├── eis.py                         # EIS equivalent circuits and spectrum fitting
 │   ├── experimental_data.py           # Long-form experimental data loader
 │   ├── technoeconomic.py              # CAPEX / OPEX / LCOFe
 │   └── scenarios.py                   # Operating scenario definitions

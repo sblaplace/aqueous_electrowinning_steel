@@ -42,3 +42,39 @@ print(fit.slope_V_decade, fit.exchange_current_A, fit.r_squared)
 
 Inspect the selected region and report its bounds and R²; do not interpret a
 transport-limited region as a kinetic Tafel slope.
+
+## EIS spectra
+
+Use `eis_template.csv` as the canonical schema for impedance exports: one
+frequency point per row. Frequencies are swept high → low, and the imaginary
+part `z_imag_ohm` is negative for the capacitive (faradaic) semicircle.
+
+## Required columns
+
+- `frequency_hz`
+- `z_real_ohm`
+- `z_imag_ohm`
+
+## Recommended metadata columns
+
+`z_magnitude_ohm`, `phase_deg`, `working_electrode_area_cm2`, `dc_bias_V_vs_ref`,
+`temperature_C`, `pH`, `fe2_concentration_M`, `electrolyte_id`,
+`reference_electrode`, and `notes`. Derived columns (magnitude, phase,
+area-normalized Ω·cm²) are added automatically by the loader.
+
+Validate, summarize, and fit a Randles equivalent circuit with:
+
+```python
+from models.eis import load_spectrum, summarize_spectrum, fit_randles_spectrum
+run = load_spectrum("experiments/data/eis_template.csv")
+print(summarize_spectrum(run))
+freq = run["frequency_hz"].to_numpy()
+z = run["z_real_ohm"].to_numpy() + 1j * run["z_imag_ohm"].to_numpy()
+fit = fit_randles_spectrum(freq, z, include_warburg=True)
+print(fit.rs_ohm, fit.rct_ohm, fit.cdl_F, fit.chi_squared)
+```
+
+Compare fits with and without the Warburg diffusion element (χ² ratio) before
+reporting Rct; a low-frequency diffusion tail inflates Rct if modeled as a
+plain semicircle. Convert Rct to an exchange current only for spectra measured
+near an equilibrium potential.
