@@ -42,6 +42,7 @@ python -m models.run_electrochemistry   # Pourbaix diagram + HER-competition kin
 python -m models.run_technoeconomic     # Base-case CAPEX/OPEX/LCOFe
 python -m models.run_scenarios          # Four-scenario comparison
 python -m models.run_transport          # Nernst-Planck transport: migration effects
+python -m models.run_pulse              # Transient pulse & pulse-reverse dynamics
 
 # Run the test suite
 pytest tests -q
@@ -59,6 +60,10 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
 | `models/boundary_layer.py` | Local cathode pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `models/transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, multi-ion profiles, migration-corrected limiting current |
+| `models/pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |
+| `models/voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
+| `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
+| `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
@@ -110,9 +115,12 @@ surface at pH ≈ 11.5; carrying H⁺ transport properly keeps it near pH 2.7 at
 | 100 | 2.69 | 11.51 |
 | 200 | 3.32 | 11.69 |
 
-### Next Steps (Planned)
-- Pulse-reverse electrodeposition (transient) modeling
-- Experimental data logging templates and voltammetry parsers
+### Pulse-Reverse Electrodeposition Dynamics
+
+`models/pulse.py` simulates transient 1-D concentration profiles during high-peak-current
+pulsed electrodeposition. During the pulse-off and reverse-pulse periods ($t_\text{anodic}$ / $t_\text{off}$),
+surface Fe²⁺ concentration recovers and local pH spikes relax, enabling higher peak current densities
+without Fe(OH)₂ precipitation or hydrogen embrittlement.
 
 ---
 
@@ -125,14 +133,20 @@ surface at pH ≈ 11.5; carrying H⁺ transport properly keeps it near pH 2.7 at
 ├── requirements.txt                   # Python dependencies
 ├── .gitignore                         # Git ignore rules
 ├── docs/
-│   └── figures/                       # Diagrams, Pourbaix plots, SEM images
+│   └── figures/                       # Diagrams, Pourbaix plots, SEM & pulse dynamics images
 ├── experiments/
-│   ├── data/                          # Raw and processed experimental data
-│   └── notebooks/                     # Jupyter notebooks for analysis
+│   ├── data/                          # Raw and processed experimental & simulation data
+│   └── notebooks/                     # Jupyter notebooks / script analysis
 ├── models/                            # Electrochemical & process simulations
 │   ├── electrochemistry.py            # Faraday's law, cell voltage, specific energy
 │   ├── pourbaix.py                    # Fe-H₂O potential-pH equilibria
 │   ├── kinetics.py                    # Butler-Volmer Fe vs. HER competition
+│   ├── boundary_layer.py              # Cathode film composition & Fe(OH)₂ solubility
+│   ├── transport.py                   # Steady 1-D Nernst-Planck film with migration
+│   ├── pulse.py                       # Transient pulse & pulse-reverse electrodeposition
+│   ├── voltammetry.py                 # CV/LSV analysis helpers
+│   ├── tafel.py                       # Tafel fitting and exchange current estimation
+│   ├── experimental_data.py           # Long-form experimental data loader
 │   ├── technoeconomic.py              # CAPEX / OPEX / LCOFe
 │   └── scenarios.py                   # Operating scenario definitions
 ├── tests/                             # Pytest suite for the modeling code

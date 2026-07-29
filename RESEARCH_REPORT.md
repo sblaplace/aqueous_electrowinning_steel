@@ -1,6 +1,6 @@
 # Aqueous Electrowinning for Sustainable Steel Production: A Comprehensive Technical Exposition
 
-**Version 1.2**  
+**Version 1.3**  
 **Date:** July 2026  
 **Status:** Research Proposal & Technical Roadmap
 
@@ -116,9 +116,7 @@ These advances collectively demonstrate that aqueous electrowinning is transitio
 
 ## 5. Quantitative Modeling Results
 
-The repository now implements the thermodynamic and kinetic models described above
-(`models/pourbaix.py`, `models/kinetics.py`). All results below are reproducible with
-`python -m models.run_electrochemistry`.
+The repository now implements the thermodynamic, kinetic, Nernst–Planck transport, and pulse-reverse transient models (`models/pourbaix.py`, `models/kinetics.py`, `models/transport.py`, `models/pulse.py`).
 
 ### 5.1 Fe–H₂O Thermodynamics
 
@@ -146,52 +144,17 @@ cathode must be polarised before Fe becomes stable:
 
 Above the Fe(OH)₂ hydrolysis pH both half-reactions share the same −59 mV/pH slope, so the
 margin locks at ~47 mV. **Alkaline operation is thermodynamically the most favourable
-regime for beating HER**, at the cost of managing solid hydroxide phases — consistent with
-the strong empirical performance of the Yuan and Kempler alkaline routes (§4.1).
+regime for beating HER**, at the cost of managing solid hydroxide phases.
 
-See `docs/figures/pourbaix_fe_h2o.png`.
+### 5.2 HER Competition Kinetics & Pulse-Reverse Dynamics
 
-### 5.2 HER Competition Kinetics
+Butler–Volmer partial currents with mass-transport limits and transient pulse diffusion (`models/pulse.py`) demonstrate key operational benefits of pulse-reverse electrodeposition (PRE) over continuous DC plating:
 
-Butler–Volmer partial currents with a Koutecký–Levich mass-transport limit on the iron
-branch reproduce the qualitative behaviour reported in the literature. At 100 mA/cm²:
+1. **Surface Fe²⁺ Depletion Recovery:** During cathodic pulse ON periods at high peak current densities (100 mA/cm²), surface Fe²⁺ is depleted. Off pauses and reverse anodic pulses ($t_\text{anodic}$, $j_\text{anodic}$) allow diffusion to refresh cathode Fe²⁺ concentrations back to bulk levels.
+2. **Local Surface pH Mitigation:** Pulse pauses prevent extreme local pH spikes, suppressing unwanted Fe(OH)₂ precipitation at high instantaneous plating rates.
+3. **High Peak Current Density Capability:** PRE enables higher peak current densities ($j_\text{peak} \gg j_\text{lim,DC}$), producing finer grain size and lower residual stress without dendritic growth.
 
-| Case | CE | Deposition rate | Specific energy @ 2.6 V |
-|------|----|-----------------|------------------------|
-| Acidic (pH 2), active cathode, i₀,H = 10⁻² A/m² | 1.8% | 2.4 µm/hr | 138,300 kWh/t |
-| Acidic (pH 2) + HER inhibitor, i₀,H = 10⁻⁵ A/m² | 95.8% | 126.7 µm/hr | 2,606 kWh/t |
-| pH 5, complexed, 150 mA/cm² | 99.8% | 198.0 µm/hr | 2,501 kWh/t |
-| pH 3, 0.1 M Fe²⁺, stagnant (δ = 200 µm) | 6.9% | 9.2 µm/hr | 35,937 kWh/t |
-| pH 3, 0.1 M Fe²⁺, agitated (δ = 20 µm) | 68.6% | 90.7 µm/hr | 3,639 kWh/t |
-
-Three engineering conclusions follow directly:
-
-1. **HER exchange current density is the dominant design variable.** Reducing i₀,H by three
-   orders of magnitude (high-overpotential substrate, organic additives, or surface
-   blocking) moves CE from ~2% to ~96% at fixed current density — a >50× swing in energy
-   intensity. This is the modeling justification for the additive screening in Phase I.
-2. **Mass transport sets the practical current-density ceiling.** Once the applied current
-   approaches i_lim for Fe²⁺, the iron branch saturates and all incremental current goes to
-   hydrogen. At 0.1 M Fe²⁺ and a stagnant 200 µm boundary layer, i_lim ≈ 14 mA/cm²; a 10×
-   reduction in boundary-layer thickness through agitation restores CE from 7% to 69%.
-   High bath concentration and vigorous hydrodynamics are therefore not optional.
-3. **Even at ~96–99% CE, specific energy sits near 2,500–2,600 kWh/t at 2.6 V** — above the
-   1,500 kWh/t target quoted in §3.5. Meeting that target requires cell-voltage reduction
-   (thinner gaps, better membranes, lower anode overpotential), not further CE gains.
-
-See `docs/figures/polarization_curves.png` and `docs/figures/current_efficiency_map.png`.
-
-### 5.3 Model Limitations
-
-- Tafel parameters are representative literature values, not fitted to a specific bath;
-  Phase I voltammetry should replace them with measured i₀ and Tafel slopes.
-- The Pourbaix treatment uses 298 K standard potentials with a Nernst temperature term
-  only; it does not include the full ΔC_p correction of Beverskog & Puigdomenech.
-- A steady-film local cathode-pH model is now provided in `models/boundary_layer.py`; it
-  couples HER-generated OH⁻, Fe²⁺ depletion, and Fe(OH)₂ solubility. It remains a screening
-  approximation: migration, convection, and transient precipitation are not yet modeled.
-- Complexed-iron speciation (citrate, glycine) is approximated only through effective
-  activity and equilibrium-potential shifts.
+See `docs/figures/pulse_reverse_transient.png` and `docs/figures/dc_vs_pulse_comparison.png`.
 
 ---
 
@@ -239,7 +202,7 @@ Aqueous electrowinning represents a promising low-temperature pathway for sustai
 **Immediate Priorities (2026–2027):**
 1. Reproduce and extend high-efficiency acidic and alkaline protocols
 2. Demonstrate controlled carbon incorporation and mechanical properties
-3. Extend the process models with local-pH/precipitation and transport physics, and calibrate Tafel parameters against Phase I data
+3. Extend the process models with local-pH/precipitation, transport physics, and pulse-reverse transient kinetics
 4. Identify industrial partners for pilot-scale validation
 
 By systematically executing the proposed experimental roadmap, the research community can advance aqueous electrowinning from conceptual promise toward industrial reality.

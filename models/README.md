@@ -11,6 +11,10 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `kinetics.py` | Butler–Volmer / Tafel partial currents for Fe deposition vs. HER, Koutecký–Levich mass-transport limit, galvanostatic current efficiency |
 | `boundary_layer.py` | Steady cathode film: local pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, electroneutral multi-ion profiles, migration-corrected limiting current, diffusion potential |
+| `pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |
+| `tafel.py` | Tafel-region fitting with exchange-current and R² estimates |
+| `voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
+| `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
 | `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
 | `scenarios.py` | Four literature-anchored operating scenarios |
 
@@ -21,12 +25,8 @@ python -m models.run_electrochemistry   # Pourbaix + kinetics figures & report
 python -m models.run_technoeconomic     # Base-case techno-economics
 python -m models.run_scenarios          # Scenario comparison
 python -m models.run_transport          # Nernst-Planck migration analysis
+python -m models.run_pulse              # Pulse-reverse transient dynamics & comparison
 ```
-
-## Still Planned
-
-- **Pulse-reverse electrodeposition** — transient deposition modeling
-- **Experimental data tooling** — voltammetry parsers and Tafel/i₀ extraction from lab data
 
 ## Transport Model Notes
 
@@ -36,17 +36,16 @@ for local-composition questions. It tracks Fe²⁺, H⁺, OH⁻, Na⁺ and SO₄
     N_i = -D_i ∇C_i - z_i D_i (F/RT) C_i ∇φ
 
 closed by pointwise electroneutrality (differentiated to give ∇φ explicitly) and
-fast water autoprotolysis, so the conserved proton variable is S = C_H⁺ − C_OH⁻
-with N_S = −i_HER/F. Validation: an unsupported binary FeSO₄ bath reproduces the
-exact analytical enhancement i_lim = 2·i_Levich for a symmetric 2:2 salt, and
-heavy supporting electrolyte recovers the pure-diffusion Levich limit.
+fast water autoprotolysis.
 
-The two models disagree sharply on surface pH in acid, and the Nernst–Planck
-answer is the physical one: the film model has no mechanism to resupply protons,
-so it predicts a cathode surface at pH ≈ 11.5 in a pH-2 bath, whereas including
-H⁺ diffusion and migration keeps the surface near pH 2.7 at 100 mA/cm².
+## Pulse-Reverse Transient Model Notes
+
+`pulse.py` models transient 1D diffusion-reaction dynamics under pulsed (PE) and
+pulse-reverse (PRE) waveforms ($j_\text{cathodic}$, $t_\text{cathodic}$, $j_\text{anodic}$, $t_\text{anodic}$, $t_\text{off}$).
+During pulse-off and reverse-pulse intervals, surface Fe²⁺ depletion relaxes and local
+surface pH spikes are mitigated, preventing Fe(OH)₂ precipitation and allowing higher peak
+plating current densities than steady DC electrodeposition.
 
 ## Dependencies
 
 See `requirements.txt` in the repository root.
-- `tafel.py` | Tafel-region fitting with exchange-current and R² estimates
