@@ -18,30 +18,30 @@
   },
   "fits": {
     "randles": {
-      "rs_ohm": 8.057887849273403,
-      "rct_ohm": 13.743391497376628,
-      "cdl_F": 5.112458974317288e-05,
+      "rs_ohm": 8.057887849244217,
+      "rct_ohm": 13.743391498117564,
+      "cdl_F": 5.112458974786019e-05,
       "sigma_warburg_ohm_s_neg_half": null,
-      "chi_squared": 1.6070881571983084,
-      "r_squared_magnitude": 0.8425324712186426,
+      "chi_squared": 1.607088157198304,
+      "r_squared_magnitude": 0.842532471237816,
       "n_points": 84,
       "converged": true
     },
     "randles_warburg": {
-      "rs_ohm": 7.996440621831031,
-      "rct_ohm": 12.003039969191695,
-      "cdl_F": 4.969068814024069e-05,
-      "sigma_warburg_ohm_s_neg_half": 2.9961533278072903,
-      "chi_squared": 0.00314359999056854,
-      "r_squared_magnitude": 0.9999181091147445,
+      "rs_ohm": 7.996440621930044,
+      "rct_ohm": 12.003039968564249,
+      "cdl_F": 4.969068814092908e-05,
+      "sigma_warburg_ohm_s_neg_half": 2.9961533282676966,
+      "chi_squared": 0.0031435999905685434,
+      "r_squared_magnitude": 0.9999181091146476,
       "n_points": 84,
       "converged": true
     }
   },
-  "warburg_chi_squared_improvement_factor": 511.2253982758336,
+  "warburg_chi_squared_improvement_factor": 511.2253982758316,
   "derived_properties": {
-    "exchange_current_A_from_rct": 0.0011958906175843428,
-    "exchange_current_density_mA_cm2": 1.195890617584343,
+    "exchange_current_A_from_rct": 0.0011958906176468569,
+    "exchange_current_density_mA_cm2": 1.195890617646857,
     "n_electrons": 2,
     "temperature_K": 333.15,
     "dc_bias_V_vs_Ag_AgCl": -0.7

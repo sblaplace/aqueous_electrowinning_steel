@@ -1,6 +1,6 @@
 {
   "title": "Aqueous Electrowinning \u2014 Master Report",
-  "date": "2026-07-29T19:28:09.530156",
+  "date": "2026-07-29T15:03:39.131766",
   "quick": true,
   "steps": {
     "electrochemistry": {
@@ -401,19 +401,19 @@
       },
       "tafel_fits": {
         "her": {
-          "slope_V_decade": 0.14101811261057026,
-          "intercept_log10_A": -5.718779252453457,
-          "exchange_current_A": 1.9108242646535464e-06,
-          "r_squared": 0.7513733607904101,
+          "slope_V_decade": 0.1410181126105702,
+          "intercept_log10_A": -5.718779252453458,
+          "exchange_current_A": 1.9108242646535426e-06,
+          "r_squared": 0.7513733607904097,
           "n_points": 20,
           "potential_min_V": -0.5453857116461375,
           "potential_max_V": -0.4500868582798425
         },
         "iron": {
-          "slope_V_decade": 0.08894382669736,
+          "slope_V_decade": 0.08894382669736003,
           "intercept_log10_A": -4.192387001399749,
           "exchange_current_A": 6.42115271036085e-05,
-          "r_squared": 0.9921691208962566,
+          "r_squared": 0.9921691208962568,
           "n_points": 10,
           "potential_min_V": -0.7256348909273962,
           "potential_max_V": -0.6743032191418423
@@ -440,30 +440,30 @@
       },
       "fits": {
         "randles": {
-          "rs_ohm": 8.057887849273403,
-          "rct_ohm": 13.743391497376628,
-          "cdl_F": 5.112458974317288e-05,
+          "rs_ohm": 8.057887849244217,
+          "rct_ohm": 13.743391498117564,
+          "cdl_F": 5.112458974786019e-05,
           "sigma_warburg_ohm_s_neg_half": null,
-          "chi_squared": 1.6070881571983084,
-          "r_squared_magnitude": 0.8425324712186426,
+          "chi_squared": 1.607088157198304,
+          "r_squared_magnitude": 0.842532471237816,
           "n_points": 84,
           "converged": true
         },
         "randles_warburg": {
-          "rs_ohm": 7.996440621831031,
-          "rct_ohm": 12.003039969191695,
-          "cdl_F": 4.969068814024069e-05,
-          "sigma_warburg_ohm_s_neg_half": 2.9961533278072903,
-          "chi_squared": 0.00314359999056854,
-          "r_squared_magnitude": 0.9999181091147445,
+          "rs_ohm": 7.996440621930044,
+          "rct_ohm": 12.003039968564249,
+          "cdl_F": 4.969068814092908e-05,
+          "sigma_warburg_ohm_s_neg_half": 2.9961533282676966,
+          "chi_squared": 0.0031435999905685434,
+          "r_squared_magnitude": 0.9999181091146476,
           "n_points": 84,
           "converged": true
         }
       },
-      "warburg_chi_squared_improvement_factor": 511.2253982758336,
+      "warburg_chi_squared_improvement_factor": 511.2253982758316,
       "derived_properties": {
-        "exchange_current_A_from_rct": 0.0011958906175843428,
-        "exchange_current_density_mA_cm2": 1.195890617584343,
+        "exchange_current_A_from_rct": 0.0011958906176468569,
+        "exchange_current_density_mA_cm2": 1.195890617646857,
         "n_electrons": 2,
         "temperature_K": 333.15,
         "dc_bias_V_vs_Ag_AgCl": -0.7
@@ -487,10 +487,10 @@
         "panel_area_cm2": 50.0,
         "total_current_A": 1.0,
         "panel_average_current_density_mA_cm2": 20.0,
-        "near_edge_current_density_mA_cm2": 54.46061818827987,
+        "near_edge_current_density_mA_cm2": 54.460618188279874,
         "far_edge_current_density_mA_cm2": 9.340818133498587,
         "current_density_min_mA_cm2": 9.340818133498587,
-        "current_density_max_mA_cm2": 54.46061818827987,
+        "current_density_max_mA_cm2": 54.460618188279874,
         "near_edge_gap_cm": 1.5,
         "far_edge_gap_cm": 9.0
       },
@@ -526,11 +526,11 @@
     },
     "co_deposition": {
       "hydroxide_suppression": {
-        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_hydroxide_suppression.csv",
+        "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_co_deposition_hydroxide_suppression.csv",
         "figures": [
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_hydroxide_suppression.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_hydroxide_suppression.png"
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_anomalous_kinetics_hydroxide_suppression.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_phase3_combined_hydroxide_suppression.png"
         ],
         "at_100_mA_cm2": {
           "operating_point": {
@@ -572,11 +572,11 @@
         }
       },
       "intermediate_adsorption": {
-        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_intermediate_adsorption.csv",
+        "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_co_deposition_intermediate_adsorption.csv",
         "figures": [
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_intermediate_adsorption.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_intermediate_adsorption.png"
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_anomalous_kinetics_intermediate_adsorption.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_phase3_combined_intermediate_adsorption.png"
         ],
         "at_100_mA_cm2": {
           "operating_point": {
@@ -618,11 +618,11 @@
         }
       },
       "mixed_metal_intermediate": {
-        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_mixed_metal_intermediate.csv",
+        "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_co_deposition_mixed_metal_intermediate.csv",
         "figures": [
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_mixed_metal_intermediate.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_mixed_metal_intermediate.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_mixed_metal_intermediate.png"
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_anomalous_kinetics_mixed_metal_intermediate.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_guglielmi_incorporation_mixed_metal_intermediate.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/co_deposition_phase3_combined_mixed_metal_intermediate.png"
         ],
         "at_100_mA_cm2": {
           "operating_point": {
@@ -868,14 +868,14 @@
         }
       },
       "sweep_figures": [
-        "/home/user/aqueous_electrowinning_steel/docs/figures/mechanical_properties_sweep.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/alloy_vs_mechanical.png"
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/mechanical_properties_sweep.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/alloy_vs_mechanical.png"
       ],
       "note": "All predictions are screening-level; must be verified by Vickers, tensile, EBSD."
     },
     "carburization": {
       "title": "Post-deposition gaseous carburization screening",
-      "date": "2026-07-29T19:29:09.148483",
+      "date": "2026-07-29T15:05:02.261307",
       "params": {
         "temperature_C": 900.0,
         "surface_c_wt": 1.1,
@@ -912,12 +912,12 @@
         "furnace_efficiency": 0.6
       },
       "figures": [
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_profiles.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_case_depth.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_hardness.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_energy.png"
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_profiles.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_case_depth.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_hardness.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_energy.png"
       ],
-      "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carburization.csv",
+      "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_carburization.csv",
       "model_notes": [
         "Fickian diffusion, finite slab with both sides carburized, Fourier superposition for Fo>0.2",
         "D = D0 exp(-Q/RT) with \u03b3-Fe D0=2.3e-5 m2/s Q=148 kJ/mol, \u03b1-Fe D0=6.2e-7 Q=80 kJ/mol (screening means)",
@@ -930,7 +930,7 @@
     },
     "carbon_potential": {
       "title": "Carbon potential screening \u2014 gas carburizing atmosphere",
-      "date": "2026-07-29T19:29:10.113846",
+      "date": "2026-07-29T15:05:03.521382",
       "example_T_C": 930.0,
       "example_summary_930C": {
         "T_C": 930,
@@ -955,11 +955,11 @@
         "note": "Screening carbon potential: Boudouard \u0394G=170700-174.5T J/mol, CH4 cracking 90000-109T J/mol. C_wt from a_C via empirical a(C)= (C/1.1)*exp(0.9(C-1.1)) normalized at 900\u00b0C a=1\u21921.1wt%. Acm linear 0.76% at 727\u00b0C to 2.14% at 1147\u00b0C. Calibrate with O2 probe/milliprob foil."
       },
       "figures": [
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_map.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_dewpoint.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_Acm.png"
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carbon_potential_map.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carbon_potential_dewpoint.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carbon_potential_Acm.png"
       ],
-      "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carbon_potential.csv",
+      "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_carbon_potential.csv",
       "model_notes": [
         "Boudouard: \u0394G\u00b0=170700-174.5T J/mol, K=exp(-\u0394G/RT), aC=K*pCO^2/pCO2",
         "CH4 cracking: \u0394G\u00b0=90000-109T J/mol, aC=K*pCH4/pH2^2",
@@ -972,7 +972,7 @@
     },
     "tempering": {
       "title": "Tempering & retained austenite screening",
-      "date": "2026-07-29T19:29:11.075219",
+      "date": "2026-07-29T15:05:04.588821",
       "example_alloy": {
         "C": 0.8,
         "Mn": 0.3,
@@ -980,12 +980,12 @@
         "f_RA_as_quenched_pct": 40.62932863495781
       },
       "figures": [
-        "/home/user/aqueous_electrowinning_steel/docs/figures/retained_austenite.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_curve.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/case_tempered_hardness.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_energy.png"
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/retained_austenite.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/tempering_curve.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/case_tempered_hardness.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/tempering_energy.png"
       ],
-      "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_tempering.csv",
+      "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_tempering.csv",
       "model_notes": [
         "Ms via Andrews: Ms=539-423C-30.4Mn-17.7Ni-12.1Cr-7.5Mo-7.5Si+10Co (\u00b0C)",
         "RA via Koistinen-Marburger: f_RA=exp(-0.011*(Ms-Tq)), f_M=1-f_RA",
@@ -1307,15 +1307,15 @@
     },
     "pid": {
       "figures": [
-        "/home/user/aqueous_electrowinning_steel/docs/figures/pid_overview.png",
-        "/home/user/aqueous_electrowinning_steel/docs/figures/pid_detailed.png"
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_overview.png",
+        "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_detailed.png"
       ],
       "report": {
         "title": "Pilot P&ID screening \u2014 aqueous electrowinning + carburizing + tempering",
-        "date": "2026-07-29T19:29:15.448704",
+        "date": "2026-07-29T15:05:09.856396",
         "figures": [
-          "/home/user/aqueous_electrowinning_steel/docs/figures/pid_overview.png",
-          "/home/user/aqueous_electrowinning_steel/docs/figures/pid_detailed.png"
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_overview.png",
+          "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_detailed.png"
         ],
         "equipment_list": [
           "TK-101 Leaching tank with agitator M-101, LT-101, TT-101, pHAT-101, AT-101 FeTot",
@@ -1394,8 +1394,8 @@
         "effective_boundary_layer_m": 4.403598431600422e-05
       },
       "note": "PE/PRE surface pH lower (recovery) \u2192 less hydroxide suppression, higher Ni expected (if mechanism is hydroxide-driven)",
-      "figure": "/home/user/aqueous_electrowinning_steel/docs/figures/pulse_coupled_co_deposition.png"
+      "figure": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pulse_coupled_co_deposition.png"
     }
   },
-  "dashboard_figure": "/home/user/aqueous_electrowinning_steel/docs/figures/run_all_dashboard.png"
+  "dashboard_figure": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/run_all_dashboard.png"
 }
