@@ -29,6 +29,31 @@ The validator does not alter raw files or infer scientific validity. Its
 `ready_for_analysis` result confirms only that an explicitly complete record has
 all required links and metadata.
 
+## Phase I kinetic calibration
+
+After an LSV/CV run has passed campaign QA, fit it through the manifest rather
+than by pointing a model at an untracked local file:
+
+```bash
+python -m models.run_calibration experiments/data/campaign_manifest.csv P1-YYYYMMDD-001 \
+  --pH 3 --temperature-C 60 --fe-conc-M 1.0 --reference-to-she-V 0.210 \
+  --eis experiments/data/processed/P1-YYYYMMDD-001_eis.csv \
+  --output experiments/data/calibrations/P1-YYYYMMDD-001_parameters.json
+```
+
+`reference_to_she_V` is added to the recorded potential and must be the
+reference conversion appropriate to the electrolyte and temperature; document
+its source in the run metadata. The fit reports a bounded Fe+HER total-current
+screening model and approximate parameter uncertainty. **An LSV total current
+cannot by itself distinguish Fe reduction from HER.** Treat the branch-specific
+values as provisional until they are constrained by independent Faradaic
+efficiency, hydrogen/gas, RDE, or deposit-composition data. The optional EIS
+result is a near-equilibrium consistency check only: under cathodic bias its
+Rct is the combined faradaic conductance, not a Fe-only exchange current.
+
+Keep the generated parameter JSON versioned with its campaign run IDs and do
+not overwrite an earlier calibration after new data are acquired.
+
 ## Phase I voltammetry
 
 Use `voltammetry_template.csv` as the canonical long-form schema for CV/LSV
@@ -180,6 +205,31 @@ Verify deposit identity and dryness (e.g., retain/inspect rinse residues and
 pair with SEM/EDS when available).  Do not cap a result above 100%; it is a QA
 signal that can indicate retained electrolyte, oxidation, codeposition, a
 charge-sign problem, or weighing/drying error.
+
+## Deposit characterization: SEM/EDS, combustion, and XRD
+
+Use `characterization_template.csv` as a long-form, measurement-level record
+for characterization linked from the campaign manifest. One row is one analyte
+or phase result; retain the original spectrum, image export, combustion export,
+or diffraction scan at the `analysis_file` path. The file supports:
+
+- `SEM_EDS` composition entries in `wt%`/`mass%` (record area/spot basis and
+  measurement locations in notes);
+- `COMBUSTION` bulk carbon/sulfur/etc. entries in `wt%`/`mass%`, including
+  blank/certified-reference details; and
+- `XRD` phase-identification or refinement metrics, with their stated units and
+  refinement basis.
+
+Do not merge EDS, combustion, and XRD results into an artificial composition
+balance: they measure different volumes and quantities. `models.characterization`
+validates the schema and reports EDS totals outside 95–105 wt% as visible QA
+flags rather than renormalizing data:
+
+```python
+from models.characterization import load_characterization, summarize_characterization
+records = load_characterization("experiments/data/characterization_template.csv")
+print(summarize_characterization(records))
+```
 
 ## Phase IV durability and closed-loop series
 

@@ -75,6 +75,8 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
 | `models/campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
+| `models/calibration.py` | QA-gated Phase-I LSV kinetic calibration plus optional EIS consistency fitting |
+| `models/characterization.py` | Validated SEM/EDS, combustion, and XRD characterization records |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
