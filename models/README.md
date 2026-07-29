@@ -103,6 +103,30 @@ CSTR does not replace activity-coefficient/speciation, solids, or residence-time
 distribution models. Use `phase4_durability_template.csv` and
 `experiments/notebooks/phase4_closed_loop.py` to summarize real measurements.
 
+## Experimental campaign traceability
+
+`campaign.py` validates a CSV manifest that links every experimental `run_id`
+to immutable raw export(s), mapped analysis data, a metadata JSON sidecar, and
+characterization records. This protects the distinction between synthetic
+screening output and real measurements, while providing a machine-readable QA
+check before data are used to calibrate model parameters.
+
+```bash
+python -m models.campaign experiments/data/campaign_manifest.csv \
+  --output experiments/data/campaign_qa_report.json
+```
+
+See `experiments/data/campaign_manifest_template.csv`,
+`experiments/data/metadata_template.json`, and `experiments/data/README.md` for
+the required fields and storage convention.
+
 ## Dependencies
 
-See `requirements.txt` in the repository root.
+See `requirements.txt` in the repository root. Create an isolated environment
+when the system Python is externally managed:
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pytest -q
+```
