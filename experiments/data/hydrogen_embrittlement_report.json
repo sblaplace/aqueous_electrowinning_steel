@@ -1,0 +1,110 @@
+{
+  "title": "Hydrogen embrittlement screening model",
+  "date": "2026-07-29T15:09:51.511391",
+  "model": "Troiano-type HE index + Fickian H diffusion with trap retardation + Faraday H uptake + bake-out optimizer",
+  "baseline": {
+    "current_density_mA_cm2": 100.0,
+    "deposition_time_hr": 2.0,
+    "C_H_diffusible_ppm": 90.2498,
+    "D_lattice_m2_s": 1.1413994703903663e-08,
+    "D_eff_m2_s": 9.408715784391066e-09,
+    "phase": "alpha",
+    "trap_sum_NK_over_NL": 0.21312992819267934,
+    "I_HE": 385.102,
+    "risk_level": "critical",
+    "bakeout_time_hr": 0.01,
+    "bakeout_residual_ppm": 0.1,
+    "grain_size_um": 2.0,
+    "sigma_y_MPa": 450.0,
+    "ni_wt_percent": 0.0,
+    "carbon_wt_percent": 0.5,
+    "flags": [
+      "critical_HE_risk",
+      "H_above_critical"
+    ]
+  },
+  "integration_with_mechanical": {
+    "mechanical_summary": {
+      "grain_size_um": 2.887,
+      "porosity": 0.0109,
+      "porosity_factor": 0.981,
+      "hall_petch_yield_MPa": 394.2,
+      "solid_solution_MPa": 201.4,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 584.6,
+      "uts_MPa": 760.0,
+      "elongation_percent": 12.0,
+      "vickers_hv_kgf_mm2": 190.8,
+      "vickers_hv_MPa": 1870.7,
+      "grade_estimate": "Fe-93.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pe",
+      "composition": {
+        "ni_wt_pct": 93.0,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "he_result": {
+      "current_density_mA_cm2": 100.0,
+      "deposition_time_hr": 2.0,
+      "C_H_diffusible_ppm": 90.2498,
+      "D_lattice_m2_s": 1.1413994703903663e-08,
+      "D_eff_m2_s": 9.416163104582422e-09,
+      "phase": "alpha",
+      "trap_sum_NK_over_NL": 0.21217045383899363,
+      "I_HE": 500.29,
+      "risk_level": "critical",
+      "bakeout_time_hr": 0.01,
+      "bakeout_residual_ppm": 0.1,
+      "grain_size_um": 2.887,
+      "sigma_y_MPa": 584.6,
+      "ni_wt_percent": 93.0,
+      "carbon_wt_percent": 0.02,
+      "flags": [
+        "critical_HE_risk",
+        "H_above_critical"
+      ]
+    },
+    "spatial_risk": null
+  },
+  "parameters": {
+    "D0_alpha_m2_s": 7.3e-08,
+    "Q_alpha_kJ_mol": 4.6,
+    "D0_gamma_m2_s": 5.7e-07,
+    "Q_gamma_kJ_mol": 40.0,
+    "trap_binding_dislocation_kJ_mol": 26.0,
+    "trap_binding_gb_kJ_mol": 20.0,
+    "trap_binding_carbide_kJ_mol": 11.0,
+    "N_lattice_m3": 8.46e+28,
+    "critical_H_ppm": 0.1,
+    "sigma_critical_MPa": 800
+  },
+  "figures": [
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_3ea2270e/docs/figures/he_h_uptake.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_3ea2270e/docs/figures/he_diffusivity.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_3ea2270e/docs/figures/he_index_sweep.png",
+    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_3ea2270e/docs/figures/he_bakeout.png"
+  ],
+  "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_3ea2270e/experiments/data/synthetic_h_uptake.csv",
+  "model_notes": [
+    "H diffusion: D = D0 exp(-Q/RT), \u03b1-Fe D0=7.3e-8 m\u00b2/s Q=4.6 kJ/mol, \u03b3-Fe D0=5.7e-7 Q=40 kJ/mol",
+    "Trap model: D_eff = D_lattice / (1 + \u03a3 N_t K_t / N_L), K_t = exp(E_trap/RT)",
+    "Trap types: dislocations (26 kJ/mol), grain boundaries (20 kJ/mol), carbides (11 kJ/mol)",
+    "H uptake: Faraday law with HER efficiency + pH and temperature corrections",
+    "HE index: I_HE = (\u03c3/\u03c3_ref)^\u03b3\u03c3 \u00d7 (C_H/C_H_ref)^\u03b3H \u00d7 (T_ref/T)^\u03b3T (Troiano-type)",
+    "Bake-out: Fourier slab desorption with D_eff, leading-term solver + verification",
+    "Integration: accepts MechanicalPropertiesResult + CarburizationResult for spatial HE risk",
+    "All coefficients are screening assumptions; calibrate with thermal desorption (TDS) and slow strain rate tests"
+  ],
+  "calibration_note": "All coefficients are screening literature values. Requires calibration with: (1) thermal desorption spectroscopy for trap energies, (2) permeation tests for D_eff, (3) slow strain rate testing (SSRT) for I_HE validation, (4) ASTM F519 for bake-out verification.",
+  "limits": [
+    "No H-induced crack propagation model (threshold stress intensity K_IH)",
+    "No HIC / SSC / SOHIC failure mode distinction",
+    "Trap occupancy not dynamically modeled (Oriani equilibrium assumed)",
+    "No electrochemical H entry potential (Volmer-Heyrovsky kinetics simplified)",
+    "Spatial resolution limited to surface / case / core zones",
+    "Bake-out assumes uniform initial H distribution (not profile-aware)"
+  ]
+}
