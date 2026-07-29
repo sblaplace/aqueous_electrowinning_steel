@@ -228,6 +228,19 @@ the repository does not synthesize or label simulated images as microscopy.
 - Methods: Composite plating, post-carburization trials
 - Output: Vickers hardness, tensile properties, XRD phase analysis
 
+**Executable Phase III modeling (`models/co_deposition.py`)** — A new integrated model is provided that combines:
+
+* **Anomalous Fe–Ni kinetics** (`AnomalousFeNiKinetics`) — Three selectable mechanisms:
+  - *Hydroxide suppression* (Dahms & Croll 1975; Li et al. 2022): local pH rise at the cathode forms adsorbed Fe(OH)₂ intermediates that suppress Ni discharge.
+  - *Intermediate adsorption* (Matlosz 1993): preferential surface coverage of Fe(I) intermediates blocks Ni reduction independently of pH.
+  - *Mixed-metal intermediate* (Zhuang et al. 2022): FeNi(III)ads species catalyze Fe discharge while suppressing pure Ni reduction.
+* **Guglielmi carbon incorporation** (`GuglielmiCarbonIncorporation`) — Two-step successive adsorption (Guglielmi 1972): loose reversible adsorption described by a Langmuir isotherm (`σ`) followed by irreversible strong adsorption (`θ ≪ σ`) driven by the cathodic current. Incorporation rate depends on current density, particle size, zeta potential, bath concentration, temperature, and agitation.
+* **Integrated screening** (`PhaseIIICoDeposition`) — Combines both sub-models to predict alloy composition, carbon content (wt%), adjusted current efficiency (accounting for particle surface blocking), and a diagnostic anomalous-regime flag over a current-density sweep.
+
+The module includes a synthetic data driver (`models/run_co_deposition.py`), an executable analysis script (`experiments/notebooks/phase3_co_deposition.py`), a canonical CSV template (`experiments/data/co_deposition_template.csv`), and synthetic figure generation. All predictions are explicitly labeled as screening-level and must be verified by SEM-EDS, combustion analysis, and gravimetric balance.
+
+A dedicated reference file (`references/guglielmi_1972.txt`) documents the foundational two-step model.
+
 ### Phase IV: Anode Durability & Closed-Loop Integration
 - Variables: DSA lifetime, ore leaching integration, impurity build-up
 - Methods: Accelerated life testing, CSTR closed-loop trials

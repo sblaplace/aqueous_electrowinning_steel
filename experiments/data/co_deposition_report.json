@@ -1,0 +1,74 @@
+{
+  "project": "Aqueous Electrowinning — Phase III Co-Deposition",
+  "date": "2026-07-29",
+  "model_version": "1.0",
+  "scope": "Synthetic screening of anomalous Fe–Ni kinetics (three mechanistic variants) and Guglielmi carbon-particle incorporation. Not wet-lab data.",
+  "references": [
+    "Guglielmi, N. (1972). J. Electrochem. Soc., 119(8), 1009.",
+    "Matlosz, M. (1993). J. Electrochem. Soc., 140(8), 2275.",
+    "Dahms, H. & Croll, I.M. (1975). J. Electrochem. Soc., 122(8), 1117.",
+    "Zhuang, J. et al. (2022). Mixed-metal intermediate mechanism."
+  ],
+  "synthetic_examples": {
+    "csv_files": [
+      "synthetic_co_deposition_hydroxide_suppression.csv",
+      "synthetic_co_deposition_intermediate_adsorption.csv",
+      "synthetic_co_deposition_mixed_metal_intermediate.csv"
+    ],
+    "figure_files": [
+      "co_deposition_anomalous_kinetics_hydroxide_suppression.png",
+      "co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
+      "co_deposition_phase3_combined_hydroxide_suppression.png",
+      "co_deposition_anomalous_kinetics_intermediate_adsorption.png",
+      "co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
+      "co_deposition_phase3_combined_intermediate_adsorption.png",
+      "co_deposition_anomalous_kinetics_mixed_metal_intermediate.png",
+      "co_deposition_guglielmi_incorporation_mixed_metal_intermediate.png",
+      "co_deposition_phase3_combined_mixed_metal_intermediate.png"
+    ]
+  },
+  "key_predictions_at_100_mA_cm2": {
+    "operating_point": {
+      "j_mA_cm2": 100.0,
+      "pH": 3.5,
+      "temperature_C": 60.0,
+      "bath_fe_M": 0.5,
+      "bath_ni_M": 0.5,
+      "carbon_loading_g_L": 2.0
+    },
+    "alloy_kinetics": {
+      "E_op_V_vs_SHE": -0.897,
+      "fe_wt_percent": 7.41,
+      "ni_wt_percent": 92.59,
+      "bulk_fe_ref_wt_percent": 48.76,
+      "current_efficiency_percent": 94.4,
+      "partial_currents_A_m2": {
+        "i_fe": 73.18,
+        "i_ni": 870.37,
+        "i_her": 56.45
+      },
+      "is_anomalous": false,
+      "mechanism": "hydroxide_suppression"
+    },
+    "carbon_incorporation": {
+      "predicted_carbon_wt_percent": 0.02,
+      "loose_adsorption_sigma": 0.0187,
+      "surface_blocking_factor": 0.994,
+      "adjusted_ce_percent": 93.8,
+      "quality_flag": "NORMAL"
+    },
+    "integrated_metrics": {
+      "adjusted_overall_current_efficiency_percent": 93.8,
+      "deposition_rate_um_hr": 110.7,
+      "alloy_density_kg_m3_approx": 8831.0,
+      "anomalous_description": "NORMAL: Alloy follows bath-composition trend."
+    },
+    "model_notes": "Phase III co-deposition screening model. Alloy predictions based on mechanism 'hydroxide_suppression'; carbon predictions based on Guglielmi two-step model. All predictions require wet-lab verification."
+  },
+  "method_notes": [
+    "Alloy predictions: Butler–Volmer + inhibition model; mechanism selectable.",
+    "Carbon predictions: Guglielmi two-step (Langmuir loose + electrochemical strong).",
+    "Actual incorporation requires combustion analysis / EDS verification.",
+    "Synthetic data should be replaced with validated instrument exports."
+  ]
+}
