@@ -2,13 +2,29 @@
 
 Electrochemical and process simulation code for aqueous electrowinning of iron/steel.
 
-## Planned Contents
+## Implemented Modules
 
-- **Pourbaix diagram generation** — Fe-H₂O speciation maps as a function of pH and potential
-- **Butler-Volmer kinetics** — Fe²⁺/Fe and HER current density modeling
-- **Nernst-Planck transport** — Mass transport and concentration polarization
-- **Pulse-reverse electrodeposition** — Transient deposition modeling
-- **Techno-economic model** — Energy consumption, CAPEX/OPEX, LCOE sensitivity analysis
+| Module | Contents |
+|--------|----------|
+| `electrochemistry.py` | Constants, Faraday's law, cell-voltage decomposition, specific energy |
+| `pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER/OER water window, HER thermodynamic margin |
+| `kinetics.py` | Butler–Volmer / Tafel partial currents for Fe deposition vs. HER, Koutecký–Levich mass-transport limit, galvanostatic current efficiency |
+| `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
+| `scenarios.py` | Four literature-anchored operating scenarios |
+
+## Drivers
+
+```bash
+python -m models.run_electrochemistry   # Pourbaix + kinetics figures & report
+python -m models.run_technoeconomic     # Base-case techno-economics
+python -m models.run_scenarios          # Scenario comparison
+```
+
+## Still Planned
+
+- **Nernst-Planck transport** — full 1-D concentration profiles and migration
+- **Pulse-reverse electrodeposition** — transient deposition modeling
+- **Local pH / hydroxide precipitation model** at the cathode boundary layer
 
 ## Dependencies
 

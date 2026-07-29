@@ -1,6 +1,6 @@
 # Aqueous Electrowinning for Sustainable Steel Production: A Comprehensive Technical Exposition
 
-**Version 1.1**  
+**Version 1.2**  
 **Date:** July 2026  
 **Status:** Research Proposal & Technical Roadmap
 
@@ -114,7 +114,87 @@ These advances collectively demonstrate that aqueous electrowinning is transitio
 
 ---
 
-## 5. Proposed Experimental Matrix & Research Protocol
+## 5. Quantitative Modeling Results
+
+The repository now implements the thermodynamic and kinetic models described above
+(`models/pourbaix.py`, `models/kinetics.py`). All results below are reproducible with
+`python -m models.run_electrochemistry`.
+
+### 5.1 Fe–H₂O Thermodynamics
+
+Computed boundaries at a\_Fe = 1 M, 60 °C:
+
+| Boundary | pH |
+|----------|-----|
+| Fe³⁺ → Fe(OH)₃ hydrolysis | 1.15 |
+| Fe²⁺ → Fe(OH)₂ hydrolysis | 5.85 |
+| Fe(OH)₂ → HFeO₂⁻ (ferrite) redissolution | 18.3 |
+
+The narrow Fe²⁺ stability window (pH < 5.9 at 1 M) is the quantitative justification for
+either (a) operating acidic with strong HER suppression, or (b) using chelants/concentrated
+hydroxide to keep iron soluble outside this window.
+
+**HER thermodynamic margin** — how far negative of the reversible hydrogen potential the
+cathode must be polarised before Fe becomes stable:
+
+| pH | E_dep (V vs. SHE) | E_HER (V vs. SHE) | HER margin |
+|----|------------------|-------------------|------------|
+| 0  | −0.440 | 0.000 | 440 mV |
+| 2  | −0.440 | −0.132 | 308 mV |
+| 7  | −0.510 | −0.463 | 47 mV |
+| 14 | −0.972 | −0.925 | 47 mV |
+
+Above the Fe(OH)₂ hydrolysis pH both half-reactions share the same −59 mV/pH slope, so the
+margin locks at ~47 mV. **Alkaline operation is thermodynamically the most favourable
+regime for beating HER**, at the cost of managing solid hydroxide phases — consistent with
+the strong empirical performance of the Yuan and Kempler alkaline routes (§4.1).
+
+See `docs/figures/pourbaix_fe_h2o.png`.
+
+### 5.2 HER Competition Kinetics
+
+Butler–Volmer partial currents with a Koutecký–Levich mass-transport limit on the iron
+branch reproduce the qualitative behaviour reported in the literature. At 100 mA/cm²:
+
+| Case | CE | Deposition rate | Specific energy @ 2.6 V |
+|------|----|-----------------|------------------------|
+| Acidic (pH 2), active cathode, i₀,H = 10⁻² A/m² | 1.8% | 2.4 µm/hr | 138,300 kWh/t |
+| Acidic (pH 2) + HER inhibitor, i₀,H = 10⁻⁵ A/m² | 95.8% | 126.7 µm/hr | 2,606 kWh/t |
+| pH 5, complexed, 150 mA/cm² | 99.8% | 198.0 µm/hr | 2,501 kWh/t |
+| pH 3, 0.1 M Fe²⁺, stagnant (δ = 200 µm) | 6.9% | 9.2 µm/hr | 35,937 kWh/t |
+| pH 3, 0.1 M Fe²⁺, agitated (δ = 20 µm) | 68.6% | 90.7 µm/hr | 3,639 kWh/t |
+
+Three engineering conclusions follow directly:
+
+1. **HER exchange current density is the dominant design variable.** Reducing i₀,H by three
+   orders of magnitude (high-overpotential substrate, organic additives, or surface
+   blocking) moves CE from ~2% to ~96% at fixed current density — a >50× swing in energy
+   intensity. This is the modeling justification for the additive screening in Phase I.
+2. **Mass transport sets the practical current-density ceiling.** Once the applied current
+   approaches i_lim for Fe²⁺, the iron branch saturates and all incremental current goes to
+   hydrogen. At 0.1 M Fe²⁺ and a stagnant 200 µm boundary layer, i_lim ≈ 14 mA/cm²; a 10×
+   reduction in boundary-layer thickness through agitation restores CE from 7% to 69%.
+   High bath concentration and vigorous hydrodynamics are therefore not optional.
+3. **Even at ~96–99% CE, specific energy sits near 2,500–2,600 kWh/t at 2.6 V** — above the
+   1,500 kWh/t target quoted in §3.5. Meeting that target requires cell-voltage reduction
+   (thinner gaps, better membranes, lower anode overpotential), not further CE gains.
+
+See `docs/figures/polarization_curves.png` and `docs/figures/current_efficiency_map.png`.
+
+### 5.3 Model Limitations
+
+- Tafel parameters are representative literature values, not fitted to a specific bath;
+  Phase I voltammetry should replace them with measured i₀ and Tafel slopes.
+- The Pourbaix treatment uses 298 K standard potentials with a Nernst temperature term
+  only; it does not include the full ΔC_p correction of Beverskog & Puigdomenech.
+- Local cathode-surface pH excursion caused by HER (and consequent hydroxide
+  precipitation) is not yet modeled — this is the highest-value next addition.
+- Complexed-iron speciation (citrate, glycine) is approximated only through effective
+  activity and equilibrium-potential shifts.
+
+---
+
+## 6. Proposed Experimental Matrix & Research Protocol
 
 A structured four-phase program is proposed to systematically address the challenges:
 
@@ -140,7 +220,7 @@ A structured four-phase program is proposed to systematically address the challe
 
 ---
 
-## 6. Comparison with Alternative Decarbonization Routes
+## 7. Comparison with Alternative Decarbonization Routes
 
 | Route                  | Operating Temp. | Energy Intensity | Technology Readiness | Key Challenges                     | Aqueous Electrowinning Advantage          |
 |------------------------|-----------------|------------------|----------------------|------------------------------------|-------------------------------------------|
@@ -151,21 +231,21 @@ A structured four-phase program is proposed to systematically address the challe
 
 ---
 
-## 7. Conclusion & Research Roadmap
+## 8. Conclusion & Research Roadmap
 
 Aqueous electrowinning represents a promising low-temperature pathway for sustainable primary iron and steel production. Recent breakthroughs in both alkaline and acidic electrolytes, combined with favorable techno-economic positioning, justify accelerated research investment.
 
 **Immediate Priorities (2026–2027):**
 1. Reproduce and extend high-efficiency acidic and alkaline protocols
 2. Demonstrate controlled carbon incorporation and mechanical properties
-3. Develop detailed process modeling and techno-economic models
+3. Extend the process models with local-pH/precipitation and transport physics, and calibrate Tafel parameters against Phase I data
 4. Identify industrial partners for pilot-scale validation
 
 By systematically executing the proposed experimental roadmap, the research community can advance aqueous electrowinning from conceptual promise toward industrial reality.
 
 ---
 
-## 8. References
+## 9. References
 
 1. Yuan, B., & Haarberg, G. M. (2009). Electrowinning of iron in aqueous alkaline solution using a rotating cathode. *Metallurgical Research & Technology*.
 2. Humbert, M. S., et al. (2024). Economics of electrowinning iron from ore for green steel production. *Journal of Sustainable Metallurgy*, 10, 1679–1701.

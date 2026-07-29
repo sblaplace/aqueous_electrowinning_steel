@@ -27,7 +27,7 @@ This repository hosts the technical exposition, literature synthesis, and propos
 
 ## Quickstart
 
-This is currently a **research proposal / conceptual repository** (no experimental code yet).
+The repository contains a working Python modeling suite (thermodynamics, kinetics, techno-economics) alongside the technical report. No wet-lab data yet.
 
 ```bash
 # Clone the repository
@@ -37,15 +37,48 @@ cd aq-steel-electrowinning
 # Install Python dependencies
 pip install -r requirements.txt
 
+# Run the models (each writes figures to docs/figures/ and a JSON report to experiments/data/)
+python -m models.run_electrochemistry   # Pourbaix diagram + HER-competition kinetics
+python -m models.run_technoeconomic     # Base-case CAPEX/OPEX/LCOFe
+python -m models.run_scenarios          # Four-scenario comparison
+
+# Run the test suite
+pytest tests -q
+
 # View the detailed technical report
 open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 ```
 
+### Modeling Suite
+
+| Module | Purpose |
+|--------|---------|
+| `models/electrochemistry.py` | Faraday's law, cell-voltage decomposition, specific energy |
+| `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
+| `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
+| `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
+| `models/scenarios.py` | Literature-anchored operating scenarios |
+
+### Selected Model Results
+
+Fe–H₂O thermodynamics (a\_Fe = 1 M, 60 °C) show iron deposition lies **below the HER
+line at every pH** — the HER penalty narrows from ~440 mV in strong acid to ~47 mV in
+alkali, which is precisely why alkaline routes are attractive despite Fe(OH)₂ formation.
+
+Galvanostatic kinetics at 100 mA/cm² illustrate that HER suppression is the dominant lever:
+
+| Case | Current efficiency | Deposition rate | Specific energy @2.6 V |
+|------|-------------------|-----------------|------------------------|
+| Acidic, active cathode (i₀,H = 10⁻² A/m²) | 1.8% | 2 µm/hr | ~138,000 kWh/t |
+| Acidic + HER inhibitor (i₀,H = 10⁻⁵ A/m²) | 95.8% | 127 µm/hr | ~2,600 kWh/t |
+| Mildly acidic, complexed, 150 mA/cm² | 99.8% | 198 µm/hr | ~2,500 kWh/t |
+| Transport-limited, stagnant (0.1 M Fe²⁺) | 6.9% | 9 µm/hr | ~35,900 kWh/t |
+| Same bath, agitated (δ 200→20 µm) | 68.6% | 91 µm/hr | ~3,600 kWh/t |
+
 ### Next Steps (Planned)
-- Electrolyte formulation & voltammetry scripts
-- COMSOL / Python electrochemical modeling
-- Experimental data logging templates
-- Techno-economic model (Python / Excel)
+- Nernst-Planck transport & local-pH boundary-layer model
+- Pulse-reverse electrodeposition (transient) modeling
+- Experimental data logging templates and voltammetry parsers
 
 ---
 
@@ -63,6 +96,12 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 │   ├── data/                          # Raw and processed experimental data
 │   └── notebooks/                     # Jupyter notebooks for analysis
 ├── models/                            # Electrochemical & process simulations
+│   ├── electrochemistry.py            # Faraday's law, cell voltage, specific energy
+│   ├── pourbaix.py                    # Fe-H₂O potential-pH equilibria
+│   ├── kinetics.py                    # Butler-Volmer Fe vs. HER competition
+│   ├── technoeconomic.py              # CAPEX / OPEX / LCOFe
+│   └── scenarios.py                   # Operating scenario definitions
+├── tests/                             # Pytest suite for the modeling code
 └── references/                        # Key papers & bibliography
 ```
 

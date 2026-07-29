@@ -9,6 +9,17 @@ from .electrochemistry import (
     production_rate_kg_per_hr,
     current_density_to_production,
 )
+from .pourbaix import (
+    FePourbaix,
+    her_line,
+    oer_line,
+    nernst_pH_line,
+)
+from .kinetics import (
+    DepositionKinetics,
+    TafelBranch,
+    limiting_current_density,
+)
 from .technoeconomic import (
     ElectrolyzerParams,
     CAPEXModel,
@@ -25,6 +36,13 @@ __all__ = [
     "specific_energy_kWh_per_t",
     "production_rate_kg_per_hr",
     "current_density_to_production",
+    "FePourbaix",
+    "her_line",
+    "oer_line",
+    "nernst_pH_line",
+    "DepositionKinetics",
+    "TafelBranch",
+    "limiting_current_density",
     "ElectrolyzerParams",
     "CAPEXModel",
     "OPEXModel",
