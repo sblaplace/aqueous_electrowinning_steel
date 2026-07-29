@@ -7,8 +7,10 @@ cell voltage decomposition for iron electrowinning.
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from .anode import AnodeKinetics
 
 # ─── Physical Constants ────────────────────────────────────────────────
 FARADAY = 96485.3321  # C/mol (Faraday constant)
@@ -33,40 +35,75 @@ class CellVoltageModel:
 
     V_cell = |E_anode - E_cathode| + η_anode + η_cathode + iR_drop
 
+    When an ``anode`` model is supplied, the anode overpotential and
+    equilibrium potential are computed from first principles
+    (:class:`.anode.AnodeKinetics`) rather than using the fixed
+    ``E_anode_eq`` / ``eta_anode`` defaults.
+
     Parameters
     ----------
     E_cathode_eq : float
         Equilibrium cathode potential (V vs. SHE). Default is E°(Fe²⁺/Fe).
     E_anode_eq : float
         Equilibrium anode potential (V vs. SHE). Default is E°(OER).
+        Ignored when ``anode`` is supplied (overridden by AnodeKinetics).
     eta_cathode : float
         Cathode overpotential at operating current density (V). Positive value.
     eta_anode : float
         Anode overpotential at operating current density (V). Positive value.
+        Ignored when ``anode`` is supplied.
     ir_drop : float
         Ohmic drop across electrolyte, membrane, contacts (V).
+    anode : AnodeKinetics, optional
+        First-principles anode model.  When supplied, ``eta_anode`` and
+        ``E_anode_eq`` are derived from this object at the operating current
+        density specified by ``j_operating_mA_cm2``.
+    j_operating_mA_cm2 : float
+        Current density used to evaluate the anode model (mA/cm²).
+        Default 100.0 mA/cm².
     """
     E_cathode_eq: float = E0_FE
     E_anode_eq: float = E0_OER
     eta_cathode: float = 0.30
     eta_anode: float = 0.40
     ir_drop: float = 0.20
+    anode: Optional["AnodeKinetics"] = field(default=None, repr=False)
+    j_operating_mA_cm2: float = 100.0
+
+    @property
+    def _effective_anode_eq(self) -> float:
+        """Anode equilibrium potential (V vs. SHE)."""
+        if self.anode is not None:
+            return self.anode.oer_equilibrium()
+        return self.E_anode_eq
+
+    @property
+    def _effective_eta_anode(self) -> float:
+        """Anode overpotential (V) from model or fixed value."""
+        if self.anode is not None:
+            return self.anode.eta_anode(self.j_operating_mA_cm2)
+        return self.eta_anode
 
     @property
     def E_thermodynamic(self) -> float:
         """Minimum thermodynamic cell voltage (V)."""
-        return abs(self.E_anode_eq - self.E_cathode_eq)
+        return abs(self._effective_anode_eq - self.E_cathode_eq)
 
     @property
     def V_cell(self) -> float:
         """Total cell voltage (V) including all overpotentials."""
-        return self.E_thermodynamic + self.eta_cathode + self.eta_anode + self.ir_drop
+        return (
+            self.E_thermodynamic
+            + self.eta_cathode
+            + self._effective_eta_anode
+            + self.ir_drop
+        )
 
     def summary(self) -> dict:
         return {
             "E_thermodynamic (V)": round(self.E_thermodynamic, 3),
             "η_cathode (V)": round(self.eta_cathode, 3),
-            "η_anode (V)": round(self.eta_anode, 3),
+            "η_anode (V)": round(self._effective_eta_anode, 3),
             "iR drop (V)": round(self.ir_drop, 3),
             "V_cell (V)": round(self.V_cell, 3),
         }

@@ -69,6 +69,22 @@ from .technoeconomic import (
     compare_routes,
     BENCHMARK_COSTS,
 )
+from .anode import (
+    AnodeKinetics,
+    AnodeMaterial,
+    DSA_IRO2_TA2O5,
+    NICO_SPINEL,
+    NIFE_LDH,
+    PT_TI,
+    bubble_fraction,
+    bubble_resistance_multiplier,
+    concentration_overpotential_oer,
+    full_cell_voltage,
+    anode_eta_from_lookup,
+    E0_OER_ACIDIC,
+    E0_OER_ALKALINE,
+    E0_CER,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -120,4 +136,19 @@ __all__ = [
     "sensitivity_analysis",
     "compare_routes",
     "BENCHMARK_COSTS",
+    # ── Anode / OER model ────────────────────────────────────────────
+    "AnodeKinetics",
+    "AnodeMaterial",
+    "DSA_IRO2_TA2O5",
+    "NICO_SPINEL",
+    "NIFE_LDH",
+    "PT_TI",
+    "bubble_fraction",
+    "bubble_resistance_multiplier",
+    "concentration_overpotential_oer",
+    "full_cell_voltage",
+    "anode_eta_from_lookup",
+    "E0_OER_ACIDIC",
+    "E0_OER_ALKALINE",
+    "E0_CER",
 ]

@@ -83,8 +83,46 @@ HER is the dominant parasitic reaction across nearly all aqueous pH ranges becau
 - Co-deposition of Fe-Ni or Fe-Cr alloys
 - Post-deposition gaseous carburization of pure iron deposits
 
-### 3.4 Corrosion-Resistant Anodes
+### 3.4 Anode Model — DSA / OER First-Principles Kinetics
+
 Dimensionally stable anodes (DSAs) based on IrO₂–Ta₂O₅ on titanium, or nickel-cobalt spinel oxides for alkaline systems, are recommended for long-term OER stability.
+
+**Full model** (`models/anode.py`): The anode half-cell is modelled from first principles, decomposing the total anodic overpotential into three components:
+
+$$\eta_\text{anode} = \eta_\text{activation} + \eta_\text{concentration} + \eta_\text{bubble}$$
+
+* **Activation** — OER Tafel kinetics on the anode surface.  The OER equilibrium potential is Nernst-corrected for operating pH and temperature:
+  - Acidic (2H₂O → O₂ + 4H⁺ + 4e⁻): $E_\text{eq} = 1.229 - \frac{RT}{4F}\ln 10 \cdot \text{pH}$ V vs. SHE
+  - Alkaline (4OH⁻ → O₂ + 2H₂O + 4e⁻): $E_\text{eq} = 0.401 - \frac{RT}{4F}\ln 10 \cdot (\text{pH} - 14)$ V vs. SHE
+
+  Tafel: $i_\text{OER} = i_0 \cdot 10^{\eta_\text{act}/b}$ with Arrhenius temperature correction on $i_0$.
+
+* **Concentration** — O₂ diffusion away from the anode surface creates a gas-diffusion barrier, lowering local $a_\text{O₂}$ and requiring a more-positive potential:
+  $\eta_\text{conc} = \frac{RT}{4F}\ln(a_\text{O₂,bulk}/a_\text{O₂,surf}) \approx \frac{RT}{4F}\ln\frac{1}{1-j/j_\text{lim}}$
+
+* **Bubble resistance** — O₂ gas bubbles void the electrolyte, increasing local resistance.  Void fraction $\theta = \theta_\text{max}\tanh(j/j_\text{char})$ with a tanh saturation, and $R_\text{bubble} = R_\text{electrolyte}\cdot\theta/(1-\theta)$.
+
+* **Chlorine Evolution (CER)** — In AWARE-type concentrated chloride baths (≥10 M Cl⁻), the competing 2Cl⁻ → Cl₂ + 2e⁻ reaction competes with OER.  The mixed anode potential is found by solving $i_\text{OER}(E) + i_\text{CER}(E) = j$ for the applied current density $j$.  CER is modelled with its own Nernst-corrected equilibrium and Tafel kinetics.
+
+**Catalogue of anode materials** (parameters in `models/anode.py`):
+
+| Material | $i_0$ (A/m²) | Tafel slope (V/dec) | $E_\text{act}$ (kJ/mol) | Notes |
+|---|---|---|---|---|
+| IrO₂–Ta₂O₅ / Ti (DSA) | $10^{-3}$ | 0.060 | 40 | Standard acidic/neutral DSA |
+| NiCo₂O₄ / Ni foam | $10^{-1}$ | 0.060 | 30 | Low-η OER in alkaline |
+| NiFe LDH / Ni foam | $10^{0}$ | 0.040 | 20 | Next-gen; very high activity |
+| Pt / Ti (ref.) | $10^{-1}$ | 0.060 | 50 | Lab benchmark |
+
+**Scenario results** (model vs. legacy fixed η):
+
+| Scenario | $j$ (mA/cm²) | η_act (V) | η_conc (V) | η_bubble (V) | **η_anode (V)** | Legacy η (V) |
+|---|---|---|---|---|---|---|
+| Conservative Alkaline | 100 | 0.305 | 0.143 | 0.027 | **0.475** | 0.40 |
+| Optimized Alkaline | 200 | 0.202 | 0.151 | 0.035 | **0.388** | 0.35 |
+| AWARE Acidic | 500 | 0.354 | 0.139 | 0.103 | **0.596** | 0.25 |
+| Future Target | 400 | 0.364 | 0.135 | 0.222 | **0.720** | 0.20 |
+
+The model shows that legacy fixed η values are broadly consistent for Conservative/Optimized alkaline but **underestimate** the anode overpotential for AWARE Acidic (CER competition at high j) and Future Target (higher j). The anode model is integrated with `CellVoltageModel` via an optional `anode=` parameter; when supplied the cell voltage is computed from first principles.  See `models/anode.py` for the full API and `tests/test_anode.py` for 38 unit tests.
 
 ### 3.5 Energy Efficiency & Techno-Economic Viability
 **Target Metrics:**
