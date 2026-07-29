@@ -1,10 +1,36 @@
-# Dark Mill — Autonomous Steel Production via Aqueous Electrowinning
+# Dark Mill — Autonomous Iron Production via Aqueous Electrowinning
 
 ## The Vision
 
-A steel mill that runs itself. No blast furnace, no continuous casting, no human operators on the floor. A modular cell stack that takes in electricity, water, and iron sulfate — and outputs steel sheet. Each cell is a dark mill: self-monitoring, self-calibrating, self-correcting. Scale by replication, not construction.
+A steel mill that runs itself. Modular cell stacks that take in electricity, water, and iron feedstock — and output iron. Each unit is self-monitoring, self-calibrating, self-correcting. Scale by replication, not construction. Deploy next to a wind farm, a mine, or a pickle liquor source.
 
-The core process is aqueous electrowinning with post-deposition carburization and heat treatment. The enabling technology is a digital twin that knows the deposit quality before the cathode is pulled, and control loops that maintain spec without human intervention.
+---
+
+## Page 1 Decision: Product or Feedstock?
+
+**This is the highest-leverage decision in the program.** Everything downstream depends on it.
+
+### Option A: Feedstock for a melt shop
+
+The electrowon iron is delivered as powder, flake, or thin foil to an EAF or induction furnace. The melt shop adds carbon, manages hydrogen (boils off at 1600°C), and produces finished steel using existing metallurgy.
+
+**What this deletes:**
+- Problem 2 (carbon): added in the melt. Deleted.
+- Problem 3 (hydrogen): boils off at 1600°C. Deleted.
+- Problem 4 (thick crack-free deposits): you *want* friable, easily-strippable deposit. Inverted to design goal.
+- Problem 5 (grain stability): irrelevant. Deleted.
+
+**What remains:** FE, cell voltage, current density, electrolyte loop closure, feedstock cost, impurity management. This is a hydrometallurgy program — maybe 20% of the work scoped in earlier versions.
+
+### Option B: Near-net-shape structural product
+
+The electrowon plate is the final product — steel sheet, foil, or plate. All six hard problems apply. The physical metallurgy program is required.
+
+### The answer is probably: feedstock first, product later.
+
+A dark mill that produces iron units at competitive cost proves the economics. Once the cell works, extending to near-net-shape product is an engineering problem on a proven platform. The reverse order — trying to solve physical metallurgy and economics simultaneously — is how programs die.
+
+**This document assumes Option A (feedstock) as the primary path, with Option B (product) as a later extension.**
 
 ---
 
@@ -12,246 +38,235 @@ The core process is aqueous electrowinning with post-deposition carburization an
 
 Not the blast furnace. The competitors are:
 
-**DRI-H2** — HYBRIT is at pilot scale. Uses existing downstream metallurgy. Iron-making step already solved at temperature. Our advantages: modularity, intermittent power tolerance, lower capital, scrap-compatible feedstock. These need quantification.
+**DRI-H2** — HYBRIT at pilot scale. Uses existing downstream metallurgy. ~3,300–3,500 kWh/t (including H₂ electrolysis + melting). Our energy: 0.96 × V_cell / FE kWh/kg. At V = 2.5, FE = 0.85 → 2,820 kWh/t. **We may be more energy-efficient than DRI-H2** — transferring electrons to iron directly instead of laundering them through hydrogen. That's the headline.
 
-**Boston Metal** — molten oxide electrolysis. High temperature, high current density, but high capital and no intermittency tolerance.
+**Electra** — aqueous low-T electrowinning of iron from ore. Colorado. Well-funded. Read their patents — enablement forces disclosure of operating window.
 
-**Electra** — aqueous low-T iron. Raised money on approximately this thesis. Their public disclosures are our best free calibration point. If they're at 500 mA/cm² and 90% FE, our model needs to explain how. If they're at 100 mA/cm² and 80%, our model matches and we're derisked on "is this possible at all."
+**Boston Metal** — molten oxide electrolysis. High temperature, high capex.
 
-**The question:** At what electricity price and current density does a dark mill beat DRI-H2 at the margin? Run this sensitivity NOW with current uncorrelated priors. If the winning corner requires j > 800 mA/cm² at 90% FE with $0.02/kWh electricity, we're chasing a physically implausible scenario. If it's satisfied at 250 mA/cm² and 78% FE, we're on plausible ground.
+**ΣIDERWIN / ArcelorMittal** — alkaline suspension electrolysis of iron oxide at ~110°C. Pilot-scale, public deliverables.
 
----
+**Allanore & Sadoway (MIT)** — molten salt electrolysis for iron.
 
-## Tier 0: Does the Corner Exist?
-
-Before any phase-field, before any DFT, before the garage lab:
-
-1. **Techno-economic sensitivity NOW.** Run Monte Carlo on the cost model with current screening priors. Find the Pareto front of (electricity price, current density, FE) that hits cost parity with DRI-H2. If the front is empty, stop. If it exists, define it precisely. This is a day of compute.
-
-2. **Read the electroforming literature.** Iron electroforming is a done industry at small scale (bellows, precision parts). Di Bari's chapter in *Modern Electroplating* covers internal stress, hydrogen, additives (saccharin as stress reliever, boric acid buffering, chloride vs sulfate baths). Cohen and Fedotev's work from the 60s–80s on thick iron electroforming got to millimeters with hot electrolytes (>90°C), specific chloride chemistries, and hours-long deposition. Some of our "unknowns" are actually known and just not in our models.
-
-3. **Check Electra and Boston Metal public disclosures.** Current density, FE, electrolyte chemistry, operating temperature. Free calibration.
-
-4. **Buy commercial electroformed iron foil** (Toyo Kohan or similar). Do bake-out kinetics with a hydrogen analyzer (LECO RH-402 or service lab, ~$50/sample). Real diffusible-H numbers for electrodeposited iron in two weeks. That calibrates D2 without waiting for our own deposits. Not *our* iron, but bounds the problem.
-
-Cost of Tier 0: days, not weeks. Value: might reshuffle the entire tier list.
+**Action:** Read Electra's patent family, ΣIDERWIN deliverables, and Allanore/Sadoway publications before doing any modeling. If the alkaline suspension route dominates on capex, switch.
 
 ---
 
-## The Hard Problems
+## The Headline Number
 
-### 1. Dense Deposits at Production Current Density
+Energy per tonne of iron = 0.96 × V_cell / FE × 1000 kWh/t
 
-At 100 mA/cm² we get 3.5 µm grains, 367 MPa YS, 84% FE. At 500 mA/cm² we get 52% FE and porous deposit. The j–FE curve collapse is the economic gate.
+| V_cell | FE   | Energy (kWh/t) | Cost @ $0.04/kWh |
+|--------|------|-----------------|-------------------|
+| 2.0    | 0.90 | 2,133           | $85/t             |
+| 2.5    | 0.85 | 2,824           | $113/t            |
+| 3.0    | 0.80 | 3,600           | $144/t            |
+| 3.5    | 0.70 | 4,800           | $192/t            |
 
-Pulse plating precedent exists for nickel and copper. Extrapolation to iron is plausible but unvalidated.
+DRI-H2 needs ~3,300–3,500 kWh/t. **Electricity is not the binding constraint.** CAPEX per m² of installed cell is.
 
-**Kill criterion:** If phase-field shows FE < 75% at j > 400 mA/cm² for any pulse waveform, the pathway to cost parity closes.
+At 100 mA/cm² and 85% FE, areal productivity is ~7.8 t/(m²·yr). A zinc tankhouse runs ~500 A/m² and costs ~$1,000–1,500 per annual tonne of capacity — for a product worth $2,500–3,000/t. We'd be building the same machine to make something worth $400–600/t.
 
-### 2. Carbon via Carburization (Derisked, Not Solved)
-
-Pack carburization of electrodeposited iron is the primary carbon pathway. A 1 mm deposit at 925°C reaches 0.2 wt% C at center in ~30 minutes. This eliminates co-deposition from the critical path.
-
-**But "derisked" is not "solved."** Unresolved risks:
-- Sulfur from FeSO₄ residue segregating to grain boundaries → hot-shortness at carburizing temperature
-- Residual stress relief during heating → warping in thin plate
-- Recrystallization textures → anisotropic mechanical properties
-- Grain growth at 925°C (see Problem 5)
-
-**Cheap early test:** Buy commercial electrolytic iron foil, carburize it, see what happens. $200 experiment that eliminates a whole class of downstream surprises before we deposit anything.
-
-### 3. Hydrogen Embrittlement (Likely Manageable)
-
-Standard bake-out (4h at 200°C) is well-proven for hard chromium and other electrodeposits. Our deposits are ultrafine-grained (1–5 µm), which means more grain boundary area and more trap sites — but still far from nanocrystalline (<100 nm).
-
-**Buy the answer this week:** Commercial electroformed iron foil + LECO hydrogen analysis. Real numbers in two weeks.
-
-**Key coupling:** Carbon particles and carbides are H-trap sites. High carbon loading may simultaneously help grain stability (Zener pinning) and worsen H retention. DFT scope must include Fe/C interfaces.
-
-### 4. Thick, Stress-Free Deposits (PROBABLY THE REAL GATE)
-
-This is likely harder than the FE problem. The FE literature at least has pulse-plating precedent. The 1 mm iron deposit literature is thin because **people have tried and failed.** Cohen and Fedotev got to millimeters but with hot electrolytes (>90°C), chloride chemistries, and long deposition times. Whether that's compatible with our economics is a separate question.
-
-**Stress is the gate, not FE.** If we can't make a dense deposit above ~1 mm, carbon can be added (carburization), hydrogen can be removed (bake-out), grains can be managed (heat treatment) — but nothing else matters.
-
-**Run A3 (stress FEM) before or in parallel with A1 (grain nucleation).** If stress kills us, the pulse waveform optimization is moot.
-
-**Kill criterion:** If stress modeling shows no path to 1 mm without cracking at any j > 100 mA/cm², pivot to thin-film applications (battery foil, electrical steel laminations) or kill.
-
-### 5. Grain Stability During Heat Treatment
-
-1–5 µm grains are **ultrafine-grained**, not nanocrystalline. This matters:
-- At 3.5 µm: grain growth at 900°C is slow, carburizing times may be tolerable
-- Below 500 nm: Zener pinning becomes essential
-- Below 100 nm: catastrophic coarsening, inverse Hall-Petch risk
-
-If our deposits are 3.5 µm (model prediction at 100 mA/cm²), grain stability is a concern but not a crisis.
-
-### 6. Anode Cost (Potentially Tier 1 in Disguise)
-
-DSA lifetime under Fe²⁺-containing sulfate at high current density is not a solved problem. Carbon particles in suspension will abrade or foul anodes. If anode replacement cost dominates OPEX, this is a Tier 1 problem. Check early: what's the anode cost per kg of iron produced in existing electroforming operations?
+**That's the entire problem in one sentence: you need roughly 5× a zinc tankhouse's areal productivity, or roughly 5× cheaper cells, or some product of the two.**
 
 ---
 
-## Computational Program
+## The Cell Architecture Question
 
-### Tiering
+Cell engineering for high current density is industrially mature — it's just never been asked to eject a solid product:
 
-**Tier 0 — Do this week. No hardware needed.**
+- **Chlor-alkali:** 400–600 mA/cm² through a membrane, filter-press stacks, few hundred $/m²
+- **PEM electrolysis:** 2,000 mA/cm²
+- **ED copper foil drums:** 400–1,000 mA/cm², continuous
 
-| Task | Method | Output |
-|------|--------|--------|
-| Techno-economic sensitivity | Monte Carlo on current model | Pareto front: (j, FE, electricity) vs DRI-H2 |
-| Literature review | Di Bari, Cohen, Fedotev, Electra patents | Known unknowns → known knowns |
-| Buy electroformed iron foil | Toyo Kohan or similar | Substrate for H analysis and carburization test |
-| Competitive analysis | Electra, Boston Metal public disclosures | Calibration data |
+The gating question is architectural: **is there a cell that combines filter-press current densities with continuous solid harvesting?**
 
-**Tier 1 — Gating. Determines whether the rest is worth doing.**
+Candidates worth a week of paper-study each:
+- Rotating cylinder electrode with scraper (Eco-Cell is commercial)
+- Fluidized/particulate bed cathodes
+- Moving-belt cathodes
+- Drum-and-strip (copper foil technology adapted for iron)
 
-| Task | Method | Answers |
-|------|--------|---------|
-| A1. Grain nucleation/growth | 2D phase-field (JAX/GPU) | Can pulse plating push the j–FE curve? |
-| A3. Stress evolution | FEM coupled to microstructure | Can we make 1 mm deposits without cracking? |
-| D2. H diffusion–trapping | FEM | Is bake-out sufficient? |
-| E2. Bayesian DOE | BoTorch on coupled model | Which 27 experiments are most informative? |
-
-Run A1 and A3 in parallel. Run B2 (HER mechanism) alongside A1 — they share parameter space. Run E2 *before* Round 1, not after.
-
-**Tier 2 — Do these if Tier 1 is encouraging.**
-
-| Task | Method | Answers |
-|------|--------|---------|
-| C1. Grain growth during carburizing | Phase-field + diffusion | Do grains survive 925°C? |
-| B1. Cell CFD for scale-up | OpenFOAM / analytical | Boundary layer at pilot scale |
-| E3. Calibrated techno-economic | Monte Carlo with fitted params | Real cost distribution |
-| A2. Deposit porosity | Phase-field + bubble model | Porosity vs j |
-| Substrate selection study | Experiment | Ti vs SS vs Cu vs graphite nucleation |
-
-**Tier 3 — Scientifically interesting, not on critical path.**
-
-A4, B3, B4, C2, C3, C4, D1, D3, D4, E1, E4.
-
-### Dimensionality honesty
-
-2D phase-field on a 4090 is fine for grain nucleation and j–FE mapping. 3D phase-field with coupled species transport, hydrogen, and pulse-timescale resolution is not fine on a 4090. Grain growth and porosity are notoriously 3D phenomena (percolation of voids, GB curvature). Be explicit about where 2D→3D might change the answer, and use cloud GPU burst for the 3D runs.
-
-### Hardware
-
-| Tool | Hardware |
-|------|----------|
-| JAX phase-field (2D) | Consumer GPU |
-| JAX phase-field (3D) | Cloud GPU burst ($0.20–0.50/hr) |
-| pycalphad | Laptop |
-| FEniCS / JAX FEM | Consumer GPU |
-| BoTorch | Consumer GPU |
-| MACE / M3GNet | Consumer GPU (after DFT training on cloud) |
-| GPAW | Cloud GPU burst |
+All of these produce powder, flake, or thin foil — they only work if the product decision (§1) is feedstock. Which is another argument for Option A.
 
 ---
 
-## Dark Mill Architecture
+## The Anode Problem (Tier 0, Not Tier 3)
 
-A dark mill cell is the unit of replication. Each cell contains:
+In an undivided sulfate cell, the dominant anodic reaction is not OER — it's Fe²⁺ → Fe³⁺ (E° = +0.77 V, fast, no overpotential). The Fe³⁺ diffuses to the cathode and is reduced back to Fe²⁺. This is a perfect redox shuttle that eats an enormous fraction of current and depresses FE far below anything our kinetics model predicts.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    DARK MILL CELL                    │
-│                                                     │
-│  Electrolyte tank + cathode/anode stack             │
-│  Recirculation loop (pump, filter, heat exchanger)  │
-│  Gas handling (O₂ vent, H₂ safety)                 │
-│  Electrolyte makeup (auto-dosing from tank sensors) │
-│  Carburizing retort (pack, sealed box)              │
-│  Quench + temper station                            │
-│                                                     │
-│  INSTRUMENTS                                        │
-│    TT, pHAT, FT, AT, VT, AIT (from P&ID)           │
-│    O₂ probe (carburizing atmosphere)                │
-│    Inline hardness (Vickers indent robot)           │
-│    Weight sensor (deposit mass tracking)            │
-│                                                     │
-│  CONTROL                                            │
-│    PID loops (8, from process_control)              │
-│    Digital twin (real-time state estimation)        │
-│    Confidence report (per-batch quality cert)       │
-│    FMEA watchdog (anomaly detection + shutdown)     │
-│                                                     │
-│  AUTOMATION                                         │
-│    Cathode insertion/extraction robot               │
-│    Carburizing cycle (auto load/unload/heat/quench) │
-│    Product handling (stack, label, ship)             │
-│    Electrolyte purge + makeup (concentration ctrl)  │
-└─────────────────────────────────────────────────────┘
-```
+**You need a divided cell.** Membrane cost, membrane ohmic drop at 300–500 mA/cm², crossover, anolyte composition, and acid balance are all first-order to both CAPEX and energy.
 
-Scale by replication: one cell makes ~1 kg/day. Ten cells make 10 kg/day. A hundred cells make 100 kg/day. No scale-up physics needed — just more cells.
+Conversely — if you *deliberately* run Fe²⁺/Fe³⁺ as the anode reaction and pipe the Fe³⁺ to an oxidative leach circuit, you drop anode potential by ~1 V and cut energy ~35%. Worth an afternoon on a whiteboard.
 
-**The dark mill doesn't scale up. It copies.**
-
-This eliminates Problem 4's scale-up dimension. The stress problem is per-cell, not per-plant. If one cell works, a hundred cells work.
+**Action:** Add membrane and divided-cell parameters to the model. This changes everything about V_cell and FE.
 
 ---
 
-## Experimental Program
+## Missing Physics (Roughly Ordered by Impact)
 
-### Pre-Round 0: Buy Answers (this week)
+1. **Cell voltage.** Not in the 76-parameter registry. For an electrowinning process this is THE number. Energy = 0.96 × V / FE. Add V_cell decomposition: E_cathode, E_anode, η_cathode, η_anode, IR_electrolyte, IR_membrane, IR_contacts.
 
-- Commercial electroformed iron foil → LECO hydrogen analysis → calibrate H diffusion model
-- Carburize commercial foil → metallographic cross-section → calibrate grain growth model
-- Read Di Bari, Cohen, Fedotev → convert unknowns to knowns
-- Check Electra/Boston Metal disclosures → calibrate j–FE expectations
+2. **Temperature.** Not in the registry. Sets D, conductivity, viscosity, solubility, FE, and internal stress. Chinese electrolytic iron practice runs 50–60°C. Its absence is diagnostic of where the parameters came from.
 
-### Round 1: Garage Lab (concurrent with Tier 1)
+3. **Divided cell / membrane.** Missing entirely. Determines anode reaction, V_cell, acid balance, Fe³⁺ crossover.
 
-27 deposits, but informed by Bayesian DOE (E2) rather than orthogonal grid. Substrate chosen deliberately (not a hidden variable).
+4. **Purification circuit.** Copperas from TiO₂ route carries Mn, Mg, Al, Ti, V, Cr. Pickle liquor carries Cu, Ni, Zn, Pb, Sn. Everything nobler than Fe co-deposits preferentially. Cu > 0.1% → hot shortness. Zinc tankhouses spend roughly as much on purification as on the tankhouse itself. This is a missing unit operation.
 
-Three gates:
-1. **FE vs j:** Does the model match reality within 10%?
-2. **Bake-out test:** Hardness before/after 200°C × 4h on 10 deposits.
-3. **Stress test:** Deposit 200 µm, 500 µm, 1000 µm. Peel, bend 180°, inspect for cracking.
+5. **Mass-transport limit.** Pulse plating cannot beat it. At 400 mA/cm² average, 30% duty → 1,330 mA/cm² peak. With 2 M Fe²⁺ and δ = 20 µm, i_L ≈ 1,350 mA/cm². You're at the wall. Pulse redistributes flux in time; it does not create it. The route to high j is [Fe²⁺] → 2 M+, temperature → 50–70°C, δ → <30 µm via forced convection. Pulse is a microstructure and pH-recovery tool, not the rate lever.
 
-If deposits crack at < 200 µm → stress is the real problem, fix before proceeding.
-If deposits survive to 1 mm → proceed to carburization.
-
-### Round 2: Targeted Validation
-
-Pack carburize best deposits. Hardness traverse. Metallographic cross-section. Feed into Bayesian calibration. Run confidence report.
-
-### Gate: Does a Single Cell Work as a Dark Mill?
-
-Before scaling to multiple cells, prove one cell runs unattended for 72 hours:
-- Auto-dosing maintains pH and concentration
-- Digital twin detects and flags injected faults
-- Deposit quality stays within spec across 3 consecutive batches
-- No unplanned shutdowns
-
-### Round 3: Pilot
-
-10 cells, continuous operation. Full characterization.
+6. **Feedstock sourcing.** Global spent pickle liquor + copperas: ~3–6 Mt Fe/yr vs 1,900 Mt steel/yr. Beachhead, not thesis. Chase negative-cost feedstocks: acid mine drainage, red mud, pickle liquor you're paid to take. A −$50/t feedstock is worth more to the model than 10 points of FE.
 
 ---
 
-## Revenue Path Before Cost Parity
+## Tier 0: Cheapest Awareness Available
+
+Ranked by bits per dollar. Do all of these before any modeling.
+
+### 1. Two weeks of archaeology — $0
+
+- **US Bureau of Mines RI-series reports** on iron electrowinning (1960s–70s). FE vs j vs T tables that we are currently planning to regenerate with a GPU. Read them first.
+- **ΣIDERWIN / ArcelorMittal EU project deliverables** — public, alkaline suspension, pilot-scale.
+- **Allanore & Sadoway (MIT)** — molten salt electrolysis.
+- **Electra patents** — enablement forces disclosure of operating window. Best free source of competitor's actual operating conditions.
+- **Di Bari's chapter in Modern Electroplating** — internal stress, hydrogen, additives (saccharin as stress reliever, boric acid buffering, chloride vs sulfate baths).
+- **Cohen and Fedotev** — thick iron electroforming from 60s–80s. Hot electrolytes (>90°C), chloride chemistries, hours-long deposition. They got to millimeters.
+- **Fe and Fe-Ni pulse plating in MEMS/LIGA** — "nobody has demonstrated pulse plating for iron" is very likely false. Check.
+
+### 2. Talk to someone who has operated a zinc or cobalt tankhouse — $0, 2 hours
+
+They will name ten failure modes — manganese sludge, anode passivation, stripping-machine jams, short-circuit detection, acid mist and lead/health limits, electrolyte bleed, CE drift over a cathode cycle — that no first-principles FMEA will ever generate.
+
+### 3. Hull cell — ~$300, one afternoon
+
+One 10-minute deposit maps deposit appearance across ~2 decades of current density. Map (T, C, pH, additive) space in a week. Highest information-per-dollar experiment in the history of electroplating.
+
+### 4. Polarization + FE curves in a divided beaker cell — ~$1,000, two weeks
+
+V(j) and FE(j) at 3 temperatures × 3 concentrations × 2 pH. Measure FE by hydrogen volumetry (inverted burette over cathode) — continuous, real-time, more sensitive than weighing. This is the complete input to the techno-economic model.
+
+### 5. RDE + Levich — ~$2–5k
+
+Separates kinetics from transport. Gives Tafel slopes for Fe deposition AND HER on the same surface. Directly calibrates the 1D transport model. Single measurement that makes models predictive rather than decorative.
+
+### 6. Bent-strip / Stoney stress measurement — ~$200
+
+Deposit on one face of a thin shim, measure curvature, get internal stress in real time as a function of thickness and waveform. Answers Problem 4 in hours. The associated FEM answers it in months, less reliably.
+
+**Total: ~$4–8k and six weeks. These six activities subsume most of what was Tier 1 and Tier 2.**
+
+---
+
+## The Right Tier 1 Model
+
+Phase-field doesn't compute Faradaic efficiency. FE is set by competing charge-transfer kinetics (Butler–Volmer for Fe²⁺/Fe vs HER on an evolving Fe surface) coupled to transport and local pH. Phase-field takes FE as an *input*.
+
+**The right model is boring and cheap:** a 1D diffusion-layer model with:
+- Two Faradaic reactions (Fe²⁺/Fe and HER)
+- Migration + diffusion for Fe²⁺/H⁺/HSO₄⁻/SO₄²⁻
+- Homogeneous acid–base equilibria (boric acid, Fe(II) hydrolysis)
+- Computed surface pH with Fe(OH)₂ precipitation criterion
+- Outputs: FE(j, T, C, δ, pH, buffer) and V(j)
+
+This is a few hundred lines. It calibrates against a week of beaker work. It has well-established literature analogues in Ni and Zn electrowinning. Phase-field becomes a Tier 3 curiosity by comparison.
+
+---
+
+## Kill Criteria — Against Measurements, Not Model Outputs
+
+You cannot kill a program on the output of an uncalibrated model. Replace with things a multimeter can adjudicate:
+
+- Measured V_cell × 0.96 / FE > 4,000 kWh/t at j ≥ 300 mA/cm², 60°C, divided cell, after optimizing C/T/flow → **kill.**
+- Measured FE < 70% at 300 mA/cm² under the same conditions → **kill.**
+- No coherent 100 g iron plate (or powder/flake if feedstock path) produced by month 6 → **stop and reassess.**
+- Cost per m² of a cell that can be stripped continuously > threshold → **pivot to cell architecture work.**
+- If Electra or ΣIDERWIN is already at our target economics → **pivot to complementary niche or license.**
+
+---
+
+## What to Freeze
+
+These modules are modeling a plant whose unit operation hasn't been demonstrated. They're two years early:
+
+- `digital_twin` — real-time model updating of a process we haven't run
+- `process_control` — PID loops for a cell we haven't built
+- `transient` — startup/shutdown of a plant that doesn't exist
+- `supply_chain` — logistics for a product we haven't made
+- `lca` — one page of arithmetic once you know kWh/t and grid carbon intensity; does not need a module
+- `uncertainty/sensitivity` — Sobol indices over 76 invented priors are sensitivity analysis of a fiction. Run them on the 10-parameter transport model instead, where they'll actually tell you which experiment to do next.
+
+**The ratio of epistemic apparatus to input data is the most alarming feature of the program.** A photograph of a 10 × 10 cm iron plate next to a ruler is worth more than the entire uncertainty-quantification suite — for our own beliefs and for anyone we need to convince.
+
+Keep: `technoeconomic`, `transport` (1D diffusion-layer), `hull_cell`, `voltammetry`, `eis`, `pourbaix`, `kinetics`. These are the models that matter before the first deposit exists.
+
+---
+
+## Revised Computational Tiers
+
+### Tier 0 — This week. $0.
+
+- [ ] Read Bureau of Mines RI reports on iron electrowinning
+- [ ] Read Electra patents, ΣIDERWIN deliverables, Allanore/Sadoway
+- [ ] Read Di Bari on electroforming, Cohen/Fedotev on thick deposits
+- [ ] Check MEMS/LIGA pulse plating literature for iron
+- [ ] Add cell voltage decomposition to the model (E_cathode, E_anode, η, IR_membrane)
+- [ ] Add temperature as a parameter (was missing from 76-param registry)
+- [ ] Add divided cell / membrane model
+- [ ] Run techno-economic sensitivity: is there a winning corner vs DRI-H2?
+- [ ] Decision: product or feedstock? (Page 1)
+
+### Tier 1 — After archaeology informs the question.
+
+- [ ] 1D diffusion-layer model (replaces phase-field as gating model)
+- [ ] Hull cell experiments (300 mA/cm² maps in one afternoon)
+- [ ] Polarization + FE curves in divided beaker cell
+- [ ] Cell architecture paper study (drum, belt, rotating cylinder, filter-press)
+- [ ] RDE + Levich for kinetics/transport separation
+- [ ] Stoney stress measurement on thin shim
+- [ ] Purification circuit design (cementation, hydrolysis for Cu/Ni/Zn removal)
+
+### Tier 2 — After Tier 1 shows a viable operating window.
+
+- [ ] Phase-field for microstructure (now informed by real FE data)
+- [ ] Pilot cell design (continuous harvesting architecture)
+- [ ] Carburization trials (if product path)
+- [ ] Hydrogen bake-out characterization (if product path)
+- [ ] Calibrated techno-economic model
+
+### Tier 3 — Science enrichment.
+
+- [ ] DFT for interface energies
+- [ ] 3D CFD
+- [ ] Grain growth / Zener pinning
+- [ ] Digital twin, process control, transient, supply chain, LCA
+
+---
+
+## Questions to Answer Before Anything Else
+
+1. **Product or feedstock?** (Determines 60% of the program.)
+2. **What's V_cell, and where does the number come from?** (Currently hard-coded at 2.5V with no decomposition.)
+3. **Divided or undivided?** What is the anode reaction, what is the anolyte, what happens to the Fe³⁺?
+4. **Where does the sulfate go?** Is the acid loop closed, and if so, against what dissolution chemistry?
+5. **What's the feedstock at 100 kt/yr, and what does it cost per tonne of contained Fe?**
+6. **Why is temperature not a parameter?** (It should be — it sets everything.)
+7. **What's the assumed $/m² of installed cell, and does the program survive that number being 2× worse?**
+8. **Have we read the ΣIDERWIN deliverables and Electra's patent family?** If the alkaline suspension route dominates on capex, would we switch?
+
+---
+
+## Revenue Path
 
 The cost model needs to beat DRI-H2 eventually. It doesn't need to beat DRI-H2 at product #1.
 
-Higher price ceiling products that the same cell can produce:
-- **Electrical steel laminations** — thin, high-silicon, premium price ($3000–8000/t)
-- **Battery current collector foil** — ultra-thin iron foil, high purity
-- **Precision electroforms** — bellows, molds, satellite components ($10,000+/t)
-- **Corrosion-resistant coatings** — electrodeposited Fe-Ni-Cr alloys
+**Feedstock beachhead:** negative-cost feedstocks (acid mine drainage, red mud, pickle liquor). You're paid to take the feedstock and sell the iron. The economics work before you compete with BOF.
 
-A dark mill producing precision electroforms at $10,000/t funds the R&D to get to structural steel at $500/t. The cell is the same; the product spec changes.
+**Product extensions (same cell, higher price ceiling):**
+- Electrical steel laminations — thin, high-silicon, premium ($3,000–8,000/t)
+- Battery current collector foil — ultra-thin, high purity
+- Precision electroforms — bellows, molds, satellite components ($10,000+/t)
 
----
-
-## Questions to Answer Before Investing Further
-
-1. **What's Electra actually achieving?** Public disclosures on current density and FE. One hour of research.
-2. **What does the electroforming industry know?** Di Bari's chapter. One day of reading.
-3. **What's the anode cost per kg iron?** If DSA replacement dominates OPEX, everything else is secondary.
-4. **What's the actual experimentalist bandwidth?** If it's one person nights and weekends, Round 1 is months, not weeks, and the concurrent story changes.
-5. **Is there someone at Electra or ex-Boston Metal to talk to?** A one-hour conversation could save six months of computation.
+A dark mill producing precision electroforms funds the R&D to get to commodity iron at $400/t.
 
 ---
 
@@ -261,6 +276,7 @@ A dark mill producing precision electroforms at $10,000/t funds the R&D to get t
 - 393 tests passing (consistency, not validation)
 - 214 model symbols exported
 - Full pipeline: `aq-steel --quick`
-- Qualification framework: Monte Carlo, sensitivity, specs, FMEA, Bayesian calibration, design space, validation planner, confidence report — all built
 
-**Next action:** Tier 0. Run the techno-economic sensitivity. Read the electroforming literature. Buy commercial iron foil. Check Electra's numbers. All of this is days, not weeks, and might reshuffle everything that follows.
+**Immediate next action:** Tier 0 archaeology. Read the Bureau of Mines reports, Electra patents, and ΣIDERWIN deliverables. Add cell voltage decomposition and temperature to the model. Run the techno-economic sensitivity. Make the product/feedstock decision. All of this is days, and might reshape everything that follows.
+
+**Then:** Hull cell. $300, one afternoon. Start plating.
