@@ -158,6 +158,20 @@ from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
 )
+from .uncertainty.specification import (
+    Specification,
+    SpecResult,
+    SpecReport,
+    load_specs_from_yaml,
+    check_specifications,
+    check_mc_specifications,
+    SPECS_A36,
+    SPECS_1010,
+    SPECS_1020,
+    SPECS_CARBURIZED,
+    SPECS_ELECTROWINNING,
+    ALL_STANDARD_SPECS,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -289,4 +303,17 @@ __all__ = [
     "surface_pH_from_current",
     "surface_pH_from_pulse",
     "effective_mass_transport_enhancement",
+    # ── Specification framework ──────────────────────────────────────
+    "Specification",
+    "SpecResult",
+    "SpecReport",
+    "load_specs_from_yaml",
+    "check_specifications",
+    "check_mc_specifications",
+    "SPECS_A36",
+    "SPECS_1010",
+    "SPECS_1020",
+    "SPECS_CARBURIZED",
+    "SPECS_ELECTROWINNING",
+    "ALL_STANDARD_SPECS",
 ]
