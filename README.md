@@ -35,6 +35,9 @@ This is currently a **research proposal / conceptual repository** (no experiment
 git clone https://github.com/your-org/aq-steel-electrowinning.git
 cd aq-steel-electrowinning
 
+# Install Python dependencies
+pip install -r requirements.txt
+
 # View the detailed technical report
 open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 ```
@@ -53,12 +56,16 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 .
 ├── README.md                          # This file
 ├── RESEARCH_REPORT.md                 # Comprehensive technical report
+├── LICENSE                            # MIT License
+├── requirements.txt                   # Python dependencies
+├── .gitignore                         # Git ignore rules
 ├── docs/
-│   └── figures/                       # (Future) diagrams, Pourbaix plots, SEM images
-├── experiments/                       # (Future) lab notebooks, raw data
-├── models/                            # (Future) electrochemical simulations
-├── references/                        # Key papers & bibliography
-└── LICENSE
+│   └── figures/                       # Diagrams, Pourbaix plots, SEM images
+├── experiments/
+│   ├── data/                          # Raw and processed experimental data
+│   └── notebooks/                     # Jupyter notebooks for analysis
+├── models/                            # Electrochemical & process simulations
+└── references/                        # Key papers & bibliography
 ```
 
 ---
