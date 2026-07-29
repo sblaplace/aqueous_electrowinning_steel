@@ -400,6 +400,59 @@ REGISTRY["ligand_decay_per_hr"] = _p(
     "Ligand decomposition rate constant 1/hr (screening)", module="closed_loop")
 
 # ---------------------------------------------------------------------------
+# electrochemistry.py — temperature, membrane, anode shuttle
+# ---------------------------------------------------------------------------
+_echem_src = "CRC Handbook; Nafion 117 datasheet; screening electrolysis literature"
+
+REGISTRY["T_operating_C"] = _p(
+    "T_operating_C", 60.0, 10.0, (25.0, 90.0), "triangular",
+    "Operating temperature degC (screening)", module="electrochemistry")
+
+REGISTRY["kappa_ref_S_m"] = _p(
+    "kappa_ref_S_m", 10.0, 3.0, (2.0, 25.0), "triangular",
+    "Electrolyte conductivity at 25C S/m (CRC)", module="electrochemistry")
+
+REGISTRY["kappa_Ea_kJ_mol"] = _p(
+    "kappa_Ea_kJ_mol", 15.0, 3.0, (8.0, 25.0), "triangular",
+    "Ionic conductivity activation energy kJ/mol (screening)", module="electrochemistry")
+
+REGISTRY["interelectrode_gap_m"] = _p(
+    "interelectrode_gap_m", 0.02, 0.005, (0.005, 0.05), "triangular",
+    "Interelectrode gap m (screening)", module="electrochemistry")
+
+REGISTRY["contact_resistance_ohm_m2"] = _p(
+    "contact_resistance_ohm_m2", 5.0e-4, 2.0e-4, (1.0e-4, 2.0e-3), "lognormal",
+    "Contact/busbar area-specific resistance ohm.m2 (screening)", module="electrochemistry")
+
+REGISTRY["membrane_R_ohm_m2"] = _p(
+    "membrane_R_ohm_m2", 0.002, 0.001, (0.0005, 0.01), "lognormal",
+    "Nafion 117 membrane resistance ohm.m2 (Nafion datasheet)", module="electrochemistry")
+
+REGISTRY["membrane_fe3_crossover_1_hr"] = _p(
+    "membrane_fe3_crossover_1_hr", 0.05, 0.03, (0.001, 0.20), "lognormal",
+    "Fe3+ crossover rate through membrane 1/hr (screening)", module="electrochemistry")
+
+REGISTRY["membrane_cost_per_m2"] = _p(
+    "membrane_cost_per_m2", 500.0, 100.0, (100.0, 1500.0), "triangular",
+    "Membrane cost $/m2 (screening)", module="electrochemistry")
+
+REGISTRY["E0_Fe3_Fe2_V"] = _p(
+    "E0_Fe3_Fe2_V", 0.771, 0.005, (0.750, 0.800), "normal",
+    "Fe3+/Fe2+ standard potential V vs SHE (CRC)", module="electrochemistry")
+
+REGISTRY["fe_shuttle_i0"] = _p(
+    "fe_shuttle_i0", 0.10, 0.05, (0.001, 1.0), "lognormal",
+    "Fe2+/Fe3+ exchange current density A/m2 (screening)", module="electrochemistry")
+
+REGISTRY["fe_shuttle_tafel_V"] = _p(
+    "fe_shuttle_tafel_V", 0.120, 0.020, (0.060, 0.200), "normal",
+    "Fe2+/Fe3+ anodic Tafel slope V/decade (screening)", module="electrochemistry")
+
+REGISTRY["oer_tafel_V"] = _p(
+    "oer_tafel_V", 0.060, 0.015, (0.030, 0.120), "normal",
+    "OER anodic Tafel slope V/decade (Trasatti 2000)", module="electrochemistry")
+
+# ---------------------------------------------------------------------------
 # Total count check: len(REGISTRY) >= 40
 # ---------------------------------------------------------------------------
 assert len(REGISTRY) >= 40, f"Registry has {len(REGISTRY)} params, need >= 40"
