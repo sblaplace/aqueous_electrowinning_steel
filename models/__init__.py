@@ -158,6 +158,21 @@ from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
 )
+from .membrane_fouling import (
+    MembraneFoulingModel,
+    MembraneParams,
+    FoulingRateParams,
+    CleaningParams,
+    CSTRFoulingCoupling,
+    FluxDeclineResult,
+    CleaningResult,
+    FoulingSimulationResult,
+    HermiaModel,
+    CleaningAgent,
+    FoulingMechanism,
+    hermia_flux,
+    membrane_replacement_cost,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -289,4 +304,18 @@ __all__ = [
     "surface_pH_from_current",
     "surface_pH_from_pulse",
     "effective_mass_transport_enhancement",
+    # ── Membrane fouling ─────────────────────────────────────────────
+    "MembraneFoulingModel",
+    "MembraneParams",
+    "FoulingRateParams",
+    "CleaningParams",
+    "CSTRFoulingCoupling",
+    "FluxDeclineResult",
+    "CleaningResult",
+    "FoulingSimulationResult",
+    "HermiaModel",
+    "CleaningAgent",
+    "FoulingMechanism",
+    "hermia_flux",
+    "membrane_replacement_cost",
 ]
