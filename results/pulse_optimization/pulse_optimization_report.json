@@ -1,0 +1,124 @@
+{
+  "grid_size": 1296,
+  "parameter_counts": {
+    "j_peak": 6,
+    "duty_cycle": 6,
+    "frequency": 6,
+    "waveform": 2,
+    "mechanism": 3
+  },
+  "pareto_front_sizes": {
+    "grain_vs_efficiency": 3,
+    "strength_vs_energy": 5,
+    "carbon_vs_grain": 9
+  },
+  "summary_statistics": {
+    "grain_size_um": {
+      "min": 0.8557,
+      "max": 5.5699,
+      "mean": 2.430810648148148
+    },
+    "yield_strength_MPa": {
+      "min": 266.7,
+      "max": 802.7,
+      "mean": 600.4050925925926
+    },
+    "current_efficiency_pct": {
+      "min": 24.16,
+      "max": 100.0,
+      "mean": 89.81851080246915
+    },
+    "energy_cost_USD_per_kg": {
+      "min": 0.096,
+      "max": 0.3974,
+      "mean": 0.11425972222222222
+    },
+    "carbon_wt_pct": {
+      "min": 0.0,
+      "max": 0.03,
+      "mean": 0.008333333333333333
+    }
+  },
+  "recommended_operating_points": [
+    {
+      "type": "compromise",
+      "fronts": [
+        "carbon_vs_grain",
+        "grain_vs_efficiency",
+        "strength_vs_energy"
+      ],
+      "j_peak_mA_cm2": 500.0,
+      "duty_cycle": 0.1,
+      "frequency_Hz": 1000.0,
+      "waveform": "pre",
+      "mechanism": "hydroxide_suppression",
+      "j_avg_mA_cm2": 32.0,
+      "grain_size_um": 0.8557,
+      "yield_strength_MPa": 802.7,
+      "uts_MPa": 1043.5,
+      "current_efficiency_pct": 100.0,
+      "carbon_wt_pct": 0.01,
+      "energy_cost_USD_per_kg": 0.096,
+      "ni_wt_pct": 99.08,
+      "elongation_pct": 6.9
+    },
+    {
+      "type": "compromise",
+      "fronts": [
+        "carbon_vs_grain",
+        "grain_vs_efficiency",
+        "strength_vs_energy"
+      ],
+      "j_peak_mA_cm2": 500.0,
+      "duty_cycle": 0.1,
+      "frequency_Hz": 1000.0,
+      "waveform": "pre",
+      "mechanism": "intermediate_adsorption",
+      "j_avg_mA_cm2": 32.0,
+      "grain_size_um": 0.8557,
+      "yield_strength_MPa": 802.7,
+      "uts_MPa": 1043.5,
+      "current_efficiency_pct": 100.0,
+      "carbon_wt_pct": 0.01,
+      "energy_cost_USD_per_kg": 0.096,
+      "ni_wt_pct": 98.73,
+      "elongation_pct": 6.9
+    },
+    {
+      "type": "best_strength_per_energy",
+      "front": "strength_vs_energy",
+      "j_peak_mA_cm2": 500.0,
+      "duty_cycle": 0.1,
+      "frequency_Hz": 500.0,
+      "waveform": "pre",
+      "mechanism": "hydroxide_suppression",
+      "j_avg_mA_cm2": 32.0,
+      "grain_size_um": 0.8738,
+      "yield_strength_MPa": 802.7,
+      "uts_MPa": 1043.5,
+      "current_efficiency_pct": 100.0,
+      "carbon_wt_pct": 0.01,
+      "energy_cost_USD_per_kg": 0.096,
+      "ni_wt_pct": 99.08,
+      "elongation_pct": 6.9
+    },
+    {
+      "type": "highest_carbon",
+      "front": "carbon_vs_grain",
+      "j_peak_mA_cm2": 500.0,
+      "duty_cycle": 1.0,
+      "frequency_Hz": 1000.0,
+      "waveform": "pre",
+      "mechanism": "hydroxide_suppression",
+      "j_avg_mA_cm2": 500.0,
+      "grain_size_um": 1.7198,
+      "yield_strength_MPa": 295.6,
+      "uts_MPa": 369.4,
+      "current_efficiency_pct": 24.89,
+      "carbon_wt_pct": 0.03,
+      "energy_cost_USD_per_kg": 0.3857,
+      "ni_wt_pct": 0.0,
+      "elongation_pct": 13.2
+    }
+  ]
+}
