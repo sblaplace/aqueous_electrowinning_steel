@@ -1,0 +1,49 @@
+{
+  "dataset_summary": {
+    "n_points": 84,
+    "frequency_min_hz": 0.01,
+    "frequency_max_hz": 100000.0,
+    "decades": 7.0,
+    "z_magnitude_max_ohm": 34.04992342868016,
+    "z_magnitude_min_ohm": 7.922508462520286,
+    "high_freq_real_ohm": 8.0122733152258,
+    "low_freq_real_ohm": 31.90131487286792,
+    "semicircle_top_freq_hz": 242.9641341360079
+  },
+  "true_parameters": {
+    "rs_ohm": 8.0,
+    "rct_ohm": 12.0,
+    "cdl_F": 5e-05,
+    "sigma_warburg_ohm_s_neg_half": 3.0
+  },
+  "fits": {
+    "randles": {
+      "rs_ohm": 8.057887849273403,
+      "rct_ohm": 13.743391497376628,
+      "cdl_F": 5.112458974317288e-05,
+      "sigma_warburg_ohm_s_neg_half": null,
+      "chi_squared": 1.6070881571983084,
+      "r_squared_magnitude": 0.8425324712186426,
+      "n_points": 84,
+      "converged": true
+    },
+    "randles_warburg": {
+      "rs_ohm": 7.996440621831031,
+      "rct_ohm": 12.003039969191695,
+      "cdl_F": 4.969068814024069e-05,
+      "sigma_warburg_ohm_s_neg_half": 2.9961533278072903,
+      "chi_squared": 0.00314359999056854,
+      "r_squared_magnitude": 0.9999181091147445,
+      "n_points": 84,
+      "converged": true
+    }
+  },
+  "warburg_chi_squared_improvement_factor": 511.2253982758336,
+  "derived_properties": {
+    "exchange_current_A_from_rct": 0.0011958906175843428,
+    "exchange_current_density_mA_cm2": 1.195890617584343,
+    "n_electrons": 2,
+    "temperature_K": 333.15,
+    "dc_bias_V_vs_Ag_AgCl": -0.7
+  }
+}

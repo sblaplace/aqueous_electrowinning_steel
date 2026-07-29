@@ -14,6 +14,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |
 | `tafel.py` | Tafel-region fitting with exchange-current and R² estimates |
 | `voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
+| `eis.py` | Phase I EIS: Randles/CPE/Warburg equivalent circuits, complex NLLS spectrum fitting, Rct→exchange-current conversion |
 | `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
 | `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
 | `scenarios.py` | Four literature-anchored operating scenarios |
@@ -27,6 +28,7 @@ python -m models.run_scenarios          # Scenario comparison
 python -m models.run_transport          # Nernst-Planck migration analysis
 python -m models.run_pulse              # Pulse-reverse transient dynamics & comparison
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
+python -m models.run_eis                # Synthetic EIS spectrum & Randles equivalent-circuit fitting
 ```
 
 ## Transport Model Notes

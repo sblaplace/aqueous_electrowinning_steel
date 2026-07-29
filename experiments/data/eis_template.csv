@@ -1,0 +1,2 @@
+frequency_hz,z_real_ohm,z_imag_ohm,z_magnitude_ohm,phase_deg,working_electrode_area_cm2,dc_bias_V_vs_ref,temperature_C,pH,fe2_concentration_M,electrolyte_id,reference_electrode,notes
+10000.000,8.050,-0.120,8.051,0.855,1.000,-0.700,60.0,3.0,1.0,FE-SO4-001,Ag/AgCl,example row; replace with instrument export; z_imag negative for capacitive loop
