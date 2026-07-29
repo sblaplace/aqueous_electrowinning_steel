@@ -246,6 +246,22 @@ A dedicated reference file (`references/guglielmi_1972.txt`) documents the found
 - Methods: Accelerated life testing, CSTR closed-loop trials
 - Output: Anode degradation rates, purification protocols, techno-economic validation
 
+**Executable Phase IV screening (`models/closed_loop.py`)** — The anode kinetics
+are now coupled to charge-throughput coating loss and a constant-volume ideal
+CSTR. The model tracks Fe withdrawal, feed and purge, ligand decay/makeup,
+chloride, impurity accumulation, supersaturation/precipitation, coating
+remaining, anode voltage drift, specific energy, and screening-level variable
+costs. It emits explicit flags for low Fe, low ligand-to-Fe ratio, excessive
+impurities, supersaturation, and anode end of life. The synthetic driver
+(`models/run_closed_loop.py`), canonical durability schema, executable Phase IV
+analysis script, and tests provide an auditable workflow.
+
+This model does **not** establish DSA service life or electrolyte chemistry from
+first principles. Charge-normalized wear coefficients require accelerated-life
+calibration, and the ideal-CSTR closure omits non-ideal activities, complete
+speciation, solids holdup, and residence-time distributions. Synthetic outputs
+are labeled accordingly and must not be presented as plant or wet-lab data.
+
 ---
 
 ## 7. Comparison with Alternative Decarbonization Routes
@@ -264,10 +280,10 @@ A dedicated reference file (`references/guglielmi_1972.txt`) documents the found
 Aqueous electrowinning represents a promising low-temperature pathway for sustainable primary iron and steel production. Recent breakthroughs in both alkaline and acidic electrolytes, combined with favorable techno-economic positioning, justify accelerated research investment.
 
 **Immediate Priorities (2026–2027):**
-1. Reproduce and extend high-efficiency acidic and alkaline protocols
-2. Demonstrate controlled carbon incorporation and mechanical properties
-3. Extend the process models with local-pH/precipitation, transport physics, and pulse-reverse transient kinetics
-4. Identify industrial partners for pilot-scale validation
+1. Reproduce and extend high-efficiency acidic and alkaline protocols with real Phase I/II data
+2. Validate modeled carbon incorporation and alloy composition, then measure mechanical properties
+3. Calibrate local transport, pulse-reverse, anode-wear, precipitation, and closed-loop impurity parameters
+4. Demonstrate stable electrolyte recycle and identify industrial partners for pilot-scale validation
 
 By systematically executing the proposed experimental roadmap, the research community can advance aqueous electrowinning from conceptual promise toward industrial reality.
 

@@ -46,6 +46,8 @@ python -m models.run_pulse              # Transient pulse & pulse-reverse dynami
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                # Synthetic EIS spectrum & Randles fitting
 python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
+python -m models.run_co_deposition      # Phase III Fe–Ni/carbon co-deposition screen
+python -m models.run_closed_loop        # Phase IV anode durability + closed-loop CSTR screen
 
 # Run the test suite
 pytest tests -q
@@ -68,6 +70,9 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
 | `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
 | `models/hull_cell.py` | Phase II variable-gap angled-panel primary-current screen and gravimetric apparent Fe Faradaic efficiency |
+| `models/co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon-particle incorporation |
+| `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
+| `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
@@ -173,6 +178,9 @@ a QA flag rather than hidden.  See `models/README.md` and
 │   ├── tafel.py                       # Tafel fitting and exchange current estimation
 │   ├── eis.py                         # EIS equivalent circuits and spectrum fitting
 │   ├── hull_cell.py                   # Phase II Hull-current map and gravimetric FE
+│   ├── co_deposition.py               # Phase III alloy/carbon co-deposition screen
+│   ├── anode.py                       # OER/CER anode kinetics
+│   ├── closed_loop.py                 # Phase IV durability and electrolyte recycle
 │   ├── experimental_data.py           # Long-form experimental data loader
 │   ├── technoeconomic.py              # CAPEX / OPEX / LCOFe
 │   └── scenarios.py                   # Operating scenario definitions

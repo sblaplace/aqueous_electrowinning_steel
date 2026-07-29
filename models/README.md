@@ -16,6 +16,9 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
 | `eis.py` | Phase I EIS: Randles/CPE/Warburg equivalent circuits, complex NLLS spectrum fitting, Rct→exchange-current conversion |
 | `hull_cell.py` | Phase II angled-panel primary current-density screen, galvanostatic trace loading, and gravimetric apparent Fe Faradaic efficiency |
+| `co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon incorporation screen |
+| `anode.py` | OER/CER anode kinetics, bubble resistance, and full-cell voltage coupling |
+| `closed_loop.py` | Phase IV charge-throughput anode wear, CSTR electrolyte balances, process costs and QA flags |
 | `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
 | `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
 | `scenarios.py` | Four literature-anchored operating scenarios |
@@ -31,6 +34,8 @@ python -m models.run_pulse              # Pulse-reverse transient dynamics & com
 python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                # Synthetic EIS spectrum & Randles equivalent-circuit fitting
 python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
+python -m models.run_co_deposition      # Phase III Fe–Ni/carbon incorporation screen
+python -m models.run_closed_loop        # Phase IV durability + closed-loop CSTR example
 ```
 
 ## Transport Model Notes
@@ -83,6 +88,20 @@ been verified.  Retained electrolyte, oxides, codeposits, and incomplete drying
 can give an apparent value above 100%; the API intentionally leaves that value
 visible as a quality-control signal.  Optional balance and charge uncertainties
 are propagated to the reported FE uncertainty.
+
+## Phase IV Durability and Closed-Loop Notes
+
+`closed_loop.py` couples an empirical coating-wear law to the existing anode
+kinetics and a constant-volume ideal-CSTR balance. It tracks Fe consumption,
+ligand decay/makeup, chloride, impurity accumulation, precipitation, coating
+remaining, voltage drift, energy, purge, and variable costs. Operating-limit
+violations remain visible as quality flags.
+
+The default coefficients are synthetic screening assumptions. Anode wear must
+be calibrated from charge-normalized accelerated-life measurements; the ideal
+CSTR does not replace activity-coefficient/speciation, solids, or residence-time
+distribution models. Use `phase4_durability_template.csv` and
+`experiments/notebooks/phase4_closed_loop.py` to summarize real measurements.
 
 ## Dependencies
 
