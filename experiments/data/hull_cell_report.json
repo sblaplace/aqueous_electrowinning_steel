@@ -1,0 +1,55 @@
+{
+  "method_scope": {
+    "hull_distribution": "Primary ohmic variable-gap model normalized to applied current; excludes edge/shield, kinetic, mass-transfer, bubble, and conductivity-gradient effects.",
+    "gravimetric_fe": "Apparent iron FE from blank-corrected dry mass gain / Fe mass predicted by cathodic charge; verify deposit composition before treating as Fe FE."
+  },
+  "hull_geometry": {
+    "panel_length_cm": 10.0,
+    "panel_width_cm": 5.0,
+    "near_edge_gap_cm": 1.5,
+    "far_edge_gap_cm": 9.0,
+    "panel_area_cm2": 50.0,
+    "panel_angle_deg": 48.590377890729144
+  },
+  "hull_distribution_summary": {
+    "n_segments": 100,
+    "panel_area_cm2": 50.0,
+    "total_current_A": 1.0,
+    "panel_average_current_density_mA_cm2": 20.0,
+    "near_edge_current_density_mA_cm2": 54.46061818827987,
+    "far_edge_current_density_mA_cm2": 9.340818133498587,
+    "current_density_min_mA_cm2": 9.340818133498587,
+    "current_density_max_mA_cm2": 54.46061818827987,
+    "near_edge_gap_cm": 1.5,
+    "far_edge_gap_cm": 9.0
+  },
+  "current_density_window_10_to_100_mA_cm2": {
+    "minimum_mA_cm2": 10.0,
+    "maximum_mA_cm2": 100.0,
+    "n_segments": 92,
+    "area_fraction": 0.9200000000000002,
+    "current_fraction": 0.9614943452668477,
+    "position_start_cm_from_near_edge": 0.0,
+    "position_end_cm_from_near_edge": 9.200000000000001
+  },
+  "gravimetric_faradaic_efficiency": {
+    "duration_s": 3600.0,
+    "cathodic_charge_C": 5400.0,
+    "equivalent_mean_cathodic_current_A": 1.5,
+    "mass_gain_g": 1.4232935139586687,
+    "blank_mass_change_g": 0.0012,
+    "net_deposit_mass_g": 1.4220935139586686,
+    "theoretical_fe_mass_g": 1.562740125229306,
+    "apparent_faradaic_efficiency": 0.91,
+    "apparent_faradaic_efficiency_percent": 91.0,
+    "apparent_faradaic_efficiency_uncertainty_percent": 0.011083421866541808,
+    "net_deposit_mass_uncertainty_g": 0.00017320508075688773,
+    "charge_relative_uncertainty": 0.0,
+    "n_electrons": 2,
+    "molar_mass_g_mol": 55.845
+  },
+  "synthetic_inputs": {
+    "galvanostatic_trace": "synthetic_hull_cell_galvanostatic.csv",
+    "gravimetry": "synthetic_hull_cell_gravimetry.csv"
+  }
+}
