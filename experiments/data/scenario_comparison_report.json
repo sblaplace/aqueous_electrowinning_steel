@@ -1,0 +1,143 @@
+{
+  "title": "Aqueous Electrowinning Scenario Comparison",
+  "date": "2026-07-29",
+  "plant_config": {
+    "n_stacks": 10,
+    "electrode_area_m2": 1.0,
+    "n_cells_per_stack": 100,
+    "operating_hours_yr": 8000
+  },
+  "scenarios": {
+    "Conservative (Base)": {
+      "description": "Near-term alkaline electrowinning with conventional electrode materials and moderate current density. Represents a cautious estimate based on established electroplating technology scaled to bulk production.",
+      "electrolyte": "1\u20133 M NaOH, citrate complexant",
+      "operating_conditions": {
+        "current_density_mA_cm2": 100.0,
+        "current_efficiency": 0.9,
+        "temperature_C": 70.0,
+        "cell_voltage_V": 2.569
+      },
+      "cell_voltage_breakdown": {
+        "thermodynamic_V": 1.669,
+        "eta_cathode_V": 0.3,
+        "eta_anode_V": 0.4,
+        "ir_drop_V": 0.2
+      },
+      "results": {
+        "specific_energy_kWh_t": 2740.0,
+        "annual_production_t": 7501.0,
+        "total_capex_M$": 2.64,
+        "annual_opex_M$": 3.55,
+        "LCOFe_$_t": 506.0,
+        "electricity_cost_$_t": 109.59,
+        "capex_share_pct": 6.5,
+        "opex_share_pct": 93.5
+      },
+      "references": "Standard alkaline electroplating literature; Yuan & Haarberg (2009)"
+    },
+    "Optimized Alkaline": {
+      "description": "High-efficiency alkaline route using concentrated NaOH with nanoporous Fe\u2082O\u2083 intermediates and rotating cathode for enhanced mass transport. Based on Yuan et al. (2009) and Kempler et al. (2025) demonstrating >90% current efficiency with unique twin-crystal morphology.",
+      "electrolyte": "10\u201314 M NaOH, nanoporous Fe\u2082O\u2083 suspension",
+      "operating_conditions": {
+        "current_density_mA_cm2": 200.0,
+        "current_efficiency": 0.93,
+        "temperature_C": 90.0,
+        "cell_voltage_V": 2.389
+      },
+      "cell_voltage_breakdown": {
+        "thermodynamic_V": 1.669,
+        "eta_cathode_V": 0.22,
+        "eta_anode_V": 0.35,
+        "ir_drop_V": 0.15
+      },
+      "results": {
+        "specific_energy_kWh_t": 2466.0,
+        "annual_production_t": 15502.0,
+        "total_capex_M$": 4.09,
+        "annual_opex_M$": 4.71,
+        "LCOFe_$_t": 329.0,
+        "electricity_cost_$_t": 98.63,
+        "capex_share_pct": 7.5,
+        "opex_share_pct": 92.5
+      },
+      "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
+    },
+    "AWARE Acidic": {
+      "description": "Acidic electro-Winning in Anion-Rich Electrolytes using concentrated LiCl-based systems. Achieves near-unity Coulombic efficiency by thermodynamically suppressing HER through high chloride activity and stabilizing Fe\u00b2\u207a/Fe\u00b3\u207a in solution. Zero-waste operation with high impurity tolerance.",
+      "electrolyte": "Concentrated LiCl (\u226510 M), acidic pH < 2",
+      "operating_conditions": {
+        "current_density_mA_cm2": 500.0,
+        "current_efficiency": 0.99,
+        "temperature_C": 60.0,
+        "cell_voltage_V": 2.27
+      },
+      "cell_voltage_breakdown": {
+        "thermodynamic_V": 1.8,
+        "eta_cathode_V": 0.12,
+        "eta_anode_V": 0.25,
+        "ir_drop_V": 0.1
+      },
+      "results": {
+        "specific_energy_kWh_t": 2201.0,
+        "annual_production_t": 41256.0,
+        "total_capex_M$": 8.47,
+        "annual_opex_M$": 9.21,
+        "LCOFe_$_t": 243.0,
+        "electricity_cost_$_t": 88.03,
+        "capex_share_pct": 7.9,
+        "opex_share_pct": 92.1
+      },
+      "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
+    },
+    "Future Target": {
+      "description": "Aspirational scenario assuming R&D breakthroughs in catalyst design, membrane technology, and process integration. Combines high current density with low cell voltage through advanced electrode architectures (nanostructured cathodes, ultra-thin separators) and AI-optimized pulse-reverse deposition protocols.",
+      "electrolyte": "Optimized mixed-anion electrolyte (TBD)",
+      "operating_conditions": {
+        "current_density_mA_cm2": 400.0,
+        "current_efficiency": 0.97,
+        "temperature_C": 50.0,
+        "cell_voltage_V": 2.049
+      },
+      "cell_voltage_breakdown": {
+        "thermodynamic_V": 1.669,
+        "eta_cathode_V": 0.1,
+        "eta_anode_V": 0.2,
+        "ir_drop_V": 0.08
+      },
+      "results": {
+        "specific_energy_kWh_t": 2028.0,
+        "annual_production_t": 32338.0,
+        "total_capex_M$": 4.87,
+        "annual_opex_M$": 6.03,
+        "LCOFe_$_t": 200.0,
+        "electricity_cost_$_t": 60.83,
+        "capex_share_pct": 7.0,
+        "opex_share_pct": 93.0
+      },
+      "references": "Projected; based on extrapolation of current trends"
+    }
+  },
+  "benchmarks": {
+    "BF-BOF": {
+      "low": 350,
+      "mid": 450,
+      "high": 600,
+      "CO2_t_per_t_Fe": 1.8,
+      "notes": "Mature technology; cost varies with coal/ore prices"
+    },
+    "H2-DRI + EAF": {
+      "low": 450,
+      "mid": 600,
+      "high": 800,
+      "CO2_t_per_t_Fe": 0.05,
+      "notes": "Green H\u2082 at $2\u20134/kg; EAF melting adds ~200 kWh/t"
+    },
+    "Molten Oxide Electrolysis": {
+      "low": 600,
+      "mid": 900,
+      "high": 1200,
+      "CO2_t_per_t_Fe": 0.02,
+      "notes": "Boston Metal approach; high-temp refractory costs"
+    }
+  }
+}
