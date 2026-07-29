@@ -26,9 +26,7 @@ env/
 *.swo
 *~
 
-# Data (keep structure, exclude large files)
-*.csv
-*.xlsx
+# Large output data (keep structure, exclude bulky files)
 *.h5
 *.hdf5
 *.pkl
@@ -44,7 +42,4 @@ Thumbs.db
 *.m
 !models/*.py
 
-# Compiled figures (too large for GitHub)
-docs/figures/*.png
-docs/figures/*.jpg
-!docs/figures/.gitkeep
+# Generated figures are tracked in git (small enough for GitHub)
