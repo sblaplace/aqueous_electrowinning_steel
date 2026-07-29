@@ -1,0 +1,3 @@
+time_hr,temperature_C,surface_carbon_wt_percent,core_carbon_wt_percent,case_depth_035_um,case_depth_050_um,surface_hv_kgf_mm2,carbon_uptake_g_m2,quench_rate_C_s,temper_T_C,temper_t_hr,notes
+0.0,900,1.10,0.02,0,0,127,0,200,,,
+1.0,900,1.10,0.05,250,180,750,45,200,,,"example synthetic — replace with measured combustion/HV traverse"

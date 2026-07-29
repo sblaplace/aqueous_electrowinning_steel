@@ -46,14 +46,28 @@ python -m models.run_pulse                  # Transient pulse & pulse-reverse dy
 python -m models.run_voltammetry            # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                    # Synthetic EIS spectrum & Randles fitting
 python -m models.run_hull_cell              # Phase II angled-panel current screen + gravimetric FE example
-python -m models.run_co_deposition          # Phase III Fe–Ni/carbon co-deposition screen
-python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade + process-flow diagrams
+python -m models.run_co_deposition          # Phase III Fe–Ni/carbon co-deposition screen + pulse-coupled
+python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade
+python -m models.run_carburization          # Post-deposition carburization: case depth, HV profile, energy
+python -m models.run_carbon_potential       # Gas carburizing atmosphere: a_C from CO/CO2, CH4/H2, dew point, Acm
+python -m models.run_tempering              # Tempering + retained austenite: Ms, KM RA, Hollomon-Jaffe
 python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
-python -m models.run_all                    # Full suite + master_report.json + dashboard
+python -m models.run_all                    # Full suite (14 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
+
+# Or use CLI entry points after pip install -e .
+aq-steel --quick                               # full suite
+aq-steel-carburization                         # carburization only
+aq-steel-carbon-potential                      # carbon potential only
+aq-steel-tempering                             # tempering only
 
 # Run the test suite
 pytest tests -q
+
+# Jupyter notebooks
+jupyter lab experiments/notebooks/full_workflow.ipynb   # 24-cell end-to-end workflow
+# also: phase1_voltammetry, phase2_hull_cell, phase3_co_deposition,
+#       phase4_closed_loop, phase5_mechanical, phase6_carburization
 
 # View the detailed technical report
 open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
@@ -73,9 +87,12 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
 | `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
 | `models/hull_cell.py` | Phase II variable-gap angled-panel primary-current screen and gravimetric apparent Fe Faradaic efficiency |
-| `models/co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon-particle incorporation |
-| `models/mechanical_properties.py` | Phase III → mechanical: Hall-Petch, solid-solution Ni, C dispersion → YS/UTS/HV/elongation + grade mapping |
-| `models/process_flow.py` | Process block-flow diagrams: ore→leach→cell→wash→carburize→product + recycle/purge |
+| `models/co_deposition.py` | Phase III anomalous Fe–Ni kinetics, Guglielmi C, **pulse-coupled pH recovery & δ thinning** (`run_at_current_pulsed`) |
+| `models/mechanical_properties.py` | Phase III → structural: Hall-Petch grain-size, Ni SS, C dispersion → YS/UTS/HV/elongation + grade mapping |
+| `models/carburization.py` | Post-deposition gaseous carburization: Fickian finite-slab, case depth, Maynier HV, tempering flag, energy & composite strength |
+| `models/carbon_potential.py` | Gas atmosphere: CO/CO2 Boudouard, CH4/H2, dew-point via WGS, O2 probe, Acm solubility, a_C ↔ C wt% |
+| `models/tempering.py` | Tempering + RA: Andrews Ms, Koistinen-Marburger RA, Hollomon-Jaffe P, tempered HV/YS, case tempering, recommended T |
+| `models/process_flow.py` | Process block-flow diagrams: ore→leach→cell→wash→carburize→product + recycle/purge, detailed variant |
 | `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |

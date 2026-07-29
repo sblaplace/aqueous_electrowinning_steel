@@ -1,0 +1,2 @@
+run_id,C_wt_percent,Mn_wt_percent,Ni_wt_percent,Cr_wt_percent,Mo_wt_percent,Si_wt_percent,quench_rate_C_s,Ms_C_measured,RA_as_quenched_pct,temper_T_C,temper_t_hr,HV_measured,notes
+SYNTH-001,0.80,0.30,0.10,0.20,0.00,0.20,200,187,16.8,180,1.0,720,"example synthetic — replace with XRD RA + HV traverse"

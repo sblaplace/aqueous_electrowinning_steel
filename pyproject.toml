@@ -1,3 +1,53 @@
+[project]
+name = "aqueous-electrowinning-steel"
+version = "0.4.0"
+description = "Aqueous electrowinning for sustainable steel — thermodynamics, kinetics, transport, pulse, co-deposition, mechanical, carburization, tempering, techno-economics"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Aqueous Electrowinning Research Collective"}]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "pandas>=2.0",
+    "seaborn>=0.12",
+    "pint>=0.22",
+]
+
+[project.optional-dependencies]
+jupyter = ["jupyter>=1.0", "ipykernel>=6.0"]
+test = ["pytest>=7.0"]
+all = ["jupyter>=1.0", "ipykernel>=6.0", "pytest>=7.0", "seaborn>=0.12", "pint>=0.22"]
+
+[project.scripts]
+aq-steel = "models.run_all:cli"
+aq-steel-electrochem = "models.run_electrochemistry:main"
+aq-steel-transport = "models.run_transport:main"
+aq-steel-pulse = "models.run_pulse:main"
+aq-steel-voltammetry = "models.run_voltammetry:main"
+aq-steel-eis = "models.run_eis:main"
+aq-steel-hull = "models.run_hull_cell:main"
+aq-steel-codep = "models.run_co_deposition:main"
+aq-steel-mechanical = "models.run_mechanical_properties:main"
+aq-steel-carburization = "models.run_carburization:main"
+aq-steel-carbon-potential = "models.run_carbon_potential:main"
+aq-steel-tempering = "models.run_tempering:main"
+aq-steel-techno = "models.run_technoeconomic:main"
+aq-steel-scenarios = "models.run_scenarios:main"
+aq-steel-all-quick = "models.run_all:cli"
+
+[project.urls]
+Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"
+Issues = "https://github.com/sblaplace/aqueous_electrowinning_steel/issues"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["models"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
@@ -6,3 +56,8 @@ addopts = "-ra"
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90"]
+ignore = ["E501"]  # line length handled by formatter line-length
+

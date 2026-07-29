@@ -1,0 +1,42 @@
+{
+  "title": "Carbon potential screening \u2014 gas carburizing atmosphere",
+  "date": "2026-07-29T19:06:57.992200",
+  "example_T_C": 930.0,
+  "example_summary_930C": {
+    "T_C": 930,
+    "pCO_atm": 0.2,
+    "pCO2_atm": 0.001,
+    "pH2_atm": 0.4,
+    "aC_from_CO_CO2": 2023.24120974321,
+    "C_wt_from_CO_CO2": 1.427,
+    "pO2_atm": 8.141527121385851e-21,
+    "log10_pO2": -20.089294126046127,
+    "C_max_Acm_wt": 1.427,
+    "is_supersaturated_graphite": true,
+    "is_above_Acm": true,
+    "pCH4_atm": 0.02,
+    "aC_from_CH4_H2": 7.6402892453973745,
+    "C_wt_from_CH4_H2": 1.427,
+    "dew_point_C": -5.0,
+    "aC_from_dewpoint": 2372.5211676231534,
+    "C_wt_from_dewpoint": 1.427,
+    "recommended_aC_for_1_1pct": 1.0,
+    "recommended_C_wt": 1.0882829448502371,
+    "note": "Screening carbon potential: Boudouard \u0394G=170700-174.5T J/mol, CH4 cracking 90000-109T J/mol. C_wt from a_C via empirical a(C)= (C/1.1)*exp(0.9(C-1.1)) normalized at 900\u00b0C a=1\u21921.1wt%. Acm linear 0.76% at 727\u00b0C to 2.14% at 1147\u00b0C. Calibrate with O2 probe/milliprob foil."
+  },
+  "figures": [
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_map.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_dewpoint.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_Acm.png"
+  ],
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carbon_potential.csv",
+  "model_notes": [
+    "Boudouard: \u0394G\u00b0=170700-174.5T J/mol, K=exp(-\u0394G/RT), aC=K*pCO^2/pCO2",
+    "CH4 cracking: \u0394G\u00b0=90000-109T J/mol, aC=K*pCH4/pH2^2",
+    "O2 from CO+0.5O2\u2192CO2 \u0394G\u00b0=-282800+86.8T J/mol, pO2=(pCO2/(pCO*K))^2",
+    "Dew point \u2192 pH2O via Magnus, then via WGS K to pCO2 then aC",
+    "C wt from aC via empirical a(C)= (C/1.1)*exp(0.9(C-1.1)) at 900\u00b0C a=1\u21921.1wt%",
+    "Acm linear 0.76% at 727\u00b0C to 2.14% at 1147\u00b0C",
+    "Calibrate with O2 probe and foil measurements; not full CALPHAD"
+  ]
+}

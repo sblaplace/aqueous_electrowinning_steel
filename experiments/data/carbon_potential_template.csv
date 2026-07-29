@@ -1,0 +1,2 @@
+timestamp,temperature_C,pCO_atm,pCO2_atm,pCH4_atm,pH2_atm,dew_point_C,aC_measured,o2_probe_mV,foil_C_wt_percent,surface_C_wt_percent_measured,notes
+2026-07-29T00:00:00,930,0.20,0.001,0.02,0.40,-5,1.05,1120,1.08,1.05,"example — O2 probe 1120 mV, foil 1.08 wt% — replace with real probe"

@@ -127,6 +127,23 @@ from .carburization import (
     tempered_hardness,
     estimate_carburizing_time_for_case_depth,
 )
+from .carbon_potential import (
+    carbon_potential_summary,
+    carbon_activity_from_co_co2,
+    carbon_activity_from_ch4_h2,
+    carbon_wt_from_activity,
+    austenite_max_carbon_wt_percent,
+)
+from .tempering import (
+    AlloyComposition,
+    martensite_start_C,
+    retained_austenite_fraction_koistinen_marburger,
+    hollomon_jaffe_parameter,
+    tempered_hardness_hollomon_jaffe,
+    tempering_curve,
+    case_hardness_after_tempering,
+    recommended_tempering_for_target_hv,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -227,6 +244,21 @@ __all__ = [
     "hardness_from_carbon_wt",
     "tempered_hardness",
     "estimate_carburizing_time_for_case_depth",
+    # ── Carbon potential (gas atmosphere) ─────────────────────────────
+    "carbon_potential_summary",
+    "carbon_activity_from_co_co2",
+    "carbon_activity_from_ch4_h2",
+    "carbon_wt_from_activity",
+    "austenite_max_carbon_wt_percent",
+    # ── Tempering & retained austenite ────────────────────────────────
+    "AlloyComposition",
+    "martensite_start_C",
+    "retained_austenite_fraction_koistinen_marburger",
+    "hollomon_jaffe_parameter",
+    "tempered_hardness_hollomon_jaffe",
+    "tempering_curve",
+    "case_hardness_after_tempering",
+    "recommended_tempering_for_target_hv",
     # ── Pulse-aware co-deposition coupling ────────────────────────────
     "surface_pH_from_current",
     "surface_pH_from_pulse",

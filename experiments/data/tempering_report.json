@@ -1,0 +1,32 @@
+{
+  "title": "Tempering & retained austenite screening",
+  "date": "2026-07-29T19:06:58.971958",
+  "example_alloy": {
+    "C": 0.8,
+    "Mn": 0.3,
+    "Ms_C": 187.28999999999996,
+    "f_RA_as_quenched_pct": 40.62932863495781
+  },
+  "figures": [
+    "/home/user/aqueous_electrowinning_steel/docs/figures/retained_austenite.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_curve.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/case_tempered_hardness.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/tempering_energy.png"
+  ],
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_tempering.csv",
+  "model_notes": [
+    "Ms via Andrews: Ms=539-423C-30.4Mn-17.7Ni-12.1Cr-7.5Mo-7.5Si+10Co (\u00b0C)",
+    "RA via Koistinen-Marburger: f_RA=exp(-0.011*(Ms-Tq)), f_M=1-f_RA",
+    "Tempering P = T_K*(19.5+log10(t_s)), HV_t = HV_q*exp(-k*(P-8000)), k=0.00018 screening",
+    "Case hardness from carburization profile + RA per local C + tempering",
+    "Recommended T for target HV via bisection inverse",
+    "Target HV 700->~200C, 600->~350C, 500->~450C, 400->~550C typical low-alloy",
+    "Calibrate with XRD RA, hardness traverses, dilatometry"
+  ],
+  "recommended_tempering": {
+    "700": NaN,
+    "600": 171.484375,
+    "500": 215.52734375,
+    "400": 269.23828125
+  }
+}

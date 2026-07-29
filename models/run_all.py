@@ -19,10 +19,12 @@ What it does
    pulse-coupled co-deposition (surface pH recovery, enhanced transport)
 7. Mechanical properties (grain → strength → hardness → grade)
 8. Carburization post-processing (Fickian diffusion, case depth, HV profile)
-9. Anode durability + closed-loop CSTR Phase IV (closed_loop)
-10. Techno-economics + scenario comparison (technoeconomic, scenarios)
-11. Process-flow diagrams (process_flow)
-12. Dashboard summary figure + master JSON
+9. Carbon potential / gas atmosphere (CO/CO2, CH4/H2, dew point → a_C, O2 probe)
+10. Tempering + retained austenite (Ms, Koistinen-Marburger, Hollomon-Jaffe)
+11. Anode durability + closed-loop CSTR Phase IV (closed_loop)
+12. Techno-economics + scenario comparison (technoeconomic, scenarios)
+13. Process-flow diagrams (process_flow)
+14. Dashboard summary figure + master JSON
 
 Outputs
 -------
@@ -66,6 +68,8 @@ from models.run_technoeconomic import main as run_techno_main
 from models.run_scenarios import main as run_scenarios_main
 from models.run_mechanical_properties import main as run_mechanical_main
 from models.run_carburization import main as run_carburization_main
+from models.run_carbon_potential import main as run_carbon_potential_main
+from models.run_tempering import main as run_tempering_main
 
 from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -434,7 +438,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["mechanical_properties"] = {"error": str(e)}
 
     # 8b Carburization post-processing
-    print("\n[9/12] Carburization (Fickian case hardening)...")
+    print("\n[9/14] Carburization (Fickian case hardening)...")
     try:
         # Call with explicit kwargs to avoid argparse clash with --quick
         run_carburization_main(temperature=900.0, surface_c=1.10, initial_c=0.02, thickness=1000.0, duration=4.0, dt=0.2)
@@ -445,8 +449,30 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         import traceback; traceback.print_exc()
         master["steps"]["carburization"] = {"error": str(e)}
 
-    # 10 Scenarios + Technoeconomic
-    print("\n[10/12] Technoeconomics + scenarios...")
+    # 9 Carbon potential
+    print("\n[10/14] Carbon potential (gas atmosphere)...")
+    try:
+        run_carbon_potential_main()
+        master["steps"]["carbon_potential"] = _load_json(DATA_DIR / "carbon_potential_report.json")
+        print("  ✅ carbon_potential")
+    except Exception as e:
+        print(f"  ❌ carbon_potential: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["carbon_potential"] = {"error": str(e)}
+
+    # 10 Tempering + RA
+    print("\n[11/14] Tempering + retained austenite...")
+    try:
+        run_tempering_main()
+        master["steps"]["tempering"] = _load_json(DATA_DIR / "tempering_report.json")
+        print("  ✅ tempering")
+    except Exception as e:
+        print(f"  ❌ tempering: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["tempering"] = {"error": str(e)}
+
+    # 11 Techno + Scenarios
+    print("\n[12/14] Technoeconomics + scenarios...")
     try:
         run_techno_main()
         run_scenarios_main()
@@ -457,8 +483,8 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ technoeconomic/scenarios: {e}")
         master["steps"]["technoeconomic"] = {"error": str(e)}
 
-    # 11 Process flow diagrams
-    print("\n[11/12] Process flow diagrams...")
+    # 13 Process flow diagrams
+    print("\n[13/14] Process flow diagrams...")
     try:
         pf1 = generate_process_flow_diagram()
         pf2 = generate_detailed_flow_with_composition()
@@ -468,8 +494,8 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ process_flow: {e}")
         master["steps"]["process_flow"] = {"error": str(e)}
 
-    # 12 Pulse-coupled co-deposition analytics extra
-    print("\n[12/12] Pulse-coupled co-deposition analytics...")
+    # 14 Pulse-coupled co-deposition analytics extra
+    print("\n[14/14] Pulse-coupled co-deposition analytics...")
     try:
         from models.co_deposition import build_phase3_model
         import matplotlib
@@ -539,9 +565,14 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
     return master
 
 
-if __name__ == "__main__":
+def cli():
+    """Entry point for aq-steel console script."""
     parser = argparse.ArgumentParser(description="Run all aqueous electrowinning models")
     parser.add_argument("--quick", action="store_true", help="Skip heavy grids (pulse comparisons)")
     parser.add_argument("--out", type=str, default=str(DATA_DIR / "master_report.json"), help="Master report output path")
     args = parser.parse_args()
     main(quick=args.quick, master_out=Path(args.out))
+
+
+if __name__ == "__main__":
+    cli()
