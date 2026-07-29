@@ -24,6 +24,12 @@ from .boundary_layer import (
     CathodeBoundaryLayer,
     BoundaryLayerState,
 )
+from .transport import (
+    NernstPlanckFilm,
+    NernstPlanckState,
+    FilmProfile,
+    compare_support_levels,
+)
 from .technoeconomic import (
     ElectrolyzerParams,
     CAPEXModel,
@@ -49,6 +55,10 @@ __all__ = [
     "limiting_current_density",
     "CathodeBoundaryLayer",
     "BoundaryLayerState",
+    "NernstPlanckFilm",
+    "NernstPlanckState",
+    "FilmProfile",
+    "compare_support_levels",
     "ElectrolyzerParams",
     "CAPEXModel",
     "OPEXModel",
