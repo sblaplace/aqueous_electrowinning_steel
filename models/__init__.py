@@ -158,6 +158,22 @@ from .pid import (
     generate_pid_overview,
     generate_pid_detailed,
 )
+from .hydrogen_embrittlement import (
+    HydrogenEmbrittlementModel,
+    HDiffusionParams,
+    TrapSiteParams,
+    HESusceptibilityParams,
+    BakeoutParams,
+    HEResult,
+    h_diffusivity_m2_s,
+    effective_diffusivity_m2_s,
+    hydrogen_uptake_from_electrolysis,
+    he_susceptibility_index,
+    bakeout_time_hr,
+    bakeout_schedule,
+    build_he_model_from_mechanical,
+    synthetic_h_uptake_data,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -289,4 +305,19 @@ __all__ = [
     "surface_pH_from_current",
     "surface_pH_from_pulse",
     "effective_mass_transport_enhancement",
+    # ── Hydrogen embrittlement ──────────────────────────────────────
+    "HydrogenEmbrittlementModel",
+    "HDiffusionParams",
+    "TrapSiteParams",
+    "HESusceptibilityParams",
+    "BakeoutParams",
+    "HEResult",
+    "h_diffusivity_m2_s",
+    "effective_diffusivity_m2_s",
+    "hydrogen_uptake_from_electrolysis",
+    "he_susceptibility_index",
+    "bakeout_time_hr",
+    "bakeout_schedule",
+    "build_he_model_from_mechanical",
+    "synthetic_h_uptake_data",
 ]
