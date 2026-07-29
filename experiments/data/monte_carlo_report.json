@@ -1,0 +1,339 @@
+{
+  "n_samples": 200,
+  "elapsed_seconds": 6.06,
+  "overall_confidence": 0.355,
+  "pass_rates": {
+    "ASTM A36 yield strength": 1.0,
+    "ASTM A36 ultimate tensile strength": 1.0,
+    "ASTM A36 elongation": 0.355,
+    "ASTM A36 hardness range": 0.83
+  },
+  "failure_ranking": {
+    "ASTM A36 yield strength": 0,
+    "ASTM A36 ultimate tensile strength": 0,
+    "ASTM A36 elongation": 129,
+    "ASTM A36 hardness range": 34
+  },
+  "output_statistics": {
+    "Ms_C": {
+      "mean": 40.3742,
+      "std": 15.2636,
+      "p5": 38.3,
+      "p50": 38.3,
+      "p95": 42.9953,
+      "min": 38.3,
+      "max": 215.3067
+    },
+    "carbon_wt_percent": {
+      "mean": 0.7776,
+      "std": 0.0385,
+      "p5": 0.7093,
+      "p50": 0.7809,
+      "p95": 0.8339,
+      "min": 0.6669,
+      "max": 0.8422
+    },
+    "case_depth_035_um": {
+      "mean": 500.0,
+      "std": 0.0,
+      "p5": 500.0,
+      "p50": 500.0,
+      "p95": 500.0,
+      "min": 500.0,
+      "max": 500.0
+    },
+    "core_c_wt": {
+      "mean": 1.0951,
+      "std": 0.0361,
+      "p5": 1.0889,
+      "p50": 1.1,
+      "p95": 1.1,
+      "min": 0.6815,
+      "max": 1.1
+    },
+    "current_efficiency_percent": {
+      "mean": 94.9957,
+      "std": 1.7281,
+      "p5": 93.8265,
+      "p50": 94.7242,
+      "p95": 97.6333,
+      "min": 81.7679,
+      "max": 99.5
+    },
+    "delta_carbon_total_MPa": {
+      "mean": 4.4048,
+      "std": 0.4132,
+      "p5": 3.6824,
+      "p50": 4.4295,
+      "p95": 5.026,
+      "min": 3.4257,
+      "max": 5.1078
+    },
+    "delta_ss_MPa": {
+      "mean": 47.232,
+      "std": 14.8105,
+      "p5": 21.4517,
+      "p50": 48.5719,
+      "p95": 69.0014,
+      "min": 13.6654,
+      "max": 71.7411
+    },
+    "elongation_pct": {
+      "mean": 15.3417,
+      "std": 7.0891,
+      "p5": 2.8163,
+      "p50": 15.3151,
+      "p95": 27.1643,
+      "min": 0.5,
+      "max": 31.3442
+    },
+    "energy_cost": {
+      "mean": 2616.6245,
+      "std": 61.3088,
+      "p5": 2522.4668,
+      "p50": 2624.432,
+      "p95": 2664.0037,
+      "min": 2462.2294,
+      "max": 3068.1926
+    },
+    "f_RA": {
+      "mean": 0.8518,
+      "std": 0.0711,
+      "p5": 0.8204,
+      "p50": 0.8639,
+      "p95": 0.8639,
+      "min": 0.1233,
+      "max": 0.8639
+    },
+    "grain_size_um": {
+      "mean": 3.0103,
+      "std": 1.4903,
+      "p5": 0.8893,
+      "p50": 2.7996,
+      "p95": 5.7576,
+      "min": 0.4319,
+      "max": 6.4121
+    },
+    "hv_tempered": {
+      "mean": 488.7654,
+      "std": 113.5014,
+      "p5": 299.3082,
+      "p50": 483.4987,
+      "p95": 678.7552,
+      "min": 294.8627,
+      "max": 732.6213
+    },
+    "ni_wt_percent": {
+      "mean": 1.9216,
+      "std": 0.0745,
+      "p5": 1.7843,
+      "p50": 1.9322,
+      "p95": 2.022,
+      "min": 1.6916,
+      "max": 2.0329
+    },
+    "porosity": {
+      "mean": 0.0103,
+      "std": 0.0022,
+      "p5": 0.0063,
+      "p50": 0.0107,
+      "p95": 0.0133,
+      "min": 0.0048,
+      "max": 0.0136
+    },
+    "sigma_hp_MPa": {
+      "mean": 352.5478,
+      "std": 5.5464,
+      "p5": 343.4081,
+      "p50": 353.3083,
+      "p95": 359.3299,
+      "min": 342.9981,
+      "max": 370.1276
+    },
+    "sigma_y_MPa": {
+      "mean": 397.2068,
+      "std": 15.1319,
+      "p5": 368.1548,
+      "p50": 404.7274,
+      "p95": 410.8697,
+      "min": 366.7259,
+      "max": 410.8982
+    },
+    "specific_energy_kWh_per_kg": {
+      "mean": 2616.6245,
+      "std": 61.3088,
+      "p5": 2522.4668,
+      "p50": 2624.432,
+      "p95": 2664.0037,
+      "min": 2462.2294,
+      "max": 3068.1926
+    },
+    "surface_C_wt_percent": {
+      "mean": 1.1,
+      "std": 0.0,
+      "p5": 1.1,
+      "p50": 1.1,
+      "p95": 1.1,
+      "min": 1.1,
+      "max": 1.1
+    },
+    "surface_hv": {
+      "mean": 842.4649,
+      "std": 0.0,
+      "p5": 842.4649,
+      "p50": 842.4649,
+      "p95": 842.4649,
+      "min": 842.4649,
+      "max": 842.4649
+    },
+    "uts_MPa": {
+      "mean": 485.8477,
+      "std": 40.0784,
+      "p5": 410.363,
+      "p50": 497.772,
+      "p95": 532.6147,
+      "min": 405.3805,
+      "max": 534.26
+    },
+    "vickers_hv": {
+      "mean": 121.8596,
+      "std": 11.4537,
+      "p5": 100.368,
+      "p50": 125.1283,
+      "p95": 135.2079,
+      "min": 98.5559,
+      "max": 135.6631
+    },
+    "ys_tempered_MPa": {
+      "mean": 1597.717,
+      "std": 371.0229,
+      "p5": 978.4035,
+      "p50": 1580.5008,
+      "p95": 2218.7715,
+      "min": 963.8718,
+      "max": 2394.8537
+    }
+  },
+  "sensitivity_top3": {
+    "Ms_C": {
+      "Q_ferrite_kJ_mol": 0.2879,
+      "a3_temp_C": 0.2429,
+      "activity_exponent": 0.2231
+    },
+    "carbon_wt_percent": {
+      "her_tafel_V": 0.999,
+      "k_carbon_MPa_per_wt": 0.9989,
+      "grain_pe_factor_base": 0.9988
+    },
+    "case_depth_035_um": {},
+    "core_c_wt": {
+      "Q_ferrite_kJ_mol": 0.2879,
+      "a3_temp_C": 0.2429,
+      "activity_exponent": 0.2231
+    },
+    "current_efficiency_percent": {
+      "rho_carbon": 0.7853,
+      "ni_tafel_V": 0.7851,
+      "her_tafel_V": 0.7839
+    },
+    "delta_carbon_total_MPa": {
+      "load_transfer_frac": 1.0,
+      "grain_j_exponent": 0.9998,
+      "grain_pre_factor_base": 0.9998
+    },
+    "delta_ss_MPa": {
+      "temp_accel_per_C": 0.9996,
+      "load_transfer_frac": 0.9996,
+      "resistance_growth_ohm_m2": 0.9995
+    },
+    "elongation_pct": {
+      "elongation_base_pct": 0.9991,
+      "d_p_default_um": 0.8887,
+      "fe_E_eq": 0.7993
+    },
+    "energy_cost": {
+      "fe_tafel_V": 0.8313,
+      "her_tafel_V": 0.8275,
+      "grain_pe_factor_base": 0.8264
+    },
+    "f_RA": {
+      "Q_ferrite_kJ_mol": 0.34,
+      "a3_temp_C": 0.2904,
+      "activity_exponent": 0.2684
+    },
+    "grain_size_um": {
+      "grain_j_ref_mA_cm2": 0.9957,
+      "her_i0": 0.9947,
+      "guglielmi_k_ref": 0.9902
+    },
+    "hv_tempered": {
+      "C_HJ": 0.7069,
+      "oer_ea_IrO2_kJ_mol": 0.7021,
+      "ss_ni_exp": 0.7021
+    },
+    "ni_wt_percent": {
+      "her_tafel_V": 0.9998,
+      "oer_ea_IrO2_kJ_mol": 0.9997,
+      "ni_tafel_V": 0.9996
+    },
+    "porosity": {
+      "porosity_max": 1.0,
+      "sigma0_fe_MPa": 1.0,
+      "ss_ni_sat_wt": 1.0
+    },
+    "sigma_hp_MPa": {
+      "carbon_size_ref_um": 0.6094,
+      "coating_loading_g_m2": 0.603,
+      "dG_ch4_intercept": 0.5795
+    },
+    "sigma_y_MPa": {
+      "ss_ni_exp": 0.9531,
+      "softening_floor": 0.9527,
+      "tabor_factor": 0.9526
+    },
+    "specific_energy_kWh_per_kg": {
+      "fe_tafel_V": 0.8313,
+      "her_tafel_V": 0.8275,
+      "grain_pe_factor_base": 0.8264
+    },
+    "surface_C_wt_percent": {},
+    "surface_hv": {},
+    "uts_MPa": {
+      "ss_ni_exp": 0.9921,
+      "softening_floor": 0.992,
+      "tabor_factor": 0.992
+    },
+    "vickers_hv": {
+      "ss_ni_exp": 0.9935,
+      "softening_floor": 0.9934,
+      "tabor_factor": 0.9933
+    },
+    "ys_tempered_MPa": {
+      "C_HJ": 0.7069,
+      "oer_ea_IrO2_kJ_mol": 0.7021,
+      "ss_ni_exp": 0.7021
+    }
+  },
+  "design_point": {
+    "j_avg_mA_cm2": 150.0,
+    "j_peak_mA_cm2": 300.0,
+    "duty_cycle": 0.5,
+    "waveform": "pe",
+    "temperature_C": 60.0,
+    "bath_fe_M": 0.5,
+    "bath_ni_M": 0.5,
+    "pH": 3.5,
+    "carbon_particle_loading_g_L": 2.0,
+    "mechanism_fe_ni": "hydroxide_suppression",
+    "particle_size_um": 1.5,
+    "carburizing_temperature_C": 900.0,
+    "carburizing_surface_C_wt": 1.1,
+    "carburizing_duration_hr": 4.0,
+    "carburizing_thickness_um": 1000.0,
+    "tempering_temperature_C": 200.0,
+    "tempering_time_hr": 1.0,
+    "cell_voltage_V": 2.5,
+    "electrode_area_m2": 1.0
+  },
+  "spec_set_name": "ASTM_A36"
+}
