@@ -2,7 +2,6 @@
 
 [![Research](https://img.shields.io/badge/status-research--in--progress-blue)](https://github.com/)
 [![Sustainability](https://img.shields.io/badge/focus-decarbonization-green)](https://github.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Low-temperature aqueous electrodeposition of iron and steel from renewable electricity**
 
@@ -35,6 +34,9 @@ This is currently a **research proposal / conceptual repository** (no experiment
 git clone https://github.com/your-org/aq-steel-electrowinning.git
 cd aq-steel-electrowinning
 
+# Install Python dependencies
+pip install -r requirements.txt
+
 # View the detailed technical report
 open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 ```
@@ -53,12 +55,15 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 .
 ├── README.md                          # This file
 ├── RESEARCH_REPORT.md                 # Comprehensive technical report
+├── requirements.txt                   # Python dependencies
+├── .gitignore                         # Git ignore rules
 ├── docs/
-│   └── figures/                       # (Future) diagrams, Pourbaix plots, SEM images
-├── experiments/                       # (Future) lab notebooks, raw data
-├── models/                            # (Future) electrochemical simulations
-├── references/                        # Key papers & bibliography
-└── LICENSE
+│   └── figures/                       # Diagrams, Pourbaix plots, SEM images
+├── experiments/
+│   ├── data/                          # Raw and processed experimental data
+│   └── notebooks/                     # Jupyter notebooks for analysis
+├── models/                            # Electrochemical & process simulations
+└── references/                        # Key papers & bibliography
 ```
 
 ---
@@ -100,7 +105,7 @@ We welcome contributions from electrochemists, metallurgists, materials scientis
 
 ## License
 
-This work is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+*License TBD.*
 
 ---
 
