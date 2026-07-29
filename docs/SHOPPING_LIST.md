@@ -63,6 +63,15 @@ Graphite sheds particulates and is an insoluble anode that will oxidize Fe(II)�
 | **Sodium bicarbonate (baking soda)** | Grocery store | ~$3 | Spill neutralizer. Keep nearby. |
 | **Ventilation** | — | — | REQUIRED. You are generating hydrogen. Do NOT run in unventilated closet. |
 
+### Data Recording
+| Product | ASIN/Source | Price | Notes |
+|---------|-------------|-------|-------|
+| **USB webcam x4** | Amazon, search "Logitech C270" or similar | ~$100 | 720p is sufficient. Overhead, panel, instruments, wide. |
+| **Raspberry Pi 4 or used laptop** | — | ~$0-50 | Runs MotionEye or OBS for multi-camera capture. You probably have one. |
+| **128GB microSD card** | Amazon | ~$15 | Continuous recording storage. |
+| **USB extension cables x4** | Amazon | ~$10 | Camera placement flexibility. |
+| **Gooseneck/clamp camera mounts x4** | Amazon | ~$20 | Position cameras without tape. |
+
 ### Electrical
 | Item | Source | Price | Notes |
 |------|--------|-------|-------|
@@ -141,8 +150,9 @@ The sub-$150 "0.001g" scales on Amazon effectively resolve ~0.01g in practice. F
 | Ascobic/citric acid | — | ~$20 | Antioxidant for bath |
 | Na₂CO₃ (pH up) | — | ~$5 | |
 | Ventilation | — | — | REQUIRED, not purchasable |
+| Data recording (4 cameras + Pi) | — | ~$145-200 | NEW — continuous video of every run |
 
-**Grand total: ~$550-700** (roughly same as before, but correct items)
+**Grand total: ~$700-900** (includes data recording infrastructure)
 
 ---
 

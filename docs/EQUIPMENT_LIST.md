@@ -75,6 +75,18 @@ Graphite sheds particulates and is an insoluble anode that oxidizes Fe(II)→Fe(
 | Ventilation | — | — | REQUIRED. You are generating H₂. NOT in an unventilated closet. |
 | Thermometer | B01IHHLB7W | $8-12 | -50 to 300°C. |
 
+### Data Recording (~$145-200)
+
+Continuous video of every run. No "oh let me just adjust the stirring" that goes unlogged.
+
+| Item | Where | ~$ | Notes |
+|------|-------|-----|-------|
+| USB webcam x4 | Amazon "Logitech C270" or similar | ~$100 | 720p sufficient. Overhead, panel, instruments, wide. |
+| Raspberry Pi 4 or used laptop | — | $0-50 | Runs MotionEye or OBS. You probably have one. |
+| 128GB microSD card | Amazon | ~$15 | Continuous recording storage. |
+| USB extension cables x4 | Amazon | ~$10 | Camera placement flexibility. |
+| Gooseneck/clamp mounts x4 | Amazon | ~$20 | Position cameras without tape. |
+
 ---
 
 ## Tier B: FE Measurement (~$50-120)
@@ -127,10 +139,10 @@ The membrane is the easy part. You need a cell body to mount it in.
 
 | Tier | What You Get | Cost |
 |------|-------------|------|
-| A | First deposits, Hull cell screening, proper bath chemistry | $350-450 |
+| A | First deposits, Hull cell screening, proper bath chemistry, data recording | $500-650 |
 | B | Quantified FE by mass gain + stirring | $50-120 |
 | C | Divided cell, pH control, three-electrode option | $100-150 |
-| **Total A+B+C** | **Full experimental capability** | **$500-720** |
+| **Total A+B+C** | **Full experimental capability** | **$650-920** |
 
 ---
 
@@ -149,6 +161,7 @@ The membrane is the easy part. You need a cell body to mount it in.
 | No substrate prep | Acetone, Alconox, pads ($25) | Bad prep = peeling deposits = wasted weeks |
 | No multimeter | Digital multimeter ($20) | Independent cell voltage measurement |
 | 0.5mm SS cathode | 1mm SS cathode | Thinner warps |
+| No data recording | 4 USB cameras + Pi (~$145-200) | Continuous video of every run. No unlogged adjustments. |
 
 ---
 
