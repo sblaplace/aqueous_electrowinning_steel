@@ -274,6 +274,20 @@ from .uncertainty.bayesian_calibration import (
     generate_synthetic_observations,
     screening_forward_model,
 )
+from .bath_startup import (
+    BathParams,
+    BathSimulationResult,
+    dissolved_o2_saturation_mol_L,
+    g_per_L_to_mol_L,
+    fe2_oxidation_rate,
+    aa_reduction_rate,
+    aa_autoxidation_rate,
+    simulate_bath,
+    recommend_ascorbic_loading,
+    ascorbic_consumption_summary,
+    sensitivity_ph,
+    sensitivity_temperature,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -511,4 +525,17 @@ __all__ = [
     "optimal_next_experiment",
     "generate_synthetic_observations",
     "screening_forward_model",
+    # ── Bath startup kinetics ─────────────────────────────────────────
+    "BathParams",
+    "BathSimulationResult",
+    "dissolved_o2_saturation_mol_L",
+    "g_per_L_to_mol_L",
+    "fe2_oxidation_rate",
+    "aa_reduction_rate",
+    "aa_autoxidation_rate",
+    "simulate_bath",
+    "recommend_ascorbic_loading",
+    "ascorbic_consumption_summary",
+    "sensitivity_ph",
+    "sensitivity_temperature",
 ]
