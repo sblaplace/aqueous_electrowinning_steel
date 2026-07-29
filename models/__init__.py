@@ -1,5 +1,5 @@
 """
-models — Electrochemical and techno-economic modeling for aqueous electrowinning.
+models — Electrochemical, transport, transient pulse, and techno-economic modeling for aqueous electrowinning.
 """
 
 from .electrochemistry import (
@@ -30,6 +30,12 @@ from .transport import (
     FilmProfile,
     compare_support_levels,
 )
+from .pulse import (
+    PulseDepositionModel,
+    PulseWaveform,
+    PulseResult,
+    compare_dc_vs_pulse,
+)
 from .technoeconomic import (
     ElectrolyzerParams,
     CAPEXModel,
@@ -59,6 +65,10 @@ __all__ = [
     "NernstPlanckState",
     "FilmProfile",
     "compare_support_levels",
+    "PulseDepositionModel",
+    "PulseWaveform",
+    "PulseResult",
+    "compare_dc_vs_pulse",
     "ElectrolyzerParams",
     "CAPEXModel",
     "OPEXModel",
