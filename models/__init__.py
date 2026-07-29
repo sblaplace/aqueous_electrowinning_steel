@@ -85,6 +85,12 @@ from .anode import (
     E0_OER_ALKALINE,
     E0_CER,
 )
+from .co_deposition import (
+    GuglielmiCarbonIncorporation,
+    AnomalousFeNiKinetics,
+    PhaseIIICoDeposition,
+    build_phase3_model,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -151,4 +157,9 @@ __all__ = [
     "E0_OER_ACIDIC",
     "E0_OER_ALKALINE",
     "E0_CER",
+    # ── Phase III co-deposition ───────────────────────────────────────
+    "GuglielmiCarbonIncorporation",
+    "AnomalousFeNiKinetics",
+    "PhaseIIICoDeposition",
+    "build_phase3_model",
 ]

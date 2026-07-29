@@ -1,0 +1,10 @@
+Guglielmi, N. (1972). Kinetics of deposition of inert particles from an electrolytic bath. Journal of the Electrochemical Society, 119(8), 1009-1012.
+
+Reference summary for Phase III co-deposition model:
+- Introduces the two-step successive adsorption mechanism for composite electrodeposition.
+- Loose adsorption: reversible, physical (Langmuir), particles covered by adsorbed metal ions.
+- Strong adsorption: irreversible, electrochemical, driven by reduction of adsorbed ions on particle surface.
+- Only a small fraction θ ≪ σ of loosely adsorbed particles become incorporated.
+- Incorporation rate depends on current density, particle concentration, and bath hydrodynamics.
+
+Used in: models/co_deposition.py (GuglielmiCarbonIncorporation class).

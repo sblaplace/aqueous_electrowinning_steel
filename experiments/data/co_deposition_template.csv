@@ -1,0 +1,6 @@
+run_id,coupon_id,timestamp_s,current_density_mA_cm2,potential_V_vs_ref,cell_voltage_V,pH,temperature_C,bath_fe_M,bath_ni_M,bath_c_particle_g_L,electrolyte_id,agitation_rpm,electrode_material,deposition_duration_s,deposit_fe_wt_percent_eds,deposit_ni_wt_percent_eds,deposit_c_wt_percent_combustion,apparent_gravimetric_fe_percent,notes,mechanism_fe_ni
+SYNTH-01,C-01,0,0,0,0,3.5,60.0,0.60,0.40,2.5,FE-NI-SO4-C-001,300,SS-316,3600,,,,,,Synthetic Phase III co-deposition template; fill with validated instrument/EDS/combustion data,hydroxide_suppression
+SYNTH-01,C-01,3600,50,-0.82,2.45,3.5,60.0,0.60,0.40,2.5,FE-NI-SO4-C-001,300,SS-316,3600,,,,,,Synthetic 50 mA/cm² point; verify by EDS and combustion analysis,hydroxide_suppression
+SYNTH-01,C-01,7200,100,-0.91,2.68,3.5,60.0,0.60,0.40,2.5,FE-NI-SO4-C-001,300,SS-316,3600,,,,,,Synthetic 100 mA/cm² point; verify by EDS and combustion analysis,hydroxide_suppression
+SYNTH-01,C-01,10800,150,-0.96,2.85,3.5,60.0,0.60,0.40,2.5,FE-NI-SO4-C-001,300,SS-316,3600,,,,,,Synthetic 150 mA/cm² point; verify by EDS and combustion analysis,hydroxide_suppression
+SYNTH-01,C-01,14400,200,-1.01,3.02,3.5,60.0,0.60,0.40,2.5,FE-NI-SO4-C-001,300,SS-316,3600,,,,,,Synthetic 200 mA/cm² point; verify by EDS and combustion analysis,hydroxide_suppression
