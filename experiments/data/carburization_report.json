@@ -1,0 +1,55 @@
+{
+  "title": "Post-deposition gaseous carburization screening",
+  "date": "2026-07-29T18:14:02.091384",
+  "params": {
+    "temperature_C": 900.0,
+    "surface_c_wt": 1.1,
+    "initial_c_wt": 0.02,
+    "thickness_um": 1000.0,
+    "D_m2_s": 5.917507558419529e-12,
+    "phase": "austenite",
+    "duration_hr": 4.0
+  },
+  "summary": {
+    "final_time_hr": 4.0,
+    "final_case_depth_035_um": 500.0,
+    "final_case_depth_050_um": 500.0,
+    "final_carbon_uptake_g_m2": 55.653235276043404,
+    "final_surface_hv": 842.4649249139632,
+    "final_core_c_wt": 0.5078033245166326,
+    "sheet_thickness_um": 1000.0,
+    "temperature_C": 900.0,
+    "surface_carbon_wt": 1.1
+  },
+  "composite_strength_final": {
+    "case_fraction": 1.0,
+    "core_fraction": 0.0,
+    "sigma_case_035_MPa": 1000.0,
+    "sigma_case_050_MPa": 1300.0,
+    "sigma_composite_035_MPa": 1000.0,
+    "sigma_composite_050_MPa": 1300.0,
+    "core_yield_MPa": 300.0
+  },
+  "energy": {
+    "heat_energy_kWh_kg": 0.10913194444444445,
+    "with_furnace_efficiency_kWh_kg": 0.18188657407407408,
+    "dT_C": 875.0,
+    "furnace_efficiency": 0.6
+  },
+  "figures": [
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_profiles.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_case_depth.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_hardness.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_energy.png"
+  ],
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carburization.csv",
+  "model_notes": [
+    "Fickian diffusion, finite slab with both sides carburized, Fourier superposition for Fo>0.2",
+    "D = D0 exp(-Q/RT) with \u03b3-Fe D0=2.3e-5 m2/s Q=148 kJ/mol, \u03b1-Fe D0=6.2e-7 Q=80 kJ/mol (screening means)",
+    "Hardness: Maynier HV=127+949C (C<0.8 wt%) saturating at 900 HV, quench-rate knockdown for bainite",
+    "Tempering optional via Hollomon-Jaffe parameter",
+    "Does NOT model carbide precipitation, retained austenite, or decarburization on quench",
+    "Energy is only heating, not soak or atmosphere \u2014 screening only"
+  ],
+  "time_estimate_500um_case": 5.589416040929389
+}

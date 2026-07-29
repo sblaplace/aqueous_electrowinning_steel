@@ -17,13 +17,13 @@
     ],
     "figure_files": [
       "co_deposition_anomalous_kinetics_hydroxide_suppression.png",
-      "co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
-      "co_deposition_phase3_combined_hydroxide_suppression.png",
       "co_deposition_anomalous_kinetics_intermediate_adsorption.png",
-      "co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
-      "co_deposition_phase3_combined_intermediate_adsorption.png",
       "co_deposition_anomalous_kinetics_mixed_metal_intermediate.png",
+      "co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
+      "co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
       "co_deposition_guglielmi_incorporation_mixed_metal_intermediate.png",
+      "co_deposition_phase3_combined_hydroxide_suppression.png",
+      "co_deposition_phase3_combined_intermediate_adsorption.png",
       "co_deposition_phase3_combined_mixed_metal_intermediate.png"
     ]
   },

@@ -90,6 +90,9 @@ from .co_deposition import (
     AnomalousFeNiKinetics,
     PhaseIIICoDeposition,
     build_phase3_model,
+    surface_pH_from_current,
+    surface_pH_from_pulse,
+    effective_mass_transport_enhancement,
 )
 from .closed_loop import (
     AnodeDurabilityParams,
@@ -97,6 +100,32 @@ from .closed_loop import (
     PhaseIVOperatingPoint,
     PhaseIVResult,
     PhaseIVClosedLoop,
+)
+from .mechanical_properties import (
+    MechanicalPropertiesModel,
+    MechanicalPropertiesResult,
+    MechanicalPropertiesParams,
+    GrainSizeParams,
+    estimate_grain_size_um,
+    hall_petch_yield_MPa,
+    solid_solution_strengthening_MPa,
+    carbon_dispersion_strengthening_MPa,
+    porosity_factor,
+    build_mechanical_model_from_phase3_result,
+)
+from .process_flow import (
+    generate_process_flow_diagram,
+    generate_detailed_flow_with_composition,
+)
+from .carburization import (
+    CarburizationModel,
+    CarburizationParams,
+    CarburizationProfile,
+    CarburizationResult,
+    carbon_diffusivity_m2_s,
+    hardness_from_carbon_wt,
+    tempered_hardness,
+    estimate_carburizing_time_for_case_depth,
 )
 
 __all__ = [
@@ -175,4 +204,31 @@ __all__ = [
     "PhaseIVOperatingPoint",
     "PhaseIVResult",
     "PhaseIVClosedLoop",
+    # ── Mechanical properties (new Phase III → structural) ────────────
+    "MechanicalPropertiesModel",
+    "MechanicalPropertiesResult",
+    "MechanicalPropertiesParams",
+    "GrainSizeParams",
+    "estimate_grain_size_um",
+    "hall_petch_yield_MPa",
+    "solid_solution_strengthening_MPa",
+    "carbon_dispersion_strengthening_MPa",
+    "porosity_factor",
+    "build_mechanical_model_from_phase3_result",
+    # ── Process flow diagrams ─────────────────────────────────────────
+    "generate_process_flow_diagram",
+    "generate_detailed_flow_with_composition",
+    # ── Carburization (post-deposition gaseous) ───────────────────────
+    "CarburizationModel",
+    "CarburizationParams",
+    "CarburizationProfile",
+    "CarburizationResult",
+    "carbon_diffusivity_m2_s",
+    "hardness_from_carbon_wt",
+    "tempered_hardness",
+    "estimate_carburizing_time_for_case_depth",
+    # ── Pulse-aware co-deposition coupling ────────────────────────────
+    "surface_pH_from_current",
+    "surface_pH_from_pulse",
+    "effective_mass_transport_enhancement",
 ]

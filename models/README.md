@@ -16,7 +16,10 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
 | `eis.py` | Phase I EIS: Randles/CPE/Warburg equivalent circuits, complex NLLS spectrum fitting, Rct→exchange-current conversion |
 | `hull_cell.py` | Phase II angled-panel primary current-density screen, galvanostatic trace loading, and gravimetric apparent Fe Faradaic efficiency |
-| `co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon incorporation screen |
+| `co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon incorporation screen + pulse-coupled pH recovery & transport enhancement (`run_at_current_pulsed`) |
+| `mechanical_properties.py` | Phase III → structural: Hall-Petch grain-size, Ni solid-solution, Guglielmi C dispersion → YS/UTS/HV/elongation, grade mapping |
+| `carburization.py` | Post-deposition gaseous/plasma carburization: Fickian finite-slab diffusion, case depth, Maynier HV, Hollomon-Jaffe tempering, energy & composite strength |
+| `process_flow.py` | Process block-flow diagram generator (BFD: ore→leach→cell→wash→carburize→product + recycle/purge) + detailed variant |
 | `anode.py` | OER/CER anode kinetics, bubble resistance, and full-cell voltage coupling |
 | `closed_loop.py` | Phase IV charge-throughput anode wear, CSTR electrolyte balances, process costs and QA flags |
 | `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
@@ -29,17 +32,21 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 ## Drivers
 
 ```bash
-python -m models.run_electrochemistry   # Pourbaix + kinetics figures & report
-python -m models.run_technoeconomic     # Base-case techno-economics
-python -m models.run_scenarios          # Scenario comparison
-python -m models.run_transport          # Nernst-Planck migration analysis
-python -m models.run_pulse              # Pulse-reverse transient dynamics & comparison
-python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
-python -m models.run_eis                # Synthetic EIS spectrum & Randles equivalent-circuit fitting
-python -m models.run_calibration         # QA-gated real-data LSV calibration (requires manifest/options)
-python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
-python -m models.run_co_deposition      # Phase III Fe–Ni/carbon incorporation screen
-python -m models.run_closed_loop        # Phase IV durability + closed-loop CSTR example
+python -m models.run_electrochemistry       # Pourbaix + kinetics figures & report
+python -m models.run_technoeconomic         # Base-case techno-economics
+python -m models.run_scenarios              # Scenario comparison
+python -m models.run_transport              # Nernst-Planck migration analysis
+python -m models.run_pulse                  # Pulse-reverse transient dynamics & comparison
+python -m models.run_voltammetry            # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
+python -m models.run_eis                    # Synthetic EIS spectrum & Randles equivalent-circuit fitting
+python -m models.run_calibration             # QA-gated real-data LSV calibration (requires manifest/options)
+python -m models.run_hull_cell              # Phase II angled-panel current screen + gravimetric FE example
+python -m models.run_co_deposition          # Phase III Fe–Ni/carbon incorporation screen (DC + pulsed)
+python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade + process-flow diagrams
+python -m models.run_carburization          # Post-deposition carburization: case depth, HV profile, energy
+python -m models.run_closed_loop            # Phase IV durability + closed-loop CSTR example
+python -m models.run_all                    # Full suite (12 steps) + master_report.json + dashboard
+python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 ```
 
 ## Transport Model Notes

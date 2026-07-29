@@ -38,16 +38,19 @@ cd aq-steel-electrowinning
 pip install -r requirements.txt
 
 # Run the models (each writes figures to docs/figures/ and a JSON report to experiments/data/)
-python -m models.run_electrochemistry   # Pourbaix diagram + HER-competition kinetics
-python -m models.run_technoeconomic     # Base-case CAPEX/OPEX/LCOFe
-python -m models.run_scenarios          # Four-scenario comparison
-python -m models.run_transport          # Nernst-Planck transport: migration effects
-python -m models.run_pulse              # Transient pulse & pulse-reverse dynamics
-python -m models.run_voltammetry        # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
-python -m models.run_eis                # Synthetic EIS spectrum & Randles fitting
-python -m models.run_hull_cell          # Phase II angled-panel current screen + gravimetric FE example
-python -m models.run_co_deposition      # Phase III Fe–Ni/carbon co-deposition screen
-python -m models.run_closed_loop        # Phase IV anode durability + closed-loop CSTR screen
+python -m models.run_electrochemistry       # Pourbaix diagram + HER-competition kinetics
+python -m models.run_technoeconomic         # Base-case CAPEX/OPEX/LCOFe
+python -m models.run_scenarios              # Four-scenario comparison
+python -m models.run_transport              # Nernst-Planck transport: migration effects
+python -m models.run_pulse                  # Transient pulse & pulse-reverse dynamics
+python -m models.run_voltammetry            # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
+python -m models.run_eis                    # Synthetic EIS spectrum & Randles fitting
+python -m models.run_hull_cell              # Phase II angled-panel current screen + gravimetric FE example
+python -m models.run_co_deposition          # Phase III Fe–Ni/carbon co-deposition screen
+python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade + process-flow diagrams
+python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
+python -m models.run_all                    # Full suite + master_report.json + dashboard
+python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Run the test suite
 pytest tests -q
@@ -71,6 +74,8 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
 | `models/hull_cell.py` | Phase II variable-gap angled-panel primary-current screen and gravimetric apparent Fe Faradaic efficiency |
 | `models/co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon-particle incorporation |
+| `models/mechanical_properties.py` | Phase III → mechanical: Hall-Petch, solid-solution Ni, C dispersion → YS/UTS/HV/elongation + grade mapping |
+| `models/process_flow.py` | Process block-flow diagrams: ore→leach→cell→wash→carburize→product + recycle/purge |
 | `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
 | `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |

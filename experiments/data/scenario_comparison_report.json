@@ -15,23 +15,23 @@
         "current_density_mA_cm2": 100.0,
         "current_efficiency": 0.9,
         "temperature_C": 70.0,
-        "cell_voltage_V": 2.569
+        "cell_voltage_V": 1.69
       },
       "cell_voltage_breakdown": {
-        "thermodynamic_V": 1.669,
+        "thermodynamic_V": 0.841,
         "eta_cathode_V": 0.3,
         "eta_anode_V": 0.4,
         "ir_drop_V": 0.2
       },
       "results": {
-        "specific_energy_kWh_t": 2740.0,
+        "specific_energy_kWh_t": 1803.0,
         "annual_production_t": 7501.0,
-        "total_capex_M$": 2.64,
-        "annual_opex_M$": 3.55,
-        "LCOFe_$_t": 506.0,
-        "electricity_cost_$_t": 109.59,
-        "capex_share_pct": 6.5,
-        "opex_share_pct": 93.5
+        "total_capex_M$": 2.47,
+        "annual_opex_M$": 3.23,
+        "LCOFe_$_t": 462.0,
+        "electricity_cost_$_t": 72.12,
+        "capex_share_pct": 6.7,
+        "opex_share_pct": 93.3
       },
       "references": "Standard alkaline electroplating literature; Yuan & Haarberg (2009)"
     },
@@ -42,23 +42,23 @@
         "current_density_mA_cm2": 200.0,
         "current_efficiency": 0.93,
         "temperature_C": 90.0,
-        "cell_voltage_V": 2.389
+        "cell_voltage_V": 1.418
       },
       "cell_voltage_breakdown": {
-        "thermodynamic_V": 1.669,
+        "thermodynamic_V": 0.841,
         "eta_cathode_V": 0.22,
         "eta_anode_V": 0.35,
         "ir_drop_V": 0.15
       },
       "results": {
-        "specific_energy_kWh_t": 2466.0,
+        "specific_energy_kWh_t": 1464.0,
         "annual_production_t": 15502.0,
-        "total_capex_M$": 4.09,
-        "annual_opex_M$": 4.71,
-        "LCOFe_$_t": 329.0,
-        "electricity_cost_$_t": 98.63,
-        "capex_share_pct": 7.5,
-        "opex_share_pct": 92.5
+        "total_capex_M$": 3.67,
+        "annual_opex_M$": 4.01,
+        "LCOFe_$_t": 281.0,
+        "electricity_cost_$_t": 58.55,
+        "capex_share_pct": 7.9,
+        "opex_share_pct": 92.1
       },
       "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
     },
@@ -69,7 +69,7 @@
         "current_density_mA_cm2": 500.0,
         "current_efficiency": 0.99,
         "temperature_C": 60.0,
-        "cell_voltage_V": 2.27
+        "cell_voltage_V": 2.485
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 1.8,
@@ -78,14 +78,14 @@
         "ir_drop_V": 0.1
       },
       "results": {
-        "specific_energy_kWh_t": 2201.0,
+        "specific_energy_kWh_t": 2410.0,
         "annual_production_t": 41256.0,
-        "total_capex_M$": 8.47,
-        "annual_opex_M$": 9.21,
-        "LCOFe_$_t": 243.0,
-        "electricity_cost_$_t": 88.03,
-        "capex_share_pct": 7.9,
-        "opex_share_pct": 92.1
+        "total_capex_M$": 8.72,
+        "annual_opex_M$": 9.6,
+        "LCOFe_$_t": 253.0,
+        "electricity_cost_$_t": 96.39,
+        "capex_share_pct": 7.8,
+        "opex_share_pct": 92.2
       },
       "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
     },
@@ -96,7 +96,7 @@
         "current_density_mA_cm2": 400.0,
         "current_efficiency": 0.97,
         "temperature_C": 50.0,
-        "cell_voltage_V": 2.049
+        "cell_voltage_V": 2.441
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 1.669,
@@ -105,14 +105,14 @@
         "ir_drop_V": 0.08
       },
       "results": {
-        "specific_energy_kWh_t": 2028.0,
+        "specific_energy_kWh_t": 2415.0,
         "annual_production_t": 32338.0,
-        "total_capex_M$": 4.87,
-        "annual_opex_M$": 6.03,
-        "LCOFe_$_t": 200.0,
-        "electricity_cost_$_t": 60.83,
-        "capex_share_pct": 7.0,
-        "opex_share_pct": 93.0
+        "total_capex_M$": 5.13,
+        "annual_opex_M$": 6.45,
+        "LCOFe_$_t": 214.0,
+        "electricity_cost_$_t": 72.45,
+        "capex_share_pct": 6.9,
+        "opex_share_pct": 93.1
       },
       "references": "Projected; based on extrapolation of current trends"
     }

@@ -190,6 +190,95 @@ def surface_pH_from_current(
     return min(bulk_pH + delta_pH, 14.0)
 
 
+def surface_pH_from_pulse(
+    j_avg_mA_cm2: float,
+    j_peak_mA_cm2: float,
+    duty_cycle: float,
+    bulk_pH: float,
+    waveform: Literal["dc", "pe", "pre"] = "pe",
+    buffer_capacity_M: float = 0.05,
+    temperature_C: float = 60.0,
+    boundary_layer_m: float = 5e-5,
+    reverse_enhancement: float = 1.35,
+) -> float:
+    """
+    Pulse-aware surface pH estimate.
+
+    During pulse-off and reverse periods, protons diffuse back and surface pH
+    relaxes toward bulk. Therefore effective pH rise should track j_avg more
+    closely than j_peak, with extra recovery for PRE (anodic dissolution
+    produces H+ and stirs).
+
+    Screening model
+    ---------------
+    * DC: identical to surface_pH_from_current(j_avg)
+    * PE: pH = pH_DC(j_avg) + [pH_DC(j_peak)-pH_DC(j_avg)] * (duty^α)
+          with α≈0.7, so low duty gives more recovery.
+    * PRE: pH = pH_PE - ΔpH_rev, where ΔpH_rev ≈ 0.15*log10(1+j_peak/20)*enhancement
+            representing anodic proton generation + convection.
+
+    This is used to couple pulse.py transient results to anomalous kinetics:
+    hydroxide-suppression mechanism becomes weaker under PE/PRE, pushing
+    composition toward less anomalous (more Ni) at same peak j.
+
+    Returns pH_surf (>= bulk).
+    """
+
+    pH_dc_avg = surface_pH_from_current(
+        j_avg_mA_cm2, bulk_pH, buffer_capacity_M, temperature_C, boundary_layer_m
+    )
+    if waveform == "dc" or j_peak_mA_cm2 <= j_avg_mA_cm2:
+        return pH_dc_avg
+
+    pH_dc_peak = surface_pH_from_current(
+        j_peak_mA_cm2, bulk_pH, buffer_capacity_M, temperature_C, boundary_layer_m
+    )
+
+    # PE interpolation
+    alpha = 0.70
+    pH_pe = pH_dc_avg + (pH_dc_peak - pH_dc_avg) * (duty_cycle ** alpha)
+
+    if waveform == "pe":
+        return min(pH_pe, 14.0)
+
+    # PRE: extra depolarization / H+ generation during anodic pulse
+    # Approx reduction 0.2-0.8 pH units depending on peak and reverse factor
+    delta_rev = 0.18 * math.log10(1.0 + j_peak_mA_cm2 / 20.0) * reverse_enhancement
+    pH_pre = max(pH_pe - delta_rev, bulk_pH)
+    return min(pH_pre, 14.0)
+
+
+def effective_mass_transport_enhancement(
+    j_avg_mA_cm2: float,
+    j_peak_mA_cm2: float,
+    duty_cycle: float,
+    waveform: Literal["dc", "pe", "pre"] = "pe",
+    base_boundary_layer_m: float = 5e-5,
+) -> float:
+    """
+    Pulse-enhanced mass-transport: during off-time diffusion recovers Fe2+,
+    so effective limiting current is higher than DC at j_avg.
+
+    Screening factor on limiting current (i.e., divisive on boundary layer).
+
+    Returns effective boundary-layer thickness (m) — thinner = enhanced.
+    DC returns base thickness.
+    PE/PRE reduce thickness by up to 40-60% at low duty.
+    """
+
+    if waveform == "dc":
+        return base_boundary_layer_m
+
+    # Higher peak/avg ratio + low duty → stronger enhancement
+    ratio = j_peak_mA_cm2 / max(j_avg_mA_cm2, 1e-12)
+    # enhancement factor f = 1 - k*(1-duty)*log10(1+ratio)
+    k = 0.35 if waveform == "pe" else 0.50
+    reduction = k * (1.0 - duty_cycle) * math.log10(1.0 + ratio)
+    reduction = min(reduction, 0.60)  # cap 60% thinning
+    effective_delta = base_boundary_layer_m * (1.0 - reduction)
+    return max(effective_delta, base_boundary_layer_m * 0.35)
+
+
 # -------------------------------------------------------------------
 # Section 1: Anomalous Fe–Ni co-deposition kinetics
 # -------------------------------------------------------------------
@@ -300,6 +389,41 @@ class AnomalousFeNiKinetics:
             self.pH,
             self.buffer_capacity_M,
             self.temperature_C,
+            self.boundary_layer_m,
+        )
+
+    def surface_pH_pulsed(
+        self,
+        j_avg_mA_cm2: float,
+        j_peak_mA_cm2: float,
+        duty_cycle: float = 0.5,
+        waveform: Literal["dc", "pe", "pre"] = "pe",
+    ) -> float:
+        """Pulse-aware surface pH (off-time recovery + PRE H+ generation)."""
+        return surface_pH_from_pulse(
+            j_avg_mA_cm2,
+            j_peak_mA_cm2,
+            duty_cycle,
+            self.pH,
+            waveform,
+            self.buffer_capacity_M,
+            self.temperature_C,
+            self.boundary_layer_m,
+        )
+
+    def effective_boundary_layer_pulsed(
+        self,
+        j_avg_mA_cm2: float,
+        j_peak_mA_cm2: float,
+        duty_cycle: float = 0.5,
+        waveform: Literal["dc", "pe", "pre"] = "pe",
+    ) -> float:
+        """Effective δ for mass transport under pulse (thinner → higher i_lim)."""
+        return effective_mass_transport_enhancement(
+            j_avg_mA_cm2,
+            j_peak_mA_cm2,
+            duty_cycle,
+            waveform,
             self.boundary_layer_m,
         )
 
@@ -967,9 +1091,67 @@ class PhaseIIICoDeposition:
             boundary_layer_m=self.kinetics_model.boundary_layer_m,
         )
 
+    def _alloy_composition_pulsed(
+        self,
+        j_avg_mA_cm2: float,
+        j_peak_mA_cm2: float,
+        duty_cycle: float,
+        waveform: Literal["dc", "pe", "pre"],
+    ) -> Dict[str, Any]:
+        """
+        Pulsed-aware alloy composition.
+
+        Key coupling: surface pH uses pulse-aware estimate (off-time recovery),
+        and effective boundary layer is thinned (enhanced mass transport).
+        This reduces hydroxide-suppression at same peak j, pushing composition
+        toward less anomalous (higher Ni) under PE/PRE.
+
+        Screening implementation: temporarily override kinetics_model surface_pH
+        by monkey-patching its surface_pH method for this evaluation, and adjust
+        effective i_lim via thinner boundary layer.
+        """
+
+        # Save original methods / values
+        orig_boundary = self.kinetics_model.boundary_layer_m
+        # Compute effective boundary layer thickness under pulse
+        eff_delta = self.kinetics_model.effective_boundary_layer_pulsed(
+            j_avg_mA_cm2, j_peak_mA_cm2, duty_cycle, waveform
+        )
+        # Override boundary layer to enhance limiting current
+        object.__setattr__(self.kinetics_model, "boundary_layer_m", eff_delta)
+
+        # Override surface_pH method to return pulsed pH
+        orig_surface_pH_method = self.kinetics_model.surface_pH
+
+        def pulsed_pH(j: float) -> float:
+            # j is the current used for inhibition evaluation (typically j_avg)
+            # Use pulse-aware calculation
+            return self.kinetics_model.surface_pH_pulsed(
+                j_avg_mA_cm2, j_peak_mA_cm2, duty_cycle, waveform
+            )
+
+        # Bind override
+        self.kinetics_model.surface_pH = pulsed_pH  # type: ignore
+
+        try:
+            # Use j_avg for galvanostatic balance under pulse (cycle-averaged metal rate tracks avg)
+            # but allow higher peak overpotential for nucleation effects via separate flag
+            res = self.kinetics_model.alloy_composition(j_avg_mA_cm2)
+            # Annotate with pulse info
+            res["pulsed_surface_pH"] = pulsed_pH(j_avg_mA_cm2)
+            res["effective_boundary_layer_m"] = eff_delta
+            res["waveform"] = waveform
+            res["j_peak"] = j_peak_mA_cm2
+            res["duty"] = duty_cycle
+            return res
+        finally:
+            # Restore
+            object.__setattr__(self.kinetics_model, "boundary_layer_m", orig_boundary)
+            self.kinetics_model.surface_pH = orig_surface_pH_method  # type: ignore
+
     def run_at_current(self, j_mA_cm2: float) -> Dict[str, Any]:
         """
-        Run the integrated model at a given galvanostatic current density.
+        Run the integrated model at a given galvanostatic current density (DC).
 
         Returns a complete diagnostic dictionary suitable for experimental
         comparison or synthetic data reporting.
@@ -1074,6 +1256,139 @@ class PhaseIIICoDeposition:
             "is_anomalous": [r["alloy_kinetics"]["is_anomalous"] for r in records],
             "adjusted_ce_percent": [r["integrated_metrics"]["adjusted_overall_current_efficiency_percent"] for r in records],
             "deposition_rate_um_hr": [r["integrated_metrics"]["deposition_rate_um_hr"] for r in records],
+        }
+
+    def run_at_current_pulsed(
+        self,
+        j_avg_mA_cm2: float,
+        j_peak_mA_cm2: float,
+        duty_cycle: float = 0.5,
+        waveform: Literal["dc", "pe", "pre"] = "pe",
+    ) -> Dict[str, Any]:
+        """
+        Pulse-aware co-deposition run.
+
+        Couples pulse.py recovery (off-time proton & Fe2+ replenishment) to
+        hydroxide-suppression and mass-transport limits. PE/PRE give:
+        * lower surface pH than DC at same peak j (less anomalous suppression)
+        * thinner effective boundary layer (higher i_lim)
+        * carbon incorporation uses j_avg for σ but peak for strong-adsorption driving force.
+
+        Returns same schema as run_at_current() with extra pulse diagnostics.
+        """
+
+        alloy_res = self._alloy_composition_pulsed(
+            j_avg_mA_cm2, j_peak_mA_cm2, duty_cycle, waveform
+        )
+
+        # Carbon: loose adsorption tracks average particle flux (j_avg),
+        # strong adsorption driven by peak current (higher field during on-time)
+        # Use effective j = sqrt(j_avg * j_peak) as compromise, or weighted by duty
+        j_eff_carbon = math.sqrt(j_avg_mA_cm2 * j_peak_mA_cm2) if waveform != "dc" else j_avg_mA_cm2
+
+        carbon_res = self.carbon_model.carbon_incorporation_result(
+            j_eff_carbon,
+            metal_current_efficiency=alloy_res["current_efficiency_percent"] / 100.0,
+        )
+
+        base_ce = alloy_res["current_efficiency_percent"] / 100.0
+        blocking_factor = carbon_res["surface_blocking_factor"]
+        adjusted_ce = base_ce * blocking_factor
+
+        fe_frac = alloy_res["fe_wt_percent"] / 100.0
+        ni_frac = alloy_res["ni_wt_percent"] / 100.0
+        alloy_density = 7874.0 * fe_frac + 8908.0 * ni_frac
+        j_A_m2 = j_avg_mA_cm2 * 10.0  # average rate determines mass
+
+        deposition_rate_um_hr = (
+            j_A_m2 * adjusted_ce * M_FE / (2.0 * FARADAY)
+            / max(alloy_density, 1.0)
+            * 3600.0 * 1e6
+        )
+
+        is_anomalous = alloy_res["is_anomalous"]
+        anomalous_description = (
+            f"ANOMALOUS (pulsed {waveform}): Fe preferential. Mechanism {self.mechanism_fe_ni}. "
+            f"pH_surf pulsed={alloy_res.get('pulsed_surface_pH', 'n/a'):.2f} vs DC would be higher."
+            if is_anomalous else
+            f"NORMAL (pulsed {waveform}): alloy follows bath trend under pulse recovery."
+        )
+
+        carbon_quality_flag = "NORMAL" if carbon_res["predicted_carbon_wt_percent"] < 8.0 else "HIGH"
+
+        return {
+            "operating_point": {
+                "j_avg_mA_cm2": j_avg_mA_cm2,
+                "j_peak_mA_cm2": j_peak_mA_cm2,
+                "duty_cycle": duty_cycle,
+                "waveform": waveform,
+                "pH": self.pH,
+                "temperature_C": self.temperature_C,
+                "bath_fe_M": self.bath_fe_M,
+                "bath_ni_M": self.bath_ni_M,
+                "carbon_loading_g_L": self.carbon_particle_loading_g_L,
+            },
+            "alloy_kinetics": {
+                "E_op_V_vs_SHE": alloy_res["E_op_V_vs_SHE"],
+                "fe_wt_percent": alloy_res["fe_wt_percent"],
+                "ni_wt_percent": alloy_res["ni_wt_percent"],
+                "bulk_fe_ref_wt_percent": alloy_res["bulk_fe_wt_percent_ref"],
+                "current_efficiency_percent": alloy_res["current_efficiency_percent"],
+                "partial_currents_A_m2": alloy_res["partial_currents_A_m2"],
+                "is_anomalous": is_anomalous,
+                "mechanism": self.mechanism_fe_ni,
+                "pulsed_surface_pH": alloy_res.get("pulsed_surface_pH"),
+                "effective_boundary_layer_m": alloy_res.get("effective_boundary_layer_m"),
+            },
+            "carbon_incorporation": {
+                "predicted_carbon_wt_percent": carbon_res["predicted_carbon_wt_percent"],
+                "loose_adsorption_sigma": carbon_res["loose_adsorption_coverage_sigma"],
+                "surface_blocking_factor": carbon_res["surface_blocking_factor"],
+                "adjusted_ce_percent": round(adjusted_ce * 100.0, 1),
+                "quality_flag": carbon_quality_flag,
+                "j_eff_for_carbon_mA_cm2": round(j_eff_carbon, 1),
+            },
+            "integrated_metrics": {
+                "adjusted_overall_current_efficiency_percent": round(adjusted_ce * 100.0, 1),
+                "deposition_rate_um_hr": round(deposition_rate_um_hr, 1),
+                "alloy_density_kg_m3_approx": round(alloy_density, 0),
+                "anomalous_description": anomalous_description,
+                "pulse_benefit": f"pH recovery {waveform}: surface pH lower than DC peak, i_lim enhanced by boundary thinning",
+            },
+            "model_notes": (
+                "Pulsed Phase III screening — couples pulse recovery to hydroxide suppression. "
+                f"mechanism '{self.mechanism_fe_ni}', waveform '{waveform}'. Requires wet-lab validation."
+            ),
+        }
+
+    def run_sweep_pulsed(
+        self,
+        j_avg_range: Optional[Iterable[float]] = None,
+        j_peak_factor: float = 2.0,
+        duty_cycle: float = 0.5,
+        waveform: Literal["dc", "pe", "pre"] = "pe",
+    ) -> Dict[str, Any]:
+        """
+        Sweep j_avg with fixed peak/avg ratio.
+
+        j_peak = j_avg * j_peak_factor (e.g., 2× for 50% duty gives same avg as DC peak).
+        """
+        if j_avg_range is None:
+            j_avg_range = np.linspace(10.0, 200.0, 25)
+        js_avg = np.asarray(list(j_avg_range), dtype=float)
+        records = [
+            self.run_at_current_pulsed(float(j_avg), float(j_avg * j_peak_factor), duty_cycle, waveform)
+            for j_avg in js_avg
+        ]
+        return {
+            "j_avg_mA_cm2": js_avg.tolist(),
+            "j_peak_mA_cm2": (js_avg * j_peak_factor).tolist(),
+            "fe_wt_percent": [r["alloy_kinetics"]["fe_wt_percent"] for r in records],
+            "ni_wt_percent": [r["alloy_kinetics"]["ni_wt_percent"] for r in records],
+            "carbon_wt_percent": [r["carbon_incorporation"]["predicted_carbon_wt_percent"] for r in records],
+            "is_anomalous": [r["alloy_kinetics"]["is_anomalous"] for r in records],
+            "adjusted_ce_percent": [r["integrated_metrics"]["adjusted_overall_current_efficiency_percent"] for r in records],
+            "pulsed_surface_pH": [r["alloy_kinetics"].get("pulsed_surface_pH") for r in records],
         }
 
     # -------------------------------------------------------------------

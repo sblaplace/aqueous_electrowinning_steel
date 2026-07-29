@@ -1,0 +1,10 @@
+mechanism_fe_ni,waveform,duty_cycle,j_avg_mA_cm2,j_peak_mA_cm2,grain_size_um,ni_wt_percent,carbon_wt_percent,porosity,yield_MPa,uts_MPa,elongation_pct,vickers_hv,grade_estimate,flags
+hydroxide_suppression,dc,1.0,100.0,100.0,3.5,83.31,0.02,0.024,546.2,710.1,12.6,178.2,"Fe-83.3Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+hydroxide_suppression,pe,0.5,100.0,200.0,2.887,83.31,0.02,0.024,572.0,743.6,11.9,186.7,"Fe-83.3Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+hydroxide_suppression,pre,0.5,100.0,200.0,1.907,83.31,0.02,0.024,636.9,828.0,10.3,207.8,"Fe-83.3Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+intermediate_adsorption,dc,1.0,100.0,100.0,3.5,77.71,0.02,0.0315,539.4,701.2,12.5,176.0,"Fe-77.7Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+intermediate_adsorption,pe,0.5,100.0,200.0,2.887,77.71,0.02,0.0315,564.8,734.3,11.9,184.3,"Fe-77.7Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+intermediate_adsorption,pre,0.5,100.0,200.0,1.907,77.71,0.02,0.0315,628.8,817.4,10.3,205.2,"Fe-77.7Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+mixed_metal_intermediate,dc,1.0,100.0,100.0,3.5,93.0,0.02,0.0109,558.1,725.6,12.7,182.1,"Fe-93.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+mixed_metal_intermediate,pe,0.5,100.0,200.0,2.887,93.0,0.02,0.0109,584.6,760.0,12.0,190.8,"Fe-93.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+mixed_metal_intermediate,pre,0.5,100.0,200.0,1.907,93.0,0.02,0.0109,651.0,846.4,10.4,212.4,"Fe-93.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",

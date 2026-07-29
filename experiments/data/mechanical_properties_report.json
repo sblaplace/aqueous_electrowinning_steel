@@ -1,0 +1,209 @@
+{
+  "title": "Mechanical properties screening (run_all)",
+  "model": "Hall-Petch + solid-solution Ni + Guglielmi C dispersion (screening, needs calibration)",
+  "cases": {
+    "hydroxide_suppression_dc": {
+      "grain_size_um": 3.5,
+      "porosity": 0.0107,
+      "porosity_factor": 0.981,
+      "hall_petch_yield_MPa": 367.3,
+      "solid_solution_MPa": 201.5,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 558.4,
+      "uts_MPa": 725.9,
+      "elongation_percent": 12.7,
+      "vickers_hv_kgf_mm2": 182.2,
+      "vickers_hv_MPa": 1786.9,
+      "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "dc",
+      "composition": {
+        "ni_wt_pct": 92.59,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "hydroxide_suppression_pe": {
+      "grain_size_um": 2.887,
+      "porosity": 0.0107,
+      "porosity_factor": 0.981,
+      "hall_petch_yield_MPa": 394.2,
+      "solid_solution_MPa": 201.5,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 584.9,
+      "uts_MPa": 760.3,
+      "elongation_percent": 12.0,
+      "vickers_hv_kgf_mm2": 190.8,
+      "vickers_hv_MPa": 1871.6,
+      "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pe",
+      "composition": {
+        "ni_wt_pct": 92.59,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "hydroxide_suppression_pre": {
+      "grain_size_um": 1.907,
+      "porosity": 0.0107,
+      "porosity_factor": 0.981,
+      "hall_petch_yield_MPa": 462.0,
+      "solid_solution_MPa": 201.5,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 651.3,
+      "uts_MPa": 846.8,
+      "elongation_percent": 10.4,
+      "vickers_hv_kgf_mm2": 212.5,
+      "vickers_hv_MPa": 2084.3,
+      "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pre",
+      "composition": {
+        "ni_wt_pct": 92.59,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "intermediate_adsorption_dc": {
+      "grain_size_um": 3.5,
+      "porosity": 0.0167,
+      "porosity_factor": 0.97,
+      "hall_petch_yield_MPa": 367.3,
+      "solid_solution_MPa": 202.2,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 553.0,
+      "uts_MPa": 718.9,
+      "elongation_percent": 12.6,
+      "vickers_hv_kgf_mm2": 180.4,
+      "vickers_hv_MPa": 1769.5,
+      "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "dc",
+      "composition": {
+        "ni_wt_pct": 88.01,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "intermediate_adsorption_pe": {
+      "grain_size_um": 2.887,
+      "porosity": 0.0167,
+      "porosity_factor": 0.97,
+      "hall_petch_yield_MPa": 394.2,
+      "solid_solution_MPa": 202.2,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 579.2,
+      "uts_MPa": 752.9,
+      "elongation_percent": 12.0,
+      "vickers_hv_kgf_mm2": 189.0,
+      "vickers_hv_MPa": 1853.3,
+      "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pe",
+      "composition": {
+        "ni_wt_pct": 88.01,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "intermediate_adsorption_pre": {
+      "grain_size_um": 1.907,
+      "porosity": 0.0167,
+      "porosity_factor": 0.97,
+      "hall_petch_yield_MPa": 462.0,
+      "solid_solution_MPa": 202.2,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 644.9,
+      "uts_MPa": 838.4,
+      "elongation_percent": 10.3,
+      "vickers_hv_kgf_mm2": 210.4,
+      "vickers_hv_MPa": 2063.7,
+      "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pre",
+      "composition": {
+        "ni_wt_pct": 88.01,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "mixed_metal_intermediate_dc": {
+      "grain_size_um": 3.5,
+      "porosity": 0.0046,
+      "porosity_factor": 0.992,
+      "hall_petch_yield_MPa": 367.3,
+      "solid_solution_MPa": 200.7,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 563.8,
+      "uts_MPa": 732.9,
+      "elongation_percent": 12.7,
+      "vickers_hv_kgf_mm2": 184.0,
+      "vickers_hv_MPa": 1804.2,
+      "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "dc",
+      "composition": {
+        "ni_wt_pct": 97.16,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "mixed_metal_intermediate_pe": {
+      "grain_size_um": 2.887,
+      "porosity": 0.0046,
+      "porosity_factor": 0.992,
+      "hall_petch_yield_MPa": 394.2,
+      "solid_solution_MPa": 200.7,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 590.6,
+      "uts_MPa": 767.7,
+      "elongation_percent": 12.1,
+      "vickers_hv_kgf_mm2": 192.7,
+      "vickers_hv_MPa": 1889.8,
+      "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pe",
+      "composition": {
+        "ni_wt_pct": 97.16,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    },
+    "mixed_metal_intermediate_pre": {
+      "grain_size_um": 1.907,
+      "porosity": 0.0046,
+      "porosity_factor": 0.992,
+      "hall_petch_yield_MPa": 462.0,
+      "solid_solution_MPa": 200.7,
+      "carbon_orowan_MPa": 0.5,
+      "carbon_load_transfer_MPa": 0.0,
+      "carbon_total_MPa": 0.5,
+      "yield_strength_MPa": 657.8,
+      "uts_MPa": 855.1,
+      "elongation_percent": 10.4,
+      "vickers_hv_kgf_mm2": 214.6,
+      "vickers_hv_MPa": 2104.9,
+      "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+      "waveform": "pre",
+      "composition": {
+        "ni_wt_pct": 97.16,
+        "c_wt_pct": 0.02
+      },
+      "flags": []
+    }
+  },
+  "sweep_figures": [
+    "/home/user/aqueous_electrowinning_steel/docs/figures/mechanical_properties_sweep.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/alloy_vs_mechanical.png"
+  ],
+  "note": "All predictions are screening-level; must be verified by Vickers, tensile, EBSD."
+}

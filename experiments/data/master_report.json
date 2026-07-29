@@ -1,0 +1,1256 @@
+{
+  "title": "Aqueous Electrowinning \u2014 Master Report",
+  "date": "2026-07-29T18:13:01.080410",
+  "quick": true,
+  "steps": {
+    "electrochemistry": {
+      "pourbaix": {
+        "activity_M": 1.0,
+        "temperature_C": 60.0,
+        "pH_Fe2_to_FeOH2": 5.85,
+        "pH_Fe3_to_FeOH3": 1.15,
+        "pH_FeOH2_to_HFeO2": 18.3,
+        "by_pH": {
+          "0.0": {
+            "E_deposition (V vs SHE)": -0.44,
+            "E_HER (V vs SHE)": -0.0,
+            "HER margin (V)": 0.44,
+            "stable Fe species above E_dep": "Fe2+"
+          },
+          "2.0": {
+            "E_deposition (V vs SHE)": -0.44,
+            "E_HER (V vs SHE)": -0.132,
+            "HER margin (V)": 0.308,
+            "stable Fe species above E_dep": "Fe2+"
+          },
+          "7.0": {
+            "E_deposition (V vs SHE)": -0.51,
+            "E_HER (V vs SHE)": -0.463,
+            "HER margin (V)": 0.047,
+            "stable Fe species above E_dep": "Fe(OH)2(s)"
+          },
+          "10.0": {
+            "E_deposition (V vs SHE)": -0.708,
+            "E_HER (V vs SHE)": -0.661,
+            "HER margin (V)": 0.047,
+            "stable Fe species above E_dep": "Fe(OH)2(s)"
+          },
+          "14.0": {
+            "E_deposition (V vs SHE)": -0.972,
+            "E_HER (V vs SHE)": -0.925,
+            "HER margin (V)": 0.047,
+            "stable Fe species above E_dep": "Fe(OH)2(s)"
+          }
+        }
+      },
+      "kinetics": {
+        "Acidic active cathode": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -0.831,
+          "\u03b7_Fe (V)": 0.391,
+          "i_Fe (A/m\u00b2)": 18.0,
+          "i_HER (A/m\u00b2)": 982.0,
+          "i_lim,Fe (A/m\u00b2)": 2778.8,
+          "Current efficiency (%)": 1.8,
+          "Deposition rate (\u00b5m/hr)": 2.4,
+          "H\u2082 flux (mol/m\u00b2/hr)": 18.32,
+          "specific energy @2.6 V (kWh/t Fe)": 138303.0
+        },
+        "Acidic + HER inhibitor": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.06,
+          "\u03b7_Fe (V)": 0.62,
+          "i_Fe (A/m\u00b2)": 957.8,
+          "i_HER (A/m\u00b2)": 42.2,
+          "i_lim,Fe (A/m\u00b2)": 2778.8,
+          "Current efficiency (%)": 95.8,
+          "Deposition rate (\u00b5m/hr)": 126.7,
+          "H\u2082 flux (mol/m\u00b2/hr)": 0.79,
+          "specific energy @2.6 V (kWh/t Fe)": 2606.0
+        },
+        "Mildly acidic complexed": {
+          "j applied (mA/cm\u00b2)": 150.0,
+          "E cathode (V vs SHE)": -1.101,
+          "\u03b7_Fe (V)": 0.661,
+          "i_Fe (A/m\u00b2)": 1496.8,
+          "i_HER (A/m\u00b2)": 3.2,
+          "i_lim,Fe (A/m\u00b2)": 2778.8,
+          "Current efficiency (%)": 99.8,
+          "Deposition rate (\u00b5m/hr)": 198.0,
+          "H\u2082 flux (mol/m\u00b2/hr)": 0.06,
+          "specific energy @2.6 V (kWh/t Fe)": 2501.0
+        },
+        "Transport-limited (stagnant)": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.314,
+          "\u03b7_Fe (V)": 0.874,
+          "i_Fe (A/m\u00b2)": 69.4,
+          "i_HER (A/m\u00b2)": 930.6,
+          "i_lim,Fe (A/m\u00b2)": 69.5,
+          "Current efficiency (%)": 6.9,
+          "Deposition rate (\u00b5m/hr)": 9.2,
+          "H\u2082 flux (mol/m\u00b2/hr)": 17.36,
+          "specific energy @2.6 V (kWh/t Fe)": 35937.0
+        },
+        "Transport-limited (agitated)": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.248,
+          "\u03b7_Fe (V)": 0.808,
+          "i_Fe (A/m\u00b2)": 685.9,
+          "i_HER (A/m\u00b2)": 314.1,
+          "i_lim,Fe (A/m\u00b2)": 694.7,
+          "Current efficiency (%)": 68.6,
+          "Deposition rate (\u00b5m/hr)": 90.7,
+          "H\u2082 flux (mol/m\u00b2/hr)": 5.86,
+          "specific energy @2.6 V (kWh/t Fe)": 3639.0
+        }
+      }
+    },
+    "transport": {
+      "model": {
+        "description": "Steady 1-D Nernst-Planck film: diffusion + migration, electroneutral, fast water autoprotolysis",
+        "species": [
+          "Fe2+",
+          "H+",
+          "OH-",
+          "Na+",
+          "SO4^2-"
+        ],
+        "closure": "electroneutrality differentiated to give dphi/dx"
+      },
+      "migration_enhancement": [
+        {
+          "support_M": 0.0,
+          "i_lim_ratio_vs_Levich": 1.9998,
+          "t_Fe": 0.4022
+        },
+        {
+          "support_M": 0.05,
+          "i_lim_ratio_vs_Levich": 1.7361,
+          "t_Fe": 0.3836
+        },
+        {
+          "support_M": 0.1,
+          "i_lim_ratio_vs_Levich": 1.6327,
+          "t_Fe": 0.3667
+        },
+        {
+          "support_M": 0.25,
+          "i_lim_ratio_vs_Levich": 1.4674,
+          "t_Fe": 0.3238
+        },
+        {
+          "support_M": 0.5,
+          "i_lim_ratio_vs_Levich": 1.3365,
+          "t_Fe": 0.2709
+        },
+        {
+          "support_M": 1.0,
+          "i_lim_ratio_vs_Levich": 1.2201,
+          "t_Fe": 0.2043
+        },
+        {
+          "support_M": 2.0,
+          "i_lim_ratio_vs_Levich": 1.1316,
+          "t_Fe": 0.1369
+        },
+        {
+          "support_M": 5.0,
+          "i_lim_ratio_vs_Levich": 1.06,
+          "t_Fe": 0.0688
+        },
+        {
+          "support_M": 10.0,
+          "i_lim_ratio_vs_Levich": 1.0315,
+          "t_Fe": 0.0376
+        }
+      ],
+      "support_sweep_at_100mA_cm2": [
+        {
+          "support_M": 0.0,
+          "t_Fe": 0.3959,
+          "diffusion_limit_A_m2": 2778.77756,
+          "transport_limit_A_m2": 5354.7971,
+          "migration_enhancement": 1.92703,
+          "migration_flux_fraction": 0.50606,
+          "film_potential_drop_mV": -2.40277,
+          "surface_pH": 2.68516,
+          "surface_fe_M": 0.84907,
+          "current_efficiency": 0.84846
+        },
+        {
+          "support_M": 0.1,
+          "t_Fe": 0.36142,
+          "diffusion_limit_A_m2": 2778.77756,
+          "transport_limit_A_m2": 4514.41504,
+          "migration_enhancement": 1.6246,
+          "migration_flux_fraction": 0.46152,
+          "film_potential_drop_mV": -2.22595,
+          "surface_pH": 2.70797,
+          "surface_fe_M": 0.83723,
+          "current_efficiency": 0.84729
+        },
+        {
+          "support_M": 0.5,
+          "t_Fe": 0.26804,
+          "diffusion_limit_A_m2": 2778.77756,
+          "transport_limit_A_m2": 3708.86203,
+          "migration_enhancement": 1.33471,
+          "migration_flux_fraction": 0.33862,
+          "film_potential_drop_mV": -1.71948,
+          "surface_pH": 2.74889,
+          "surface_fe_M": 0.80334,
+          "current_efficiency": 0.8461
+        },
+        {
+          "support_M": 2.0,
+          "t_Fe": 0.13614,
+          "diffusion_limit_A_m2": 2778.77756,
+          "transport_limit_A_m2": 3143.77609,
+          "migration_enhancement": 1.13135,
+          "migration_flux_fraction": 0.16561,
+          "film_potential_drop_mV": -0.92204,
+          "surface_pH": 2.80133,
+          "surface_fe_M": 0.75198,
+          "current_efficiency": 0.84541
+        }
+      ],
+      "model_comparison": [
+        {
+          "j_mA_cm2": 5.0,
+          "nernst_planck_surface_pH": 2.039,
+          "linear_film_surface_pH": 9.541,
+          "nernst_planck_CE_pct": 67.7,
+          "linear_film_CE_pct": 99.29
+        },
+        {
+          "j_mA_cm2": 20.0,
+          "nernst_planck_surface_pH": 2.142,
+          "linear_film_surface_pH": 11.097,
+          "nernst_planck_CE_pct": 73.86,
+          "linear_film_CE_pct": 93.61
+        },
+        {
+          "j_mA_cm2": 50.0,
+          "nernst_planck_surface_pH": 2.344,
+          "linear_film_surface_pH": 11.334,
+          "nernst_planck_CE_pct": 79.36,
+          "linear_film_CE_pct": 95.59
+        },
+        {
+          "j_mA_cm2": 100.0,
+          "nernst_planck_surface_pH": 2.685,
+          "linear_film_surface_pH": 11.512,
+          "nernst_planck_CE_pct": 84.85,
+          "linear_film_CE_pct": 96.68
+        },
+        {
+          "j_mA_cm2": 200.0,
+          "nernst_planck_surface_pH": 3.319,
+          "linear_film_surface_pH": 11.689,
+          "nernst_planck_CE_pct": 90.55,
+          "linear_film_CE_pct": 97.5
+        }
+      ],
+      "operating_points": {
+        "Unsupported acidic (pH 2)": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.043,
+          "Current efficiency (%)": 84.8,
+          "Surface pH": 2.69,
+          "\u0394pH (surface \u2212 bulk)": 0.69,
+          "Surface Fe\u00b2\u207a (M)": 0.8491,
+          "i_lim diffusion (A/m\u00b2)": 2778.8,
+          "i_lim with migration (A/m\u00b2)": 5354.8,
+          "Migration enhancement (\u00d7)": 1.927,
+          "Migration share of Fe\u00b2\u207a flux": 0.506,
+          "Film potential drop (mV)": -2.4,
+          "t_Fe\u00b2\u207a (bulk)": 0.396,
+          "Max Fe(OH)\u2082 supersaturation": 4.07e-07
+        },
+        "Supported acidic (2 M Na\u2082SO\u2084)": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.052,
+          "Current efficiency (%)": 84.5,
+          "Surface pH": 2.8,
+          "\u0394pH (surface \u2212 bulk)": 0.8,
+          "Surface Fe\u00b2\u207a (M)": 0.752,
+          "i_lim diffusion (A/m\u00b2)": 2778.8,
+          "i_lim with migration (A/m\u00b2)": 3143.8,
+          "Migration enhancement (\u00d7)": 1.131,
+          "Migration share of Fe\u00b2\u207a flux": 0.166,
+          "Film potential drop (mV)": -0.92,
+          "t_Fe\u00b2\u207a (bulk)": 0.136,
+          "Max Fe(OH)\u2082 supersaturation": 6.15e-07
+        },
+        "HER-inhibited acidic": {
+          "j applied (mA/cm\u00b2)": 100.0,
+          "E cathode (V vs SHE)": -1.053,
+          "Current efficiency (%)": 99.6,
+          "Surface pH": 1.97,
+          "\u0394pH (surface \u2212 bulk)": -0.03,
+          "Surface Fe\u00b2\u207a (M)": 0.8201,
+          "i_lim diffusion (A/m\u00b2)": 2778.8,
+          "i_lim with migration (A/m\u00b2)": 5354.8,
+          "Migration enhancement (\u00d7)": 1.927,
+          "Migration share of Fe\u00b2\u207a flux": 0.497,
+          "Film potential drop (mV)": -2.82,
+          "t_Fe\u00b2\u207a (bulk)": 0.396,
+          "Max Fe(OH)\u2082 supersaturation": 2.04e-08
+        },
+        "Dilute + stagnant": {
+          "j applied (mA/cm\u00b2)": 50.0,
+          "E cathode (V vs SHE)": -1.773,
+          "Current efficiency (%)": 26.8,
+          "Surface pH": 12.92,
+          "\u0394pH (surface \u2212 bulk)": 9.92,
+          "Surface Fe\u00b2\u207a (M)": 0.0543,
+          "i_lim diffusion (A/m\u00b2)": 69.5,
+          "i_lim with migration (A/m\u00b2)": 133.9,
+          "Migration enhancement (\u00d7)": 1.927,
+          "Migration share of Fe\u00b2\u207a flux": 0.847,
+          "Film potential drop (mV)": -29.64,
+          "t_Fe\u00b2\u207a (bulk)": 0.396,
+          "Max Fe(OH)\u2082 supersaturation": 7650000000000.0
+        },
+        "Alkaline (pH 9)": {
+          "j applied (mA/cm\u00b2)": 20.0,
+          "E cathode (V vs SHE)": -1.084,
+          "Current efficiency (%)": 99.9,
+          "Surface pH": 9.31,
+          "\u0394pH (surface \u2212 bulk)": 0.31,
+          "Surface Fe\u00b2\u207a (M)": 0.0141,
+          "i_lim diffusion (A/m\u00b2)": 138.9,
+          "i_lim with migration (A/m\u00b2)": 277.0,
+          "Migration enhancement (\u00d7)": 1.994,
+          "Migration share of Fe\u00b2\u207a flux": 0.495,
+          "Film potential drop (mV)": -18.22,
+          "t_Fe\u00b2\u207a (bulk)": 0.402,
+          "Max Fe(OH)\u2082 supersaturation": 206000.0
+        }
+      }
+    },
+    "pulse": {
+      "simulation_parameters": {
+        "j_peak_mA_cm2": 100.0,
+        "frequency_Hz": 10.0,
+        "duty_cycle": 0.5,
+        "fe_bulk_M": 1.0,
+        "bulk_pH": 2.0
+      },
+      "results": {
+        "dc_peak": {
+          "Frequency (Hz)": 1.0,
+          "Duty cycle (%)": 100.0,
+          "Average current density (mA/cm\u00b2)": 100.0,
+          "Cycle-averaged current efficiency (%)": 99.50000000000004,
+          "Net plating rate (\u00b5m/hr)": 131.65070061175794,
+          "Net Fe deposited (g/m\u00b2)": 0.28794933794916167,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.7625729874093002,
+          "Max surface pH": 2.022790730826449
+        },
+        "dc_avg": {
+          "Frequency (Hz)": 1.0,
+          "Duty cycle (%)": 100.0,
+          "Average current density (mA/cm\u00b2)": 50.0,
+          "Cycle-averaged current efficiency (%)": 99.50000000000004,
+          "Net plating rate (\u00b5m/hr)": 65.82535030587897,
+          "Net Fe deposited (g/m\u00b2)": 0.14397466897458083,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8812864937046837,
+          "Max surface pH": 2.0112458822159773
+        },
+        "pulsed": {
+          "Frequency (Hz)": 10.0,
+          "Duty cycle (%)": 50.0,
+          "Average current density (mA/cm\u00b2)": 50.0,
+          "Cycle-averaged current efficiency (%)": 99.50000000000001,
+          "Net plating rate (\u00b5m/hr)": 66.02282635679663,
+          "Net Fe deposited (g/m\u00b2)": 0.1444065929815046,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8626140920061958,
+          "Max surface pH": 2.013506593634133
+        },
+        "pulse_reverse": {
+          "Frequency (Hz)": 10.0,
+          "Duty cycle (%)": 50.0,
+          "Average current density (mA/cm\u00b2)": 47.99999999999999,
+          "Cycle-averaged current efficiency (%)": 95.39232303090729,
+          "Net plating rate (\u00b5m/hr)": 63.2971937612165,
+          "Net Fe deposited (g/m\u00b2)": 0.13844502879883855,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8662741593867495,
+          "Max surface pH": 2.013506593634133
+        }
+      }
+    },
+    "voltammetry": {
+      "dataset_summary": {
+        "n_points": 564,
+        "duration_s": 56.0,
+        "potential_min_V": -1.2933418310664189,
+        "potential_max_V": -0.1999903999999999,
+        "current_density_mean_mA_cm2": -0.2710185656722187,
+        "current_density_max_mA_cm2": 0.0011410780985063168
+      },
+      "derived_properties": {
+        "estimated_scan_rate_V_s": 0.050365807008001924
+      },
+      "extrema_analysis": {
+        "cathodic_peak_potential_V_vs_ref": -1.2933418310664189,
+        "cathodic_peak_current_A": -0.0326159653733006,
+        "anodic_peak_potential_V_vs_ref": -0.2100384,
+        "anodic_peak_current_A": 0.00017123053651658135
+      },
+      "tafel_fits": {
+        "her": {
+          "slope_V_decade": 0.14101811261057026,
+          "intercept_log10_A": -5.718779252453457,
+          "exchange_current_A": 1.9108242646535464e-06,
+          "r_squared": 0.7513733607904101,
+          "n_points": 20,
+          "potential_min_V": -0.5453857116461375,
+          "potential_max_V": -0.4500868582798425
+        },
+        "iron": {
+          "slope_V_decade": 0.08894382669736,
+          "intercept_log10_A": -4.192387001399749,
+          "exchange_current_A": 6.42115271036085e-05,
+          "r_squared": 0.9921691208962566,
+          "n_points": 10,
+          "potential_min_V": -0.7256348909273962,
+          "potential_max_V": -0.6743032191418423
+        }
+      }
+    },
+    "eis": {
+      "dataset_summary": {
+        "n_points": 84,
+        "frequency_min_hz": 0.01,
+        "frequency_max_hz": 100000.0,
+        "decades": 7.0,
+        "z_magnitude_max_ohm": 34.04992342868016,
+        "z_magnitude_min_ohm": 7.922508462520286,
+        "high_freq_real_ohm": 8.0122733152258,
+        "low_freq_real_ohm": 31.90131487286792,
+        "semicircle_top_freq_hz": 242.9641341360079
+      },
+      "true_parameters": {
+        "rs_ohm": 8.0,
+        "rct_ohm": 12.0,
+        "cdl_F": 5e-05,
+        "sigma_warburg_ohm_s_neg_half": 3.0
+      },
+      "fits": {
+        "randles": {
+          "rs_ohm": 8.057887849273403,
+          "rct_ohm": 13.743391497376628,
+          "cdl_F": 5.112458974317288e-05,
+          "sigma_warburg_ohm_s_neg_half": null,
+          "chi_squared": 1.6070881571983084,
+          "r_squared_magnitude": 0.8425324712186426,
+          "n_points": 84,
+          "converged": true
+        },
+        "randles_warburg": {
+          "rs_ohm": 7.996440621831031,
+          "rct_ohm": 12.003039969191695,
+          "cdl_F": 4.969068814024069e-05,
+          "sigma_warburg_ohm_s_neg_half": 2.9961533278072903,
+          "chi_squared": 0.00314359999056854,
+          "r_squared_magnitude": 0.9999181091147445,
+          "n_points": 84,
+          "converged": true
+        }
+      },
+      "warburg_chi_squared_improvement_factor": 511.2253982758336,
+      "derived_properties": {
+        "exchange_current_A_from_rct": 0.0011958906175843428,
+        "exchange_current_density_mA_cm2": 1.195890617584343,
+        "n_electrons": 2,
+        "temperature_K": 333.15,
+        "dc_bias_V_vs_Ag_AgCl": -0.7
+      }
+    },
+    "hull_cell": {
+      "method_scope": {
+        "hull_distribution": "Primary ohmic variable-gap model normalized to applied current; excludes edge/shield, kinetic, mass-transfer, bubble, and conductivity-gradient effects.",
+        "gravimetric_fe": "Apparent iron FE from blank-corrected dry mass gain / Fe mass predicted by cathodic charge; verify deposit composition before treating as Fe FE."
+      },
+      "hull_geometry": {
+        "panel_length_cm": 10.0,
+        "panel_width_cm": 5.0,
+        "near_edge_gap_cm": 1.5,
+        "far_edge_gap_cm": 9.0,
+        "panel_area_cm2": 50.0,
+        "panel_angle_deg": 48.590377890729144
+      },
+      "hull_distribution_summary": {
+        "n_segments": 100,
+        "panel_area_cm2": 50.0,
+        "total_current_A": 1.0,
+        "panel_average_current_density_mA_cm2": 20.0,
+        "near_edge_current_density_mA_cm2": 54.46061818827987,
+        "far_edge_current_density_mA_cm2": 9.340818133498587,
+        "current_density_min_mA_cm2": 9.340818133498587,
+        "current_density_max_mA_cm2": 54.46061818827987,
+        "near_edge_gap_cm": 1.5,
+        "far_edge_gap_cm": 9.0
+      },
+      "current_density_window_10_to_100_mA_cm2": {
+        "minimum_mA_cm2": 10.0,
+        "maximum_mA_cm2": 100.0,
+        "n_segments": 92,
+        "area_fraction": 0.9200000000000002,
+        "current_fraction": 0.9614943452668477,
+        "position_start_cm_from_near_edge": 0.0,
+        "position_end_cm_from_near_edge": 9.200000000000001
+      },
+      "gravimetric_faradaic_efficiency": {
+        "duration_s": 3600.0,
+        "cathodic_charge_C": 5400.0,
+        "equivalent_mean_cathodic_current_A": 1.5,
+        "mass_gain_g": 1.4232935139586687,
+        "blank_mass_change_g": 0.0012,
+        "net_deposit_mass_g": 1.4220935139586686,
+        "theoretical_fe_mass_g": 1.562740125229306,
+        "apparent_faradaic_efficiency": 0.91,
+        "apparent_faradaic_efficiency_percent": 91.0,
+        "apparent_faradaic_efficiency_uncertainty_percent": 0.011083421866541808,
+        "net_deposit_mass_uncertainty_g": 0.00017320508075688773,
+        "charge_relative_uncertainty": 0.0,
+        "n_electrons": 2,
+        "molar_mass_g_mol": 55.845
+      },
+      "synthetic_inputs": {
+        "galvanostatic_trace": "synthetic_hull_cell_galvanostatic.csv",
+        "gravimetry": "synthetic_hull_cell_gravimetry.csv"
+      }
+    },
+    "co_deposition": {
+      "hydroxide_suppression": {
+        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_hydroxide_suppression.csv",
+        "figures": [
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_hydroxide_suppression.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_hydroxide_suppression.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_hydroxide_suppression.png"
+        ],
+        "at_100_mA_cm2": {
+          "operating_point": {
+            "j_mA_cm2": 100.0,
+            "pH": 3.5,
+            "temperature_C": 60.0,
+            "bath_fe_M": 0.5,
+            "bath_ni_M": 0.5,
+            "carbon_loading_g_L": 2.0
+          },
+          "alloy_kinetics": {
+            "E_op_V_vs_SHE": -0.897,
+            "fe_wt_percent": 7.41,
+            "ni_wt_percent": 92.59,
+            "bulk_fe_ref_wt_percent": 48.76,
+            "current_efficiency_percent": 94.4,
+            "partial_currents_A_m2": {
+              "i_fe": 73.18,
+              "i_ni": 870.37,
+              "i_her": 56.45
+            },
+            "is_anomalous": false,
+            "mechanism": "hydroxide_suppression"
+          },
+          "carbon_incorporation": {
+            "predicted_carbon_wt_percent": 0.02,
+            "loose_adsorption_sigma": 0.0187,
+            "surface_blocking_factor": 0.994,
+            "adjusted_ce_percent": 93.8,
+            "quality_flag": "NORMAL"
+          },
+          "integrated_metrics": {
+            "adjusted_overall_current_efficiency_percent": 93.8,
+            "deposition_rate_um_hr": 110.7,
+            "alloy_density_kg_m3_approx": 8831.0,
+            "anomalous_description": "NORMAL: Alloy follows bath-composition trend."
+          },
+          "model_notes": "Phase III co-deposition screening model. Alloy predictions based on mechanism 'hydroxide_suppression'; carbon predictions based on Guglielmi two-step model. All predictions require wet-lab verification."
+        }
+      },
+      "intermediate_adsorption": {
+        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_intermediate_adsorption.csv",
+        "figures": [
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_intermediate_adsorption.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_intermediate_adsorption.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_intermediate_adsorption.png"
+        ],
+        "at_100_mA_cm2": {
+          "operating_point": {
+            "j_mA_cm2": 100.0,
+            "pH": 3.5,
+            "temperature_C": 60.0,
+            "bath_fe_M": 0.5,
+            "bath_ni_M": 0.5,
+            "carbon_loading_g_L": 2.0
+          },
+          "alloy_kinetics": {
+            "E_op_V_vs_SHE": -0.922,
+            "fe_wt_percent": 11.99,
+            "ni_wt_percent": 88.01,
+            "bulk_fe_ref_wt_percent": 48.76,
+            "current_efficiency_percent": 91.5,
+            "partial_currents_A_m2": {
+              "i_fe": 114.54,
+              "i_ni": 800.28,
+              "i_her": 85.18
+            },
+            "is_anomalous": false,
+            "mechanism": "intermediate_adsorption"
+          },
+          "carbon_incorporation": {
+            "predicted_carbon_wt_percent": 0.02,
+            "loose_adsorption_sigma": 0.0187,
+            "surface_blocking_factor": 0.994,
+            "adjusted_ce_percent": 91.0,
+            "quality_flag": "NORMAL"
+          },
+          "integrated_metrics": {
+            "adjusted_overall_current_efficiency_percent": 91.0,
+            "deposition_rate_um_hr": 107.9,
+            "alloy_density_kg_m3_approx": 8784.0,
+            "anomalous_description": "NORMAL: Alloy follows bath-composition trend."
+          },
+          "model_notes": "Phase III co-deposition screening model. Alloy predictions based on mechanism 'intermediate_adsorption'; carbon predictions based on Guglielmi two-step model. All predictions require wet-lab verification."
+        }
+      },
+      "mixed_metal_intermediate": {
+        "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_co_deposition_mixed_metal_intermediate.csv",
+        "figures": [
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_anomalous_kinetics_mixed_metal_intermediate.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_guglielmi_incorporation_mixed_metal_intermediate.png",
+          "/home/user/aqueous_electrowinning_steel/docs/figures/co_deposition_phase3_combined_mixed_metal_intermediate.png"
+        ],
+        "at_100_mA_cm2": {
+          "operating_point": {
+            "j_mA_cm2": 100.0,
+            "pH": 3.5,
+            "temperature_C": 60.0,
+            "bath_fe_M": 0.5,
+            "bath_ni_M": 0.5,
+            "carbon_loading_g_L": 2.0
+          },
+          "alloy_kinetics": {
+            "E_op_V_vs_SHE": -0.847,
+            "fe_wt_percent": 2.84,
+            "ni_wt_percent": 97.16,
+            "bulk_fe_ref_wt_percent": 48.76,
+            "current_efficiency_percent": 97.5,
+            "partial_currents_A_m2": {
+              "i_fe": 29.05,
+              "i_ni": 946.1,
+              "i_her": 24.85
+            },
+            "is_anomalous": false,
+            "mechanism": "mixed_metal_intermediate"
+          },
+          "carbon_incorporation": {
+            "predicted_carbon_wt_percent": 0.02,
+            "loose_adsorption_sigma": 0.0187,
+            "surface_blocking_factor": 0.994,
+            "adjusted_ce_percent": 96.9,
+            "quality_flag": "NORMAL"
+          },
+          "integrated_metrics": {
+            "adjusted_overall_current_efficiency_percent": 96.9,
+            "deposition_rate_um_hr": 113.7,
+            "alloy_density_kg_m3_approx": 8879.0,
+            "anomalous_description": "NORMAL: Alloy follows bath-composition trend."
+          },
+          "model_notes": "Phase III co-deposition screening model. Alloy predictions based on mechanism 'mixed_metal_intermediate'; carbon predictions based on Guglielmi two-step model. All predictions require wet-lab verification."
+        }
+      }
+    },
+    "mechanical_properties": {
+      "title": "Mechanical properties screening (run_all)",
+      "model": "Hall-Petch + solid-solution Ni + Guglielmi C dispersion (screening, needs calibration)",
+      "cases": {
+        "hydroxide_suppression_dc": {
+          "grain_size_um": 3.5,
+          "porosity": 0.0107,
+          "porosity_factor": 0.981,
+          "hall_petch_yield_MPa": 367.3,
+          "solid_solution_MPa": 201.5,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 558.4,
+          "uts_MPa": 725.9,
+          "elongation_percent": 12.7,
+          "vickers_hv_kgf_mm2": 182.2,
+          "vickers_hv_MPa": 1786.9,
+          "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "dc",
+          "composition": {
+            "ni_wt_pct": 92.59,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "hydroxide_suppression_pe": {
+          "grain_size_um": 2.887,
+          "porosity": 0.0107,
+          "porosity_factor": 0.981,
+          "hall_petch_yield_MPa": 394.2,
+          "solid_solution_MPa": 201.5,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 584.9,
+          "uts_MPa": 760.3,
+          "elongation_percent": 12.0,
+          "vickers_hv_kgf_mm2": 190.8,
+          "vickers_hv_MPa": 1871.6,
+          "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pe",
+          "composition": {
+            "ni_wt_pct": 92.59,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "hydroxide_suppression_pre": {
+          "grain_size_um": 1.907,
+          "porosity": 0.0107,
+          "porosity_factor": 0.981,
+          "hall_petch_yield_MPa": 462.0,
+          "solid_solution_MPa": 201.5,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 651.3,
+          "uts_MPa": 846.8,
+          "elongation_percent": 10.4,
+          "vickers_hv_kgf_mm2": 212.5,
+          "vickers_hv_MPa": 2084.3,
+          "grade_estimate": "Fe-92.6Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pre",
+          "composition": {
+            "ni_wt_pct": 92.59,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "intermediate_adsorption_dc": {
+          "grain_size_um": 3.5,
+          "porosity": 0.0167,
+          "porosity_factor": 0.97,
+          "hall_petch_yield_MPa": 367.3,
+          "solid_solution_MPa": 202.2,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 553.0,
+          "uts_MPa": 718.9,
+          "elongation_percent": 12.6,
+          "vickers_hv_kgf_mm2": 180.4,
+          "vickers_hv_MPa": 1769.5,
+          "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "dc",
+          "composition": {
+            "ni_wt_pct": 88.01,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "intermediate_adsorption_pe": {
+          "grain_size_um": 2.887,
+          "porosity": 0.0167,
+          "porosity_factor": 0.97,
+          "hall_petch_yield_MPa": 394.2,
+          "solid_solution_MPa": 202.2,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 579.2,
+          "uts_MPa": 752.9,
+          "elongation_percent": 12.0,
+          "vickers_hv_kgf_mm2": 189.0,
+          "vickers_hv_MPa": 1853.3,
+          "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pe",
+          "composition": {
+            "ni_wt_pct": 88.01,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "intermediate_adsorption_pre": {
+          "grain_size_um": 1.907,
+          "porosity": 0.0167,
+          "porosity_factor": 0.97,
+          "hall_petch_yield_MPa": 462.0,
+          "solid_solution_MPa": 202.2,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 644.9,
+          "uts_MPa": 838.4,
+          "elongation_percent": 10.3,
+          "vickers_hv_kgf_mm2": 210.4,
+          "vickers_hv_MPa": 2063.7,
+          "grade_estimate": "Fe-88.0Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pre",
+          "composition": {
+            "ni_wt_pct": 88.01,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "mixed_metal_intermediate_dc": {
+          "grain_size_um": 3.5,
+          "porosity": 0.0046,
+          "porosity_factor": 0.992,
+          "hall_petch_yield_MPa": 367.3,
+          "solid_solution_MPa": 200.7,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 563.8,
+          "uts_MPa": 732.9,
+          "elongation_percent": 12.7,
+          "vickers_hv_kgf_mm2": 184.0,
+          "vickers_hv_MPa": 1804.2,
+          "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "dc",
+          "composition": {
+            "ni_wt_pct": 97.16,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "mixed_metal_intermediate_pe": {
+          "grain_size_um": 2.887,
+          "porosity": 0.0046,
+          "porosity_factor": 0.992,
+          "hall_petch_yield_MPa": 394.2,
+          "solid_solution_MPa": 200.7,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 590.6,
+          "uts_MPa": 767.7,
+          "elongation_percent": 12.1,
+          "vickers_hv_kgf_mm2": 192.7,
+          "vickers_hv_MPa": 1889.8,
+          "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pe",
+          "composition": {
+            "ni_wt_pct": 97.16,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        },
+        "mixed_metal_intermediate_pre": {
+          "grain_size_um": 1.907,
+          "porosity": 0.0046,
+          "porosity_factor": 0.992,
+          "hall_petch_yield_MPa": 462.0,
+          "solid_solution_MPa": 200.7,
+          "carbon_orowan_MPa": 0.5,
+          "carbon_load_transfer_MPa": 0.0,
+          "carbon_total_MPa": 0.5,
+          "yield_strength_MPa": 657.8,
+          "uts_MPa": 855.1,
+          "elongation_percent": 10.4,
+          "vickers_hv_kgf_mm2": 214.6,
+          "vickers_hv_MPa": 2104.9,
+          "grade_estimate": "Fe-97.2Ni high-Ni alloy (FCC-stabilized, austenitic screening)",
+          "waveform": "pre",
+          "composition": {
+            "ni_wt_pct": 97.16,
+            "c_wt_pct": 0.02
+          },
+          "flags": []
+        }
+      },
+      "sweep_figures": [
+        "/home/user/aqueous_electrowinning_steel/docs/figures/mechanical_properties_sweep.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/alloy_vs_mechanical.png"
+      ],
+      "note": "All predictions are screening-level; must be verified by Vickers, tensile, EBSD."
+    },
+    "carburization": {
+      "title": "Post-deposition gaseous carburization screening",
+      "date": "2026-07-29T18:14:02.091384",
+      "params": {
+        "temperature_C": 900.0,
+        "surface_c_wt": 1.1,
+        "initial_c_wt": 0.02,
+        "thickness_um": 1000.0,
+        "D_m2_s": 5.917507558419529e-12,
+        "phase": "austenite",
+        "duration_hr": 4.0
+      },
+      "summary": {
+        "final_time_hr": 4.0,
+        "final_case_depth_035_um": 500.0,
+        "final_case_depth_050_um": 500.0,
+        "final_carbon_uptake_g_m2": 55.653235276043404,
+        "final_surface_hv": 842.4649249139632,
+        "final_core_c_wt": 0.5078033245166326,
+        "sheet_thickness_um": 1000.0,
+        "temperature_C": 900.0,
+        "surface_carbon_wt": 1.1
+      },
+      "composite_strength_final": {
+        "case_fraction": 1.0,
+        "core_fraction": 0.0,
+        "sigma_case_035_MPa": 1000.0,
+        "sigma_case_050_MPa": 1300.0,
+        "sigma_composite_035_MPa": 1000.0,
+        "sigma_composite_050_MPa": 1300.0,
+        "core_yield_MPa": 300.0
+      },
+      "energy": {
+        "heat_energy_kWh_kg": 0.10913194444444445,
+        "with_furnace_efficiency_kWh_kg": 0.18188657407407408,
+        "dT_C": 875.0,
+        "furnace_efficiency": 0.6
+      },
+      "figures": [
+        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_profiles.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_case_depth.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_hardness.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_energy.png"
+      ],
+      "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carburization.csv",
+      "model_notes": [
+        "Fickian diffusion, finite slab with both sides carburized, Fourier superposition for Fo>0.2",
+        "D = D0 exp(-Q/RT) with \u03b3-Fe D0=2.3e-5 m2/s Q=148 kJ/mol, \u03b1-Fe D0=6.2e-7 Q=80 kJ/mol (screening means)",
+        "Hardness: Maynier HV=127+949C (C<0.8 wt%) saturating at 900 HV, quench-rate knockdown for bainite",
+        "Tempering optional via Hollomon-Jaffe parameter",
+        "Does NOT model carbide precipitation, retained austenite, or decarburization on quench",
+        "Energy is only heating, not soak or atmosphere \u2014 screening only"
+      ],
+      "time_estimate_500um_case": 5.589416040929389
+    },
+    "technoeconomic": {
+      "title": "Aqueous Electrowinning Techno-Economic Analysis",
+      "date": "2026-07-29",
+      "base_case": {
+        "cell_voltage_V": 2.5690000000000004,
+        "current_density_mA_cm2": 100.0,
+        "current_efficiency": 0.9,
+        "n_stacks": 10,
+        "annual_production_t": 7501.0,
+        "total_capex_M$": 2.64,
+        "annual_opex_M$": 3.55,
+        "LCOFe_$_per_t": 506.0,
+        "specific_energy_kWh_per_t": 2740.0,
+        "electricity_cost_$_per_t": 109.59
+      },
+      "capex_breakdown": {
+        "Electrodes ($)": 300000.0,
+        "Membranes/separators ($)": 160000.0,
+        "Cell hardware ($)": 200000.0,
+        "Stack subtotal ($)": 759000.0,
+        "Rectifiers ($)": 308280.0,
+        "Electrolyte system ($)": 200000.0,
+        "Ore leaching ($)": 375058.0,
+        "BOP subtotal ($)": 883338.0,
+        "Infrastructure ($)": 410584.0,
+        "Engineering ($)": 246351.0,
+        "Contingency ($)": 344891.0,
+        "Total CAPEX ($)": 2644164.0,
+        "Total CAPEX (M$)": 2.64
+      },
+      "opex_breakdown": {
+        "Electricity ($/yr)": 822080.0,
+        "Electrolyte makeup ($/yr)": 112517.0,
+        "Iron ore feedstock ($/yr)": 300046.0,
+        "Water ($/yr)": 15002.0,
+        "Anode replacement ($/yr)": 60000.0,
+        "Variable OPEX ($/yr)": 1309646.0,
+        "Maintenance ($/yr)": 79325.0,
+        "Insurance ($/yr)": 26442.0,
+        "Labor ($/yr)": 2000000,
+        "Overhead ($/yr)": 130965.0,
+        "Fixed OPEX ($/yr)": 2236731.0,
+        "Total OPEX ($/yr)": 3546377.0,
+        "Total OPEX (M$/yr)": 3.55,
+        "Annual production (t/yr)": 7501.0,
+        "Specific energy (kWh/t Fe)": 2740.0,
+        "Electricity cost ($/t Fe)": 109.59
+      },
+      "route_comparison": {
+        "BF-BOF": {
+          "Base cost ($/t Fe)": 450,
+          "CO\u2082 emissions (t/t Fe)": 1.8,
+          "Carbon cost @$50/tCO2 ($/t Fe)": 90.0,
+          "Adjusted cost ($/t Fe)": 540.0,
+          "Cost range ($/t Fe)": "350\u2013600"
+        },
+        "H2-DRI + EAF": {
+          "Base cost ($/t Fe)": 600,
+          "CO\u2082 emissions (t/t Fe)": 0.05,
+          "Carbon cost @$50/tCO2 ($/t Fe)": 2.0,
+          "Adjusted cost ($/t Fe)": 602.0,
+          "Cost range ($/t Fe)": "450\u2013800"
+        },
+        "Molten Oxide Electrolysis": {
+          "Base cost ($/t Fe)": 900,
+          "CO\u2082 emissions (t/t Fe)": 0.02,
+          "Carbon cost @$50/tCO2 ($/t Fe)": 1.0,
+          "Adjusted cost ($/t Fe)": 901.0,
+          "Cost range ($/t Fe)": "600\u20131200"
+        },
+        "Aqueous Electrowinning": {
+          "Base cost ($/t Fe)": 506.0,
+          "CO\u2082 emissions (t/t Fe)": 0.02,
+          "Carbon cost @$50/tCO2 ($/t Fe)": 1.0,
+          "Adjusted cost ($/t Fe)": 507.0,
+          "Cost range ($/t Fe)": "model-dependent"
+        }
+      },
+      "sensitivity_analysis": {
+        "base": {
+          "LCOFe": 506.0
+        },
+        "Current efficiency_low": {
+          "LCOFe": 629.0,
+          "value": 0.7,
+          "param": "Current efficiency"
+        },
+        "Current efficiency_high": {
+          "LCOFe": 471.0,
+          "value": 0.98,
+          "param": "Current efficiency"
+        },
+        "Current density (mA/cm\u00b2)_low": {
+          "LCOFe": 809.0,
+          "value": 50.0,
+          "param": "Current density (mA/cm\u00b2)"
+        },
+        "Current density (mA/cm\u00b2)_high": {
+          "LCOFe": 304.0,
+          "value": 300.0,
+          "param": "Current density (mA/cm\u00b2)"
+        },
+        "Cell voltage (V)_low": {
+          "LCOFe": 477.0,
+          "value": 2.0,
+          "param": "Cell voltage (V)"
+        },
+        "Cell voltage (V)_high": {
+          "LCOFe": 553.0,
+          "value": 3.5,
+          "param": "Cell voltage (V)"
+        },
+        "Electricity price_low": {
+          "LCOFe": 446.0,
+          "value": 0.02,
+          "param": "Electricity price ($/kWh)"
+        },
+        "Electricity price_high": {
+          "LCOFe": 626.0,
+          "value": 0.08,
+          "param": "Electricity price ($/kWh)"
+        }
+      }
+    },
+    "scenarios": {
+      "title": "Aqueous Electrowinning Scenario Comparison",
+      "date": "2026-07-29",
+      "plant_config": {
+        "n_stacks": 10,
+        "electrode_area_m2": 1.0,
+        "n_cells_per_stack": 100,
+        "operating_hours_yr": 8000
+      },
+      "scenarios": {
+        "Conservative (Base)": {
+          "description": "Near-term alkaline electrowinning with conventional electrode materials and moderate current density. Represents a cautious estimate based on established electroplating technology scaled to bulk production.",
+          "electrolyte": "1\u20133 M NaOH, citrate complexant",
+          "operating_conditions": {
+            "current_density_mA_cm2": 100.0,
+            "current_efficiency": 0.9,
+            "temperature_C": 70.0,
+            "cell_voltage_V": 1.69
+          },
+          "cell_voltage_breakdown": {
+            "thermodynamic_V": 0.841,
+            "eta_cathode_V": 0.3,
+            "eta_anode_V": 0.4,
+            "ir_drop_V": 0.2
+          },
+          "results": {
+            "specific_energy_kWh_t": 1803.0,
+            "annual_production_t": 7501.0,
+            "total_capex_M$": 2.47,
+            "annual_opex_M$": 3.23,
+            "LCOFe_$_t": 462.0,
+            "electricity_cost_$_t": 72.12,
+            "capex_share_pct": 6.7,
+            "opex_share_pct": 93.3
+          },
+          "references": "Standard alkaline electroplating literature; Yuan & Haarberg (2009)"
+        },
+        "Optimized Alkaline": {
+          "description": "High-efficiency alkaline route using concentrated NaOH with nanoporous Fe\u2082O\u2083 intermediates and rotating cathode for enhanced mass transport. Based on Yuan et al. (2009) and Kempler et al. (2025) demonstrating >90% current efficiency with unique twin-crystal morphology.",
+          "electrolyte": "10\u201314 M NaOH, nanoporous Fe\u2082O\u2083 suspension",
+          "operating_conditions": {
+            "current_density_mA_cm2": 200.0,
+            "current_efficiency": 0.93,
+            "temperature_C": 90.0,
+            "cell_voltage_V": 1.418
+          },
+          "cell_voltage_breakdown": {
+            "thermodynamic_V": 0.841,
+            "eta_cathode_V": 0.22,
+            "eta_anode_V": 0.35,
+            "ir_drop_V": 0.15
+          },
+          "results": {
+            "specific_energy_kWh_t": 1464.0,
+            "annual_production_t": 15502.0,
+            "total_capex_M$": 3.67,
+            "annual_opex_M$": 4.01,
+            "LCOFe_$_t": 281.0,
+            "electricity_cost_$_t": 58.55,
+            "capex_share_pct": 7.9,
+            "opex_share_pct": 92.1
+          },
+          "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
+        },
+        "AWARE Acidic": {
+          "description": "Acidic electro-Winning in Anion-Rich Electrolytes using concentrated LiCl-based systems. Achieves near-unity Coulombic efficiency by thermodynamically suppressing HER through high chloride activity and stabilizing Fe\u00b2\u207a/Fe\u00b3\u207a in solution. Zero-waste operation with high impurity tolerance.",
+          "electrolyte": "Concentrated LiCl (\u226510 M), acidic pH < 2",
+          "operating_conditions": {
+            "current_density_mA_cm2": 500.0,
+            "current_efficiency": 0.99,
+            "temperature_C": 60.0,
+            "cell_voltage_V": 2.485
+          },
+          "cell_voltage_breakdown": {
+            "thermodynamic_V": 1.8,
+            "eta_cathode_V": 0.12,
+            "eta_anode_V": 0.25,
+            "ir_drop_V": 0.1
+          },
+          "results": {
+            "specific_energy_kWh_t": 2410.0,
+            "annual_production_t": 41256.0,
+            "total_capex_M$": 8.72,
+            "annual_opex_M$": 9.6,
+            "LCOFe_$_t": 253.0,
+            "electricity_cost_$_t": 96.39,
+            "capex_share_pct": 7.8,
+            "opex_share_pct": 92.2
+          },
+          "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
+        },
+        "Future Target": {
+          "description": "Aspirational scenario assuming R&D breakthroughs in catalyst design, membrane technology, and process integration. Combines high current density with low cell voltage through advanced electrode architectures (nanostructured cathodes, ultra-thin separators) and AI-optimized pulse-reverse deposition protocols.",
+          "electrolyte": "Optimized mixed-anion electrolyte (TBD)",
+          "operating_conditions": {
+            "current_density_mA_cm2": 400.0,
+            "current_efficiency": 0.97,
+            "temperature_C": 50.0,
+            "cell_voltage_V": 2.441
+          },
+          "cell_voltage_breakdown": {
+            "thermodynamic_V": 1.669,
+            "eta_cathode_V": 0.1,
+            "eta_anode_V": 0.2,
+            "ir_drop_V": 0.08
+          },
+          "results": {
+            "specific_energy_kWh_t": 2415.0,
+            "annual_production_t": 32338.0,
+            "total_capex_M$": 5.13,
+            "annual_opex_M$": 6.45,
+            "LCOFe_$_t": 214.0,
+            "electricity_cost_$_t": 72.45,
+            "capex_share_pct": 6.9,
+            "opex_share_pct": 93.1
+          },
+          "references": "Projected; based on extrapolation of current trends"
+        }
+      },
+      "benchmarks": {
+        "BF-BOF": {
+          "low": 350,
+          "mid": 450,
+          "high": 600,
+          "CO2_t_per_t_Fe": 1.8,
+          "notes": "Mature technology; cost varies with coal/ore prices"
+        },
+        "H2-DRI + EAF": {
+          "low": 450,
+          "mid": 600,
+          "high": 800,
+          "CO2_t_per_t_Fe": 0.05,
+          "notes": "Green H\u2082 at $2\u20134/kg; EAF melting adds ~200 kWh/t"
+        },
+        "Molten Oxide Electrolysis": {
+          "low": 600,
+          "mid": 900,
+          "high": 1200,
+          "CO2_t_per_t_Fe": 0.02,
+          "notes": "Boston Metal approach; high-temp refractory costs"
+        }
+      }
+    },
+    "process_flow": {
+      "figures": [
+        "docs/figures/process_flow_diagram.png",
+        "docs/figures/process_flow_detailed.png"
+      ]
+    },
+    "pulse_coupled_co_deposition": {
+      "dc_at_50": {
+        "E_op_V_vs_SHE": -0.766,
+        "fe_wt_percent": 1.22,
+        "ni_wt_percent": 98.78,
+        "bulk_fe_ref_wt_percent": 48.76,
+        "current_efficiency_percent": 98.7,
+        "partial_currents_A_m2": {
+          "i_fe": 6.32,
+          "i_ni": 487.05,
+          "i_her": 6.63
+        },
+        "is_anomalous": false,
+        "mechanism": "hydroxide_suppression"
+      },
+      "pe_avg50_peak100": {
+        "E_op_V_vs_SHE": -0.77,
+        "fe_wt_percent": 1.32,
+        "ni_wt_percent": 98.68,
+        "bulk_fe_ref_wt_percent": 48.76,
+        "current_efficiency_percent": 98.6,
+        "partial_currents_A_m2": {
+          "i_fe": 6.82,
+          "i_ni": 486.11,
+          "i_her": 7.07
+        },
+        "is_anomalous": false,
+        "mechanism": "hydroxide_suppression",
+        "pulsed_surface_pH": 5.962117847357043,
+        "effective_boundary_layer_m": 4.5825189021202955e-05
+      },
+      "pre_avg50_peak100": {
+        "E_op_V_vs_SHE": -0.765,
+        "fe_wt_percent": 1.19,
+        "ni_wt_percent": 98.81,
+        "bulk_fe_ref_wt_percent": 48.76,
+        "current_efficiency_percent": 98.7,
+        "partial_currents_A_m2": {
+          "i_fe": 6.18,
+          "i_ni": 487.32,
+          "i_her": 6.5
+        },
+        "is_anomalous": false,
+        "mechanism": "hydroxide_suppression",
+        "pulsed_surface_pH": 5.773027093513818,
+        "effective_boundary_layer_m": 4.403598431600422e-05
+      },
+      "note": "PE/PRE surface pH lower (recovery) \u2192 less hydroxide suppression, higher Ni expected (if mechanism is hydroxide-driven)",
+      "figure": "/home/user/aqueous_electrowinning_steel/docs/figures/pulse_coupled_co_deposition.png"
+    }
+  },
+  "dashboard_figure": "/home/user/aqueous_electrowinning_steel/docs/figures/run_all_dashboard.png"
+}
