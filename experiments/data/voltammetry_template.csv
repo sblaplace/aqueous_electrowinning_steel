@@ -1,0 +1,2 @@
+timestamp_s,potential_V_vs_ref,current_A,working_electrode_area_cm2,cycle,segment,temperature_C,pH,fe2_concentration_M,electrolyte_id,reference_electrode,notes
+0.000,-0.200,0.000000,1.000,1,forward,60.0,2.0,1.0,FE-SO4-001,Ag/AgCl,example row; replace with instrument export
