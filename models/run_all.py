@@ -21,10 +21,11 @@ What it does
 8. Carburization post-processing (Fickian diffusion, case depth, HV profile)
 9. Carbon potential / gas atmosphere (CO/CO2, CH4/H2, dew point → a_C, O2 probe)
 10. Tempering + retained austenite (Ms, Koistinen-Marburger, Hollomon-Jaffe)
-11. Anode durability + closed-loop CSTR Phase IV (closed_loop)
-12. Techno-economics + scenario comparison (technoeconomic, scenarios)
-13. Process-flow diagrams (process_flow)
-14. Dashboard summary figure + master JSON
+11. Foil + O2 probe calibration (inverse D, K offset, Hall-Petch fit) — via foil_calibration module, tested in synthetic examples
+12. Anode durability + closed-loop CSTR Phase IV (closed_loop)
+13. Techno-economics + scenario comparison (technoeconomic, scenarios)
+14. Process-flow diagrams + pilot P&ID (process_flow, pid)
+15. Dashboard summary figure + master JSON
 
 Outputs
 -------
@@ -70,6 +71,7 @@ from models.run_mechanical_properties import main as run_mechanical_main
 from models.run_carburization import main as run_carburization_main
 from models.run_carbon_potential import main as run_carbon_potential_main
 from models.run_tempering import main as run_tempering_main
+from models.run_pid import main as run_pid_main
 
 from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -461,7 +463,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["carbon_potential"] = {"error": str(e)}
 
     # 10 Tempering + RA
-    print("\n[11/14] Tempering + retained austenite...")
+    print("\n[11/16] Tempering + retained austenite...")
     try:
         run_tempering_main()
         master["steps"]["tempering"] = _load_json(DATA_DIR / "tempering_report.json")
@@ -471,8 +473,29 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         import traceback; traceback.print_exc()
         master["steps"]["tempering"] = {"error": str(e)}
 
-    # 11 Techno + Scenarios
-    print("\n[12/14] Technoeconomics + scenarios...")
+    # 11 Foil calibration (synthetic example)
+    print("\n[12/16] Foil + O2 probe calibration (synthetic)...")
+    try:
+        # Synthetic foil measurements: use foil_calibration module to fit D from its own synthetic data
+        from models.foil_calibration import FoilMeasurement, fit_diffusivity_from_foil_data, fit_carbon_potential_offset
+        # generate synthetic measurements mimicking 930C, pCO=0.2, pCO2=0.001
+        synthetic_foils = [
+            FoilMeasurement(time_hr=0.5, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.35, o2_probe_mV=1150),
+            FoilMeasurement(time_hr=1.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.65, o2_probe_mV=1120),
+            FoilMeasurement(time_hr=2.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.95, o2_probe_mV=1100),
+            FoilMeasurement(time_hr=4.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=1.05, o2_probe_mV=1090),
+        ]
+        fit_D = fit_diffusivity_from_foil_data(synthetic_foils, initial_C_wt=0.02)
+        fit_O2 = fit_carbon_potential_offset(synthetic_foils)
+        master["steps"]["foil_calibration"] = {"D_fit": fit_D, "O2_offset": fit_O2}
+        print(f"  ✅ foil calibration: D_fit={fit_D['D_fit_m2_s']:.2e} vs theory {fit_D['D_theory_m2_s']:.2e}, O2 offset={fit_O2.get('offset_factor_aC_probe_over_theory_mean',1):.3f}")
+    except Exception as e:
+        print(f"  ❌ foil calibration: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["foil_calibration"] = {"error": str(e)}
+
+    # 12 Techno + Scenarios
+    print("\n[13/16] Technoeconomics + scenarios...")
     try:
         run_techno_main()
         run_scenarios_main()
@@ -483,19 +506,31 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ technoeconomic/scenarios: {e}")
         master["steps"]["technoeconomic"] = {"error": str(e)}
 
-    # 13 Process flow diagrams
-    print("\n[13/14] Process flow diagrams...")
+    # 13 Process flow + PID
+    print("\n[14/16] Process flow diagrams + pilot P&ID...")
     try:
         pf1 = generate_process_flow_diagram()
         pf2 = generate_detailed_flow_with_composition()
+        # PID
+        try:
+            run_pid_main()
+            pid_figs = [str(FIG_DIR / "pid_overview.png"), str(FIG_DIR / "pid_detailed.png")]
+            pid_report = _load_json(DATA_DIR / "pid_report.json")
+        except Exception as e_pid:
+            print(f"    PID generation note: {e_pid}")
+            pid_figs = []
+            pid_report = {"error": str(e_pid)}
         master["steps"]["process_flow"] = {"figures": [str(pf1), str(pf2)]}
+        master["steps"]["pid"] = {"figures": pid_figs, "report": pid_report}
         print(f"  ✅ process_flow: {pf1}, {pf2}")
+        print(f"  ✅ pid: {pid_figs}")
     except Exception as e:
-        print(f"  ❌ process_flow: {e}")
+        print(f"  ❌ process_flow/pid: {e}")
+        import traceback; traceback.print_exc()
         master["steps"]["process_flow"] = {"error": str(e)}
 
-    # 14 Pulse-coupled co-deposition analytics extra
-    print("\n[14/14] Pulse-coupled co-deposition analytics...")
+    # 15 Pulse-coupled co-deposition analytics extra
+    print("\n[15/16] Pulse-coupled co-deposition analytics...")
     try:
         from models.co_deposition import build_phase3_model
         import matplotlib

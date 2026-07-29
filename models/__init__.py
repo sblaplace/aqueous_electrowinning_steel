@@ -144,6 +144,20 @@ from .tempering import (
     case_hardness_after_tempering,
     recommended_tempering_for_target_hv,
 )
+from .foil_calibration import (
+    FoilMeasurement,
+    CaseDepthMeasurement,
+    o2_probe_mv_to_pO2,
+    pO2_to_carbon_activity_via_co_co2,
+    fit_diffusivity_from_foil_data,
+    fit_carbon_potential_offset,
+    fit_tempering_softening,
+    fit_mechanical_hall_petch,
+)
+from .pid import (
+    generate_pid_overview,
+    generate_pid_detailed,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -259,6 +273,18 @@ __all__ = [
     "tempering_curve",
     "case_hardness_after_tempering",
     "recommended_tempering_for_target_hv",
+    # ── Foil calibration & O2 probe ───────────────────────────────────
+    "FoilMeasurement",
+    "CaseDepthMeasurement",
+    "o2_probe_mv_to_pO2",
+    "pO2_to_carbon_activity_via_co_co2",
+    "fit_diffusivity_from_foil_data",
+    "fit_carbon_potential_offset",
+    "fit_tempering_softening",
+    "fit_mechanical_hall_petch",
+    # ── Pilot P&ID ────────────────────────────────────────────────────
+    "generate_pid_overview",
+    "generate_pid_detailed",
     # ── Pulse-aware co-deposition coupling ────────────────────────────
     "surface_pH_from_current",
     "surface_pH_from_pulse",
