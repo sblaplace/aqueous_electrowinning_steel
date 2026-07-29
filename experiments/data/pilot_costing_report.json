@@ -1,0 +1,267 @@
+{
+  "title": "Pilot CAPEX/OPEX Model \u2014 Equipment Costing from P&ID",
+  "equipment_table": [
+    {
+      "tag": "TK-101",
+      "name": "Leaching tank, FRP 2 m\u00b3, agitator",
+      "category": "tanks",
+      "ref_cost_usd": 5000,
+      "scale_exponent": 0.6,
+      "notes": "FRP construction, variable-speed agitator"
+    },
+    {
+      "tag": "TK-102",
+      "name": "Electrolyte prep tank",
+      "category": "tanks",
+      "ref_cost_usd": 3000,
+      "scale_exponent": 0.6,
+      "notes": "Prep + filtration"
+    },
+    {
+      "tag": "TK-103",
+      "name": "Electrolyte storage tank",
+      "category": "tanks",
+      "ref_cost_usd": 3000,
+      "scale_exponent": 0.6,
+      "notes": "Atmospheric storage"
+    },
+    {
+      "tag": "C-201",
+      "name": "Electrowinning cell stack (DSA anodes, cathode blanks)",
+      "category": "cell",
+      "ref_cost_usd": 150000,
+      "scale_exponent": 0.6,
+      "notes": "10-cell bipolar stack, DSA Ti/IrO\u2082-Ta\u2082O\u2085 anodes"
+    },
+    {
+      "tag": "P-201",
+      "name": "Recirculation pump + HE-201 heat exchanger",
+      "category": "tanks",
+      "ref_cost_usd": 2000,
+      "scale_exponent": 0.6,
+      "notes": "Mag-drive pump + plate HE"
+    },
+    {
+      "tag": "TK-202",
+      "name": "CSTR electrolyte recycle",
+      "category": "tanks",
+      "ref_cost_usd": 8000,
+      "scale_exponent": 0.6,
+      "notes": "Stirred tank + purge line"
+    },
+    {
+      "tag": "FL-201",
+      "name": "Electrolyte filter (crossflow)",
+      "category": "tanks",
+      "ref_cost_usd": 2500,
+      "scale_exponent": 0.6,
+      "notes": "Ceramic membrane filter"
+    },
+    {
+      "tag": "TK-301A",
+      "name": "O\u2082 vent header",
+      "category": "gas",
+      "ref_cost_usd": 3000,
+      "scale_exponent": 0.6,
+      "notes": "PVC vent + check valve"
+    },
+    {
+      "tag": "TK-301B",
+      "name": "Cl\u2082 scrubber (NaOH)",
+      "category": "gas",
+      "ref_cost_usd": 8000,
+      "scale_exponent": 0.6,
+      "notes": "Packed tower, NaOH recirc"
+    },
+    {
+      "tag": "TK-302",
+      "name": "Purge treatment tank",
+      "category": "gas",
+      "ref_cost_usd": 3000,
+      "scale_exponent": 0.6,
+      "notes": "Chemical neutralization"
+    },
+    {
+      "tag": "TK-401",
+      "name": "Wash / drying station",
+      "category": "tanks",
+      "ref_cost_usd": 2000,
+      "scale_exponent": 0.6,
+      "notes": "DI water wash + hot air dryer"
+    },
+    {
+      "tag": "F-501",
+      "name": "Carburizing retort (SiC retort, endo gas)",
+      "category": "furnace",
+      "ref_cost_usd": 80000,
+      "scale_exponent": 0.6,
+      "notes": "SiC retort, 950 \u00b0C max, endo gas atmosphere"
+    },
+    {
+      "tag": "GS-501",
+      "name": "Gas manifold (MFC for CO/CO\u2082/CH\u2084/H\u2082)",
+      "category": "gas",
+      "ref_cost_usd": 15000,
+      "scale_exponent": 0.6,
+      "notes": "4\u00d7 MFC + mixing header + safety interlock"
+    },
+    {
+      "tag": "TK-502",
+      "name": "Quench system (oil/polymer tank + agitation)",
+      "category": "tanks",
+      "ref_cost_usd": 10000,
+      "scale_exponent": 0.6,
+      "notes": "Oil or polymer quench with temperature control"
+    },
+    {
+      "tag": "F-503",
+      "name": "Tempering furnace",
+      "category": "furnace",
+      "ref_cost_usd": 30000,
+      "scale_exponent": 0.6,
+      "notes": "Air circulation, 400\u2013700 \u00b0C"
+    },
+    {
+      "tag": "INST",
+      "name": "Instruments (all LT/FT/TT/PT/AT/pHAT/AIT/MFC)",
+      "category": "instruments",
+      "ref_cost_usd": 25000,
+      "scale_exponent": 0.6,
+      "notes": "ISA instruments + SCADA I/O modules"
+    }
+  ],
+  "capex": {
+    "lab": {
+      "scale_kg_day": 1.0,
+      "equipment": {
+        "TK-101": 1256.0,
+        "TK-102": 754.0,
+        "TK-103": 754.0,
+        "C-201": 37678.0,
+        "P-201": 502.0,
+        "TK-202": 2010.0,
+        "FL-201": 628.0,
+        "TK-301A": 754.0,
+        "TK-301B": 2010.0,
+        "TK-302": 754.0,
+        "TK-401": 502.0,
+        "F-501": 20095.0,
+        "GS-501": 3768.0,
+        "TK-502": 2512.0,
+        "F-503": 7536.0,
+        "INST": 6280.0
+      },
+      "subtotal_equipment": 87790.0,
+      "piping_structural": 26337.0,
+      "engineering": 17119.0,
+      "contingency": 19687.0,
+      "total_capex": 150934.0,
+      "total_capex_k": 150.9
+    },
+    "pilot": {
+      "scale_kg_day": 10.0,
+      "equipment": {
+        "TK-101": 5000.0,
+        "TK-102": 3000.0,
+        "TK-103": 3000.0,
+        "C-201": 150000.0,
+        "P-201": 2000.0,
+        "TK-202": 8000.0,
+        "FL-201": 2500.0,
+        "TK-301A": 3000.0,
+        "TK-301B": 8000.0,
+        "TK-302": 3000.0,
+        "TK-401": 2000.0,
+        "F-501": 80000.0,
+        "GS-501": 15000.0,
+        "TK-502": 10000.0,
+        "F-503": 30000.0,
+        "INST": 25000.0
+      },
+      "subtotal_equipment": 349500.0,
+      "piping_structural": 104850.0,
+      "engineering": 68152.0,
+      "contingency": 78375.0,
+      "total_capex": 600878.0,
+      "total_capex_k": 600.9
+    },
+    "production": {
+      "scale_kg_day": 100.0,
+      "equipment": {
+        "TK-101": 19905.0,
+        "TK-102": 11943.0,
+        "TK-103": 11943.0,
+        "C-201": 597161.0,
+        "P-201": 7962.0,
+        "TK-202": 31849.0,
+        "FL-201": 9953.0,
+        "TK-301A": 11943.0,
+        "TK-301B": 31849.0,
+        "TK-302": 11943.0,
+        "TK-401": 7962.0,
+        "F-501": 318486.0,
+        "GS-501": 59716.0,
+        "TK-502": 39811.0,
+        "F-503": 119432.0,
+        "INST": 99527.0
+      },
+      "subtotal_equipment": 1391385.0,
+      "piping_structural": 417415.0,
+      "engineering": 271320.0,
+      "contingency": 312018.0,
+      "total_capex": 2392138.0,
+      "total_capex_k": 2392.1
+    }
+  },
+  "opex_pilot": {
+    "Electrowinning electricity ($/yr)": 990.0,
+    "Gas costs ($/yr)": 461.0,
+    "Furnace electricity ($/yr)": 3816.0,
+    "Quench media ($/yr)": 1500.0,
+    "Electrolyte makeup ($/yr)": 45.0,
+    "Iron ore ($/yr)": 120.0,
+    "Anode replacement ($/yr)": 30.0,
+    "Membrane/filter replacement ($/yr)": 20.0,
+    "Instrument maintenance ($/yr)": 1250.0,
+    "General maintenance ($/yr)": 18026.0,
+    "Labor ($/yr)": 150000.0,
+    "Variable OPEX ($/yr)": 6932.0,
+    "Consumables ($/yr)": 50.0,
+    "Fixed OPEX ($/yr)": 169276.0,
+    "Total OPEX ($/yr)": 176258.0,
+    "Total OPEX (k$/yr)": 176.3,
+    "Specific OPEX ($/kg Fe)": 58.753,
+    "Annual production (t/yr)": 3.0,
+    "Batches per year": 600.0
+  },
+  "sensitivity": {
+    "base": {
+      "CAPEX": 600877.875,
+      "scale": 10.0
+    },
+    "cell_current_low": {
+      "CAPEX": 471934.125,
+      "value": 0.5
+    },
+    "cell_current_high": {
+      "CAPEX": 858765.375,
+      "value": 2.0
+    },
+    "carburizing_temp_low": {
+      "CAPEX": 573369.875,
+      "value": 0.8
+    },
+    "carburizing_temp_high": {
+      "CAPEX": 669647.875,
+      "value": 1.5
+    },
+    "production_scale_low": {
+      "CAPEX": 150933.69812068096,
+      "scale": 1.0
+    },
+    "production_scale_high": {
+      "CAPEX": 3625803.0544785424,
+      "scale": 200.0
+    }
+  }
+}
