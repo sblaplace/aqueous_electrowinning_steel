@@ -1,0 +1,39 @@
+{
+  "dataset_summary": {
+    "n_points": 564,
+    "duration_s": 56.0,
+    "potential_min_V": -1.2933418310664189,
+    "potential_max_V": -0.1999903999999999,
+    "current_density_mean_mA_cm2": -0.2710185656722187,
+    "current_density_max_mA_cm2": 0.0011410780985063168
+  },
+  "derived_properties": {
+    "estimated_scan_rate_V_s": 0.050365807008001924
+  },
+  "extrema_analysis": {
+    "cathodic_peak_potential_V_vs_ref": -1.2933418310664189,
+    "cathodic_peak_current_A": -0.0326159653733006,
+    "anodic_peak_potential_V_vs_ref": -0.2100384,
+    "anodic_peak_current_A": 0.00017123053651658135
+  },
+  "tafel_fits": {
+    "her": {
+      "slope_V_decade": 0.14101811261057026,
+      "intercept_log10_A": -5.718779252453457,
+      "exchange_current_A": 1.9108242646535464e-06,
+      "r_squared": 0.7513733607904101,
+      "n_points": 20,
+      "potential_min_V": -0.5453857116461375,
+      "potential_max_V": -0.4500868582798425
+    },
+    "iron": {
+      "slope_V_decade": 0.08894382669736,
+      "intercept_log10_A": -4.192387001399749,
+      "exchange_current_A": 6.42115271036085e-05,
+      "r_squared": 0.9921691208962566,
+      "n_points": 10,
+      "potential_min_V": -0.7256348909273962,
+      "potential_max_V": -0.6743032191418423
+    }
+  }
+}
