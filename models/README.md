@@ -49,3 +49,4 @@ H⁺ diffusion and migration keeps the surface near pH 2.7 at 100 mA/cm².
 ## Dependencies
 
 See `requirements.txt` in the repository root.
+- `tafel.py` | Tafel-region fitting with exchange-current and R² estimates

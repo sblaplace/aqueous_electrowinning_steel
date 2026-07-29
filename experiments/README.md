@@ -20,3 +20,11 @@ Lab notebooks, raw data, and experimental protocols for the four-phase research 
 
 Experimental protocols will be documented in Jupyter notebooks with embedded metadata
 (electrolyte composition, temperature, current density, electrode geometry, etc.).
+
+The first executable Phase I analysis is `notebooks/phase1_voltammetry.py`. It
+loads the canonical CSV schema, estimates scan rate, reports anodic/cathodic
+extrema, applies baseline correction, and writes a polarization plot:
+
+```bash
+python experiments/notebooks/phase1_voltammetry.py path/to/run.csv
+```
