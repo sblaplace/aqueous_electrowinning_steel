@@ -13,6 +13,7 @@ dependencies = [
     "pandas>=2.0",
     "seaborn>=0.12",
     "pint>=0.22",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
