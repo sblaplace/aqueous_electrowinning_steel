@@ -450,8 +450,9 @@ def test_cell_voltage_model_with_anode():
     assert cell.V_cell > 1.5   # reasonable minimum for acidic Fe electrowinning
 
 
-def test_cell_voltage_model_backwards_compatible():
-    """CellVoltageModel without anode should fall back to fixed eta_anode."""
+def test_cell_voltage_model_no_anode_uses_detailed_decomposition():
+    """Without an anode model, CellVoltageModel uses Nernst cathode + fixed
+    eta_anode + detailed IR decomposition (electrolyte + contacts)."""
     from models.electrochemistry import CellVoltageModel
 
     cell = CellVoltageModel(
@@ -460,8 +461,22 @@ def test_cell_voltage_model_backwards_compatible():
         eta_anode=0.40,
         ir_drop=0.20,
     )
+    # No anode -> E_anode_nernst falls back to fixed OER, eta_anode to fixed.
+    assert cell.E_anode_nernst == pytest.approx(1.229, abs=1e-9)
+    assert cell._effective_eta_anode == pytest.approx(0.40, abs=1e-9)
+    # Cathode equilibrium is Nernst (here == E° since a_Fe2 = 1 M).
+    assert cell.E_cathode_nernst == pytest.approx(-0.440, abs=1e-9)
+    # Detailed IR drop (electrolyte + contacts) replaces the legacy fixed 0.20.
+    assert cell._total_ir_drop == pytest.approx(
+        cell.IR_electrolyte + cell.IR_membrane + cell.IR_contacts, abs=1e-9
+    )
+    # V_cell is the sum of thermodynamic + kinetic + ohmic terms.
     assert cell.V_cell == pytest.approx(
-        abs(1.229 - (-0.440)) + 0.30 + 0.40 + 0.20, abs=1e-9
+        cell.E_thermodynamic
+        + cell.eta_cathode
+        + cell._effective_eta_anode
+        + cell._total_ir_drop,
+        abs=1e-9,
     )
 
 
