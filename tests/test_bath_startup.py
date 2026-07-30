@@ -69,15 +69,15 @@ def test_aa_consumption_increases_with_temperature():
 def test_aa_consumption_increases_with_fe2():
     """Higher [Fe²⁺] → more oxidation → more AA consumed.
 
-    Use pH 3.0 and sa_v=2 to stress the system so the differences are visible.
+    Use pH 2.5, sa_v=1.0, and t_end_hr=2.0 so the AA capacity is not exhausted.
     """
     fe2_levels = [0.5, 1.0, 2.0]
     consumptions = []
 
     for fe2_0 in fe2_levels:
-        p = BathParams(fe2_0=fe2_0, aa_0=g_per_L_to_mol_L(1.0),
-                       pH=3.0, T_C=40.0, sa_v_ratio=2.0)
-        summary = ascorbic_consumption_summary(p, t_end_hr=12.0)
+        p = BathParams(fe2_0=fe2_0, aa_0=g_per_L_to_mol_L(10.0),
+                       pH=2.5, T_C=40.0, sa_v_ratio=1.0)
+        summary = ascorbic_consumption_summary(p, t_end_hr=2.0)
         consumptions.append(summary["aa_consumed_g_L"])
 
     for i in range(1, len(consumptions)):
