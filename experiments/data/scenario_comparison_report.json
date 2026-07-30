@@ -26,12 +26,12 @@
       "results": {
         "specific_energy_kWh_t": 1803.0,
         "annual_production_t": 7501.0,
-        "total_capex_M$": 2.47,
-        "annual_opex_M$": 3.23,
-        "LCOFe_$_t": 462.0,
+        "total_capex_M$": 2.78,
+        "annual_opex_M$": 3.26,
+        "LCOFe_$_t": 470.0,
         "electricity_cost_$_t": 72.12,
-        "capex_share_pct": 6.7,
-        "opex_share_pct": 93.3
+        "capex_share_pct": 7.4,
+        "opex_share_pct": 92.6
       },
       "references": "Standard alkaline electroplating literature; Yuan & Haarberg (2009)"
     },
@@ -53,12 +53,12 @@
       "results": {
         "specific_energy_kWh_t": 1464.0,
         "annual_production_t": 15502.0,
-        "total_capex_M$": 3.67,
-        "annual_opex_M$": 4.01,
-        "LCOFe_$_t": 281.0,
+        "total_capex_M$": 4.36,
+        "annual_opex_M$": 4.08,
+        "LCOFe_$_t": 290.0,
         "electricity_cost_$_t": 58.55,
-        "capex_share_pct": 7.9,
-        "opex_share_pct": 92.1
+        "capex_share_pct": 9.1,
+        "opex_share_pct": 90.9
       },
       "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
     },
@@ -80,12 +80,12 @@
       "results": {
         "specific_energy_kWh_t": 2410.0,
         "annual_production_t": 41256.0,
-        "total_capex_M$": 8.72,
-        "annual_opex_M$": 9.6,
-        "LCOFe_$_t": 253.0,
+        "total_capex_M$": 10.71,
+        "annual_opex_M$": 9.8,
+        "LCOFe_$_t": 262.0,
         "electricity_cost_$_t": 96.39,
-        "capex_share_pct": 7.8,
-        "opex_share_pct": 92.2
+        "capex_share_pct": 9.3,
+        "opex_share_pct": 90.7
       },
       "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
     },
@@ -107,12 +107,12 @@
       "results": {
         "specific_energy_kWh_t": 2415.0,
         "annual_production_t": 32338.0,
-        "total_capex_M$": 5.13,
-        "annual_opex_M$": 6.45,
-        "LCOFe_$_t": 214.0,
+        "total_capex_M$": 6.23,
+        "annual_opex_M$": 6.56,
+        "LCOFe_$_t": 221.0,
         "electricity_cost_$_t": 72.45,
-        "capex_share_pct": 6.9,
-        "opex_share_pct": 93.1
+        "capex_share_pct": 8.2,
+        "opex_share_pct": 91.8
       },
       "references": "Projected; based on extrapolation of current trends"
     }

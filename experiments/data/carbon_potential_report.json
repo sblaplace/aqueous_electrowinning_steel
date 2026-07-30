@@ -1,6 +1,6 @@
 {
   "title": "Carbon potential screening \u2014 gas carburizing atmosphere",
-  "date": "2026-07-29T19:36:15.009816",
+  "date": "2026-07-30T06:00:22.065435",
   "example_T_C": 930.0,
   "example_summary_930C": {
     "T_C": 930,
@@ -25,11 +25,11 @@
     "note": "Screening carbon potential: Boudouard \u0394G=170700-174.5T J/mol, CH4 cracking 90000-109T J/mol. C_wt from a_C via empirical a(C)= (C/1.1)*exp(0.9(C-1.1)) normalized at 900\u00b0C a=1\u21921.1wt%. Acm linear 0.76% at 727\u00b0C to 2.14% at 1147\u00b0C. Calibrate with O2 probe/milliprob foil."
   },
   "figures": [
-    "/home/laplace/projects/aqueous_electrowinning_steel/docs/figures/carbon_potential_map.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/docs/figures/carbon_potential_dewpoint.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/docs/figures/carbon_potential_Acm.png"
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_map.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_dewpoint.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carbon_potential_Acm.png"
   ],
-  "csv": "/home/laplace/projects/aqueous_electrowinning_steel/experiments/data/synthetic_carbon_potential.csv",
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carbon_potential.csv",
   "model_notes": [
     "Boudouard: \u0394G\u00b0=170700-174.5T J/mol, K=exp(-\u0394G/RT), aC=K*pCO^2/pCO2",
     "CH4 cracking: \u0394G\u00b0=90000-109T J/mol, aC=K*pCH4/pH2^2",

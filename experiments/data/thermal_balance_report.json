@@ -1,0 +1,12 @@
+{
+  "uncooled": {
+    "T_ss_C": 22.004632091898852,
+    "T_max_C": 25.0,
+    "heat_gen_power_W": 12.2,
+    "cooling_duty_50C_W": 0.0
+  },
+  "cooled": {
+    "T_ss_C": 16.681481483657606,
+    "T_max_C": 25.0
+  }
+}

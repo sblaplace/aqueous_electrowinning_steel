@@ -1,0 +1,19 @@
+run_id,j_mA_cm2,pH_bulk,T_C,current_A,t_run_hr,predicted_FE_pct,V_cell_V,m_fe_expected_g,thickness_um,energy_Wh,pass_status,reasons
+RUN-001,100.0,2.0,35.0,1.0,2.0,98.9,3.55,2.061,261.7,7.11,False,V_cell (3.55 V) or energy (3449 kWh/t) exceeds threshold
+RUN-002,100.0,2.0,50.0,1.0,2.0,99.0,3.45,2.063,262.0,6.89,True,PASS
+RUN-003,100.0,2.0,65.0,1.0,2.0,99.1,3.37,2.065,262.2,6.74,True,PASS
+RUN-004,100.0,3.0,35.0,1.0,2.0,99.6,3.55,2.075,263.6,7.11,False,V_cell (3.55 V) or energy (3425 kWh/t) exceeds threshold
+RUN-005,100.0,3.0,50.0,1.0,2.0,99.6,3.45,2.076,263.7,6.89,True,PASS
+RUN-006,100.0,3.0,65.0,1.0,2.0,99.7,3.37,2.077,263.8,6.74,True,PASS
+RUN-007,250.0,2.0,35.0,2.5,2.0,98.5,5.06,5.131,651.6,25.31,False,V_cell (5.06 V) or energy (4934 kWh/t) exceeds threshold
+RUN-008,250.0,2.0,50.0,2.5,2.0,98.6,4.79,5.138,652.5,23.96,False,V_cell (4.79 V) or energy (4663 kWh/t) exceeds threshold
+RUN-009,250.0,2.0,65.0,2.5,2.0,98.8,4.6,5.145,653.4,23.0,False,V_cell (4.60 V) or energy (4472 kWh/t) exceeds threshold
+RUN-010,250.0,3.0,35.0,2.5,2.0,99.4,5.06,5.18,657.9,25.32,False,V_cell (5.06 V) or energy (4888 kWh/t) exceeds threshold
+RUN-011,250.0,3.0,50.0,2.5,2.0,99.5,4.79,5.184,658.4,23.96,False,V_cell (4.79 V) or energy (4623 kWh/t) exceeds threshold
+RUN-012,250.0,3.0,65.0,2.5,2.0,99.6,4.6,5.187,658.8,23.01,False,V_cell (4.60 V) or energy (4436 kWh/t) exceeds threshold
+RUN-013,400.0,2.0,35.0,4.0,2.0,96.6,6.58,8.054,1022.9,52.6,False,V_cell (6.58 V) or energy (6532 kWh/t) exceeds threshold
+RUN-014,400.0,2.0,50.0,4.0,2.0,96.9,6.14,8.077,1025.7,49.13,False,V_cell (6.14 V) or energy (6084 kWh/t) exceeds threshold
+RUN-015,400.0,2.0,65.0,4.0,2.0,97.2,5.84,8.097,1028.4,46.7,False,V_cell (5.84 V) or energy (5767 kWh/t) exceeds threshold
+RUN-016,400.0,3.0,35.0,4.0,2.0,98.6,6.58,8.22,1043.9,52.66,False,V_cell (6.58 V) or energy (6406 kWh/t) exceeds threshold
+RUN-017,400.0,3.0,50.0,4.0,2.0,98.8,6.15,8.235,1045.8,49.19,False,V_cell (6.15 V) or energy (5973 kWh/t) exceeds threshold
+RUN-018,400.0,3.0,65.0,4.0,2.0,99.0,5.84,8.247,1047.4,46.75,False,V_cell (5.84 V) or energy (5669 kWh/t) exceeds threshold

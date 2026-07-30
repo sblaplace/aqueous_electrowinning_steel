@@ -1,0 +1,17 @@
+{
+  "batch_recipe": {
+    "volume_L": 1.0,
+    "c_FeSO4_M": 1.0,
+    "c_Na2SO4_M": 0.5,
+    "c_H3BO3_M": 0.4,
+    "c_ascorbic_g_L": 2.0,
+    "target_pH": 2.5,
+    "FeSO4_7H2O_g": 278.01,
+    "Na2SO4_g": 71.02,
+    "H3BO3_g": 24.732,
+    "ascorbic_acid_g": 2.0,
+    "est_H2SO4_98pct_mL": 0.08593145815674945
+  },
+  "doe_total_runs": 18,
+  "doe_pass_runs": 4
+}
