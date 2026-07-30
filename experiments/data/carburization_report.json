@@ -1,6 +1,6 @@
 {
   "title": "Post-deposition gaseous carburization screening",
-  "date": "2026-07-29T15:05:02.261307",
+  "date": "2026-07-30T05:46:35.989146",
   "params": {
     "temperature_C": 900.0,
     "surface_c_wt": 1.1,
@@ -37,12 +37,12 @@
     "furnace_efficiency": 0.6
   },
   "figures": [
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_profiles.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_case_depth.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_hardness.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/carburization_energy.png"
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_profiles.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_case_depth.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_hardness.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/carburization_energy.png"
   ],
-  "csv": "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/experiments/data/synthetic_carburization.csv",
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_carburization.csv",
   "model_notes": [
     "Fickian diffusion, finite slab with both sides carburized, Fourier superposition for Fo>0.2",
     "D = D0 exp(-Q/RT) with \u03b3-Fe D0=2.3e-5 m2/s Q=148 kJ/mol, \u03b1-Fe D0=6.2e-7 Q=80 kJ/mol (screening means)",

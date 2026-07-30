@@ -1,9 +1,9 @@
 {
   "title": "Pilot P&ID screening \u2014 aqueous electrowinning + carburizing + tempering",
-  "date": "2026-07-29T15:05:09.856396",
+  "date": "2026-07-30T05:46:42.452917",
   "figures": [
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_overview.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/pid_detailed.png"
+    "/home/user/aqueous_electrowinning_steel/docs/figures/pid_overview.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/pid_detailed.png"
   ],
   "equipment_list": [
     "TK-101 Leaching tank with agitator M-101, LT-101, TT-101, pHAT-101, AT-101 FeTot",

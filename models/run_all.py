@@ -72,6 +72,10 @@ from models.run_carburization import main as run_carburization_main
 from models.run_carbon_potential import main as run_carbon_potential_main
 from models.run_tempering import main as run_tempering_main
 from models.run_pid import main as run_pid_main
+from models.run_speciation import main as run_speciation_main
+from models.run_thermal_balance import main as run_thermal_balance_main
+from models.run_operating_window import main as run_operating_window_main
+from models.run_experimental_matrix import main as run_experimental_matrix_main
 
 from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -579,6 +583,23 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ pulse-coupled co-deposition: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["pulse_coupled_co_deposition"] = {"error": str(e)}
+
+    # Pre-lab pre-experiment modeling suite (Speciation, Thermal Balance, Operating Window, DOE Matrix)
+    print("\n[16/16] Pre-lab modeling suite (Speciation, Thermal, Operating Window, DOE Matrix)...")
+    try:
+        run_speciation_main()
+        master["steps"]["speciation"] = _load_json(DATA_DIR / "speciation_report.json")
+        run_thermal_balance_main()
+        master["steps"]["thermal_balance"] = _load_json(DATA_DIR / "thermal_balance_report.json")
+        run_operating_window_main()
+        master["steps"]["operating_window"] = _load_json(DATA_DIR / "operating_window_report.json")
+        run_experimental_matrix_main()
+        master["steps"]["experimental_matrix"] = _load_json(DATA_DIR / "experimental_matrix_report.json")
+        print("  ✅ pre-lab modeling suite")
+    except Exception as e:
+        print(f"  ❌ pre-lab modeling suite: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["pre_lab_suite"] = {"error": str(e)}
 
     # Dashboard
     print("\n[Dashboard] Generating master dashboard...")

@@ -202,8 +202,8 @@
     }
   },
   "sweep_figures": [
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/mechanical_properties_sweep.png",
-    "/home/laplace/projects/aqueous_electrowinning_steel/.worktrees/t_ead7cb8a/docs/figures/alloy_vs_mechanical.png"
+    "/home/user/aqueous_electrowinning_steel/docs/figures/mechanical_properties_sweep.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/alloy_vs_mechanical.png"
   ],
   "note": "All predictions are screening-level; must be verified by Vickers, tensile, EBSD."
 }

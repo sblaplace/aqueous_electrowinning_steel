@@ -296,6 +296,26 @@ from .bath_startup import (
     sensitivity_ph,
     sensitivity_temperature,
 )
+from .speciation import (
+    SolutionComposition,
+    solve_speciation,
+    speciation_temperature_sweep,
+)
+from .thermal_balance import (
+    CellThermalParams,
+    simulate_thermal_transient,
+)
+from .operating_window import (
+    OperatingWindowConstraints,
+    evaluate_operating_point,
+    map_2d_operating_window,
+)
+from .experimental_matrix import (
+    ChemicalRecipe,
+    calculate_batch_recipe,
+    predict_plating_run,
+    generate_factorial_doe,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -553,4 +573,19 @@ __all__ = [
     "ascorbic_consumption_summary",
     "sensitivity_ph",
     "sensitivity_temperature",
+    # ── Speciation & Activity ─────────────────────────────────────────
+    "SolutionComposition",
+    "solve_speciation",
+    "speciation_temperature_sweep",
+    # ── Thermal balance ──────────────────────────────────────────────
+    "CellThermalParams",
+    "simulate_thermal_transient",
+    # ── Operating window ──────────────────────────────────────────────
+    "OperatingWindowConstraints",
+    "evaluate_operating_point",
+    "map_2d_operating_window",
+    "ChemicalRecipe",
+    "calculate_batch_recipe",
+    "predict_plating_run",
+    "generate_factorial_doe",
 ]

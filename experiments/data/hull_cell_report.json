@@ -16,10 +16,10 @@
     "panel_area_cm2": 50.0,
     "total_current_A": 1.0,
     "panel_average_current_density_mA_cm2": 20.0,
-    "near_edge_current_density_mA_cm2": 54.460618188279874,
+    "near_edge_current_density_mA_cm2": 54.46061818827987,
     "far_edge_current_density_mA_cm2": 9.340818133498587,
     "current_density_min_mA_cm2": 9.340818133498587,
-    "current_density_max_mA_cm2": 54.460618188279874,
+    "current_density_max_mA_cm2": 54.46061818827987,
     "near_edge_gap_cm": 1.5,
     "far_edge_gap_cm": 9.0
   },
