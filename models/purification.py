@@ -24,15 +24,13 @@ from typing import Optional
 
 import numpy as np
 
-# ── Physical constants (shared with electrochemistry.py) ───────────────
-FARADAY = 96485.3321   # C/mol
-R_GAS = 8.314462       # J/(mol·K)
+# ── Physical constants (from electrochemistry.py) ─────────────────
+from .electrochemistry import FARADAY, R_GAS, M_FE_G as M_FE
 
 # Molar masses (g/mol)
 M_CU = 63.546
 M_NI = 58.693
 M_ZN = 65.38
-M_FE = 55.845
 
 # Standard reduction potentials (V vs SHE) at 25 °C
 E0_CU = +0.342

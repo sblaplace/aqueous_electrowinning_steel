@@ -34,7 +34,7 @@ from typing import Optional, Dict, Any, Literal
 import math
 import numpy as np
 
-R_GAS = 8.314462  # J/mol/K
+from .electrochemistry import R_GAS
 
 # ΔG° correlations (J/mol) screening means, graphite reference for C
 # Sources: Richardson-Ellingham approx, fitted for 800-1000°C
@@ -145,31 +145,25 @@ def austenite_max_carbon_wt_percent(T_C: float) -> float:
     return float(0.76 + frac * (2.14 - 0.76))
 
 
-def activity_coefficient_c_in_austenite(T_C: float, C_wt_percent: float) -> float:
+def carbon_activity_c_in_austenite(T_C: float, C_wt_percent: float) -> float:
     """
-    Wagner dilute solution gamma_C in austenite, screening correlation.
+    Carbon activity in austenite (graphite reference), screening correlation.
 
-    ln γ_C = (3600/T + ... ) + interaction: ln γ ≈  (2.1*C_wt) /T? Simplified.
+    Returns a_C (dimensionless, graphite = 1 at saturation).
+    Validated: a_C ≈ 1 at ~1.3 wt% C, 900°C — consistent with the
+    Fe-C phase diagram Acm boundary.
 
-    Use: ln γ_C° (infinite dilute) ≈  4000/T -1.5 (approx), then ε_C^C ~ 0.0125*C_wt
-
-    Returns γ (Henrian, graphite reference?).
-    For graphite ref, activity a_C = γ * x_C / (1 - x_C) ??? Simplified to wt basis:
-
-    For screening we use: a_C ≈ (C_wt / 1.3) * exp( (C_wt -0.5)*1.2 ) * exp( 500*(1/T -1/1173) )
-
-    This gives a_C≈1 at ~1.3 wt% 900°C, reasonable.
+    This is an empirical screening fit, not a Wagner-interaction model.
+    For calibrated use, fit against measured foil-weight-gain data via
+    models.foil_calibration.
     """
     T_K = T_C + 273.15
-    # reference 1 wt% at 900°C a_C ~0.6-0.8
-    # empirical fit
-    a_ref = 0.65
-    C_ref = 1.0
-    T_ref = 900.0
-    # temperature dependence: higher T → higher solubility → lower a for same C
-    temp_factor = math.exp( -1500.0 * (1.0/T_K - 1.0/(T_ref+273.15)) )
+    a_ref = 0.65          # a_C at C_ref=1.0 wt%, T_ref=900°C
+    C_ref = 1.0           # wt%
+    T_ref = 900.0         # °C
+    temp_factor = math.exp(-1500.0 * (1.0 / T_K - 1.0 / (T_ref + 273.15)))
     conc_factor = (C_wt_percent / C_ref) * math.exp(0.8 * (C_wt_percent - C_ref))
-    return float(conc_factor * temp_factor / a_ref)  # Actually return a directly? We'll reinterpret.
+    return float(conc_factor * temp_factor / a_ref)
 
 # More straightforward: directly estimate C_wt from a_C iteratively.
 

@@ -45,8 +45,7 @@ from .carbon_potential import (
     austenite_max_carbon_wt_percent,
 )
 from .tempering import tempered_hardness_hollomon_jaffe, hollomon_jaffe_parameter
-
-R_GAS = 8.314462
+from .electrochemistry import R_GAS
 
 
 @dataclass

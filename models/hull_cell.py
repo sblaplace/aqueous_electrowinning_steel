@@ -26,9 +26,7 @@ import numpy as np
 import pandas as pd
 
 
-FARADAY_CONSTANT_C_MOL = 96485.33212
-MOLAR_MASS_FE_G_MOL = 55.845
-ELECTRONS_PER_FE = 2
+from .electrochemistry import FARADAY as FARADAY_CONSTANT_C_MOL, M_FE_G as MOLAR_MASS_FE_G_MOL, Z_FE as ELECTRONS_PER_FE
 
 GALVANOSTATIC_REQUIRED_COLUMNS = {"timestamp_s", "current_A"}
 GRAVIMETRY_REQUIRED_COLUMNS = {"mass_before_g", "mass_after_g"}

@@ -27,10 +27,8 @@ import json
 import numpy as np
 import pandas as pd
 
-# ── Physical constants (mirror electrochemistry.py) ─────────────────
-FARADAY_C_MOL = 96485.3321   # C/mol
-M_FE_G_MOL = 55.845          # g/mol
-Z_FE = 2                     # electrons per Fe²⁺ → Fe
+# ── Physical constants (from electrochemistry.py) ─────────────────
+from .electrochemistry import FARADAY as FARADAY_C_MOL, M_FE_G as M_FE_G_MOL, Z_FE
 
 
 # ── Data classes ────────────────────────────────────────────────────

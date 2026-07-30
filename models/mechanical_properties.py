@@ -187,10 +187,8 @@ def estimate_grain_size_um(
     j_ratio = j_avg_mA_cm2 / max(j_peak, 1e-12)  # avg/peak ≤1; smaller ratio = more pulsing bonus
     # For PE/PRE, low duty + high peak/avg ratio refines grains
     if waveform == "pe":
-        factor = p.pe_factor_base * (duty_cycle ** p.pe_duty_exp) * (j_ratio ** p.pe_j_ratio_exp)
-        # factor ≤1 refines; include duty because lower duty means more off-time recovery but also more nucleation
-        # Invert intuition: we want factor <1, so use (0.5+0.5 duty) shape; at duty=0.5, factor~pe_base*0.75
-        # above analytical pre-factor was simplified; correct with blend:
+        # Blend: interpolates between pe_factor_base (at duty=0) and 1.0 (at duty=1),
+        # normalized at 50% duty, scaled by peak/avg current ratio.
         factor = p.pe_factor_base + (1 - p.pe_factor_base) * duty_cycle
         factor *= (j_ratio ** p.pe_j_ratio_exp) / (0.5 ** p.pe_j_ratio_exp)  # normalize at 50% duty
         factor = max(factor, 0.18)

@@ -30,7 +30,7 @@ from typing import Optional, Dict, Any, Tuple
 import math
 import numpy as np
 
-R_GAS = 8.314462
+from .electrochemistry import R_GAS
 
 
 @dataclass(frozen=True)

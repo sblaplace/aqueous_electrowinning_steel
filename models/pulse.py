@@ -13,7 +13,7 @@ import numpy as np
 from .electrochemistry import FARADAY, M_FE, RHO_FE
 
 # Standard diffusivities (m^2/s)
-DIFFUSIVITY_FE2 = 6.0e-10
+DIFFUSIVITY_FE2 = 7.2e-10   # Fe²⁺ infinite-dilution, 25°C (CRC); consistent with transport.py D_FE
 DIFFUSIVITY_H = 9.31e-9
 
 

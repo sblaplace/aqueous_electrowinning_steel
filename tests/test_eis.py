@@ -12,8 +12,8 @@ from models.eis import (
     fit_randles_spectrum,
     exchange_current_from_rct,
     synthetic_randles_spectrum,
-    GAS_CONSTANT,
-    FARADAY_CONSTANT,
+    R_GAS as GAS_CONSTANT,
+    FARADAY as FARADAY_CONSTANT,
 )
 
 

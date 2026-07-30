@@ -43,11 +43,9 @@ from typing import Optional, Dict, Any, Literal, Tuple
 import math
 import numpy as np
 
-# ── Constants ────────────────────────────────────────────────────────────────
+from .electrochemistry import R_GAS, M_FE, RHO_FE
 
-R_GAS = 8.314462    # J/mol/K
-M_FE = 55.845e-3    # kg/mol
-RHO_FE = 7874.0     # kg/m³
+# ── Constants ────────────────────────────────────────────────────────────────
 
 # H diffusion in α-Fe (bcc) — fast diffuser
 D0_ALPHA_M2_S = 7.3e-8    # m²/s

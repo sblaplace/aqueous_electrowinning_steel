@@ -26,6 +26,7 @@ AVOGADRO = 6.022e23   # 1/mol
 
 # ─── Iron-specific Constants ──────────────────────────────────────────
 M_FE = 55.845e-3      # kg/mol (molar mass of iron)
+M_FE_G = 55.845        # g/mol  (molar mass of iron, for gravimetric calculations)
 Z_FE = 2              # electrons per Fe²⁺ → Fe
 E0_FE = -0.440        # V vs. SHE (standard reduction potential)
 RHO_FE = 7874.0       # kg/m³ (density of iron)

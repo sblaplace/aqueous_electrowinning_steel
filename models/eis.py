@@ -16,15 +16,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .electrochemistry import FARADAY, R_GAS
+
 REQUIRED_COLUMNS = {"frequency_hz", "z_real_ohm", "z_imag_ohm"}
 OPTIONAL_COLUMNS = {
     "z_magnitude_ohm", "phase_deg", "working_electrode_area_cm2",
     "dc_bias_V_vs_ref", "temperature_C", "pH", "fe2_concentration_M",
     "electrolyte_id", "reference_electrode", "notes",
 }
-
-FARADAY_CONSTANT = 96485.33212  # C/mol
-GAS_CONSTANT = 8.314462618      # J/(mol K)
 
 
 def load_spectrum(path: str | Path) -> pd.DataFrame:
@@ -246,8 +245,8 @@ def exchange_current_from_rct(rct_ohm: float, n_electrons: int = 2,
     """
     if rct_ohm <= 0:
         raise ValueError("rct_ohm must be positive")
-    return (GAS_CONSTANT * temperature_K
-            / (n_electrons * FARADAY_CONSTANT * rct_ohm))
+    return (R_GAS * temperature_K
+            / (n_electrons * FARADAY * rct_ohm))
 
 
 def synthetic_randles_spectrum(rs_ohm: float, rct_ohm: float, cdl_F: float,

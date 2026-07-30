@@ -42,9 +42,10 @@ import math
 import numpy as np
 from scipy.integrate import solve_ivp
 
+from .electrochemistry import R_GAS
+
 # ── Constants ────────────────────────────────────────────────────────────────
 
-R_GAS = 8.314462       # J/(mol·K)
 M_AA = 176.12          # g/mol  (ascorbic acid C₆H₈O₆)
 ASCORBIC_PKA1 = 4.17   # pKa₁ of ascorbic acid (first dissociation)
 
