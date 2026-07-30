@@ -143,7 +143,7 @@ One 10-minute deposit maps deposit appearance across ~2 decades of current densi
 
 ### 4. Polarization + FE curves in a divided beaker cell — ~$1,000, two weeks
 
-V(j) and FE(j) at 3 temperatures × 3 concentrations × 2 pH. Measure FE by hydrogen volumetry (inverted burette over cathode) — continuous, real-time, more sensitive than weighing. This is the complete input to the techno-economic model.
+- V(j) and FE(j) at 3 temperatures × 3 concentrations × 2 pH. Measure FE by hydrogen volumetry (inverted burette over cathode) and independently close a charge, dry-deposit-mass, and electrolyte iron balance. This establishes both HER loss and iron recovery; it is the core input to the techno-economic model.
 
 ### 5. RDE + Levich — ~$2–5k
 
@@ -176,9 +176,9 @@ This is a few hundred lines. It calibrates against a week of beaker work. It has
 
 You cannot kill a program on the output of an uncalibrated model. Replace with things a multimeter can adjudicate:
 
-- Measured V_cell × 0.96 / FE > 4,000 kWh/t at j ≥ 300 mA/cm², 60°C, divided cell, after optimizing C/T/flow → **kill.**
-- Measured FE < 70% at 300 mA/cm² under the same conditions → **kill.**
-- No coherent 100 g iron plate (or powder/flake if feedstock path) produced by month 6 → **stop and reassess.**
+- At j ≥ 300 mA/cm², replicated divided-cell runs cannot sustain both FE ≥ 70% and net DC specific energy ≤ 4,000 kWh/t Fe after optimizing concentration, temperature, and flow → **kill or redesign the route.** Specific energy is \(959.9 \times V_{cell}/FE\) kWh/t Fe for Fe²⁺ + 2e⁻ → Fe; 4,000 kWh/t at FE = 70% corresponds to \(V_{cell}\) ≈ 2.92 V.
+- Report pumps, heating, concentration, filtration, drying, and rectifier losses separately, then establish an AC plant-energy threshold when the flowsheet is defined.
+- No weighed and characterized coherent 100 g iron plate (or qualified powder/flake for a feedstock path), together with a closed charge/mass/electrolyte balance → **stop and reassess.** A photograph is a milestone, not sufficient process evidence.
 - Cost per m² of a cell that can be stripped continuously > threshold → **pivot to cell architecture work.**
 - If Electra or ΣIDERWIN is already at our target economics → **pivot to complementary niche or license.**
 
@@ -218,8 +218,8 @@ Keep: `technoeconomic`, `transport` (1D diffusion-layer), `hull_cell`, `voltamme
 ### Tier 1 — After archaeology informs the question.
 
 - [ ] 1D diffusion-layer model (replaces phase-field as gating model)
-- [ ] Hull cell experiments (300 mA/cm² maps in one afternoon)
-- [ ] Polarization + FE curves in divided beaker cell
+- [ ] Hull cell experiments for morphology and gross plating-behavior screening
+- [ ] Instrumented divided-beaker cell: polarization, FE, voltage decomposition, crossover, and iron-speciation curves
 - [ ] Cell architecture paper study (drum, belt, rotating cylinder, filter-press)
 - [ ] RDE + Levich for kinetics/transport separation
 - [ ] Stoney stress measurement on thin shim

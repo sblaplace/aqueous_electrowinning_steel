@@ -215,7 +215,9 @@ a QA flag rather than hidden.  See `models/README.md` and
 
 ---
 
-## Detailed Technical Report
+## Program Summary and Detailed Technical Report
+
+For the decision-grade program position, model scope, experimental gates, and preliminary IP framing, see **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)**.
 
 The full technical exposition is available in **[RESEARCH_REPORT.md](RESEARCH_REPORT.md)**.
 
