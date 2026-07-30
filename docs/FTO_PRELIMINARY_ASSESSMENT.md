@@ -99,6 +99,8 @@ The proposed aqueous sulfate process—electrowinning from dissolved feedstock i
 
 ## References
 
+- Claim charts (first pass, 2026-07-30): `CLAIM_CHARTS_PRELIMINARY.md` — element-by-element charts for US12054837B2, US20240158939A1, US20250146155A1, WO2025199035A1; resolves §4 items 1–3 at desk level and corrects §1.1: granted US12054837B2 claim 1 is a dissolution-tank/circulation-loop system (thermal reduction appears in dependent claim 7, electroplating in dependent claim 10)
+- Non-patent prior-art digest (2026-07-30): `TIER0_ARCHAEOLOGY.md` — includes the abandoned Cardarelli FerWIN sulfate/copperas/pickle-liquor divided-cell application (prior art for novelty)
 - Patent family table: `../electra_patent_family.md`
 - ΣIDERWIN CORDIS: https://cordis.europa.eu/project/id/768788
 - Humbert 2024 (TEA): DOI 10.1007/s40831-024-00878-3 — PDF in `references/`
