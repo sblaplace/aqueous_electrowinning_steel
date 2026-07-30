@@ -79,9 +79,11 @@ def generate_process_flow_diagram(
     # Top row: ore -> leaching -> electrolyte prep
     _draw_block(ax, (0.05, 0.65), 0.12, 0.18, "Iron Ore /\nWaste Feed\n(Fe₂O₃, pickle liquor)",
                 st["leaching_color"])
-    _draw_block(ax, (0.22, 0.65), 0.14, 0.18, "Ore Leaching /\nDissolution\n(H₂SO₄ / HCl)",
+    _draw_block(ax, (0.22, 0.65), 0.07, 0.18, "Crush /\nGrind\n(to ~10 μm)",
+                st["leaching_color"], fontsize=7)
+    _draw_block(ax, (0.33, 0.65), 0.12, 0.18, "Ore Leaching /\nDissolution\n(H₂SO₄ / HCl)",
                 st["leaching_color"])
-    _draw_block(ax, (0.41, 0.65), 0.18, 0.18, "Electrolyte\nPreparation\n(Fe²⁺ + complexant\npH/T control)",
+    _draw_block(ax, (0.49, 0.65), 0.14, 0.18, "Electrolyte\nPreparation\n(Fe²⁺ + complexant\npH/T control)",
                 st["electrolyte_color"])
 
     # Center: electrowinning cell split anode/cathode
@@ -122,8 +124,9 @@ def generate_process_flow_diagram(
 
     # Arrows: main flow
     _draw_arrow(ax, (0.17, 0.74), (0.22, 0.74), label="ore / dust", color=st["arrow_color"])
-    _draw_arrow(ax, (0.36, 0.74), (0.41, 0.74), label="leachate", color=st["arrow_color"])
-    _draw_arrow(ax, (0.50, 0.65), (0.50, 0.57), label="fresh electrolyte", color=st["arrow_color"])
+    _draw_arrow(ax, (0.29, 0.74), (0.33, 0.74), label="", color=st["arrow_color"])
+    _draw_arrow(ax, (0.45, 0.74), (0.49, 0.74), label="leachate", color=st["arrow_color"])
+    _draw_arrow(ax, (0.56, 0.65), (0.56, 0.57), label="fresh electrolyte", color=st["arrow_color"])
     _draw_arrow(ax, (0.395, 0.46), (0.25, 0.46), label="Fe deposit", color=st["arrow_color"])
     _draw_arrow(ax, (0.185, 0.35), (0.16, 0.26), label="", color=st["arrow_color"])
     _draw_arrow(ax, (0.165, 0.08), (0.35, 0.11), label="treated Fe sheet", color=st["arrow_color"])
@@ -133,7 +136,7 @@ def generate_process_flow_diagram(
 
     # Recycle arrows
     _draw_arrow(ax, (0.65, 0.74), (0.59, 0.74), label="barren / Fe-depleted", color=st["recycle_color"], style="--")
-    _draw_arrow(ax, (0.65, 0.70), (0.41, 0.65), label="recycle / CSTR loop", color=st["recycle_color"], style="--")
+    _draw_arrow(ax, (0.65, 0.70), (0.49, 0.65), label="recycle / CSTR loop", color=st["recycle_color"], style="--")
     _draw_arrow(ax, (0.83, 0.74), (0.87, 0.70), label="", color=st["purge_color"], style=":")
     _draw_arrow(ax, (0.87, 0.75), (0.83, 0.80), label="ligand / Fe²⁺", color=st["electrolyte_color"], style=":")
 

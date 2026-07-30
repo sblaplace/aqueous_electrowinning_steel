@@ -2,13 +2,31 @@
 Techno-economic model for aqueous electrowinning of iron/steel.
 
 Calculates levelized cost of iron production and benchmarks against
-conventional (BF-BOF) and emerging (H₂-DRI, MOE) routes.
+conventional (BF-BOF) and emerging (H2-DRI, MOE) routes.
 
 References
 ----------
-- Humbert et al. (2024), J. Sustainable Metallurgy, 10, 1679–1701.
+- Humbert et al. (2024), J. Sustainable Metallurgy, 10, 1679-1701.
 - AWARE process (2024), ChemRxiv.
-- DOE H₂-DRI cost estimates (2023–2024).
+- DOE H2-DRI cost estimates (2023-2024).
+- Shekhar, Mukhopadhyay et al. (2025), ACS Nano, 19(37), 33449-33459.
+  ("Kempler/Shekhar" - nanoporous Fe2O3 dissolution-redeposition)
+
+Feedstock morphology note (Kempler/Shekhar 2025):
+---------------------------------------------------
+Nanoscale porosity controls iron oxide reactivity at <100 deg C.
+Nanoporous hematite dissolves via a fast dissolution-redeposition
+pathway; dense hematite dissolves via slow reactive fracture.
+For solid feedstock selection, prefer porous/microporous oxides
+(precipitated FeOOH, red mud, copperas) over dense hematite.
+For already-dissolved feedstocks (pickle liquor, acid mine drainage),
+this is irrelevant -- dissolution kinetics are already resolved.
+
+Grinding energy (Humbert 2024):
+-------------------------------
+AHE grinding to ~10 um: 0.064 kWh/kg = 64 kWh/t Fe.
+This is ~2% of total specific energy (~3 kWh/kg) and is included
+in the OPEX model as grinding_energy_kWh_per_t.
 """
 
 import numpy as np
@@ -106,6 +124,7 @@ class CAPEXModel:
 
     # Ore processing / leaching
     leaching_cost_per_tpy: float = 50.0          # $/t annual capacity (ore dissolution)
+    grinding_cost_per_tpy: float = 25.0          # $/t annual capacity (crushing + ball mill)
 
     # Infrastructure
     infrastructure_factor: float = 0.25          # fraction of direct costs (buildings, piping, controls)
@@ -135,8 +154,9 @@ class CAPEXModel:
         # Annual capacity for leaching estimate
         annual_capacity_t = params.production_rate_t_yr() * n_stacks
         leaching = self.leaching_cost_per_tpy * annual_capacity_t
+        grinding = self.grinding_cost_per_tpy * annual_capacity_t
 
-        bop_subtotal = rectifier_cost + electrolyte_system + leaching
+        bop_subtotal = rectifier_cost + electrolyte_system + leaching + grinding
 
         # Direct costs
         direct_costs = stack_subtotal + bop_subtotal
@@ -154,6 +174,7 @@ class CAPEXModel:
             "Rectifiers ($)": round(rectifier_cost, 0),
             "Electrolyte system ($)": round(electrolyte_system, 0),
             "Ore leaching ($)": round(leaching, 0),
+            "Ore grinding ($)": round(grinding, 0),
             "BOP subtotal ($)": round(bop_subtotal, 0),
             "Infrastructure ($)": round(infrastructure, 0),
             "Engineering ($)": round(engineering, 0),
@@ -179,6 +200,7 @@ class OPEXModel:
     electrolyte_makeup_per_t_Fe: float = 15.0     # $/t Fe (losses, purification)
     anode_replacement_cost_per_m2_yr: float = 30.0  # $/m²/yr (DSA recoating)
     ore_cost_per_t_Fe: float = 40.0               # $/t Fe (iron ore feedstock)
+    grinding_energy_kWh_per_t: float = 64.0       # kWh/t Fe (crushing + ball mill to ~10 μm; Humbert 2024)
     water_cost_per_t_Fe: float = 2.0              # $/t Fe
 
     # Fixed costs
@@ -201,7 +223,9 @@ class OPEXModel:
         )
 
         # Variable costs
-        electricity_cost = specific_energy * self.electricity_price_kWh * annual_production_t
+        electrolysis_energy = specific_energy * self.electricity_price_kWh * annual_production_t
+        grinding_electricity = self.grinding_energy_kWh_per_t * self.electricity_price_kWh * annual_production_t
+        electricity_cost = electrolysis_energy + grinding_electricity
         electrolyte_cost = self.electrolyte_makeup_per_t_Fe * annual_production_t
         ore_cost = self.ore_cost_per_t_Fe * annual_production_t
         water_cost = self.water_cost_per_t_Fe * annual_production_t
@@ -222,6 +246,7 @@ class OPEXModel:
 
         return {
             "Electricity ($/yr)": round(electricity_cost, 0),
+            "  of which grinding ($/yr)": round(grinding_electricity, 0),
             "Electrolyte makeup ($/yr)": round(electrolyte_cost, 0),
             "Iron ore feedstock ($/yr)": round(ore_cost, 0),
             "Water ($/yr)": round(water_cost, 0),
