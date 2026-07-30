@@ -398,6 +398,8 @@ class MonteCarloResult:
     parameter_correlations: Dict[str, Dict[str, float]]  # output-output corr matrix
     elapsed_seconds: float = 0.0
     spec_set_name: str = ""
+    parameter_names: List[str] = field(default_factory=list)
+    sample_matrix: Optional[np.ndarray] = None  # (n_samples, n_params)
 
     def summary_dict(self) -> Dict[str, Any]:
         """Machine-readable summary."""
@@ -536,6 +538,13 @@ class MonteCarloEngine:
         # ── Step 6: Output correlations ───────────────────────────────
         param_correlations = _compute_correlations(output_distributions)
 
+        # ── Step 7: Build sample matrix ───────────────────────────────
+        param_names_sorted = sorted(self.registry.keys())
+        sample_matrix = np.zeros((len(samples), len(param_names_sorted)))
+        for i, s in enumerate(samples):
+            for j, name in enumerate(param_names_sorted):
+                sample_matrix[i, j] = s.get(name, np.nan)
+
         elapsed = time.perf_counter() - t0
 
         return MonteCarloResult(
@@ -549,4 +558,6 @@ class MonteCarloEngine:
             parameter_correlations=param_correlations,
             elapsed_seconds=elapsed,
             spec_set_name=spec_set_name,
+            parameter_names=param_names_sorted,
+            sample_matrix=sample_matrix,
         )
