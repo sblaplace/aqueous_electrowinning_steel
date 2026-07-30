@@ -1,6 +1,6 @@
 {
   "title": "Aqueous Electrowinning \u2014 Master Report",
-  "date": "2026-07-30T05:45:35.844769",
+  "date": "2026-07-30T05:59:21.231839",
   "quick": true,
   "steps": {
     "electrochemistry": {
@@ -875,7 +875,7 @@
     },
     "carburization": {
       "title": "Post-deposition gaseous carburization screening",
-      "date": "2026-07-30T05:46:35.989146",
+      "date": "2026-07-30T06:00:21.096403",
       "params": {
         "temperature_C": 900.0,
         "surface_c_wt": 1.1,
@@ -930,7 +930,7 @@
     },
     "carbon_potential": {
       "title": "Carbon potential screening \u2014 gas carburizing atmosphere",
-      "date": "2026-07-30T05:46:36.960172",
+      "date": "2026-07-30T06:00:22.065435",
       "example_T_C": 930.0,
       "example_summary_930C": {
         "T_C": 930,
@@ -972,7 +972,7 @@
     },
     "tempering": {
       "title": "Tempering & retained austenite screening",
-      "date": "2026-07-30T05:46:37.908083",
+      "date": "2026-07-30T06:00:23.019219",
       "example_alloy": {
         "C": 0.8,
         "Mn": 0.3,
@@ -1041,9 +1041,9 @@
         "current_efficiency": 0.9,
         "n_stacks": 10,
         "annual_production_t": 7501.0,
-        "total_capex_M$": 2.93,
-        "annual_opex_M$": 4.08,
-        "LCOFe_$_per_t": 580.0,
+        "total_capex_M$": 3.23,
+        "annual_opex_M$": 4.11,
+        "LCOFe_$_per_t": 588.0,
         "specific_energy_kWh_per_t": 4315.0,
         "electricity_cost_$_per_t": 172.59
       },
@@ -1055,27 +1055,29 @@
         "Rectifiers ($)": 485498.0,
         "Electrolyte system ($)": 200000.0,
         "Ore leaching ($)": 375058.0,
-        "BOP subtotal ($)": 1060555.0,
-        "Infrastructure ($)": 454889.0,
-        "Engineering ($)": 272933.0,
-        "Contingency ($)": 382107.0,
-        "Total CAPEX ($)": 2929484.0,
-        "Total CAPEX (M$)": 2.93
+        "Ore grinding ($)": 187529.0,
+        "BOP subtotal ($)": 1248084.0,
+        "Infrastructure ($)": 501771.0,
+        "Engineering ($)": 301063.0,
+        "Contingency ($)": 421488.0,
+        "Total CAPEX ($)": 3231405.0,
+        "Total CAPEX (M$)": 3.23
       },
       "opex_breakdown": {
-        "Electricity ($/yr)": 1294660.0,
+        "Electricity ($/yr)": 1313863.0,
+        "  of which grinding ($/yr)": 19203.0,
         "Electrolyte makeup ($/yr)": 112517.0,
         "Iron ore feedstock ($/yr)": 300046.0,
         "Water ($/yr)": 15002.0,
         "Anode replacement ($/yr)": 60000.0,
-        "Variable OPEX ($/yr)": 1782226.0,
-        "Maintenance ($/yr)": 87885.0,
-        "Insurance ($/yr)": 29295.0,
+        "Variable OPEX ($/yr)": 1801429.0,
+        "Maintenance ($/yr)": 96942.0,
+        "Insurance ($/yr)": 32314.0,
         "Labor ($/yr)": 2000000,
-        "Overhead ($/yr)": 178223.0,
-        "Fixed OPEX ($/yr)": 2295402.0,
-        "Total OPEX ($/yr)": 4077628.0,
-        "Total OPEX (M$/yr)": 4.08,
+        "Overhead ($/yr)": 180143.0,
+        "Fixed OPEX ($/yr)": 2309399.0,
+        "Total OPEX ($/yr)": 4110828.0,
+        "Total OPEX (M$/yr)": 4.11,
         "Annual production (t/yr)": 7501.0,
         "Specific energy (kWh/t Fe)": 4315.0,
         "Electricity cost ($/t Fe)": 172.59
@@ -1103,54 +1105,54 @@
           "Cost range ($/t Fe)": "600\u20131200"
         },
         "Aqueous Electrowinning": {
-          "Base cost ($/t Fe)": 580.0,
+          "Base cost ($/t Fe)": 588.0,
           "CO\u2082 emissions (t/t Fe)": 0.02,
           "Carbon cost @$50/tCO2 ($/t Fe)": 1.0,
-          "Adjusted cost ($/t Fe)": 581.0,
+          "Adjusted cost ($/t Fe)": 589.0,
           "Cost range ($/t Fe)": "model-dependent"
         }
       },
       "sensitivity_analysis": {
         "base": {
-          "LCOFe": 580.0
+          "LCOFe": 588.0
         },
         "Current efficiency_low": {
-          "LCOFe": 725.0,
+          "LCOFe": 733.0,
           "value": 0.7,
           "param": "Current efficiency"
         },
         "Current efficiency_high": {
-          "LCOFe": 539.0,
+          "LCOFe": 547.0,
           "value": 0.98,
           "param": "Current efficiency"
         },
         "Current density (mA/cm\u00b2)_low": {
-          "LCOFe": 883.0,
+          "LCOFe": 891.0,
           "value": 50.0,
           "param": "Current density (mA/cm\u00b2)"
         },
         "Current density (mA/cm\u00b2)_high": {
-          "LCOFe": 378.0,
+          "LCOFe": 386.0,
           "value": 300.0,
           "param": "Current density (mA/cm\u00b2)"
         },
         "Cell voltage (V)_low": {
-          "LCOFe": 477.0,
+          "LCOFe": 485.0,
           "value": 2.0,
           "param": "Cell voltage (V)"
         },
         "Cell voltage (V)_high": {
-          "LCOFe": 553.0,
+          "LCOFe": 561.0,
           "value": 3.5,
           "param": "Cell voltage (V)"
         },
         "Electricity price_low": {
-          "LCOFe": 485.0,
+          "LCOFe": 492.0,
           "value": 0.02,
           "param": "Electricity price ($/kWh)"
         },
         "Electricity price_high": {
-          "LCOFe": 770.0,
+          "LCOFe": 781.0,
           "value": 0.08,
           "param": "Electricity price ($/kWh)"
         }
@@ -1184,12 +1186,12 @@
           "results": {
             "specific_energy_kWh_t": 1803.0,
             "annual_production_t": 7501.0,
-            "total_capex_M$": 2.47,
-            "annual_opex_M$": 3.23,
-            "LCOFe_$_t": 462.0,
+            "total_capex_M$": 2.78,
+            "annual_opex_M$": 3.26,
+            "LCOFe_$_t": 470.0,
             "electricity_cost_$_t": 72.12,
-            "capex_share_pct": 6.7,
-            "opex_share_pct": 93.3
+            "capex_share_pct": 7.4,
+            "opex_share_pct": 92.6
           },
           "references": "Standard alkaline electroplating literature; Yuan & Haarberg (2009)"
         },
@@ -1211,12 +1213,12 @@
           "results": {
             "specific_energy_kWh_t": 1464.0,
             "annual_production_t": 15502.0,
-            "total_capex_M$": 3.67,
-            "annual_opex_M$": 4.01,
-            "LCOFe_$_t": 281.0,
+            "total_capex_M$": 4.36,
+            "annual_opex_M$": 4.08,
+            "LCOFe_$_t": 290.0,
             "electricity_cost_$_t": 58.55,
-            "capex_share_pct": 7.9,
-            "opex_share_pct": 92.1
+            "capex_share_pct": 9.1,
+            "opex_share_pct": 90.9
           },
           "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
         },
@@ -1238,12 +1240,12 @@
           "results": {
             "specific_energy_kWh_t": 2410.0,
             "annual_production_t": 41256.0,
-            "total_capex_M$": 8.72,
-            "annual_opex_M$": 9.6,
-            "LCOFe_$_t": 253.0,
+            "total_capex_M$": 10.71,
+            "annual_opex_M$": 9.8,
+            "LCOFe_$_t": 262.0,
             "electricity_cost_$_t": 96.39,
-            "capex_share_pct": 7.8,
-            "opex_share_pct": 92.2
+            "capex_share_pct": 9.3,
+            "opex_share_pct": 90.7
           },
           "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
         },
@@ -1265,12 +1267,12 @@
           "results": {
             "specific_energy_kWh_t": 2415.0,
             "annual_production_t": 32338.0,
-            "total_capex_M$": 5.13,
-            "annual_opex_M$": 6.45,
-            "LCOFe_$_t": 214.0,
+            "total_capex_M$": 6.23,
+            "annual_opex_M$": 6.56,
+            "LCOFe_$_t": 221.0,
             "electricity_cost_$_t": 72.45,
-            "capex_share_pct": 6.9,
-            "opex_share_pct": 93.1
+            "capex_share_pct": 8.2,
+            "opex_share_pct": 91.8
           },
           "references": "Projected; based on extrapolation of current trends"
         }
@@ -1312,7 +1314,7 @@
       ],
       "report": {
         "title": "Pilot P&ID screening \u2014 aqueous electrowinning + carburizing + tempering",
-        "date": "2026-07-30T05:46:42.452917",
+        "date": "2026-07-30T06:00:27.432810",
         "figures": [
           "/home/user/aqueous_electrowinning_steel/docs/figures/pid_overview.png",
           "/home/user/aqueous_electrowinning_steel/docs/figures/pid_detailed.png"
