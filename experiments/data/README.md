@@ -5,6 +5,26 @@ schemas below and record the conversion, instrument, calibration, and sample
 identifiers in run notes.  One row represents one measurement point unless
 otherwise noted.
 
+## Data lifecycle and evidence separation
+
+The repository separates data by provenance so that models cannot silently
+train on their own fixtures and so that process gates read only from
+experimental records.
+
+| Directory | Contents | Git tracked? | Role |
+|-----------|----------|--------------|------|
+| `raw/` | Immutable instrument exports, original file formats | No (`.gitignore`) | Source of truth for every run |
+| `synthetic/` | Model-generated fixtures and templates with synthetic values | No (`.gitignore`) | Test fixtures only; never used for calibration or gates |
+| `literature/` | Extracted observations from papers, patents, archaeology | No (`.gitignore`) | Prior art and external validation anchors |
+| `processed/` | Mapped, reviewed CSVs derived from raw exports | No (`.gitignore`) | Calibration and analysis inputs |
+| `calibrations/` | Fitted parameter sets from processed data | No (`.gitignore`) | Versioned calibration outputs |
+
+**Contract:** Process gates and candidate evaluations read only from
+`processed/` (experimental records linked by campaign manifests) or
+`literature/` (external observations). `synthetic/` is for tests and
+documentation only. A model must never be calibrated on its own synthetic
+fixtures.
+
 ## Campaign manifest and run metadata
 
 Before acquiring data, copy `campaign_manifest_template.csv` to a dated campaign

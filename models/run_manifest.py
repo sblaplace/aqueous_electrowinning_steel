@@ -32,6 +32,13 @@ VALID_VIDEO_STATUSES = frozenset({
     "not_applicable",
 })
 
+# Configuration lifecycle states (proving-ground architecture)
+VALID_CONFIGURATION_STATES = frozenset({
+    "experimental",      # boundary-crossing permitted only in proving ground
+    "qualified",         # measured envelope, known failure modes, recovery procedure
+    "field_approved",    # conservative subset signed for named hardware/feed/site
+})
+
 MANIFEST_REQUIRED_KEYS = frozenset({
     "run_id",
     "date",
@@ -121,6 +128,36 @@ def validate_experiment_manifest(data: dict[str, Any]) -> ManifestValidationRepo
     elif "video" in data:
         issues.append(ManifestValidationIssue(
             path="video", message="video must be an object"))
+
+    # ── Configuration block (optional; lifecycle state for proving-ground runs) ──
+    configuration = data.get("configuration")
+    if configuration is not None:
+        if not isinstance(configuration, dict):
+            issues.append(ManifestValidationIssue(
+                path="configuration", message="configuration must be an object"))
+        else:
+            state = configuration.get("state")
+            if state is not None and state not in VALID_CONFIGURATION_STATES:
+                issues.append(ManifestValidationIssue(
+                    path="configuration.state",
+                    message=(f"Invalid configuration state '{state}'; "
+                             f"valid: {', '.join(sorted(VALID_CONFIGURATION_STATES))}")))
+            # Boundary-crossing runs require proving-ground containment
+            boundary_crossing = configuration.get("boundary_crossing", False)
+            if boundary_crossing:
+                location = configuration.get("location", "")
+                if location != "proving_ground":
+                    issues.append(ManifestValidationIssue(
+                        path="configuration.location",
+                        message="boundary_crossing=true requires configuration.location='proving_ground'"))
+                if not configuration.get("abort_conditions"):
+                    issues.append(ManifestValidationIssue(
+                        path="configuration.abort_conditions",
+                        message="boundary_crossing=true requires explicit abort_conditions"))
+                if not configuration.get("containment_plan"):
+                    issues.append(ManifestValidationIssue(
+                        path="configuration.containment_plan",
+                        message="boundary_crossing=true requires a containment_plan"))
 
     # ── equipment block ────────────────────────────────────────────────
     equipment = data.get("equipment")

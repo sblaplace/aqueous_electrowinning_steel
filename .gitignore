@@ -30,6 +30,14 @@ env/
 # Keep their paths/checksums in campaign manifests; commit only mapped, reviewed data.
 experiments/data/raw/
 
+# Evidence separation: synthetic fixtures, literature extracts, and processed
+# outputs are tracked separately so models cannot silently train on their own
+# fixtures. See experiments/data/README.md for the data-lifecycle contract.
+experiments/data/synthetic/
+experiments/data/literature/
+experiments/data/processed/
+experiments/data/calibrations/
+
 # Large output data (keep structure, exclude bulky files)
 *.h5
 *.hdf5

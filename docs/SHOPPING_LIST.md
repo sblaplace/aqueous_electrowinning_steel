@@ -2,11 +2,13 @@
 
 Revised with technical feedback. Key changes: power supply downsized, anode chemistry corrected, FE measurement approach fixed, missing items added.
 
+**Split:** Deployable article (goes in the unit) vs fixed proving-ground zone (stays at home site). See `EQUIPMENT_LIST.md` for the zone list — this document is the order-ready deployable-article list.
+
 **Before ordering:** Paste each ASIN into Amazon and verify the specific variant selected. Amazon parent listings often resolve to different child ASINs (e.g., 30V/5A instead of 30V/50A). Prices on niche lab gear swing — recheck at order time.
 
 ---
 
-## ORDER 1: Start Plating (~$350-450)
+## DEPLOYABLE ARTICLE — ORDER 1: Start Plating (~$350-450)
 
 ### Power Supply (DOWNSIZED)
 A 30V/50A supply running at 2% of rated output has poor regulation and coarse current resolution at 0.5-3 A where you'll live. Get a 30V/10A instead.
@@ -88,7 +90,7 @@ Graphite sheds particulates and is an insoluble anode that will oxidize Fe(II)�
 
 ---
 
-## ORDER 2: FE Measurement (~$50-100)
+## DEPLOYABLE ARTICLE — ORDER 2: FE Measurement (~$50-100)
 
 ### Primary method: Mass gain (not H₂ volumetry)
 The sub-$150 "0.001g" scales on Amazon effectively resolve ~0.01g in practice. For FE by mass gain, run longer deposits to make the mass change large relative to scale noise.
@@ -109,7 +111,7 @@ The sub-$150 "0.001g" scales on Amazon effectively resolve ~0.01g in practice. F
 
 ---
 
-## ORDER 3: Divided Cell + Calibration (~$100-150)
+## DEPLOYABLE ARTICLE — ORDER 3: Divided Cell + Calibration (~$100-150)
 
 ### Divided Cell (CORRECTED — membrane alone is useless)
 | Item | Source | Price | Notes |
@@ -135,24 +137,26 @@ The sub-$150 "0.001g" scales on Amazon effectively resolve ~0.01g in practice. F
 
 ## REVISED BUDGET
 
-| Category | Old | New | Change |
-|----------|-----|-----|--------|
-| Power supply | $150-480 | ~$80 | Downsized to 30V/10A |
-| Anodes (iron + bag) | $10 | ~$40 | Soluble iron + anode bag |
-| Coulomb counter | — | ~$20 | NEW — critical for FE |
-| Multimeter | — | ~$20 | NEW — independent V measurement |
-| Boric acid (5 lb) | $14 (100g) | ~$22 | Right quantity |
-| pH buffers + KCl | — | ~$25 | NEW — required for pH meter |
-| Divided cell body | — | ~$30 | NEW — membrane needs a home |
-| Substrate prep | — | ~$25 | NEW — acetone, detergent, pads |
-| Hull cell panels (50) | — | ~$40 | Consumable |
-| Distilled water | — | ~$10 | |
-| Ascobic/citric acid | — | ~$20 | Antioxidant for bath |
-| Na₂CO₃ (pH up) | — | ~$5 | |
-| Ventilation | — | — | REQUIRED, not purchasable |
-| Data recording (4 cameras + Pi) | — | ~$145-200 | NEW — continuous video of every run |
+|| Category | Old | New | Change |
+||----------|-----|-----|--------|
+|| Power supply | $150-480 | ~$80 | Downsized to 30V/10A |
+|| Anodes (iron + bag) | $10 | ~$40 | Soluble iron + anode bag |
+|| Coulomb counter | — | ~$20 | NEW — critical for FE |
+|| Multimeter | — | ~$20 | NEW — independent V measurement |
+|| Boric acid (5 lb) | $14 (100g) | ~$22 | Right quantity |
+|| pH buffers + KCl | — | ~$25 | NEW — required for pH meter |
+|| Divided cell body | — | ~$30 | NEW — membrane needs a home |
+|| Substrate prep | — | ~$25 | NEW — acetone, detergent, pads |
+|| Hull cell panels (50) | — | ~$40 | Consumable |
+|| Distilled water | — | ~$10 | |
+|| Ascobic/citric acid | — | ~$20 | Antioxidant for bath |
+|| Na₂CO₃ (pH up) | — | ~$5 | |
+|| Ventilation | — | — | REQUIRED, not purchasable |
+|| Data recording (4 cameras + Pi) | — | ~$145-200 | NEW — continuous video of every run |
 
-**Grand total: ~$700-900** (includes data recording infrastructure)
+**Deployable article total: ~$700-900** (includes data recording infrastructure)
+
+**Fixed proving-ground zone: ~$260-450** — see `EQUIPMENT_LIST.md` §Fixed Proving-Ground Zone. Order together; the zone items gate boundary-crossing campaigns, not Day 1.
 
 ---
 

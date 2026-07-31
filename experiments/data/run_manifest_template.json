@@ -27,5 +27,11 @@
     "notes": "If recording_status is 'none', justification is REQUIRED here (models/run_manifest.py).",
     "files": "video/P2-YYYYMMDD-R3_overhead.mp4 (plus panel, instruments, wide)"
   },
+  "configuration": {
+    "state": "experimental",
+    "location": "proving_ground",
+    "boundary_crossing": false,
+    "notes": "Day-1 gravimetric FE run — within known operating window, no boundary crossing. State transitions: experimental → qualified → field_approved (docs/RESEARCH_PROGRAM.md)."
+  },
   "notes": "Conditions per docs/FIRST_LAB_DAY.md; negative cathodic current convention in trace CSV; FE_app above 100 pct is a QA flag, not clipped. Program-context numbers are model predictions to be replaced by this run."
 }

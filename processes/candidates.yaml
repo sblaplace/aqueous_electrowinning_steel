@@ -1,0 +1,315 @@
+name: aqueous_electrowinning_steel
+version: 1.0.0
+description: >
+  Process candidate registry for the aqueous electrowinning program.
+  Each candidate is a complete flowsheet hypothesis: feedstock → conditioning
+  → purification → electrolyte → cathode → separator → anode → harvesting
+  → recycle → product finishing. Candidates are evaluated against measured
+  evidence only; assumed parameters are explicit.
+
+candidates:
+  - id: divided_sulfate_dissolved_feed
+    name: Divided sulfate cell, dissolved waste feed
+    status: active
+    priority: primary
+    product_form: flake
+    deployment: modular_proving_ground
+    summary: >
+      Two-compartment cell with cation-exchange membrane. Catholyte is acidic
+      sulfate Fe²⁺ from dissolved waste feed (pickle liquor, copperas).
+      Anode is OER or Fe²⁺ oxidation; product is stripped iron flake for
+      melt-shop feedstock.
+
+    feedstocks:
+      - pickle_liquor
+      - copperas
+      - acid_mine_drainage
+      - red_mud_leachate
+
+    unit_operations:
+      - id: feed_conditioning
+        type: dissolution_or_filtration
+        chemistry: acidic
+        assumed: true
+      - id: purification
+        type: precipitation_cementation
+        chemistry: pH_swing
+        assumed: true
+      - id: cathode
+        type: plate_or_strip
+        chemistry: acidic_sulfate
+        assumed: false
+        evidence_refs:
+          - TIER0_ARCHAEOLOGY.md
+      - id: separator
+        type: cation_exchange_membrane
+        assumed: false
+        evidence_refs:
+          - models/membrane_transport.py
+      - id: anode
+        type: OER_or_Fe2_oxidation
+        assumed: true
+      - id: harvesting
+        type: manual_strip
+        assumed: false
+      - id: recycle
+        type: purge_and_makeup
+        assumed: true
+
+    cathode:
+      reaction: Fe²⁺ + 2e⁻ → Fe
+      electrolyte: acidic_sulfate
+      ph_range: [1.5, 4.0]
+      temperature_C_range: [25, 90]
+      fe_conc_M_range: [0.5, 2.0]
+      current_density_mA_cm2_range: [50, 500]
+
+    separator:
+      type: cation_exchange_membrane
+      material: Nafion_or_Fumasep
+      assumed_ohmic_drop_V: 0.15
+      assumed_crossover_fraction: 0.02
+
+    anode:
+      primary_reaction: 2H₂O → O₂ + 4H⁺ + 4e⁻
+      secondary_reaction: Fe²⁺ → Fe³⁺ + e⁻ (if undivided or crossover)
+      material: DSA_IrO2_Ta2O5
+      assumed_overpotential_V: 0.45
+
+    harvesting:
+      product_form: flake
+      mechanism: manual_or_doctor_blade
+      continuous: false
+
+    recycle:
+      loop: purge_and_makeup
+      assumed_fe_recovery_fraction: 0.90
+
+    gates:
+      - id: gate_1_coherent_deposit
+        description: Coherent gray deposit on Hull cell at 2 A, 5-10 min
+        metric: morphology
+        threshold: coherent_film_or_fine_grain
+        evidence: null
+        status: pending
+      - id: gate_2_gravimetric_fe
+        description: Gravimetric FE ≥ 70% at 100 mA/cm², pH 2, 50 °C
+        metric: faradaic_efficiency
+        threshold: 0.70
+        evidence: null
+        status: pending
+      - id: gate_3_divided_cell_voltage
+        description: V_cell decomposition and crossover in divided cell
+        metric: cell_voltage
+        threshold: null
+        evidence: null
+        status: pending
+      - id: gate_4_kill_criterion
+        description: j ≥ 300 mA/cm², FE ≥ 70%, ≤ 4000 kWh/t Fe, replicated
+        metric: kill_criterion
+        threshold: null
+        evidence: null
+        status: pending
+
+    ip_notes: >
+      Architectural differentiation from Electra appears favorable
+      (FTO_PRELIMINARY_ASSESSMENT.md). Ferric control is chemical or
+      membrane-based, not iron-metal contact (CLAIM_CHARTS_PRELIMINARY.md §4).
+
+  - id: alkaline_suspension_siderwin_like
+    name: Alkaline oxide-suspension (SIDERWIN-like)
+    status: competitor_watch
+    priority: comparator
+    product_form: powder_or_particle
+    deployment: centralized_or_modular
+    summary: >
+      Concentrated NaOH suspension of iron oxide particles reduced at the
+      cathode at 70-114 °C. Demonstrated at pilot scale by SIDERWIN /
+      ArcelorMittal. High FE (>90%) and energy ~3 kWh/kg Fe reported.
+
+    feedstocks:
+      - hematite
+      - iron_oxide
+      - steel_mill_dust
+
+    unit_operations:
+      - id: feed_conditioning
+        type: suspension_prep
+        chemistry: alkaline
+        assumed: true
+      - id: cathode
+        type: particle_bed_or_suspension
+        chemistry: alkaline
+        assumed: false
+        evidence_refs:
+          - RESEARCH_REPORT.md §4.1
+      - id: separator
+        type: diaphragm_or_membrane
+        assumed: true
+      - id: harvesting
+        type: particle_separation
+        assumed: true
+      - id: recycle
+        type: naoh_recovery
+        assumed: true
+
+    cathode:
+      reaction: Fe₂O₃ + 3H₂O + 6e⁻ → 2Fe + 6OH⁻ (net, via Fe(II) intermediates)
+      electrolyte: concentrated_naoh
+      ph_range: [14, 14]
+      temperature_C_range: [70, 114]
+      fe_conc_M_range: [0.1, 1.0]
+      current_density_mA_cm2_range: [50, 200]
+
+    gates:
+      - id: gate_a_pilot_replication
+        description: Replicate SIDERWIN FE and energy at lab scale
+        metric: faradaic_efficiency
+        threshold: 0.90
+        evidence: null
+        status: pending
+      - id: gate_b_feed_flexibility
+        description: Accept waste-derived oxide (dust, red mud) without purity loss
+        metric: impurity_tolerance
+        threshold: null
+        evidence: null
+        status: pending
+
+    ip_notes: >
+      SIDERWIN is pilot-scale public prior art. Not a design-around target
+      but a benchmark; if alkaline dominates on capex, program switches.
+
+  - id: aware_acidic_chloride_like
+    name: AWARE-like concentrated chloride acidic cell
+    status: competitor_watch
+    priority: comparator
+    product_form: plate_or_foil
+    deployment: centralized_or_modular
+    summary: >
+      Concentrated LiCl-based acidic electrolyte with high anion activity.
+      Claimed >99% Coulombic efficiency at 500-1000 mA/cm² and 25-80 °C.
+      High current density and FE are the benchmark for acidic routes.
+
+    feedstocks:
+      - dissolved_iron_salts
+      - pickle_liquor
+
+    unit_operations:
+      - id: feed_conditioning
+        type: dissolution_and_purification
+        chemistry: acidic_chloride
+        assumed: true
+      - id: cathode
+        type: plate_or_drum
+        chemistry: acidic_chloride
+        assumed: false
+        evidence_refs:
+          - RESEARCH_REPORT.md §4.2
+      - id: separator
+        type: cation_exchange_membrane
+        assumed: true
+      - id: anode
+        type: OER_or_CER
+        assumed: true
+      - id: harvesting
+        type: continuous_strip
+        assumed: true
+      - id: recycle
+        type: closed_loop_li_recycle
+        assumed: true
+
+    cathode:
+      reaction: Fe²⁺ + 2e⁻ → Fe
+      electrolyte: concentrated_licl_acidic
+      ph_range: [1.0, 3.0]
+      temperature_C_range: [25, 80]
+      fe_conc_M_range: [1.0, 2.0]
+      current_density_mA_cm2_range: [200, 1000]
+
+    gates:
+      - id: gate_a_fe_at_high_j
+        description: FE ≥ 99% at 500 mA/cm²
+        metric: faradaic_efficiency
+        threshold: 0.99
+        evidence: null
+        status: pending
+      - id: gate_b_chlorine_management
+        description: CER fraction and Cl₂ handling at high Cl⁻
+        metric: anode_gas_composition
+        threshold: null
+        evidence: null
+        status: pending
+
+    ip_notes: >
+      AWARE is published (ChemRxiv 2024, follow-up 2025). No known blocking
+      patents against our sulfate route; monitor for filings.
+
+  - id: ferric_shuttle_sulfate
+    name: Ferric-anode / oxidative-leach coupled sulfate
+    status: hypothesis
+    priority: exploratory
+    product_form: flake
+    deployment: modular_proving_ground
+    summary: >
+      Deliberately run Fe²⁺/Fe³⁺ as the anode reaction in an undivided or
+      loosely divided cell, pipe Fe³⁺ to an oxidative leach circuit, and
+      drop anode potential by ~1 V. Energy savings ~35% if shuttle losses
+      are controlled. High-risk, high-reward variant of the sulfate route.
+
+    feedstocks:
+      - pickle_liquor
+      - low_grade_ore
+
+    unit_operations:
+      - id: feed_conditioning
+        type: oxidative_leach
+        chemistry: ferric_sulfate
+        assumed: true
+      - id: cathode
+        type: plate_or_strip
+        chemistry: acidic_sulfate
+        assumed: false
+      - id: separator
+        type: none_or_porous_diaphragm
+        assumed: true
+      - id: anode
+        type: Fe2_to_Fe3
+        assumed: true
+      - id: leach_loop
+        type: ferric_oxidative_dissolution
+        assumed: true
+      - id: harvesting
+        type: manual_strip
+        assumed: false
+
+    cathode:
+      reaction: Fe²⁺ + 2e⁻ → Fe
+      electrolyte: acidic_sulfate
+      ph_range: [1.0, 3.0]
+      temperature_C_range: [40, 80]
+      fe_conc_M_range: [0.5, 2.0]
+      current_density_mA_cm2_range: [50, 300]
+
+    anode:
+      primary_reaction: Fe²⁺ → Fe³⁺ + e⁻
+      material: DSA_or_graphite
+      assumed_overpotential_V: 0.05
+
+    gates:
+      - id: gate_a_shuttle_efficiency
+        description: Current efficiency to Fe metal ≥ 50% (not shuttle)
+        metric: faradaic_efficiency
+        threshold: 0.50
+        evidence: null
+        status: pending
+      - id: gate_b_leach_rate
+        description: Fe³⁺ leach rate matches or exceeds plating rate
+        metric: mass_balance
+        threshold: null
+        evidence: null
+        status: pending
+
+    ip_notes: >
+      Invention hypothesis only. Patent effort should claim demonstrated
+      integrated process, not familiar redox couple in isolation
+      (PROGRAM_SUMMARY.md).

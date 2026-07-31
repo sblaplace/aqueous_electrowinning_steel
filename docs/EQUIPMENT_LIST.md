@@ -1,12 +1,15 @@
 # Dark Mill — Equipment List
 
-Everything below gets you from zero to first iron deposit with FE measurement. Revised with technical feedback on power supply sizing, anode chemistry, FE measurement, and missing items.
+Everything below gets you from zero to first iron deposit with FE measurement. The list is split by where the equipment lives, per the proving-ground architecture in `RESEARCH_PROGRAM.md`:
+
+- **Deployable article** — equipment that goes inside the production unit (the Hull cell, electrodes, power supply, instrumentation). This is what eventually gets containerized and redeployed.
+- **Fixed proving-ground zone** — containment, safety, recovery, and analytical infrastructure that stays at the home site. Boundary-crossing campaigns run only in this zone.
 
 **Before ordering:** Paste each ASIN into Amazon and verify the specific variant. Amazon parent listings often resolve to different child ASINs. Prices on niche lab gear swing — recheck at order time.
 
 ---
 
-## Tier A: Start Plating (~$350-450)
+## Deployable Article — Tier A: Start Plating (~$350-450)
 
 ### Power Supply — 30V/10A CC/CV (~$80)
 
@@ -89,7 +92,7 @@ Continuous video of every run. No "oh let me just adjust the stirring" that goes
 
 ---
 
-## Tier B: FE Measurement (~$50-120)
+## Deployable Article — Tier B: FE Measurement (~$50-120)
 
 **Primary method: mass gain** on the precision scale. Run longer deposits to make mass change large relative to scale noise.
 
@@ -106,7 +109,7 @@ Continuous video of every run. No "oh let me just adjust the stirring" that goes
 
 ---
 
-## Tier C: Divided Cell + Calibration (~$100-150)
+## Deployable Article — Tier C: Divided Cell + Calibration (~$100-150)
 
 The membrane is the easy part. You need a cell body to mount it in.
 
@@ -122,7 +125,7 @@ The membrane is the easy part. You need a cell body to mount it in.
 
 ---
 
-## Tier D: Upgrades (When Ready)
+## Deployable Article — Tier D: Upgrades (When Ready)
 
 | Item | Where | ~$ | Notes |
 |------|-------|-----|-------|
@@ -135,14 +138,54 @@ The membrane is the easy part. You need a cell body to mount it in.
 
 ---
 
+## Fixed Proving-Ground Zone (~$260-450)
+
+The deployable article runs **inside** this zone. Boundary-crossing campaigns (per `RESEARCH_PROGRAM.md` §Fixed proving ground) are permitted only here. These items stay at the home site when the article is redeployed.
+
+### Containment & Spill Recovery
+
+|| Item | Where | ~$ | Notes |
+||------|-------|-----|-------|
+|| Secondary containment tray, 10 gal+ | Amazon / hardware | $20-40 | Polypropylene or HDPE, sized for the beaker/Hull cell with margin |
+|| Spill kit (acid neutralizer, absorbent, disposal bags) | Amazon / safety supply | $30-50 | Baking soda is in the deployable list; this adds neutralizing absorbent and PPE for larger spills |
+|| Holding/recovery tank, 5 gal, sealed lid | Hardware | $15-25 | For failed electrolyte, contaminated rinse water, and post-abort bath preservation |
+|| Spare wet-end modules (extra beaker, extra Hull cell panels, extra stir bar) | existing suppliers | $25-50 | Recovery means swapping the fouled or damaged module, not scrubbing in place |
+
+### Gas Safety
+
+|| Item | Where | ~$ | Notes |
+||------|-------|-----|-------|
+|| H₂ gas monitor / combustible gas detector | Amazon, search "hydrogen gas detector" | $50-150 | Must alarm before LEL (4% H₂ in air). Wall-mount near the cell, not on the cell |
+|| Ventilation fan + duct (if workspace lacks active exhaust) | Hardware | $50-100 | Moves air across the cell toward an exterior vent. The article's own small fan is not sufficient for boundary crossing |
+
+### Independent Shutdown
+
+|| Item | Where | ~$ | Notes |
+||------|-------|-----|-------|
+|| Emergency stop / contactor on DC supply | Amazon / electrical supply | $30-80 | Hardwired, latching, physically interrupts output. The supply's own panel switch is not an independent shutdown |
+|| GFCI / RCD outlet or adapter | Hardware | $15-25 | For the power supply and stir plate |
+
+### Analytical / Recovery Support
+
+|| Item | Where | ~$ | Notes |
+||------|-------|-----|-------|
+|| Sample vials, labels, pipettes (kit) | Amazon | $20-30 | For post-abort and boundary-crossing samples |
+|| Log book / label printer | Amazon | $15-30 | Physical record alongside manifests; required when a run aborts and the instrument state is ambiguous |
+
+---
+
 ## Budget Summary
 
-| Tier | What You Get | Cost |
-|------|-------------|------|
-| A | First deposits, Hull cell screening, proper bath chemistry, data recording | $500-650 |
-| B | Quantified FE by mass gain + stirring | $50-120 |
-| C | Divided cell, pH control, three-electrode option | $100-150 |
-| **Total A+B+C** | **Full experimental capability** | **$650-920** |
+|| Tier | What You Get | Cost |
+||------|-------------|------|
+|| A | First deposits, Hull cell screening, proper bath chemistry, data recording | $500-650 |
+|| B | Quantified FE by mass gain + stirring | $50-120 |
+|| C | Divided cell, pH control, three-electrode option | $100-150 |
+|| **Deployable subtotal A+B+C** | **Full experimental capability inside the zone** | **$650-920** |
+|| Zone | Containment, gas safety, shutdown, recovery | $260-450 |
+|| **Total** | **Deployable article + fixed proving-ground zone** | **$910-1,370** |
+
+The zone items are not optional if boundary-crossing campaigns are planned. They are the infrastructure that lets the deployable unit learn its limits without becoming the limit itself.
 
 ---
 

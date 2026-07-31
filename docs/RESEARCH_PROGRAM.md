@@ -4,6 +4,68 @@
 
 A steel mill that runs itself. Modular cell stacks that take in electricity, water, and iron feedstock — and output iron. Each unit is self-monitoring, self-calibrating, self-correcting. Scale by replication, not construction. Deploy next to a wind farm, a mine, or a pickle liquor source.
 
+### Platform requirement: reconfigure in place, redeploy when the feed moves
+
+The program is not selecting one frozen electrolyte and flowsheet. It is selecting a
+**reconfigurable production platform** whose process can be changed at the cheapest safe
+layer as feedstock, power, product demand, and evidence change.
+
+The platform has three modification layers:
+
+1. **Runtime recipe** — change current or pulse waveform, flow, temperature, pH setpoint,
+   reagent dosing, purge/recycle fraction, harvesting cadence, and active stack count
+   without opening process equipment.
+2. **Replaceable wet-end modules** — swap membrane cassettes, electrodes, cell frames,
+   cathode/harvester modules, polishing media, filters, and gas-handling cartridges while
+   retaining the enclosure, rectifier, controls, thermal system, pumps, and instrumentation.
+3. **Site redeployment** — drain and preserve the chemistry, decontaminate and isolate the
+   wet end, transport containerized modules, reconnect standardized power/water/feed/product
+   interfaces, assay the new feed, and commission a new validated recipe.
+
+Runtime modification is bounded by the installed materials-of-construction, membrane,
+gas-handling equipment, thermal envelope, and safety interlocks. A sulfate-to-chloride
+change, for example, is not merely a software setting if it changes corrosion or chlorine
+hazards.
+
+### Fixed proving ground, deployable article
+
+The field unit is also the experimental article. At the home site it operates inside a fixed,
+instrumented testing zone built to contain leaks, gases, over-temperature events, electrical
+faults, precipitation, fouling, and failed harvesting. There, supervised campaigns may cross
+the current validated envelope deliberately to find failure boundaries, recover the unit,
+modify the weak module or interlock, and repeat. This is how the platform learns its limits;
+the laboratory is not a separate benchtop surrogate for the deployable machine.
+
+Configurations move through an evidence lifecycle:
+
+1. **Experimental** — boundary crossing is permitted only in the proving ground under an
+   explicit test plan, containment envelope, abort conditions, and independent shutdown.
+2. **Qualified** — the configuration has a measured operating envelope, known failure modes,
+   recovery procedure, and inspection interval; autonomous optimization may explore inside
+   that envelope at the proving ground.
+3. **Field-approved** — a conservative subset of the qualified envelope is signed for a named
+   hardware bill, feed envelope, site utility envelope, and gas/waste controls. Field operation
+   cannot silently widen it.
+
+Every boundary-crossing run must produce useful evidence even when hardware fails: synchronized
+raw data, material and energy balances up to the abort, failure classification, affected-module
+identity, post-run inspection, recovery actions, and the resulting design or envelope change.
+The fixed zone carries expensive containment, analytical, and recovery infrastructure that
+should not burden every redeployed unit.
+
+Therefore process candidates are judged on two axes:
+
+- **Performance:** FE, voltage, current density, balance closure, product quality, durability,
+  and full-process cost.
+- **Option value:** runtime operating range, number and cost of physical swaps, retained
+  balance-of-plant fraction, changeover losses and waste, commissioning burden, transport
+  envelope, and the feedstocks/products reachable from the same installed platform.
+
+The winner is the smallest common hardware and control substrate that supports the largest
+useful validated process envelope. A slightly less efficient chemistry can be the better
+platform if it survives feed variability and can be retuned or re-cartridged instead of
+stranded.
+
 ---
 
 ## Page 1 Decision: Product or Feedstock?
@@ -273,16 +335,16 @@ A dark mill producing precision electroforms funds the R&D to get to commodity i
 ## Status
 
 - 44 kanban cards on `aqueous-steel` board (36 done, 3 todo, 2 blocked, 3 new)
-- 516 tests passing (2026-07-30; consistency, not validation; 9 cross-model tests need fixing after dark mill integration)
+- 609 tests passing, 5 skipped (CadQuery unavailable), fresh run 2026-07-31
 - Full pipeline: `aq-steel --quick`
 - Tier 0 archaeology done at desk level: `TIER0_ARCHAEOLOGY.md` (calibration anchors §8, prior corrections §9)
 - Program gate 1 done at desk level: `CLAIM_CHARTS_PRELIMINARY.md` (feeds counsel; design-around rules adopted in lab packet)
 - Lab-ready packet: `FIRST_LAB_DAY.md` + `experiments/data/day1_run_sheet.csv`, `bath_batch_template.json`, `run_manifest_template.json`
 - Dark mill digital twin: physics-driven site sizing, parametric 3D CAD, steel grade routing (AISI 1008–8620), 3 site scenarios assessed
 - Tier 0 checklist complete at desk level (all checkboxes marked)
+- Platform requirement added: reconfigurable/redeployable platform + fixed proving ground (this document, §The Vision)
+- Untracked landing candidates: `models/deposit_morphology.py` + tests, `scripts/dft_h_adsorption_fe.py` — decide commit or park before next board reconciliation
 
-**Immediate next action:** patent counsel review of the claim charts + order the Tier A/B equipment (`EQUIPMENT_LIST.md`).
+**Immediate next action:** patent counsel review of the claim charts + order the Tier A/B equipment (`EQUIPMENT_LIST.md`, now split into deployable article vs fixed proving-ground zone).
 
-**Then:** Hull cell per the Day-1 packet. ~$650–920 all-in. Start plating.
-
-**Parallel:** Fix 9 failing cross-model consistency tests from dark mill integration.
+**Then:** Hull cell per the Day-1 packet. ~$650–920 all-in for the deployable article; fixed-zone items are listed separately. Start plating.

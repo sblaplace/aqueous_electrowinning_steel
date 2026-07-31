@@ -4,6 +4,19 @@
 
 The models identify a plausible operating and deployment window: aqueous iron electrowinning from dissolved or readily soluble waste streams could become competitive with hydrogen direct-reduced iron (H2-DRI), particularly where feedstock transport and disposal liabilities favor deploying at the feedstock source. This is a testable hypothesis, not an established cost or energy advantage.
 
+The target product is a reconfigurable, redeployable production platform rather than a
+single frozen flowsheet. Process selection must preserve a common balance of plant and expose
+validated runtime recipes where possible, with membrane, electrode, purification, harvesting,
+and gas-handling functions implemented as replaceable wet-end modules where chemistry or
+safety prevents runtime switching. Candidate ranking must report reconfiguration and
+redeployment burden alongside electrochemical and economic performance.
+
+The same deployable unit is qualified inside a fixed, instrumented proving ground at the home
+site. That zone deliberately supports controlled excursions beyond the known operating envelope
+to expose failure boundaries and drive module, interlock, and recovery-design changes. Only a
+conservative, versioned subset of the resulting qualified envelope is field-approved; the
+proving ground retains the heavy containment, analytical, and recovery equipment.
+
 The next program gate is a controlled experimental dataset: iron deposition, Faradaic efficiency (FE), cell-voltage decomposition, iron quality, electrolyte balance, and component stability in the intended divided sulfate cell at useful current density.
 
 ## What the scenario model says
