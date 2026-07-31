@@ -1,9 +1,12 @@
 # Aqueous Electrowinning for Sustainable Steel Production
 
-[![Research](https://img.shields.io/badge/status-research--in--progress-blue)](https://github.com/)
-[![Sustainability](https://img.shields.io/badge/focus-decarbonization-green)](https://github.com/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Research](https://img.shields.io/badge/status-research--in--progress-blue)](https://github.com/sblaplace/aqueous_electrowinning_steel)
+[![Sustainability](https://img.shields.io/badge/focus-decarbonization-green)](https://github.com/sblaplace/aqueous_electrowinning_steel)
 
 > **Low-temperature aqueous electrodeposition of iron and steel from renewable electricity**
+
+This project is developed in the open so that anyone can benefit from both the method and the lessons learned along the way. See [Open Development](#open-development) below.
 
 A research repository exploring **aqueous electrowinning** as a transformative pathway for decarbonizing primary steel production. This approach operates at near-ambient temperatures (25–90 °C), leverages renewable electricity directly, and avoids the extreme thermal and materials challenges of high-temperature routes such as hydrogen-DRI or molten oxide electrolysis.
 
@@ -31,8 +34,8 @@ The repository contains a working Python modeling suite (thermodynamics, kinetic
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/aq-steel-electrowinning.git
-cd aq-steel-electrowinning
+git clone https://github.com/sblaplace/aqueous_electrowinning_steel.git
+cd aqueous_electrowinning_steel
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -291,6 +294,12 @@ Full references and expanded discussion are in the [RESEARCH_REPORT.md](RESEARCH
 
 ---
 
+## Open Development
+
+This project is developed in the open so that anyone can benefit — not just from the method, but from the lessons learned in developing it. The thermodynamic models, process architectures, experimental protocols, and design decisions are all here for anyone to use, learn from, and build on.
+
+If you're working on decarbonization, electrochemistry, or autonomous manufacturing — take what's useful. If you find something wrong, better, or missing, pull requests are welcome.
+
 ## Contributing
 
 We welcome contributions from electrochemists, metallurgists, materials scientists, and sustainability researchers.
@@ -303,7 +312,9 @@ We welcome contributions from electrochemists, metallurgists, materials scientis
 
 ## License
 
-*License TBD.*
+This project is licensed under the [Apache License 2.0](LICENSE).
+
+The Apache 2.0 license includes an **express patent grant**: any Contributor who submits code also grants a royalty-free patent license for patents necessarily infringed by their contribution. This protects the project's freedom to operate — no one can contribute code and later assert patent rights over it.
 
 > **Inconsistency to resolve:** `pyproject.toml` currently declares
 > `license = {text = "MIT"}`, and there is no `LICENSE` file in the
