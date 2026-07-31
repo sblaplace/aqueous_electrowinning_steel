@@ -1,0 +1,118 @@
+{
+  "site_name": "Red Mud \u2014 Alumina Refinery Co-Location",
+  "feedstock": "red_mud",
+  "stack_design": {
+    "n_stacks": 71,
+    "cells_per_stack": 20,
+    "electrode_area_m2": 0.5,
+    "current_density_mA_cm2": 100.0,
+    "cell_voltage_V": 2.8,
+    "total_power_kW": 1988.0,
+    "annual_production_t": 5030.0
+  },
+  "mass_balance": {
+    "iron_production_t_yr": 5029.94,
+    "feedstock_consumed_t_yr": 16766.47,
+    "feedstock_cost_per_t_Fe": -100.0,
+    "water_consumption_m3_yr": 20119.76,
+    "water_cost_yr": 20119.76,
+    "acid_consumption_t_yr": 10059.88,
+    "acid_cost_yr": 2011975.82,
+    "electrolyte_makeup_m3_yr": 6.82,
+    "electrolyte_cost_yr": 34080.0,
+    "waste_generated_t_yr": 5918.56,
+    "waste_disposal_cost_yr": 177556.87,
+    "electrolysis_energy_MWh_yr": 15904.0,
+    "grinding_energy_MWh_yr": 352.1,
+    "cooling_energy_MWh_yr": 863.36,
+    "auxiliary_energy_MWh_yr": 251.5,
+    "total_energy_MWh_yr": 17370.95,
+    "scope1_CO2_t_yr": 100.6,
+    "scope2_CO2_t_yr": 6.95
+  },
+  "capex": {
+    "Electrodes ($)": 213000.0,
+    "Membranes/separators ($)": 113600.0,
+    "Cell hardware ($)": 142000.0,
+    "Stack subtotal ($)": 538890.0,
+    "Rectifiers ($)": 238560.0,
+    "Electrolyte system ($)": 142000.0,
+    "Ore leaching ($)": 251497.0,
+    "Ore grinding ($)": 125748.0,
+    "BOP subtotal ($)": 757805.0,
+    "Infrastructure ($)": 324174.0,
+    "Engineering ($)": 194504.0,
+    "Contingency ($)": 272306.0,
+    "Total CAPEX ($)": 2087680.0,
+    "Total CAPEX (M$)": 2.09,
+    "Annual capacity (t/yr)": 5030.0,
+    "n_stacks": 71
+  },
+  "opex": {
+    "Electricity ($/yr)": 487683.0,
+    "  of which grinding ($/yr)": 10563.0,
+    "Electrolyte makeup ($/yr)": 75449.0,
+    "Iron ore feedstock ($/yr)": 0.0,
+    "Water ($/yr)": 20120.0,
+    "Anode replacement ($/yr)": 42600.0,
+    "Variable OPEX ($/yr)": 625852.0,
+    "Maintenance ($/yr)": 62630.0,
+    "Insurance ($/yr)": 20877.0,
+    "Labor ($/yr)": 1500000.0,
+    "Overhead ($/yr)": 62585.0,
+    "Fixed OPEX ($/yr)": 1646092.0,
+    "Total OPEX ($/yr)": 2271944.0,
+    "Total OPEX (M$/yr)": 2.27,
+    "Annual production (t/yr)": 5030.0,
+    "Specific energy (kWh/t Fe)": 3162.0,
+    "Electricity cost ($/t Fe)": 94.86
+  },
+  "lcofe": {
+    "Capital recovery factor": 0.0937,
+    "Annualized CAPEX ($/yr)": 195571.0,
+    "Annual OPEX ($/yr)": 2271944.0,
+    "Total annual cost ($/yr)": 2467515.0,
+    "Annual production (t/yr)": 5030.0,
+    "LCOFe ($/t Fe)": 491.0,
+    "CAPEX share (%)": 7.9,
+    "OPEX share (%)": 92.1,
+    "LCOFe ($/t Fe) adjusted": 391.0,
+    "Feedstock revenue ($/t Fe)": 100.0
+  },
+  "thermal": {
+    "steady_state_temp_C": 28.1,
+    "cooling_required_W": 641.0,
+    "ambient_C": 28.0,
+    "thermal_management": "active jacket cooling"
+  },
+  "go_no_go": {
+    "Grid capacity": {
+      "pass": true,
+      "detail": "2.0 MW needed, 10.0 MW available"
+    },
+    "LCOFe vs DRI-H2": {
+      "pass": true,
+      "detail": "$391/t vs DRI-H2 $600/t"
+    },
+    "Site footprint": {
+      "pass": false,
+      "detail": "3040 m\u00b2 needed, 1000 m\u00b2 available"
+    },
+    "Operating temperature": {
+      "pass": true,
+      "detail": "Steady-state 28 \u00b0C (limit 90 \u00b0C)"
+    },
+    "Feedstock supply": {
+      "pass": true,
+      "detail": "16766 t/yr consumed (Red mud / bauxite residue (30% Fe))"
+    },
+    "Water supply": {
+      "pass": true,
+      "detail": "20120 m\u00b3/yr, availability: municipal"
+    },
+    "Energy kill criterion": {
+      "pass": true,
+      "detail": "3454 kWh/t Fe (limit 4,000)"
+    }
+  }
+}

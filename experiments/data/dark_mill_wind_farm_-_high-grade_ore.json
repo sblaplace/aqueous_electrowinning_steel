@@ -1,0 +1,116 @@
+{
+  "site_name": "Wind Farm \u2014 High-Grade Ore",
+  "feedstock": "high_grade_ore",
+  "stack_design": {
+    "n_stacks": 142,
+    "cells_per_stack": 20,
+    "electrode_area_m2": 0.5,
+    "current_density_mA_cm2": 100.0,
+    "cell_voltage_V": 2.8,
+    "total_power_kW": 3976.0,
+    "annual_production_t": 10060.0
+  },
+  "mass_balance": {
+    "iron_production_t_yr": 10059.88,
+    "feedstock_consumed_t_yr": 16225.61,
+    "feedstock_cost_per_t_Fe": 161.29,
+    "water_consumption_m3_yr": 30179.64,
+    "water_cost_yr": 90538.91,
+    "acid_consumption_t_yr": 15089.82,
+    "acid_cost_yr": 3017963.73,
+    "electrolyte_makeup_m3_yr": 13.63,
+    "electrolyte_cost_yr": 68160.0,
+    "waste_generated_t_yr": 3183.46,
+    "waste_disposal_cost_yr": 95503.95,
+    "electrolysis_energy_MWh_yr": 31808.0,
+    "grinding_energy_MWh_yr": 643.83,
+    "cooling_energy_MWh_yr": 1726.72,
+    "auxiliary_energy_MWh_yr": 502.99,
+    "total_energy_MWh_yr": 34681.55,
+    "scope1_CO2_t_yr": 201.2,
+    "scope2_CO2_t_yr": 0.69
+  },
+  "capex": {
+    "Electrodes ($)": 426000.0,
+    "Membranes/separators ($)": 227200.0,
+    "Cell hardware ($)": 284000.0,
+    "Stack subtotal ($)": 1077780.0,
+    "Rectifiers ($)": 477120.0,
+    "Electrolyte system ($)": 284000.0,
+    "Ore leaching ($)": 502994.0,
+    "Ore grinding ($)": 251497.0,
+    "BOP subtotal ($)": 1515611.0,
+    "Infrastructure ($)": 648348.0,
+    "Engineering ($)": 389009.0,
+    "Contingency ($)": 544612.0,
+    "Total CAPEX ($)": 4175359.0,
+    "Total CAPEX (M$)": 4.18,
+    "Annual capacity (t/yr)": 10060.0,
+    "n_stacks": 142
+  },
+  "opex": {
+    "Electricity ($/yr)": 811296.0,
+    "  of which grinding ($/yr)": 16096.0,
+    "Electrolyte makeup ($/yr)": 150898.0,
+    "Iron ore feedstock ($/yr)": 1622561.0,
+    "Water ($/yr)": 90539.0,
+    "Anode replacement ($/yr)": 85200.0,
+    "Variable OPEX ($/yr)": 2760494.0,
+    "Maintenance ($/yr)": 125261.0,
+    "Insurance ($/yr)": 41754.0,
+    "Labor ($/yr)": 1500000.0,
+    "Overhead ($/yr)": 276049.0,
+    "Fixed OPEX ($/yr)": 1943064.0,
+    "Total OPEX ($/yr)": 4703558.0,
+    "Total OPEX (M$/yr)": 4.7,
+    "Annual production (t/yr)": 10060.0,
+    "Specific energy (kWh/t Fe)": 3162.0,
+    "Electricity cost ($/t Fe)": 79.05
+  },
+  "lcofe": {
+    "Capital recovery factor": 0.0937,
+    "Annualized CAPEX ($/yr)": 391143.0,
+    "Annual OPEX ($/yr)": 4703558.0,
+    "Total annual cost ($/yr)": 5094701.0,
+    "Annual production (t/yr)": 10060.0,
+    "LCOFe ($/t Fe)": 506.0,
+    "CAPEX share (%)": 7.7,
+    "OPEX share (%)": 92.3
+  },
+  "thermal": {
+    "steady_state_temp_C": 18.0,
+    "cooling_required_W": 607.0,
+    "ambient_C": 18.0,
+    "thermal_management": "active jacket cooling"
+  },
+  "go_no_go": {
+    "Grid capacity": {
+      "pass": true,
+      "detail": "4.0 MW needed, 20.0 MW available"
+    },
+    "LCOFe vs DRI-H2": {
+      "pass": true,
+      "detail": "$506/t vs DRI-H2 $600/t"
+    },
+    "Site footprint": {
+      "pass": false,
+      "detail": "5880 m\u00b2 needed, 2000 m\u00b2 available"
+    },
+    "Operating temperature": {
+      "pass": true,
+      "detail": "Steady-state 18 \u00b0C (limit 90 \u00b0C)"
+    },
+    "Feedstock supply": {
+      "pass": true,
+      "detail": "16226 t/yr consumed (High-grade hematite ore (62% Fe))"
+    },
+    "Water supply": {
+      "pass": false,
+      "detail": "30180 m\u00b3/yr, availability: scarce"
+    },
+    "Energy kill criterion": {
+      "pass": true,
+      "detail": "3448 kWh/t Fe (limit 4,000)"
+    }
+  }
+}

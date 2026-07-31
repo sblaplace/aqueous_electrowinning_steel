@@ -1,0 +1,121 @@
+{
+  "site_name": "US Midwest \u2014 Pickle Liquor at Steel Mill",
+  "feedstock": "pickle_liquor",
+  "stack_design": {
+    "n_stacks": 25,
+    "cells_per_stack": 20,
+    "electrode_area_m2": 0.5,
+    "current_density_mA_cm2": 96.66666666666667,
+    "cell_voltage_V": 4.835875925736763,
+    "total_power_kW": 1168.7,
+    "annual_production_t": 2004.0
+  },
+  "mass_balance": {
+    "iron_production_t_yr": 2004.43,
+    "feedstock_consumed_t_yr": 16703.56,
+    "feedstock_cost_per_t_Fe": -416.67,
+    "water_consumption_m3_yr": 8017.71,
+    "water_cost_yr": 12026.56,
+    "acid_consumption_t_yr": 0.0,
+    "acid_cost_yr": 0.0,
+    "electrolyte_makeup_m3_yr": 2.4,
+    "electrolyte_cost_yr": 12000.0,
+    "waste_generated_t_yr": 7369.61,
+    "waste_disposal_cost_yr": 221088.35,
+    "electrolysis_energy_MWh_yr": 9349.36,
+    "grinding_energy_MWh_yr": 0.0,
+    "cooling_energy_MWh_yr": 687.47,
+    "auxiliary_energy_MWh_yr": 100.22,
+    "total_energy_MWh_yr": 11710.3,
+    "scope1_CO2_t_yr": 40.09,
+    "scope2_CO2_t_yr": 4684.12,
+    "post_processing_energy_MWh_yr": 1573.25,
+    "product_grade": "AISI 1040 \u2014 Medium carbon"
+  },
+  "capex": {
+    "Electrodes ($)": 75000.0,
+    "Membranes/separators ($)": 40000.0,
+    "Cell hardware ($)": 50000.0,
+    "Stack subtotal ($)": 189750.0,
+    "Rectifiers ($)": 140240.0,
+    "Electrolyte system ($)": 50000.0,
+    "Ore leaching ($)": 100221.0,
+    "Ore grinding ($)": 50111.0,
+    "BOP subtotal ($)": 340572.0,
+    "Infrastructure ($)": 132581.0,
+    "Engineering ($)": 79548.0,
+    "Contingency ($)": 111368.0,
+    "Total CAPEX ($)": 981891.85,
+    "Total CAPEX (M$)": 0.98,
+    "Annual capacity (t/yr)": 2004.0,
+    "n_stacks": 25,
+    "Post-processing CAPEX ($)": 128073.0
+  },
+  "opex": {
+    "Electricity ($/yr)": 327228.0,
+    "  of which grinding ($/yr)": 0.0,
+    "Electrolyte makeup ($/yr)": 30066.0,
+    "Iron ore feedstock ($/yr)": 0.0,
+    "Water ($/yr)": 12027.0,
+    "Anode replacement ($/yr)": 15000.0,
+    "Variable OPEX ($/yr)": 384321.0,
+    "Maintenance ($/yr)": 25615.0,
+    "Insurance ($/yr)": 8538.0,
+    "Labor ($/yr)": 1500000.0,
+    "Overhead ($/yr)": 38432.0,
+    "Fixed OPEX ($/yr)": 1572585.0,
+    "Total OPEX ($/yr)": 1956905.0,
+    "Total OPEX (M$/yr)": 1.96,
+    "Annual production (t/yr)": 2004.0,
+    "Specific energy (kWh/t Fe)": 4664.0,
+    "Electricity cost ($/t Fe)": 163.25
+  },
+  "lcofe": {
+    "Capital recovery factor": 0.0937,
+    "Annualized CAPEX ($/yr)": 79985.0,
+    "Annual OPEX ($/yr)": 1956905.0,
+    "Total annual cost ($/yr)": 2036890.0,
+    "Annual production (t/yr)": 2004.0,
+    "LCOFe ($/t Fe)": 1016.0,
+    "CAPEX share (%)": 3.9,
+    "OPEX share (%)": 96.1,
+    "LCOFe ($/t Fe) adjusted": 600.0,
+    "Feedstock revenue ($/t Fe)": 416.67
+  },
+  "thermal": {
+    "steady_state_temp_C": 12.6,
+    "cooling_required_W": 1558.0,
+    "ambient_C": 12.0,
+    "thermal_management": "active jacket cooling"
+  },
+  "go_no_go": {
+    "Grid capacity": {
+      "pass": true,
+      "detail": "1.2 MW needed, 5.0 MW available"
+    },
+    "LCOFe vs DRI-H2": {
+      "pass": false,
+      "detail": "$600/t vs DRI-H2 $600/t"
+    },
+    "Site footprint": {
+      "pass": false,
+      "detail": "1200 m\u00b2 needed, 300 m\u00b2 available"
+    },
+    "Operating temperature": {
+      "pass": true,
+      "detail": "Steady-state 13 \u00b0C (limit 90 \u00b0C)"
+    },
+    "Feedstock supply": {
+      "pass": true,
+      "detail": "16704 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
+    },
+    "Water supply": {
+      "pass": true,
+      "detail": "8018 m\u00b3/yr, availability: municipal"
+    },
+    "Energy kill criterion": {
+      "pass": false,
+      "detail": "5842 kWh/t Fe (limit 4,000)"
+    }
+  }
+}
