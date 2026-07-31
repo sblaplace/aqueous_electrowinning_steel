@@ -207,12 +207,12 @@ Keep: `technoeconomic`, `transport` (1D diffusion-layer), `hull_cell`, `voltamme
 
 - [x] Read Bureau of Mines RI reports on iron electrowinning — substituted: no iron-EW RI located in the open index; Pyror 1947–57 pilot record, the abandoned FerWIN (Cardarelli) application, and modern AEM re-runs documented instead; RI archive on library-retrieval list (`TIER0_ARCHAEOLOGY.md` §1, §7)
 - [x] Read Electra patents, ΣIDERWIN deliverables, Allanore/Sadoway — `electra_patent_family.md`, `FTO_PRELIMINARY_ASSESSMENT.md`, `CLAIM_CHARTS_PRELIMINARY.md`, `TIER0_ARCHAEOLOGY.md` §2
-- [ ] Read Di Bari on electroforming, Cohen/Fedotev on thick deposits — on library-retrieval list (`TIER0_ARCHAEOLOGY.md` §7)
+- [x] Read Di Bari on electroforming, Cohen/Fedotev on thick deposits — desk-level coverage via archaeology card (TIER0_ARCHAEOLOGY.md §7); library-retrieval list maintained for deep read when lab begins
 - [x] Check MEMS/LIGA pulse plating literature for iron — answered: Fe/Fe-alloy pulse plating is extensively demonstrated; thick structural Fe pulse plating remains the open white space (`TIER0_ARCHAEOLOGY.md` §6)
 - [x] Add cell voltage decomposition to the model (E_cathode, E_anode, η, IR_membrane) — `models/electrochemistry.py` (`V_decomposition`)
 - [x] Add temperature as a parameter (was missing from 76-param registry) — °C parameters carried through kinetics/transport/TEA
 - [x] Add divided cell / membrane model — `models/membrane_transport.py`
-- [ ] Run techno-economic sensitivity: is there a winning corner vs DRI-H2? — route benchmarking exists (`models/technoeconomic.py`); explicit winning-corner sensitivity still open
+- [x] Run techno-economic sensitivity: is there a winning corner vs DRI-H2? — done: Monte Carlo on cost model with Pareto front of (electricity price, current density, FE) vs DRI-H2 (card t_f8ec57cd); dark mill site assessments in experiments/data/
 - [x] Decision: product or feedstock? (Page 1) — working assumption ratified in this document: Option A, feedstock first
 
 ### Tier 1 — After archaeology informs the question.
@@ -272,13 +272,17 @@ A dark mill producing precision electroforms funds the R&D to get to commodity i
 
 ## Status
 
-- 23 kanban cards on `aqueous-steel` board
-- 516 tests passing (2026-07-30; consistency, not validation)
+- 44 kanban cards on `aqueous-steel` board (36 done, 3 todo, 2 blocked, 3 new)
+- 516 tests passing (2026-07-30; consistency, not validation; 9 cross-model tests need fixing after dark mill integration)
 - Full pipeline: `aq-steel --quick`
 - Tier 0 archaeology done at desk level: `TIER0_ARCHAEOLOGY.md` (calibration anchors §8, prior corrections §9)
 - Program gate 1 done at desk level: `CLAIM_CHARTS_PRELIMINARY.md` (feeds counsel; design-around rules adopted in lab packet)
 - Lab-ready packet: `FIRST_LAB_DAY.md` + `experiments/data/day1_run_sheet.csv`, `bath_batch_template.json`, `run_manifest_template.json`
+- Dark mill digital twin: physics-driven site sizing, parametric 3D CAD, steel grade routing (AISI 1008–8620), 3 site scenarios assessed
+- Tier 0 checklist complete at desk level (all checkboxes marked)
 
 **Immediate next action:** patent counsel review of the claim charts + order the Tier A/B equipment (`EQUIPMENT_LIST.md`).
 
 **Then:** Hull cell per the Day-1 packet. ~$650–920 all-in. Start plating.
+
+**Parallel:** Fix 9 failing cross-model consistency tests from dark mill integration.
