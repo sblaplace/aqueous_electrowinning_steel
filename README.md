@@ -175,8 +175,7 @@ without Fe(OH)₂ precipitation or hydrogen embrittlement.
 - A canonical galvanostatic trace plus pre/post-weighing schema and
   blank-corrected gravimetric calculation,
   $\mathrm{FE}_{app}=m_{net}/[Q_{cathodic}M_{Fe}/(2F)]$.
-- A synthetic, reproducible example with a JSON report and figures.  It does
-  **not** claim wet-lab performance or fabricate microscopy data.
+- A synthetic, reproducible example with a JSON report and figures (no wet-lab data yet).
 
 The current map is a screening aid rather than a calibrated Hull-cell solver:
 it omits edge/shielding effects, electrode kinetics, mass transfer, bubbles,
