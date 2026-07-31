@@ -1,0 +1,186 @@
+{
+  "n_samples": 128,
+  "n_evaluated": 128,
+  "n_failed": 0,
+  "parameters": [
+    "j_mA_cm2",
+    "fe_conc_M",
+    "pH_bulk",
+    "temperature_C",
+    "delta_m",
+    "buffer_conc_M",
+    "her_i0",
+    "fe_i0",
+    "her_tafel_V",
+    "fe_tafel_V"
+  ],
+  "outputs": {
+    "FE_pct": {
+      "mean": 73.37604787880673,
+      "var": 1194.3435012545265,
+      "S1": [
+        -0.26948132100900535,
+        -0.19671866535824303,
+        -0.014121559352308398,
+        -0.2305689465869183,
+        -0.26532999793915646,
+        -0.19305014827586148,
+        0.27652991581985525,
+        -0.011920299573510477,
+        0.08731884342203237,
+        -0.1774935057948874
+      ],
+      "ST": [
+        0.30609542806481205,
+        0.2582084219403229,
+        0.3621202623205484,
+        0.24309352691267194,
+        0.2726393191827483,
+        0.2246595810791978,
+        0.5913510956773702,
+        0.3420430421500369,
+        0.7002441479534307,
+        0.32318439921155406
+      ],
+      "rank_by_ST": [
+        "her_tafel_V",
+        "her_i0",
+        "pH_bulk",
+        "fe_i0",
+        "fe_tafel_V",
+        "j_mA_cm2",
+        "delta_m",
+        "fe_conc_M",
+        "temperature_C",
+        "buffer_conc_M"
+      ]
+    },
+    "V_cell_V": {
+      "mean": 2.503900457266755,
+      "var": 0.018148854712645608,
+      "S1": [
+        2.0384517977328938,
+        2.2373828948206187,
+        -0.4699411407326735,
+        -1.3310968864129065,
+        -0.5746899351117074,
+        -0.37936737618373373,
+        -0.40332908840194154,
+        0.5155900889528731,
+        0.5214644154544067,
+        0.003127982589524399
+      ],
+      "ST": [
+        -1.3070851896613571,
+        -1.803860778355224,
+        0.747717528728137,
+        1.6899866049515757,
+        0.779668853684494,
+        0.5080043469294111,
+        0.9210106493304544,
+        -0.015087278129154003,
+        -0.1569071287132302,
+        0.32172325795330503
+      ],
+      "rank_by_ST": [
+        "temperature_C",
+        "her_i0",
+        "delta_m",
+        "pH_bulk",
+        "buffer_conc_M",
+        "fe_tafel_V",
+        "fe_i0",
+        "her_tafel_V",
+        "j_mA_cm2",
+        "fe_conc_M"
+      ]
+    },
+    "surface_pH": {
+      "mean": 2.5002195634853734,
+      "var": 2.485573938207055,
+      "S1": [
+        -0.02823345961857553,
+        0.1428055009309588,
+        0.5069479402514753,
+        0.04933707195052339,
+        -0.029332512541819348,
+        -0.019927727842515144,
+        0.08995739479284588,
+        -0.0840668056180228,
+        0.018450109611603607,
+        -0.07879464899446485
+      ],
+      "ST": [
+        0.1835624110939128,
+        -0.07823263306731398,
+        0.7420146254647741,
+        0.034915652302984324,
+        0.33800788967107054,
+        0.3062816864133029,
+        -0.07363231219324184,
+        0.3452476506528859,
+        0.26655158811771096,
+        0.29736015360492163
+      ],
+      "rank_by_ST": [
+        "pH_bulk",
+        "fe_i0",
+        "delta_m",
+        "buffer_conc_M",
+        "fe_tafel_V",
+        "her_tafel_V",
+        "j_mA_cm2",
+        "temperature_C",
+        "her_i0",
+        "fe_conc_M"
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "rank": 1,
+      "parameter": "her_tafel_V",
+      "lever": "HER Tafel slope (mechanism)",
+      "unit": "V/dec",
+      "S1": 0.08731884342203237,
+      "ST": 0.7002441479534307,
+      "advice": "If it dominates, pin the HER mechanism by Tafel analysis on the real cathode before scaling up; a wrong mechanism guess rewards the wrong mitigation."
+    },
+    {
+      "rank": 2,
+      "parameter": "her_i0",
+      "lever": "HER exchange current (cathode surface state)",
+      "unit": "A/m\u00b2",
+      "S1": 0.27652991581985525,
+      "ST": 0.5913510956773702,
+      "advice": "HER kinetics depend on the electrode surface condition, poisoning and any coating. If it dominates, cathode-surface reproducibility is the gating experiment: clean, well-defined surfaces and HER-suppression trials come first."
+    },
+    {
+      "rank": 3,
+      "parameter": "pH_bulk",
+      "lever": "Bulk electrolyte pH",
+      "unit": "",
+      "S1": -0.014121559352308398,
+      "ST": 0.3621202623205484,
+      "advice": "Control and measure pH to a few hundredths. If it dominates, the allowable pH window is the single most important thing to map first."
+    },
+    {
+      "rank": 4,
+      "parameter": "fe_i0",
+      "lever": "Fe exchange current (intrinsic Fe kinetics)",
+      "unit": "A/m\u00b2",
+      "S1": -0.011920299573510477,
+      "ST": 0.3420430421500369,
+      "advice": "If it dominates, prioritize measuring Fe deposition kinetics (polarization curves) on the target substrate before tuning anything else."
+    },
+    {
+      "rank": 5,
+      "parameter": "fe_tafel_V",
+      "lever": "Fe Tafel slope (mechanism)",
+      "unit": "V/dec",
+      "S1": -0.1774935057948874,
+      "ST": 0.32318439921155406,
+      "advice": "If it dominates, pin the Fe deposition mechanism by Tafel analysis first, as it sets how FE and V_cell respond to current density."
+    }
+  ]
+}

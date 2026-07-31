@@ -56,6 +56,7 @@ python -m models.run_carbon_potential       # Gas carburizing atmosphere: a_C fr
 python -m models.run_tempering              # Tempering + retained austenite: Ms, KM RA, Hollomon-Jaffe
 python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
 python -m models.run_cell_architecture      # Cell architecture screen: productivity, $/m², kill criterion #3
+python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> ranked "which experiment to do next"
 python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
@@ -65,6 +66,7 @@ aq-steel-carburization                         # carburization only
 aq-steel-carbon-potential                      # carbon potential only
 aq-steel-tempering                             # tempering only
 aq-steel-architecture                          # cell architecture screen only
+aq-steel-sensitivity                           # Sobol GSA of the FE engine (which experiment next)
 
 # Run the test suite
 pytest tests -q
@@ -109,6 +111,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/purification.py` | Cu/Ni/Zn removal train: cementation, hydrolysis, selective EW, ion exchange |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
+| `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
 
 ### Selected Model Results
 

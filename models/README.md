@@ -76,6 +76,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `plating_data.py` | Plating-run data structures and validation |
 | `process_registry.py` | Loader/validator for `processes/candidates.yaml` — the flowsheet hypothesis registry |
 | `process_gates.py` | Measurement-only gate engine: literature evidence never passes a gate |
+| `transport_sensitivity.py` | **Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine** over 10 experimental levers → ranked "which experiment to do next" (fixes the prior "sensitivity analysis of a fiction" flagged in `docs/RESEARCH_PROGRAM.md`) |
 | `uncertainty/` | Parameter registry, Monte Carlo, Sobol sensitivity, Bayesian calibration |
 
 ## Drivers
@@ -104,6 +105,7 @@ python -m models.run_membrane_fouling       # Hermia fouling and cleaning cycles
 python -m models.run_hydrogen_embrittlement # H uptake, diffusivity, bake-out
 python -m models.run_pilot_costing          # Pilot CAPEX/OPEX
 python -m models.run_monte_carlo            # Uncertainty propagation and sensitivity
+python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> which experiment next
 python -m models.run_dark_mill              # Site-level sizing and go/no-go
 python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
