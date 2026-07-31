@@ -309,7 +309,7 @@ These modules are modeling a plant whose unit operation hasn't been demonstrated
 - `transient` — startup/shutdown of a plant that doesn't exist
 - `supply_chain` — logistics for a product we haven't made
 - `lca` — one page of arithmetic once you know kWh/t and grid carbon intensity; does not need a module
-- `uncertainty/sensitivity` — Sobol indices over 76 invented priors are sensitivity analysis of a fiction. Run them on the 10-parameter transport model instead, where they'll actually tell you which experiment to do next.
+- `uncertainty/sensitivity` — Sobol indices over 76 invented priors are sensitivity analysis of a fiction. **Done** — the fix is `models/transport_sensitivity.py` + `models/run_transport_sensitivity.py`: a proper Saltelli-Sobol decomposition of the 1D diffusion-layer FE engine over 10 experimental levers (no invented priors — only controllable/measurable bath, operating, and kinetic parameters), returning ranked "which experiment to do next" guidance for FE, V_cell and surface pH. Run with `python -m models.run_transport_sensitivity`.
 
 **The ratio of epistemic apparatus to input data is the most alarming feature of the program.** A photograph of a 10 × 10 cm iron plate next to a ruler is worth more than the entire uncertainty-quantification suite — for our own beliefs and for anyone we need to convince.
 
