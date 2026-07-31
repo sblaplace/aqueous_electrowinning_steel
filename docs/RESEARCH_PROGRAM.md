@@ -131,6 +131,11 @@ At 100 mA/cm² and 85% FE, areal productivity is ~7.8 t/(m²·yr). A zinc tankho
 
 **That's the entire problem in one sentence: you need roughly 5× a zinc tankhouse's areal productivity, or roughly 5× cheaper cells, or some product of the two.**
 
+`models/cell_architecture.py` now computes both sides of that sentence. Running
+the zinc benchmark's 500 A/m² through the iron Faraday arithmetic gives
+**3.9 t/(m²·yr)**, so the target is **~19.5 t/(m²·yr)**. Of the architectures
+screened, only the continuously scraped rotating cylinder clears it.
+
 ---
 
 ## The Cell Architecture Question
@@ -151,6 +156,32 @@ Candidates worth a week of paper-study each:
 
 All of these produce powder, flake, or thin foil — they only work if the product decision (§1) is feedstock. Which is another argument for Option A.
 
+**Status: screened.** `models/cell_architecture.py` now evaluates all four
+against the plate-and-frame baseline, using literature Sherwood correlations
+(Eisenberg–Tobias–Wilke for rotating geometries, turbulent-duct for planar,
+Ranz–Marshall for beds), an explicit practical-current ceiling per
+architecture, and a harvest duty cycle in which batch downtime grows as
+plating rate rises. Run `aq-steel-architecture`.
+
+The screen's answer to the gating question is **yes, provisionally**: the
+rotating cylinder reaches ~39 t/(m²·yr) — about 10× the zinc-tankhouse
+benchmark and comfortably past the ~5× target — at ~$5/t Fe of cell capital
+charge, because continuous scraping avoids the duty-cycle penalty entirely.
+The batch plate-and-frame baseline assumed in `technoeconomic.py` manages
+only ~0.66× the zinc benchmark once harvest downtime is counted.
+
+Three caveats keep this provisional:
+
+1. The rotating cylinder produces **powder only**. It is a feedstock-path
+   answer (Option A), not a product-path one.
+2. Drum-and-strip is the only architecture that yields coherent foil
+   continuously, and it turns on an unverified assumption: **that iron peels
+   from the drum.** Copper foil production depends on a passive TiO₂ release
+   layer; iron adhesion on titanium is uncharacterised here. This is the
+   single highest-value cheap experiment the screen identifies.
+3. Every number is a screening estimate from correlations measured in other
+   chemistries, with costs that are engineering estimates rather than quotes.
+
 ---
 
 ## The Anode Problem (Tier 0, Not Tier 3)
@@ -167,17 +198,40 @@ Conversely — if you *deliberately* run Fe²⁺/Fe³⁺ as the anode reaction a
 
 ## Missing Physics (Roughly Ordered by Impact)
 
-1. **Cell voltage.** Not in the 76-parameter registry. For an electrowinning process this is THE number. Energy = 0.96 × V / FE. Add V_cell decomposition: E_cathode, E_anode, η_cathode, η_anode, IR_electrolyte, IR_membrane, IR_contacts.
+*Items 1–4 were the original diagnosis and have since been addressed; they are
+retained with their resolution so the record shows what changed and where.*
 
-2. **Temperature.** Not in the registry. Sets D, conductivity, viscosity, solubility, FE, and internal stress. Chinese electrolytic iron practice runs 50–60°C. Its absence is diagnostic of where the parameters came from.
+1. ~~**Cell voltage.**~~ **Addressed** — `models/electrochemistry.py`
+   (`V_decomposition`, `CellVoltageModel`): E_cathode, E_anode, η_cathode,
+   η_anode, IR_electrolyte, IR_membrane, IR_contacts. Energy = 0.96 × V / FE
+   remains THE number.
 
-3. **Divided cell / membrane.** Missing entirely. Determines anode reaction, V_cell, acid balance, Fe³⁺ crossover.
+2. ~~**Temperature.**~~ **Addressed** — carried as a first-class parameter
+   through kinetics, transport, speciation, thermal balance and TEA. Sets D,
+   conductivity, viscosity, solubility, FE, and internal stress.
 
-4. **Purification circuit.** Copperas from TiO₂ route carries Mn, Mg, Al, Ti, V, Cr. Pickle liquor carries Cu, Ni, Zn, Pb, Sn. Everything nobler than Fe co-deposits preferentially. Cu > 0.1% → hot shortness. Zinc tankhouses spend roughly as much on purification as on the tankhouse itself. This is a missing unit operation.
+3. ~~**Divided cell / membrane.**~~ **Addressed** — `models/membrane_transport.py`
+   and `models/membrane_fouling.py`: crossover, ohmic drop, acid balance.
+
+4. ~~**Purification circuit.**~~ **Addressed** — `models/purification.py`:
+   cementation, hydrolysis, selective electrowinning, ion exchange, with the
+   Cu < 0.1% hot-shortness spec enforced. Zinc tankhouses spend roughly as much
+   on purification as on the tankhouse itself, so this stays cost-relevant.
 
 5. **Mass-transport limit.** Pulse plating cannot beat it. At 400 mA/cm² average, 30% duty → 1,330 mA/cm² peak. With 2 M Fe²⁺ and δ = 20 µm, i_L ≈ 1,350 mA/cm². You're at the wall. Pulse redistributes flux in time; it does not create it. The route to high j is [Fe²⁺] → 2 M+, temperature → 50–70°C, δ → <30 µm via forced convection. Pulse is a microstructure and pH-recovery tool, not the rate lever.
 
 6. **Feedstock sourcing.** Global spent pickle liquor + copperas: ~3–6 Mt Fe/yr vs 1,900 Mt steel/yr. Beachhead, not thesis. Chase negative-cost feedstocks: acid mine drainage, red mud, pickle liquor you're paid to take. A −$50/t feedstock is worth more to the model than 10 points of FE.
+
+7. **Deposit internal stress.** Still missing. No Stoney/bent-strip model
+   exists; `run_mechanical_properties.py` explicitly disclaims texture and
+   residual stress. Internal stress governs whether thick deposits crack or
+   curl off the substrate, and it is measurable for ~$200 (Tier 0 item 6).
+   This is now the largest un-modelled physics gap on the product path.
+
+8. **Deposit adhesion / release.** Newly surfaced by the architecture screen.
+   Continuous harvesting requires the deposit to come off the cathode on
+   purpose — and only on purpose. Adhesion is the hinge for drum-and-strip
+   and the doctor-blade routes, and nothing in the model set predicts it.
 
 ---
 
@@ -241,7 +295,7 @@ You cannot kill a program on the output of an uncalibrated model. Replace with t
 - At j ≥ 300 mA/cm², replicated divided-cell runs cannot sustain both FE ≥ 70% and net DC specific energy ≤ 4,000 kWh/t Fe after optimizing concentration, temperature, and flow → **kill or redesign the route.** Specific energy is \(959.9 \times V_{cell}/FE\) kWh/t Fe for Fe²⁺ + 2e⁻ → Fe; 4,000 kWh/t at FE = 70% corresponds to \(V_{cell}\) ≈ 2.92 V.
 - Report pumps, heating, concentration, filtration, drying, and rectifier losses separately, then establish an AC plant-energy threshold when the flowsheet is defined.
 - No weighed and characterized coherent 100 g iron plate (or qualified powder/flake for a feedstock path), together with a closed charge/mass/electrolyte balance → **stop and reassess.** A photograph is a milestone, not sufficient process evidence.
-- Cost per m² of a cell that can be stripped continuously > threshold → **pivot to cell architecture work.**
+- Cost per m² of a cell that can be stripped continuously > threshold → **pivot to cell architecture work.** The threshold is now computable rather than rhetorical: `cell_architecture.max_affordable_cost_per_m2(productivity, budget)` returns `budget × productivity / CRF`. At a $60/t Fe capital-charge budget (~10–15% of a $400–600/t product), 8% WACC and 25 years, a cell delivering 39 t/(m²·yr) may cost up to ~$25,000/m², while one delivering 2.6 t/(m²·yr) may cost only ~$1,600/m². **Productivity, not cell price, is what the architecture decision buys.**
 - If Electra or ΣIDERWIN is already at our target economics → **pivot to complementary niche or license.**
 
 ---
@@ -279,13 +333,17 @@ Keep: `technoeconomic`, `transport` (1D diffusion-layer), `hull_cell`, `voltamme
 
 ### Tier 1 — After archaeology informs the question.
 
-- [ ] 1D diffusion-layer model (replaces phase-field as gating model)
-- [ ] Hull cell experiments for morphology and gross plating-behavior screening
-- [ ] Instrumented divided-beaker cell: polarization, FE, voltage decomposition, crossover, and iron-speciation curves
-- [ ] Cell architecture paper study (drum, belt, rotating cylinder, filter-press)
-- [ ] RDE + Levich for kinetics/transport separation
-- [ ] Stoney stress measurement on thin shim
-- [ ] Purification circuit design (cementation, hydrolysis for Cu/Ni/Zn removal)
+Desk/model items are marked done when the model exists and is tested; wet-lab
+items remain open until there is measured data. The distinction matters: a
+model is a hypothesis generator, not evidence.
+
+- [x] 1D diffusion-layer model (replaces phase-field as gating model) — `models/diffusion_layer_1d.py`: Nernst-Planck over Fe²⁺/H⁺/OH⁻/HSO₄⁻/SO₄²⁻/borate, fast homogeneous equilibria, computed surface pH, Fe(OH)₂ criterion; 311 test lines
+- [ ] Hull cell experiments for morphology and gross plating-behavior screening — **wet lab**; tooling ready (`models/hull_cell.py`, `docs/FIRST_LAB_DAY.md`)
+- [ ] Instrumented divided-beaker cell: polarization, FE, voltage decomposition, crossover, and iron-speciation curves — **wet lab**; this is the gate-2/gate-3 dataset
+- [x] Cell architecture paper study (drum, belt, rotating cylinder, filter-press) — `models/cell_architecture.py` + `run_cell_architecture.py`: literature Sherwood correlations per architecture, harvest-continuity duty cycle, $/m² → $/annual tonne, and a computable kill-criterion-#3 threshold
+- [ ] RDE + Levich for kinetics/transport separation — **not started**; the measurement that makes `diffusion_layer_1d` calibratable. Highest-value remaining Tier 1 model+experiment pair
+- [ ] Stoney stress measurement on thin shim — **not started**; no internal-stress model exists (`run_mechanical_properties.py` lists this as a known gap)
+- [x] Purification circuit design (cementation, hydrolysis for Cu/Ni/Zn removal) — `models/purification.py` + `run_purification.py`: four-stage screen (cementation, hydrolysis, selective EW, ion exchange) with Cu spec check and stage costs
 
 ### Tier 2 — After Tier 1 shows a viable operating window.
 
@@ -335,16 +393,27 @@ A dark mill producing precision electroforms funds the R&D to get to commodity i
 ## Status
 
 - 44 kanban cards on `aqueous-steel` board (36 done, 3 todo, 2 blocked, 3 new)
-- 609 tests passing, 5 skipped (CadQuery unavailable), fresh run 2026-07-31
-- Full pipeline: `aq-steel --quick`
+- 859 tests passing, 5 skipped (CadQuery unavailable), fresh run 2026-07-31
+- Full pipeline: `aq-steel --quick` (17 steps)
 - Tier 0 archaeology done at desk level: `TIER0_ARCHAEOLOGY.md` (calibration anchors §8, prior corrections §9)
 - Program gate 1 done at desk level: `CLAIM_CHARTS_PRELIMINARY.md` (feeds counsel; design-around rules adopted in lab packet)
 - Lab-ready packet: `FIRST_LAB_DAY.md` + `experiments/data/day1_run_sheet.csv`, `bath_batch_template.json`, `run_manifest_template.json`
 - Dark mill digital twin: physics-driven site sizing, parametric 3D CAD, steel grade routing (AISI 1008–8620), 3 site scenarios assessed
 - Tier 0 checklist complete at desk level (all checkboxes marked)
 - Platform requirement added: reconfigurable/redeployable platform + fixed proving ground (this document, §The Vision)
-- Untracked landing candidates: `models/deposit_morphology.py` + tests, `scripts/dft_h_adsorption_fe.py` — decide commit or park before next board reconciliation
+- `models/deposit_morphology.py` + tests and `scripts/dft_h_adsorption_fe.py` landed in `cfed4d0` — no longer untracked
+- Tier 1 desk items closed: 1D diffusion-layer model, purification circuit, and the cell architecture screen. Remaining Tier 1 is wet-lab (Hull cell, divided beaker cell) plus two unbuilt models: **RDE/Levich** and **Stoney internal stress**
+- Test coverage reconciled: `technoeconomic`, `kinetics`, `pourbaix`, `scenarios` and `cell_physics` now have direct tests (they previously had none despite carrying every kill criterion). Only `process_flow` (figure generation) and `supply_chain` (frozen per §What to Freeze) remain untested
+- `models/README.md` completed: it documented 30 of 57 modules, now all of them
 
 **Immediate next action:** patent counsel review of the claim charts + order the Tier A/B equipment (`EQUIPMENT_LIST.md`, now split into deployable article vs fixed proving-ground zone).
 
 **Then:** Hull cell per the Day-1 packet. ~$650–920 all-in for the deployable article; fixed-zone items are listed separately. Start plating.
+
+**New, cheap, and high-value from the architecture screen:** an iron-on-titanium
+**peel/adhesion coupon test**. The drum-and-strip route is the only screened
+architecture that produces coherent foil continuously, and its entire viability
+rests on an assumption nobody in this program has tested. Plate iron on a
+titanium coupon under Day-1 bath conditions and try to peel it. Cost is
+approximately zero on top of the Hull-cell order; the information decides
+whether a whole architecture branch stays open.

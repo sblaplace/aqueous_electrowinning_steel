@@ -1,0 +1,327 @@
+{
+  "provenance": "Screening output from models/cell_architecture.py. No wet-lab iron data. Mass-transfer correlations are literature values from other chemistries; costs are engineering estimates, not quotes.",
+  "model_scope": {
+    "provenance": "Screening model. No wet-lab iron data. Sherwood correlations are literature values measured in other chemistries (ferricyanide, copper sulfate) and transferred to Fe\u00b2\u207a sulfate.",
+    "computes": [
+      "Architecture-specific mass transfer and transport-limited current",
+      "Operating current density under transport AND practical ceilings",
+      "Harvest-cycle capacity factor (batch downtime scales with rate)",
+      "Areal productivity per m\u00b2 of costed electrode area",
+      "Installed $/m\u00b2, $/annual tonne, and $/t Fe capital charge",
+      "Kill criterion #3 affordability threshold"
+    ],
+    "does_not_compute": [
+      "Faradaic efficiency (supplied by kinetics/diffusion_layer_1d)",
+      "Cell voltage (supplied by electrochemistry.CellVoltageModel)",
+      "Deposit adhesion or peelability - the gating unknown for drums",
+      "Current distribution within the electrode (see scale_up.py)",
+      "Bubble effects on transport or ohmic drop",
+      "Mechanical reliability of rotating/moving hardware in acid"
+    ],
+    "calibration_required": [
+      "Sherwood coefficients for the actual cell and electrolyte",
+      "Equipment costs from vendor quotes, not engineering estimates",
+      "Harvest downtime from operated hardware",
+      "Practical current ceilings from deposit-quality experiments"
+    ]
+  },
+  "conditions": {
+    "fe_conc_M": 1.0,
+    "temperature_C": 50.0,
+    "faradaic_efficiency": 0.85,
+    "installed_cost_factor": 2.6,
+    "discount_rate": 0.08,
+    "plant_lifetime_yr": 25,
+    "schmidt_number": 1388.9,
+    "crf": 0.09368
+  },
+  "benchmarks": {
+    "zinc_tankhouse": {
+      "current_density_A_m2": 500.0,
+      "capex_per_annual_tonne_low": 1000.0,
+      "capex_per_annual_tonne_high": 1500.0,
+      "product_value_per_t_low": 2500.0,
+      "product_value_per_t_high": 3000.0,
+      "note": "Industry benchmark quoted in docs/RESEARCH_PROGRAM.md. Zinc electrowinning is the closest mature analogue: aqueous sulfate, insoluble anodes, periodic manual/robotic cathode stripping."
+    },
+    "zinc_iron_equivalent_productivity_t_m2_yr": 3.9,
+    "program_target_t_m2_yr": 19.51,
+    "iron_product_value_per_t": {
+      "low": 400.0,
+      "high": 600.0
+    }
+  },
+  "architectures": [
+    {
+      "architecture_id": "rotating_cylinder",
+      "name": "Rotating cylinder electrode with scraper (Eco-Cell type)",
+      "product_form": "powder_or_particle",
+      "harvest_mode": "continuous",
+      "evidence_level": "commercial",
+      "flow_enhancement_applied": 1.0,
+      "Re": 100000.0,
+      "Sc": 1388.9,
+      "Sh": 3288.26,
+      "k_m (m/s)": 2.368e-05,
+      "transport_limit (A/m2)": 4568.7,
+      "j_operating (A/m2)": 5482.4,
+      "j_operating (mA/cm2)": 548.2,
+      "limited_by": "transport",
+      "j_installed (A/m2)": 5482.4,
+      "deposition_rate (um/hr)": 616.6,
+      "plating_cycle (hr)": null,
+      "capacity_factor": 0.92,
+      "areal_productivity (t/m2/yr)": 39.13,
+      "direct_cost ($/m2)": 880.0,
+      "installed_cost ($/m2)": 2288.0,
+      "capex_per_annual_tonne ($/t/yr)": 58.0,
+      "capital_charge ($/t Fe)": 5.48,
+      "notes": "Turbulent RCE mass transfer (Eisenberg-Tobias-Wilke) is roughly 6x a parallel plate at comparable pumping, and the scraper makes harvesting continuous. Commercially proven for metal recovery. Produces powder/flake, which suits the feedstock path (Option A) and rules it out for near-net-shape product.",
+      "limitations": [
+        "Rotating machinery in acid: seals and bearings are the wear item",
+        "Product is powder/flake only",
+        "$/m\u00b2 is dominated by mechanical hardware, not electrodes"
+      ]
+    },
+    {
+      "architecture_id": "drum_and_strip",
+      "name": "Rotating drum with continuous foil strip (Cu-foil type)",
+      "product_form": "plate_or_foil",
+      "harvest_mode": "continuous",
+      "evidence_level": "commercial",
+      "flow_enhancement_applied": 6.0,
+      "Re": 500000.0,
+      "Sc": 1388.9,
+      "Sh": 10144.84,
+      "k_m (m/s)": 2.191e-05,
+      "transport_limit (A/m2)": 4228.5,
+      "j_operating (A/m2)": 3382.8,
+      "j_operating (mA/cm2)": 338.3,
+      "limited_by": "transport",
+      "j_installed (A/m2)": 1691.4,
+      "deposition_rate (um/hr)": 380.5,
+      "plating_cycle (hr)": null,
+      "capacity_factor": 0.92,
+      "areal_productivity (t/m2/yr)": 12.07,
+      "direct_cost ($/m2)": 1430.0,
+      "installed_cost ($/m2)": 3718.0,
+      "capex_per_annual_tonne ($/t/yr)": 308.0,
+      "capital_charge ($/t Fe)": 28.85,
+      "notes": "The electrodeposited copper foil machine, adapted. Industrially proven at 300-1200 mA/cm\u00b2 with continuous peel, which is exactly the combination the program asks for. The open question is whether iron peels: Cu foil relies on a passive TiO2 release layer, and Fe adhesion on titanium is not characterised here.",
+      "limitations": [
+        "Peelability of iron from the drum is UNVERIFIED - the gating risk",
+        "High $/m\u00b2: precision drum plus winding line",
+        "Thin foil only; thickness is set by drum speed",
+        "Hydrogen in the deposit may embrittle the foil during winding"
+      ]
+    },
+    {
+      "architecture_id": "plate_and_frame",
+      "name": "Plate-and-frame (filter press), batch strip",
+      "product_form": "plate_or_foil",
+      "harvest_mode": "batch",
+      "evidence_level": "commercial",
+      "flow_enhancement_applied": 1.0,
+      "Re": 2000.0,
+      "Sc": 1388.9,
+      "Sh": 109.55,
+      "k_m (m/s)": 3.944e-06,
+      "transport_limit (A/m2)": 761.1,
+      "j_operating (A/m2)": 532.8,
+      "j_operating (mA/cm2)": 53.3,
+      "limited_by": "transport",
+      "j_installed (A/m2)": 532.8,
+      "deposition_rate (um/hr)": 59.9,
+      "plating_cycle (hr)": 8.35,
+      "capacity_factor": 0.6219,
+      "areal_productivity (t/m2/yr)": 2.57,
+      "direct_cost ($/m2)": 330.0,
+      "installed_cost ($/m2)": 858.0,
+      "capex_per_annual_tonne ($/t/yr)": 334.0,
+      "capital_charge ($/t Fe)": 31.27,
+      "notes": "The zinc/copper tankhouse geometry and the chlor-alkali stack. Mature, cheap per m\u00b2, and the reference case in technoeconomic.CAPEXModel. Its weakness is harvesting: the cell must be opened and the cathode stripped.",
+      "limitations": [
+        "Batch stripping forces downtime that scales with plating rate",
+        "Edge effects and current non-uniformity grow with panel size",
+        "Gas management at high j is a real constraint in a narrow gap"
+      ]
+    },
+    {
+      "architecture_id": "fluidized_bed",
+      "name": "Fluidized / particulate bed cathode",
+      "product_form": "powder_or_particle",
+      "harvest_mode": "semi_continuous",
+      "evidence_level": "pilot",
+      "flow_enhancement_applied": 1.0,
+      "Re": 25.0,
+      "Sc": 1388.9,
+      "Sh": 34.67,
+      "k_m (m/s)": 4.993e-05,
+      "transport_limit (A/m2)": 9635.1,
+      "j_operating (A/m2)": 1.7,
+      "j_operating (mA/cm2)": 0.2,
+      "limited_by": "footprint_ceiling",
+      "j_installed (A/m2)": 1000.0,
+      "deposition_rate (um/hr)": 0.2,
+      "plating_cycle (hr)": 266.75,
+      "capacity_factor": 0.9166,
+      "areal_productivity (t/m2/yr)": 7.11,
+      "direct_cost ($/m2)": 1030.0,
+      "installed_cost ($/m2)": 2678.0,
+      "capex_per_annual_tonne ($/t/yr)": 377.0,
+      "capital_charge ($/t Fe)": 35.28,
+      "notes": "Enormous specific area (~600 m\u00b2 of particle surface per m\u00b2 of footprint) at a very low current density per unit of that area. The trade is real but the binding constraint is ohmic potential distribution through the bed, not mass transfer - the Ranz-Marshall transport limit is never reached in practice. Proven for dilute-solution metal recovery, not for bulk production.",
+      "limitations": [
+        "Potential distribution through bed depth is the real limit",
+        "Particle agglomeration and bed defluidization are failure modes",
+        "Current feeder corrosion/contact resistance in a moving bed",
+        "Product needs washing and dewatering"
+      ]
+    },
+    {
+      "architecture_id": "moving_belt",
+      "name": "Moving-belt cathode with doctor blade",
+      "product_form": "flake",
+      "harvest_mode": "continuous",
+      "evidence_level": "concept",
+      "flow_enhancement_applied": 1.0,
+      "Re": 3000.0,
+      "Sc": 1388.9,
+      "Sh": 151.53,
+      "k_m (m/s)": 5.455e-06,
+      "transport_limit (A/m2)": 1052.7,
+      "j_operating (A/m2)": 736.9,
+      "j_operating (mA/cm2)": 73.7,
+      "limited_by": "transport",
+      "j_installed (A/m2)": 515.8,
+      "deposition_rate (um/hr)": 82.9,
+      "plating_cycle (hr)": null,
+      "capacity_factor": 0.92,
+      "areal_productivity (t/m2/yr)": 3.68,
+      "direct_cost ($/m2)": 880.0,
+      "installed_cost ($/m2)": 2288.0,
+      "capex_per_annual_tonne ($/t/yr)": 622.0,
+      "capital_charge ($/t Fe)": 58.22,
+      "notes": "Conceptually the cheapest route to continuous harvesting in a planar geometry: plate on a belt, scrape it off at the return roller. No iron-specific demonstration is known to this program. Belt tracking, edge sealing and current collection through a moving contact are the unsolved engineering.",
+      "limitations": [
+        "No known iron demonstration - concept tier",
+        "Sliding current collection at high current is unproven here",
+        "Belt sealing against the electrolyte compartment is difficult"
+      ]
+    }
+  ],
+  "kill_criterion_3": {
+    "capital_charge_budget_per_t_fe": 60.0,
+    "crf": 0.09368,
+    "zinc_benchmark": {
+      "current_density_A_m2": 500.0,
+      "iron_equivalent_productivity_t_m2_yr": 3.9,
+      "capex_per_annual_tonne_range": [
+        1000.0,
+        1500.0
+      ],
+      "note": "Industry benchmark quoted in docs/RESEARCH_PROGRAM.md. Zinc electrowinning is the closest mature analogue: aqueous sulfate, insoluble anodes, periodic manual/robotic cathode stripping."
+    },
+    "architectures": [
+      {
+        "architecture_id": "rotating_cylinder",
+        "name": "Rotating cylinder electrode with scraper (Eco-Cell type)",
+        "evidence_level": "commercial",
+        "harvest_mode": "continuous",
+        "areal_productivity_t_m2_yr": 39.13,
+        "productivity_vs_zinc": 10.03,
+        "installed_cost_per_m2": 2288.0,
+        "max_affordable_cost_per_m2": 25060.0,
+        "headroom_per_m2": 22772.0,
+        "capital_charge_per_t_fe": 5.48,
+        "passes": true,
+        "verdict": "within budget"
+      },
+      {
+        "architecture_id": "drum_and_strip",
+        "name": "Rotating drum with continuous foil strip (Cu-foil type)",
+        "evidence_level": "commercial",
+        "harvest_mode": "continuous",
+        "areal_productivity_t_m2_yr": 12.07,
+        "productivity_vs_zinc": 3.09,
+        "installed_cost_per_m2": 3718.0,
+        "max_affordable_cost_per_m2": 7732.0,
+        "headroom_per_m2": 4014.0,
+        "capital_charge_per_t_fe": 28.85,
+        "passes": true,
+        "verdict": "within budget"
+      },
+      {
+        "architecture_id": "plate_and_frame",
+        "name": "Plate-and-frame (filter press), batch strip",
+        "evidence_level": "commercial",
+        "harvest_mode": "batch",
+        "areal_productivity_t_m2_yr": 2.57,
+        "productivity_vs_zinc": 0.66,
+        "installed_cost_per_m2": 858.0,
+        "max_affordable_cost_per_m2": 1646.0,
+        "headroom_per_m2": 788.0,
+        "capital_charge_per_t_fe": 31.27,
+        "passes": true,
+        "verdict": "within budget"
+      },
+      {
+        "architecture_id": "fluidized_bed",
+        "name": "Fluidized / particulate bed cathode",
+        "evidence_level": "pilot",
+        "harvest_mode": "semi_continuous",
+        "areal_productivity_t_m2_yr": 7.11,
+        "productivity_vs_zinc": 1.82,
+        "installed_cost_per_m2": 2678.0,
+        "max_affordable_cost_per_m2": 4554.0,
+        "headroom_per_m2": 1876.0,
+        "capital_charge_per_t_fe": 35.28,
+        "passes": true,
+        "verdict": "within budget"
+      },
+      {
+        "architecture_id": "moving_belt",
+        "name": "Moving-belt cathode with doctor blade",
+        "evidence_level": "concept",
+        "harvest_mode": "continuous",
+        "areal_productivity_t_m2_yr": 3.68,
+        "productivity_vs_zinc": 0.94,
+        "installed_cost_per_m2": 2288.0,
+        "max_affordable_cost_per_m2": 2358.0,
+        "headroom_per_m2": 70.0,
+        "capital_charge_per_t_fe": 58.22,
+        "passes": true,
+        "verdict": "within budget"
+      }
+    ],
+    "n_passing": 5,
+    "best": {
+      "architecture_id": "rotating_cylinder",
+      "name": "Rotating cylinder electrode with scraper (Eco-Cell type)",
+      "evidence_level": "commercial",
+      "harvest_mode": "continuous",
+      "areal_productivity_t_m2_yr": 39.13,
+      "productivity_vs_zinc": 10.03,
+      "installed_cost_per_m2": 2288.0,
+      "max_affordable_cost_per_m2": 25060.0,
+      "headroom_per_m2": 22772.0,
+      "capital_charge_per_t_fe": 5.48,
+      "passes": true,
+      "verdict": "within budget"
+    },
+    "criterion": "Kill criterion #3 (docs/RESEARCH_PROGRAM.md): cost per m\u00b2 of a continuously strippable cell above the affordability threshold \u2192 pivot to cell architecture work."
+  },
+  "findings": [
+    "Lowest cell capital charge: Rotating cylinder electrode with scraper (Eco-Cell type) at $5.48/t Fe (39.1 t/(m\u00b2\u00b7yr), 10.0x the zinc benchmark).",
+    "Continuous harvesting beats batch on capital charge ($5.48 vs $31.27/t Fe) despite costing more per m\u00b2, because batch duty cycle falls as plating rate rises.",
+    "Architectures meeting the ~5x zinc areal-productivity target: rotating_cylinder.",
+    "The plate-and-frame baseline currently assumed in technoeconomic.py reaches only 0.66x the zinc benchmark (0.62 capacity factor after harvest downtime), which is the case for studying alternatives.",
+    "Every architecture screened falls within the $60/t Fe cell capital budget; cell cost is therefore not the binding constraint at these assumed productivities.",
+    "Highest-value unknown: whether iron peels cleanly from a drum cathode. Copper foil relies on a passive TiO\u2082 release layer; iron adhesion on titanium is uncharacterised here and gates the drum-and-strip route entirely."
+  ],
+  "figures": [
+    "docs/figures/cell_architecture_comparison.png",
+    "docs/figures/cell_architecture_tradeoff.png",
+    "docs/figures/cell_architecture_sweeps.png"
+  ]
+}

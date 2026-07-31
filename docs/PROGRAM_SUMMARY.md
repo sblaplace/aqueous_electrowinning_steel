@@ -39,6 +39,39 @@ E = 959.9 \times V_{cell}/FE \quad \mathrm{kWh/t\ Fe}.
 
 Electricity, feedstock/logistics, capital utilization, separations, reagent recovery, labor, component lifetime, and product finishing are material cost drivers. They must be measured or treated as explicit sensitivities rather than rounding error.
 
+## Cell architecture and the capital constraint
+
+For an electrowinning process the binding constraint is installed cell cost per
+m², not electricity. `models/cell_architecture.py` screens five reactor types —
+plate-and-frame, rotating cylinder, drum-and-strip, moving belt, fluidized bed —
+against literature Sherwood correlations, explicit practical current ceilings,
+and a harvest duty cycle in which batch downtime grows as plating rate rises.
+
+Running the zinc-tankhouse benchmark (500 A/m²) through iron's Faraday
+arithmetic gives 3.9 t/(m²·yr), so the program's stated "~5×" requirement is
+19.5 t/(m²·yr). Of the screened architectures only the continuously scraped
+rotating cylinder clears it, at ~39 t/(m²·yr) and ~$5/t Fe of cell capital
+charge. The batch plate-and-frame baseline assumed in `technoeconomic.py`
+reaches ~0.66× the benchmark once harvest downtime is counted.
+
+The screen also makes kill criterion #3 computable rather than rhetorical:
+`max_affordable_cost_per_m2` returns `budget × productivity / CRF`. At a $60/t
+Fe capital-charge budget, a cell at 39 t/(m²·yr) may cost ~$25,000/m² while one
+at 2.6 t/(m²·yr) may cost only ~$1,600/m². **Productivity is the lever, not
+cell price.**
+
+Three qualifications keep this from being a decision:
+
+1. The rotating cylinder yields powder only — a feedstock-path (Option A)
+   answer, not a product-path one.
+2. Drum-and-strip is the only screened route to continuous coherent foil, and
+   it depends on an untested assumption: that **iron peels from a titanium
+   drum**. Copper foil production relies on a passive TiO₂ release layer; iron
+   adhesion is uncharacterised. A peel-coupon test is nearly free alongside the
+   Day-1 Hull cell order and should be added to it.
+3. All correlations are transferred from other chemistries and all costs are
+   engineering estimates. This is screening evidence, not measurement.
+
 ## Deployment hypothesis
 
 The supply-chain model favors on-site modular deployment for 8 of the 9 illustrative feedstocks at its stated default assumptions. At 500 km feedstock distance, it returns $145.67/t Fe centralized versus −$96.42/t Fe decentralized for pickle liquor, and $540.53/t versus $423.45/t for 30% Fe low-grade ore.
@@ -56,7 +89,7 @@ The ferric/ferrous anode-shuttle concept is an invention hypothesis only. Any pa
 ## Program gates and dependency order
 
 1. Build claim charts for active Electra family members and search relevant AWARE and sulfate divided-cell filings.
-2. Screen the actual sulfate feed surrogate in a Hull cell for deposition window, morphology, and gross plating behavior.
+2. Screen the actual sulfate feed surrogate in a Hull cell for deposition window, morphology, and gross plating behavior. **Add an iron-on-titanium peel/adhesion coupon to this run** — it is nearly free and it gates the entire continuous-foil architecture branch.
 3. Run an instrumented divided-cell matrix to measure FE, V_cell decomposition, crossover, iron speciation, deposit morphology, and impurity behavior versus current density.
 4. Demonstrate a continuous run long enough to expose bath drift, membrane fouling, crossover, component degradation, and reagent loss.
 5. Calibrate the transport and TEA models only to the measured data; include auxiliary loads and separations.
