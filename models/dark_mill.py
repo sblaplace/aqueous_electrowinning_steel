@@ -48,7 +48,10 @@ from .cell_physics import (
     CellPhysics, BathRecipe, ProcessConditions, CellGeometry,
     OperatingPoint, OperatingWindow,
 )
-
+from .steel_grade import (
+    SteelGradeSpec, PostProcessingRoute, PostProcessingResult,
+    STEEL_GRADES, select_route, size_post_processing,
+)
 
 # ─── Site Definition ──────────────────────────────────────────────
 
@@ -99,9 +102,21 @@ class SiteDefinition:
     geometry: CellGeometry = field(default_factory=CellGeometry)
     conditions: ProcessConditions = field(default_factory=ProcessConditions)
 
+    # Product specification: target steel grade and post-processing route
+    target_grade: Optional[SteelGradeSpec] = None   # None = pure iron
+    post_processing_route: Optional[PostProcessingRoute] = None  # None = auto-select
+    sheet_thickness_um: float = 1000.0        # deposit thickness for carburization
+
     @property
     def feedstock(self) -> Feedstock:
         return FEEDSTOCKS[self.feedstock_key]
+
+    @property
+    def effective_grade(self) -> SteelGradeSpec:
+        """Target grade, defaulting to pure iron if not set."""
+        if self.target_grade is not None:
+            return self.target_grade
+        return STEEL_GRADES["pure_iron"]
 
 
 # ─── Sizing Results ───────────────────────────────────────────────
@@ -182,6 +197,10 @@ class MassBalance:
     scope1_CO2_t_yr: float                # direct (minimal for EW)
     scope2_CO2_t_yr: float                # from electricity
 
+    # Post-processing
+    post_processing_energy_MWh_yr: float = 0.0   # carburization or co-deposition
+    product_grade: str = "Pure Iron"
+
 
 @dataclass
 class SiteReport:
@@ -196,6 +215,7 @@ class SiteReport:
     benchmarks: Dict[str, Any]
     go_no_go: Dict[str, Any]
     physics_point: Optional[OperatingPoint] = None  # from cell_physics solver
+    post_processing: Optional[PostProcessingResult] = None  # grade-specific sizing
 
     def summary(self) -> str:
         """Human-readable site assessment."""
@@ -256,6 +276,37 @@ class SiteReport:
             f"  Auxiliary:        {mb.auxiliary_energy_MWh_yr:.0f} MWh/yr",
             f"  TOTAL:            {mb.total_energy_MWh_yr:.0f} MWh/yr",
             f"  Specific energy:  {mb.total_energy_MWh_yr*1000/mb.iron_production_t_yr:.0f} kWh/t Fe",
+        ])
+
+        # Post-processing (grade-specific)
+        if self.post_processing is not None and self.post_processing.route != "none":
+            pp_res = self.post_processing
+            lines.extend(["",
+                f"POST-PROCESSING: {pp_res.grade.name}",
+                f"  Route:            {pp_res.route}",
+                f"  Target C:         {pp_res.grade.c_wt_percent_target:.2f} wt%",
+            ])
+            if pp_res.carburization is not None:
+                c = pp_res.carburization
+                lines.extend([
+                    f"  Furnace temp:     {c.temperature_C:.0f} C",
+                    f"  Soak time:        {c.duration_hr:.1f} hr",
+                    f"  Surface C:        {c.surface_carbon_wt_percent:.2f} wt%",
+                    f"  Cycle time:       {c.batch_time_hr:.1f} hr",
+                    f"  Post-proc energy: {c.energy_kWh_per_t_Fe:.0f} kWh/t Fe",
+                    f"  Furnace:          {c.furnace_length_mm:.0f} x {c.furnace_width_mm:.0f} x {c.furnace_height_mm:.0f} mm",
+                ])
+            elif pp_res.codeposition is not None:
+                c = pp_res.codeposition
+                lines.extend([
+                    f"  Carbon loading:   {c.carbon_loading_g_L:.1f} g/L",
+                    f"  Particle size:    {c.particle_size_um:.1f} um",
+                    f"  Post-proc energy: {c.energy_kWh_per_t_Fe:.0f} kWh/t Fe",
+                ])
+            if mb.post_processing_energy_MWh_yr > 0:
+                lines.append(f"  Post-proc total:  {mb.post_processing_energy_MWh_yr:.0f} MWh/yr")
+
+        lines.extend([
             "",
             f"CO2 FOOTPRINT:",
             f"  Scope 1 (direct): {mb.scope1_CO2_t_yr:.1f} t CO₂/yr",
@@ -502,10 +553,33 @@ def size_dark_mill(
             )
             lcofe["Feedstock revenue ($/t Fe)"] = round(feedstock_revenue, 2)
 
-    # ── Step 5: Benchmarks ──
+    # -- Step 5: Benchmarks --
     benchmarks = compare_routes(lcofe["LCOFe ($/t Fe)"])
 
-    # ── Step 6: Go/No-Go ──
+    # -- Step 6: Post-processing / grade specification --
+    post_proc = size_post_processing(
+        grade=site.effective_grade,
+        route=site.post_processing_route,
+        sheet_thickness_um=site.sheet_thickness_um,
+        annual_production_t=actual_capacity_t_yr,
+    )
+    # Add post-processing energy to mass balance
+    pp_energy_MWh = post_proc.total_energy_kWh_per_t * actual_capacity_t_yr / 1000.0
+    mass_bal.post_processing_energy_MWh_yr = pp_energy_MWh
+    mass_bal.total_energy_MWh_yr += pp_energy_MWh
+    mass_bal.product_grade = site.effective_grade.name
+    # Update scope2 CO2 for post-processing electricity
+    mass_bal.scope2_CO2_t_yr += pp_energy_MWh * 1000.0 * grid.grid_CO2_kg_per_kWh / 1000.0
+
+    # Adjust CAPEX for post-processing equipment
+    pp_capex_fraction = post_proc.additional_capex_fraction
+    if pp_capex_fraction > 0:
+        pp_capex = capex["Total CAPEX ($)"] * pp_capex_fraction
+        capex["Post-processing CAPEX ($)"] = round(pp_capex, 0)
+        capex["Total CAPEX ($)"] += pp_capex
+        capex["Total CAPEX (M$)"] = round(capex["Total CAPEX ($)"] / 1e6, 2)
+
+    # -- Step 7: Go/No-Go --
     go_no_go = _assess_go_nogo(
         site, stack, mass_bal, capex, opex, lcofe, thermal_info, benchmarks,
     )
@@ -521,6 +595,7 @@ def size_dark_mill(
         benchmarks=benchmarks,
         go_no_go=go_no_go,
         physics_point=physics_point,
+        post_processing=post_proc,
     )
 
 

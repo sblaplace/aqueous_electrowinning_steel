@@ -2,9 +2,12 @@
 CLI runner for dark mill site assessments.
 
 Usage:
-    python -m models.run_dark_mill                  # all sites
+    python -m models.run_dark_mill                              # all sites, pure iron
     python -m models.run_dark_mill --site pickle_liquor_us_midwest
-    python -m models.run_dark_mill --compare        # comparison table only
+    python -m models.run_dark_mill --site pickle_liquor_us_midwest --grade AISI_1040
+    python -m models.run_dark_mill --site pickle_liquor_us_midwest --grade AISI_8620 --route codeposit
+    python -m models.run_dark_mill --compare                    # comparison table only
+    python -m models.run_dark_mill --list-grades                # show available grades
 """
 
 import argparse
@@ -16,6 +19,9 @@ import numpy as np
 
 from models.dark_mill import (
     EXAMPLE_SITES, run_site, run_all_sites, comparison_table, size_dark_mill,
+)
+from models.steel_grade import (
+    STEEL_GRADES, SteelGradeSpec, select_route, size_post_processing,
 )
 
 
@@ -32,21 +38,70 @@ def _json_default(obj):
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 
+def _print_grades():
+    """List available steel grades."""
+    print(f"{'Key':<20} {'Name':<45} {'C wt%':>6} {'Route':>10}")
+    print("-" * 85)
+    for key, grade in STEEL_GRADES.items():
+        route = select_route(grade)
+        print(f"{key:<20} {grade.name:<45} {grade.c_wt_percent_target:>5.2f}% {route:>10}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Dark Mill site assessment")
     parser.add_argument("--site", type=str, default=None,
                         help=f"Site key to assess. Options: {list(EXAMPLE_SITES.keys())}")
+    parser.add_argument("--grade", type=str, default=None,
+                        help=f"Target steel grade. Options: {list(STEEL_GRADES.keys())}")
+    parser.add_argument("--route", type=str, default=None,
+                        choices=["none", "carburize", "codeposit"],
+                        help="Post-processing route (auto-selected if omitted)")
     parser.add_argument("--compare", action="store_true",
                         help="Print comparison table only")
+    parser.add_argument("--list-grades", action="store_true",
+                        help="List available steel grades")
     parser.add_argument("--json", action="store_true",
                         help="Output as JSON")
     parser.add_argument("--output-dir", type=str, default="experiments/data",
                         help="Output directory for reports")
     args = parser.parse_args()
 
+    if args.list_grades:
+        _print_grades()
+        return
+
+    # Resolve grade
+    grade = None
+    if args.grade:
+        if args.grade in STEEL_GRADES:
+            grade = STEEL_GRADES[args.grade]
+        else:
+            print(f"Unknown grade: {args.grade}")
+            print(f"Available: {list(STEEL_GRADES.keys())}")
+            sys.exit(1)
+
     if args.site:
         # Single site
-        report = run_site(args.site)
+        site = EXAMPLE_SITES[args.site]
+        if grade is not None:
+            site = site.__class__(
+                name=site.name,
+                feedstock_key=site.feedstock_key,
+                grid=site.grid,
+                climate=site.climate,
+                feedstock_distance_km=site.feedstock_distance_km,
+                product_market_km=site.product_market_km,
+                target_capacity_t_Fe_yr=site.target_capacity_t_Fe_yr,
+                available_area_m2=site.available_area_m2,
+                labor_cost_per_yr=site.labor_cost_per_yr,
+                notes=site.notes,
+                bath=site.bath,
+                geometry=site.geometry,
+                conditions=site.conditions,
+                target_grade=grade,
+                post_processing_route=args.route,
+            )
+        report = size_dark_mill(site)
         if args.json:
             _print_json(report)
         else:

@@ -325,6 +325,65 @@ def build_lifting_lugs(cfg: DarkMillConfig):
     return result
 
 
+# ─── Post-Processing Equipment ────────────────────────────────────
+
+def build_carburization_furnace(cfg: DarkMillConfig):
+    """Batch carburization furnace (refractory-lined box)."""
+    L = cfg.furnace_length
+    W = cfg.furnace_width
+    H = cfg.furnace_height
+    t = cfg.furnace_wall_thickness
+
+    # Outer shell (refractory + steel)
+    outer = _box(0, 0, 0, L, W, H)
+    # Inner cavity (hot zone)
+    inner = _box(t, t, t, L - 2*t, W - 2*t, H - t)
+    furnace = outer.cut(inner)
+
+    # Door on one end (shown closed)
+    door = _box(L - t/2, t, t, t/2, W - 2*t, H - 2*t)
+    furnace = furnace.union(door)
+
+    return furnace
+
+
+def build_quench_tank(cfg: DarkMillConfig):
+    """Quench tank (oil or water) adjacent to furnace."""
+    L = cfg.quench_tank_length
+    W = cfg.quench_tank_width
+    H = cfg.quench_tank_height
+    t = 6.0  # tank wall
+
+    outer = _box(0, 0, 0, L, W, H)
+    inner = _box(t, t, t, L - 2*t, W - 2*t, H - t)
+    return outer.cut(inner)
+
+
+def build_gas_supply_panel(cfg: DarkMillConfig):
+    """Gas supply manifold cabinet (endo gas + enriching)."""
+    return _box(0, 0, 0,
+                cfg.gas_supply_length, cfg.gas_supply_width, cfg.gas_supply_height)
+
+
+def build_particle_hopper(cfg: DarkMillConfig):
+    """Cylindrical carbon particle storage hopper."""
+    r = cfg.particle_hopper_diameter / 2
+    h = cfg.particle_hopper_height
+    return _cylinder(0, 0, 0, r, h)
+
+
+def build_ultrasonic_bath(cfg: DarkMillConfig):
+    """Ultrasonic agitation bath for particle suspension."""
+    L = cfg.ultrasonic_bath_length
+    W = cfg.ultrasonic_bath_width
+    H = cfg.ultrasonic_bath_height
+    t = 6.0
+
+    outer = _box(0, 0, 0, L, W, H)
+    inner = _box(t, t, t, L - 2*t, W - 2*t, H - t)
+    return outer.cut(inner)
+
+
 # ─── Assembly ─────────────────────────────────────────────────────
 
 def build_dark_mill(cfg: DarkMillConfig):
@@ -354,6 +413,10 @@ def build_dark_mill(cfg: DarkMillConfig):
     # Transport
     assembly = assembly.union(build_forklift_pockets(cfg))
     assembly = assembly.union(build_lifting_lugs(cfg))
+
+    # Post-processing (if configured)
+    if cfg.post_processing_route != "none":
+        assembly = assembly.union(build_post_processing_equipment(cfg))
 
     return assembly
 
@@ -386,5 +449,19 @@ def build_dark_mill_assembly(cfg: DarkMillConfig):
 
     # Door (shown open)
     assy.add(build_door(cfg), name="door", color=cq.Color(0.6, 0.6, 0.6, 0.7))
+
+    # Post-processing equipment (route-dependent)
+    if cfg.post_processing_route == "carburize":
+        assy.add(build_carburization_furnace(cfg), name="furnace",
+                 color=cq.Color(0.8, 0.4, 0.1, 1))
+        assy.add(build_quench_tank(cfg), name="quench_tank",
+                 color=cq.Color(0.1, 0.3, 0.7, 0.7))
+        assy.add(build_gas_supply_panel(cfg), name="gas_supply",
+                 color=cq.Color(0.6, 0.6, 0.2, 1))
+    elif cfg.post_processing_route == "codeposit":
+        assy.add(build_particle_hopper(cfg), name="particle_hopper",
+                 color=cq.Color(0.2, 0.2, 0.2, 1))
+        assy.add(build_ultrasonic_bath(cfg), name="ultrasonic_bath",
+                 color=cq.Color(0.3, 0.5, 0.8, 0.7))
 
     return assy

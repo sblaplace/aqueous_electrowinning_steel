@@ -94,6 +94,26 @@ class DarkMillConfig:
     lug_diameter: float = 60.0
     lug_height: float = 100.0
 
+    # Post-processing equipment (carburization furnace)
+    post_processing_route: str = "none"  # "none", "carburize", "codeposit"
+    furnace_length: float = 1800.0       # batch furnace
+    furnace_width: float = 1200.0
+    furnace_height: float = 1500.0
+    furnace_wall_thickness: float = 150.0  # refractory + insulation
+    quench_tank_length: float = 1500.0
+    quench_tank_width: float = 1000.0
+    quench_tank_height: float = 1200.0
+    gas_supply_length: float = 600.0     # gas panel / manifold cabinet
+    gas_supply_width: float = 400.0
+    gas_supply_height: float = 1200.0
+
+    # Post-processing equipment (co-deposition particle system)
+    particle_hopper_diameter: float = 600.0   # cylindrical hopper
+    particle_hopper_height: float = 1000.0
+    ultrasonic_bath_length: float = 1200.0
+    ultrasonic_bath_width: float = 800.0
+    ultrasonic_bath_height: float = 600.0
+
     # Clearance margins
     side_clearance: float = 100.0        # from wall to equipment
     top_clearance: float = 200.0         # from roof to tallest equipment
@@ -102,9 +122,25 @@ class DarkMillConfig:
     def from_sizing(cls, sizing: dict) -> "DarkMillConfig":
         """Build config from dark_mill.py sizing output."""
         sd = sizing.get("stack_design", {})
+        pp = sizing.get("post_processing", {})
+        route = pp.get("route", "none") if isinstance(pp, dict) else "none"
+        # Carburization furnace sizing from post-processing result
+        furnace_kw = {}
+        if route == "carburize" and isinstance(pp, dict):
+            carb = pp.get("carburization", {})
+            if isinstance(carb, dict):
+                furnace_kw = {
+                    "furnace_length": carb.get("furnace_length_mm", 1800.0),
+                    "furnace_width": carb.get("furnace_width_mm", 1200.0),
+                    "furnace_height": carb.get("furnace_height_mm", 1500.0),
+                    "quench_tank_length": max(1000.0, carb.get("furnace_length_mm", 1800.0) * 0.8),
+                    "quench_tank_width": max(800.0, carb.get("furnace_width_mm", 1200.0) * 0.8),
+                }
         return cls(
             n_stacks=sd.get("n_stacks", 7),
             cells_per_stack=sd.get("cells_per_stack", 20),
+            post_processing_route=route,
+            **furnace_kw,
         )
 
     @property
