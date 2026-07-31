@@ -52,7 +52,8 @@ python -m models.run_carburization          # Post-deposition carburization: cas
 python -m models.run_carbon_potential       # Gas carburizing atmosphere: a_C from CO/CO2, CH4/H2, dew point, Acm
 python -m models.run_tempering              # Tempering + retained austenite: Ms, KM RA, Hollomon-Jaffe
 python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
-python -m models.run_all                    # Full suite (14 steps) + master_report.json + dashboard
+python -m models.run_cell_architecture      # Cell architecture screen: productivity, $/m², kill criterion #3
+python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -60,6 +61,7 @@ aq-steel --quick                               # full suite
 aq-steel-carburization                         # carburization only
 aq-steel-carbon-potential                      # carbon potential only
 aq-steel-tempering                             # tempering only
+aq-steel-architecture                          # cell architecture screen only
 
 # Run the test suite
 pytest tests -q
@@ -99,6 +101,9 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
 | `models/calibration.py` | QA-gated Phase-I LSV kinetic calibration plus optional EIS consistency fitting |
 | `models/characterization.py` | Validated SEM/EDS, combustion, and XRD characterization records |
+| `models/cell_architecture.py` | Reactor-type screen: plate-and-frame vs rotating cylinder vs drum vs belt vs fluidized bed — Sherwood transport, harvest duty cycle, areal productivity, $/m² and kill criterion #3 |
+| `models/diffusion_layer_1d.py` | 1-D Nernst-Planck diffusion layer with borate buffering, surface pH and Fe(OH)₂ criterion — the FE prediction engine |
+| `models/purification.py` | Cu/Ni/Zn removal train: cementation, hydrolysis, selective EW, ion exchange |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 
@@ -176,6 +181,48 @@ and conductivity gradients.  Gravimetric output is **apparent** Fe FE until
 deposit composition and dry mass are verified; an FE above 100% is retained as
 a QA flag rather than hidden.  See `models/README.md` and
 `experiments/data/README.md` for the model scope and procedure.
+
+### Cell Architecture: Where the CAPEX Actually Goes
+
+For an electrowinning process, electricity is not the binding constraint —
+**installed cell cost per m² is.** At 100 mA/cm² and 85% FE a cell produces
+roughly 7.8 t of iron per m² per year, and iron sells for $400–600/t. A zinc
+tankhouse, the closest mature analogue, costs ~$1,000–1,500 per annual tonne
+of capacity to make a product worth $2,500–3,000/t.
+
+`models/cell_architecture.py` screens five reactor types against that problem,
+each with its own literature Sherwood correlation, an explicit engineering
+current ceiling, and a harvest duty cycle:
+
+| Architecture | Harvest | Evidence | j (mA/cm²) | t/(m²·yr) | $/m² | $/t Fe |
+|---|---|---|---:|---:|---:|---:|
+| Rotating cylinder + scraper | continuous | commercial | 548 | 39.1 | 2,288 | 5.48 |
+| Drum-and-strip (Cu-foil type) | continuous | commercial | 338 | 12.1 | 3,718 | 28.85 |
+| Plate-and-frame (filter press) | batch | commercial | 53 | 2.6 | 858 | 31.27 |
+| Fluidized / particulate bed | semi-continuous | pilot | 0.17\* | 7.1 | 2,678 | 35.28 |
+| Moving belt + doctor blade | continuous | concept | 74 | 3.7 | 2,288 | 58.22 |
+
+\* per unit of *particle* area; the bed is limited by potential distribution
+through its depth, not by film transport.
+
+Two results matter. First, **continuous harvesting wins despite costing more
+per m²**: a batch cell's duty cycle falls as its plating rate rises, because
+it must stop more often to be stripped. Second, the zinc benchmark run through
+iron's Faraday arithmetic is 3.9 t/(m²·yr), so the program's "~5×" target is
+19.5 — and only the rotating cylinder clears it.
+
+The screen also makes kill criterion #3 computable. `max_affordable_cost_per_m2`
+inverts the question: at a $60/t Fe capital-charge budget, a cell delivering
+39 t/(m²·yr) may cost up to ~$25,000/m², while one delivering 2.6 t/(m²·yr)
+may cost only ~$1,600/m². **Productivity, not cell price, is the lever.**
+
+Caveats are structural, not cosmetic: the rotating cylinder makes powder only
+(a feedstock-path answer), and drum-and-strip — the one route to continuous
+coherent foil — rests on the unverified assumption that **iron peels from a
+titanium drum**. Copper foil relies on a passive TiO₂ release layer; iron
+adhesion is uncharacterised here and is the cheapest high-value experiment the
+screen identifies. All correlations are transferred from other chemistries and
+all costs are engineering estimates.
 
 ---
 
@@ -257,6 +304,12 @@ We welcome contributions from electrochemists, metallurgists, materials scientis
 ## License
 
 *License TBD.*
+
+> **Inconsistency to resolve:** `pyproject.toml` currently declares
+> `license = {text = "MIT"}`, and there is no `LICENSE` file in the
+> repository. Until an owner decides, treat the licence as unsettled — the
+> metadata claim and this section contradict each other, and neither is
+> authoritative without a `LICENSE` file.
 
 ---
 

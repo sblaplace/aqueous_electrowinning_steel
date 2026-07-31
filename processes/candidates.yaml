@@ -80,6 +80,14 @@ candidates:
       product_form: flake
       mechanism: manual_or_doctor_blade
       continuous: false
+      # Screened in models/cell_architecture.py. Batch stripping costs duty
+      # cycle that worsens as plating rate rises: the plate-and-frame baseline
+      # loses ~33% of the calendar to harvest downtime and reaches only ~0.66x
+      # the zinc-tankhouse areal-productivity benchmark. Continuous harvesting
+      # (rotating cylinder, drum) is materially better on $/t Fe despite
+      # costing more per m². Revisit this choice before freezing the flowsheet.
+      architecture_screen_ref: experiments/data/cell_architecture_report.json
+      assumed: true
 
     recycle:
       loop: purge_and_makeup

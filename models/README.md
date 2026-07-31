@@ -29,6 +29,55 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `technoeconomic.py` | CAPEX/OPEX, levelized cost of iron, sensitivity analysis, route benchmarking |
 | `scenarios.py` | Four literature-anchored operating scenarios |
 
+### Transport, speciation and cell physics
+
+| Module | Contents |
+|--------|----------|
+| `diffusion_layer_1d.py` | **The FE prediction engine.** Full Nernst-Planck film over Fe²⁺/H⁺/OH⁻/HSO₄⁻/SO₄²⁻/borate with fast homogeneous equilibria, Arrhenius diffusivities, computed surface pH and Fe(OH)₂ precipitation criterion. Outputs FE(j, T, C, δ, pH, buffer) and V(j) |
+| `speciation.py` | Davies activity coefficients, HSO₄⁻/FeSO₄ ion pairing, conductivity |
+| `cell_physics.py` | Unified solver chaining speciation → transport → cell voltage into one self-consistent operating point and window sweep |
+| `membrane_transport.py` | Divided-cell membrane: crossover, ohmic drop, transport numbers, acid balance |
+| `membrane_fouling.py` | Hermia fouling laws, flux decline, cleaning cycles, membrane replacement cost |
+| `operating_window.py` | Feasible (j, T, C, pH) region from combined constraints |
+
+### Cell, scale-up and architecture
+
+| Module | Contents |
+|--------|----------|
+| `cell_architecture.py` | **Reactor-type screen.** Plate-and-frame, rotating cylinder, drum-and-strip, moving belt, fluidized bed compared on literature Sherwood correlations, practical/footprint current ceilings, harvest duty cycle, areal productivity, $/m² → $/annual tonne, and the kill-criterion-#3 affordability threshold |
+| `scale_up.py` | Primary/secondary current distribution, Wagner number, boundary-layer growth, thermal management, geometry optimization |
+| `thermal_balance.py` | Joule heating vs cooling duty; steady-state electrolyte temperature |
+| `pid.py` | Pilot P&ID generation (overview and detailed) |
+| `dark_mill.py` | Site-level digital twin: physics-driven sizing, mass/energy balance, go/no-go assessment across site scenarios |
+
+### Feed, impurities and product
+
+| Module | Contents |
+|--------|----------|
+| `purification.py` | Cementation, hydrolysis, selective electrowinning and ion exchange for Cu/Ni/Zn removal; enforces the Cu < 0.1% hot-shortness spec |
+| `impurity_codeposition.py` | Co-deposition of nobler impurities and their effect on deposit purity |
+| `deposit_morphology.py` | Mullins-Sekerka dendrite onset, HER bubble disruption, nucleation regime → coherent film / dendrite / powder classification |
+| `steel_grade.py` | Composition → AISI grade routing (1008–8620) |
+| `tempering.py` | Andrews Ms, Koistinen-Marburger retained austenite, Hollomon-Jaffe tempering |
+| `carbon_potential.py` | Gas carburizing atmosphere: CO/CO₂ Boudouard, CH₄/H₂, dew point, O₂ probe, Acm solubility |
+| `hydrogen_embrittlement.py` | H uptake, diffusivity, bake-out kinetics, embrittlement index |
+| `bath_startup.py` | Bath make-up, conditioning and startup sequence |
+
+### Economics, uncertainty and program tooling
+
+| Module | Contents |
+|--------|----------|
+| `pilot_costing.py` | Pilot-scale CAPEX/OPEX buildup |
+| `supply_chain.py` | Centralized vs on-site deployment economics per feedstock and haul distance |
+| `experimental_matrix.py` | Factorial DOE matrix generation |
+| `pulse_optimization.py` | Pareto search over pulse waveform parameters |
+| `calibration_pipeline.py` | End-to-end calibration from raw records to fitted parameters |
+| `foil_calibration.py` | Foil thickness and O₂-probe calibration helpers |
+| `plating_data.py` | Plating-run data structures and validation |
+| `process_registry.py` | Loader/validator for `processes/candidates.yaml` — the flowsheet hypothesis registry |
+| `process_gates.py` | Measurement-only gate engine: literature evidence never passes a gate |
+| `uncertainty/` | Parameter registry, Monte Carlo, Sobol sensitivity, Bayesian calibration |
+
 ## Drivers
 
 ```bash
@@ -45,7 +94,18 @@ python -m models.run_co_deposition          # Phase III Fe–Ni/carbon incorpora
 python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade + process-flow diagrams
 python -m models.run_carburization          # Post-deposition carburization: case depth, HV profile, energy
 python -m models.run_closed_loop            # Phase IV durability + closed-loop CSTR example
-python -m models.run_all                    # Full suite (12 steps) + master_report.json + dashboard
+python -m models.run_cell_architecture      # Reactor-type screen: productivity, $/m², kill criterion #3
+python -m models.run_purification           # Cu/Ni/Zn removal train
+python -m models.run_speciation             # Activity coefficients, ion pairing, conductivity
+python -m models.run_thermal_balance        # Joule heating vs cooling duty
+python -m models.run_operating_window       # Feasible (j, T, C, pH) region
+python -m models.run_scale_up               # Current distribution, transport, thermal, geometry
+python -m models.run_membrane_fouling       # Hermia fouling and cleaning cycles
+python -m models.run_hydrogen_embrittlement # H uptake, diffusivity, bake-out
+python -m models.run_pilot_costing          # Pilot CAPEX/OPEX
+python -m models.run_monte_carlo            # Uncertainty propagation and sensitivity
+python -m models.run_dark_mill              # Site-level sizing and go/no-go
+python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 ```
 
