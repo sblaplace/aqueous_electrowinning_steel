@@ -1,37 +1,72 @@
 {
-  "run_id": "P2-YYYYMMDD-R3",
-  "date": "YYYY-MM-DD",
+  "schema_version": "1.0",
+  "record_status": "planned",
+  "run_id": "beaker-20260801-001",
+  "date": "2026-08-01",
   "operator": "family-name or lab identifier",
   "experiment_type": "beaker_galvanostatic",
-  "bath_batch": "B0-YYYYMMDD",
+  "bath_batch": "B-20260801-001",
   "equipment": {
-    "power_supply": "30V/10A CC/CV supply (asset ID); series coulomb counter zeroed",
-    "cell": "1000 mL borosilicate beaker, stir plate + PTFE bar",
-    "multimeter": "independent V_cell measurement across cell",
-    "temperature_control": "stir plate thermocouple, bath at 50 C for DOE RUN-005 corner"
+    "power_supply": {
+      "model": "30V/10A CC/CV supply",
+      "asset_id": "PS-01",
+      "calibration_date": "2026-07-29"
+    },
+    "cell": {
+      "type": "beaker",
+      "volume_mL": 1000,
+      "material": "borosilicate"
+    },
+    "multimeter": {
+      "model": "independent voltage meter",
+      "asset_id": "DMM-01"
+    },
+    "temperature_control": "stir plate thermocouple; record actual bath temperature"
   },
   "setup": {
     "anode": {
-      "material": "graphite (day-1 undivided default, docs/FIRST_LAB_DAY.md section 3)",
-      "geometry": "rod, immersion depth recorded",
-      "notes": "soluble iron reserved for divided-cell anode compartment (gate 3)"
+      "material": "graphite",
+      "geometry": "rod; record immersion depth",
+      "area_cm2": 10.0,
+      "notes": "Use the divided-cell anode configuration when the chemistry gate requires it."
     },
     "cathode": {
-      "material": "316L SS, 1 mm",
-      "geometry": "masked 10 cm2 coupon",
-      "preparation": "Scotch-Brite, acetone, DI rinse, dried, pre-weighed after dry-to-constant-mass"
+      "material": "316L stainless steel",
+      "geometry": "masked coupon",
+      "area_cm2": 10.0,
+      "preparation": "Scotch-Brite, acetone, DI rinse, dry to constant mass"
+    },
+    "cell_geometry": {
+      "gap_cm": 2.0,
+      "electrode_arrangement": "parallel"
+    },
+    "stirring": {
+      "method": "magnetic",
+      "speed_rpm": 300
     }
+  },
+  "measurement_conventions": {
+    "cathodic_sign": "negative"
   },
   "video": {
     "recording_status": "complete",
-    "notes": "If recording_status is 'none', justification is REQUIRED here (models/run_manifest.py).",
-    "files": "video/P2-YYYYMMDD-R3_overhead.mp4 (plus panel, instruments, wide)"
+    "camera_positions": ["overhead", "panel", "instruments", "wide"],
+    "notes": "If recording_status is 'none', justification is required."
   },
   "configuration": {
     "state": "experimental",
     "location": "proving_ground",
     "boundary_crossing": false,
-    "notes": "Day-1 gravimetric FE run — within known operating window, no boundary crossing. State transitions: experimental → qualified → field_approved (docs/RESEARCH_PROGRAM.md)."
+    "notes": "State transitions: experimental -> qualified -> field_approved."
   },
-  "notes": "Conditions per docs/FIRST_LAB_DAY.md; negative cathodic current convention in trace CSV; FE_app above 100 pct is a QA flag, not clipped. Program-context numbers are model predictions to be replaced by this run."
+  "files": {
+    "timeseries_csv": "timeseries.csv",
+    "bath_batch_json": "bath_batch.json",
+    "metadata_json": "metadata.json",
+    "mass_log_csv": "mass_log.csv",
+    "characterization_csv": "characterization.csv",
+    "video_index_csv": "video_index.csv",
+    "energy_log_csv": "energy_log.csv"
+  },
+  "notes": "Retain raw instrument exports unchanged. Map copies into the canonical schemas and record SHA-256 hashes in metadata. FE above 100% is a QA flag, not clipped."
 }

@@ -19,10 +19,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+SCHEMA_VERSION = "1.0"
+
 VALID_EXPERIMENT_TYPES = frozenset({
     "hull_cell",
     "beaker_galvanostatic",
     "divided_cell",
+})
+
+VALID_RECORD_STATUSES = frozenset({
+    "planned",
+    "in_progress",
+    "complete",
+    "excluded",
 })
 
 VALID_VIDEO_STATUSES = frozenset({
@@ -83,14 +92,46 @@ class ManifestValidationReport:
         }
 
 
-def validate_experiment_manifest(data: dict[str, Any]) -> ManifestValidationReport:
+def validate_experiment_manifest(data: dict[str, Any]) -> ManifestValidationReport:  # noqa: C901
     """Validate a plating experiment manifest dict against the schema rules.
 
-    Checks structural presence, experiment_type membership, video status,
-    and bath_batch linkage.  Returns a report even when the manifest is
-    valid (issues list will be empty).
+    Checks structural presence, experiment type, record lifecycle, video
+    status, and bath-batch linkage.  ``schema_version`` and ``record_status``
+    remain optional for backwards compatibility; new records should include
+    both so migrations and incomplete runs are unambiguous.
     """
     issues: list[ManifestValidationIssue] = []
+    if not isinstance(data, dict):
+        return ManifestValidationReport(
+            valid=False,
+            issues=[ManifestValidationIssue(path="", message="manifest must be an object")],
+        )
+
+    # ── Version and lifecycle fields ───────────────────────────────────
+    schema_version = data.get("schema_version")
+    if schema_version is not None and schema_version != SCHEMA_VERSION:
+        issues.append(ManifestValidationIssue(
+            path="schema_version",
+            message=f"Unsupported schema_version '{schema_version}'; expected '{SCHEMA_VERSION}'",
+        ))
+    record_status = data.get("record_status")
+    if record_status is not None and record_status not in VALID_RECORD_STATUSES:
+        issues.append(ManifestValidationIssue(
+            path="record_status",
+            message=(f"Invalid record_status '{record_status}'; "
+                     f"valid: {', '.join(sorted(VALID_RECORD_STATUSES))}"),
+        ))
+
+    files = data.get("files")
+    if files is not None:
+        if not isinstance(files, dict):
+            issues.append(ManifestValidationIssue(
+                path="files", message="files must be an object"))
+        else:
+            for name, value in files.items():
+                if not isinstance(value, str) or not value.strip():
+                    issues.append(ManifestValidationIssue(
+                        path=f"files.{name}", message="file path must be a nonempty string"))
 
     # ── Top-level required keys ────────────────────────────────────────
     for key in sorted(MANIFEST_REQUIRED_KEYS):

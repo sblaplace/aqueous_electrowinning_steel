@@ -1,0 +1,4 @@
+component,energy_Wh,uncertainty_Wh,measurement_method,notes
+pumps,0.42,0.03,inline power meter,Replace with measured auxiliary load
+heating,1.10,0.08,plug power meter,Include only energy attributable to this run
+cooling,0.00,0.02,plug power meter,Use zero only when cooling is documented not applicable

@@ -1,8 +1,21 @@
 # Timeseries CSV format
 
 Every plating experiment produces a timeseries CSV. This file records **raw
-instrument readings** — not derived quantities.  Post-processing (charge
-integration, current density, FE) happens in `models/plating_data.py`.
+instrument readings** — not derived quantities. Post-processing (charge
+integration, current density, FE) happens in `models/plating_data.py` or the
+versioned run-record pipeline in `models/run_record.py`.
+
+There are two related but distinct CSV contracts:
+
+- **Plating run record (canonical):** `current_actual_A` and `voltage_V`.
+- **Hull-cell legacy/phase-II trace:** `current_A` and `cell_voltage_V`.
+  `models.run_record.load_plating_timeseries` maps those two names to the
+  canonical spelling only when the canonical columns are absent. A file that
+  contains both spellings is rejected as ambiguous.
+
+Phase-I voltammetry is not a plating trace. It keeps its own contract:
+`potential_V_vs_ref`, `current_A`, and `working_electrode_area_cm2`, as
+implemented by `models.experimental_data`.
 
 ## Columns
 
