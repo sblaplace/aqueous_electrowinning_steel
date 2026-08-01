@@ -300,28 +300,52 @@ class NernstPlanckFilm:
 
         c = self.bulk_composition_mol_m3
         y0 = [c["fe"], c["h"], c["na"], c["so4"], 0.0]  # phi(bulk) = 0
+
         x_eval = np.linspace(self.boundary_layer_m, 0.0, self.grid_points)
 
-        sol = solve_ivp(
-            self._rhs,
-            (self.boundary_layer_m, 0.0),
-            y0,
-            t_eval=x_eval,
-            args=(n_fe, n_s),
-            method="LSODA",
-            rtol=1e-8,
-            atol=1e-10,
-        )
-        if not sol.success:  # pragma: no cover - defensive
-            raise RuntimeError(f"Nernst-Planck integration failed: {sol.message}")
+        from ._transport_jit import has_numba, get_integrate_film_jit
 
-        # Flip so index 0 is the electrode surface and index -1 the bulk.
-        x = sol.t[::-1]
-        fe = sol.y[0][::-1]
-        h = sol.y[1][::-1]
-        na = sol.y[2][::-1]
-        so4 = sol.y[3][::-1]
-        phi = sol.y[4][::-1]
+        if has_numba():
+            integrate_film = get_integrate_film_jit()
+            y_arr = integrate_film(
+                np.array(y0, dtype=np.float64),
+                n_fe, n_s,
+                self.boundary_layer_m, 0.0, x_eval,
+                self.diffusivity_fe_m2_s,
+                self.diffusivity_h_m2_s,
+                self.diffusivity_oh_m2_s,
+                self.diffusivity_na_m2_s,
+                self.diffusivity_so4_m2_s,
+                self.f_RT,
+                1e-8 * self.fe_conc_M * 1000.0,
+            )
+            x = x_eval[::-1]
+            fe = y_arr[0][::-1]
+            h = y_arr[1][::-1]
+            na = y_arr[2][::-1]
+            so4 = y_arr[3][::-1]
+            phi = y_arr[4][::-1]
+        else:
+            sol = solve_ivp(
+                self._rhs,
+                (self.boundary_layer_m, 0.0),
+                y0,
+                t_eval=x_eval,
+                args=(n_fe, n_s),
+                method="LSODA",
+                rtol=1e-8,
+                atol=1e-10,
+            )
+            if not sol.success:  # pragma: no cover - defensive
+                raise RuntimeError(f"Nernst-Planck integration failed: {sol.message}")
+
+            # Flip so index 0 is the electrode surface and index -1 the bulk.
+            x = sol.t[::-1]
+            fe = sol.y[0][::-1]
+            h = sol.y[1][::-1]
+            na = sol.y[2][::-1]
+            so4 = sol.y[3][::-1]
+            phi = sol.y[4][::-1]
 
         floor = 1e-8 * self.fe_conc_M * 1000.0
         depleted = bool(np.min(fe) <= floor)
