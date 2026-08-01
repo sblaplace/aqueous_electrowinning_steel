@@ -58,7 +58,8 @@ python -m models.run_closed_loop            # Phase IV anode durability + closed
 python -m models.run_cell_architecture      # Cell architecture screen: productivity, $/m², kill criterion #3
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> ranked "which experiment to do next"
 python -m models.run_adhesion_peel          # Does iron peel from a drum? Peel window + coupon test
-python -m models.run_all                    # Full suite (18 steps) + master_report.json + dashboard
+python -m models.run_internal_stress        # Residual stress (Stoney / bent-strip) + coupon curvature protocol
+python -m models.run_all                    # Full suite (19 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -69,6 +70,7 @@ aq-steel-tempering                             # tempering only
 aq-steel-architecture                          # cell architecture screen only
 aq-steel-sensitivity                           # Sobol GSA of the FE engine (which experiment next)
 aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
+aq-steel-stress                                # Internal stress and coupon-curvature protocol
 
 # Run the test suite
 pytest tests -q
@@ -114,6 +116,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 | `models/adhesion_peel.py` | Deposit release mechanics: residual stress (Hoffman + hydrogen effusion + thermal mismatch), energy release rate, work of adhesion with thickness-confined plastic amplification, peel force, web-tear and cohesive-failure criteria → the continuous-foil peel window and its coupon test |
+| `models/internal_stress.py` | Deposit internal stress (Stoney / bent-strip): forward/inverse cantilever deflection, exact two-layer laminate finite-thickness correction, GUM uncertainty budget, mechanism decomposition (intrinsic, H, thermal), additive relief (saccharin/chloride), stress evolution σ(h), and the coupon-curvature protocol |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
 
 ### Selected Model Results
