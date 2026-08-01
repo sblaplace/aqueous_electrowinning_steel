@@ -1,9 +1,6 @@
 """Tests for the crate structural/environmental model (whole-system twin, L2)."""
 from __future__ import annotations
 
-import math
-
-import pytest
 
 from models.crate import (
     Crate,

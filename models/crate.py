@@ -205,7 +205,6 @@ class Crate:
 
     def evaluate(self, cfg: CrateConfig) -> CrateVerdict:
         c, w, g, e = cfg.crate, cfg.wind, cfg.ground, cfg.env
-        total_mass = c.mass_kg + cfg.ballast_kg
         N_self = c.empty_weight_N + cfg.ballast_kg * G
 
         # Vertical accessories: snow adds weight (helps overturn, hurts bearing)
@@ -304,7 +303,7 @@ class Crate:
 
     def _required_ballast(self, cfg: CrateConfig) -> float:
         """Ballast mass needed to hit the overturn target at this mount."""
-        c, w, g, e = cfg.crate, cfg.wind, cfg.ground, cfg.env
+        c, w, e = cfg.crate, cfg.wind, cfg.env
         q = w.dynamic_pressure_Pa()
         A = c.projected_area_m2(w)
         F = q * c.drag_coefficient * A
