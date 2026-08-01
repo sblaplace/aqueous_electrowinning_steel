@@ -71,6 +71,7 @@ aq-steel-crate = "models.run_crate:main"
 aq-steel-system-twin = "models.run_system_twin:main"
 aq-steel-twin-replay = "models.run_twin_replay:main"
 aq-steel-observability = "models.run_observability:main"
+aq-steel-run-record = "models.run_record:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

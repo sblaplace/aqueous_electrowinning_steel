@@ -78,6 +78,10 @@ aq-steel-stress                                # Internal stress and coupon-curv
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 
+# Validate a mapped physical run and write a charge/iron/energy QA report
+python -m models.run_record path/to/run-directory --output path/to/qa_report.json
+# Add --strict in CI/automation when an incomplete record must fail
+
 # Run the test suite
 pytest tests -q
 
@@ -114,8 +118,9 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/process_flow.py` | Process block-flow diagrams: ore→leach→cell→wash→carburize→product + recycle/purge, detailed variant |
 | `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
-| `models/experimental_data.py` | Long-form measurement loading, validation, and run summaries |
-| `models/campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
+| `models/experimental_data.py` | Phase-I voltammetry loading, validation, and run summaries |
+| `models/run_record.py` | Versioned per-run plating contract, legacy Hull-column adapter, charge/iron/energy ledgers, and machine-readable QA/gate evidence |
+| `models/campaign.py` | Cross-run campaign-index validation, traceability links, and QA report |
 | `models/calibration.py` | QA-gated Phase-I LSV kinetic calibration plus optional EIS consistency fitting |
 | `models/characterization.py` | Validated SEM/EDS, combustion, and XRD characterization records |
 | `models/cell_architecture.py` | Reactor-type screen: plate-and-frame vs rotating cylinder vs drum vs belt vs fluidized bed — Sherwood transport, harvest duty cycle, areal productivity, $/m² and kill criterion #3 |
@@ -387,6 +392,9 @@ trials, EBSD orientation mapping and hardness traverses.
 For the decision-grade program position, model scope, experimental gates, and preliminary IP framing, see **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)**.
 
 The roadmap from screening suite to a predictive physical twin is **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)**; the whole-system twin vision (cell → crate → site, including structural/environmental behavior) is **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)**.
+
+The versioned experimental data contract, run-directory layout, ledger semantics,
+and QA/gate-evidence workflow are **[docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md)**.
 
 Pre-lab desk work (July 2026): **[docs/TIER0_ARCHAEOLOGY.md](docs/TIER0_ARCHAEOLOGY.md)** (prior-art anchors and prior corrections), **[docs/CLAIM_CHARTS_PRELIMINARY.md](docs/CLAIM_CHARTS_PRELIMINARY.md)** (Electra claim charts, desk level), and **[docs/FIRST_LAB_DAY.md](docs/FIRST_LAB_DAY.md)** (bath recipe + Hull/FE run protocol).
 

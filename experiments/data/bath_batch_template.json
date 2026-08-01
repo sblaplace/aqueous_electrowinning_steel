@@ -1,16 +1,29 @@
 {
-  "batch_id": "B0-YYYYMMDD",
-  "date_mixed": "YYYY-MM-DD",
+  "schema_version": "1.0",
+  "batch_id": "B-20260801-001",
+  "date_mixed": "2026-08-01",
   "operator": "family-name or lab identifier",
   "composition": {
     "fe2_g_L": 55.85,
     "h3bo3_g_L": 35.0,
     "pH": 2.0,
+    "temperature_C": 25.0,
     "volume_mL": 1500.0,
-    "fe2_source": "FeSO4.7H2O, shopping-list reagent, actual weighed mass recorded in notes",
+    "fe2_source": "FeSO4·7H2O; record the weighed mass and lot in source_chemicals",
     "ascorbic_acid_g_L": 0.0,
-    "pH_adjustment": "battery acid 35%, volume actually added recorded in notes"
+    "pH_adjustment": "Record acid/base, volume, and final pH in notes"
   },
-  "storage": "covered container between runs; pH 3 aliquots day-of only with 1 g/L ascorbic acid per docs/FIRST_LAB_DAY.md section 2",
-  "notes": "Record actual masses, volumes, pH readings (with temperature), and cumulative charge drawn from this batch. Ferric control is chemical (ascorbate) only — no iron-metal contact with the plating solution (docs/CLAIM_CHARTS_PRELIMINARY.md section 4)."
+  "source_chemicals": {
+    "feso4_lot": "record supplier lot",
+    "h3bo3_lot": "record supplier lot",
+    "ascorbic_acid_lot": "not applicable",
+    "water_source": "DI water and measured resistivity"
+  },
+  "storage": {
+    "container": "covered glass or HDPE container",
+    "cover": "sealed",
+    "temperature_C": 22.0,
+    "duration_before_first_use_hr": 0.0
+  },
+  "notes": "Record actual masses, volumes, pH readings with temperature, and cumulative charge drawn from this batch."
 }

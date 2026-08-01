@@ -4,6 +4,8 @@
   "description": "Full metadata for one aqueous electrowinning experiment run. Every field is designed to make the experiment reproducible — even questions nobody thought to ask at the time.",
   "type": "object",
   "required": [
+    "schema_version",
+    "record_status",
     "run_id",
     "date",
     "operator",
@@ -14,6 +16,16 @@
     "video"
   ],
   "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of the run-record contract"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": ["planned", "in_progress", "complete", "excluded"],
+      "description": "Lifecycle state; complete records must have all required linked files"
+    },
     "run_id": {
       "type": "string",
       "description": "Unique identifier: <type>-YYYYMMDD-NNN (e.g. hull-20260801-001)",
@@ -185,14 +197,42 @@
       "type": "string",
       "description": "Free-text observations, deviations, unexpected events"
     },
+    "measurement_conventions": {
+      "type": "object",
+      "properties": {
+        "cathodic_sign": {
+          "type": "string",
+          "enum": ["negative", "positive", "cathodic_negative", "cathodic_positive"]
+        }
+      }
+    },
+    "gate_evidence": {
+      "type": "array",
+      "description": "Optional explicit mapping of measured metrics to process gates; never model predictions",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "gate_id", "metric", "value_from", "unit"],
+        "properties": {
+          "candidate_id": {"type": "string"},
+          "gate_id": {"type": "string"},
+          "metric": {"type": "string"},
+          "value_from": {"type": "string"},
+          "unit": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
     "files": {
       "type": "object",
-      "description": "Relative paths to data files for this run",
+      "description": "Relative paths to sidecars, resolved from the run directory",
       "properties": {
         "timeseries_csv": {"type": "string"},
+        "bath_batch_json": {"type": "string"},
+        "metadata_json": {"type": "string"},
         "mass_log_csv": {"type": "string"},
+        "characterization_csv": {"type": "string"},
         "video_index_csv": {"type": "string"},
-        "bath_analysis_csv": {"type": "string"}
+        "energy_log_csv": {"type": "string"}
       }
     }
   }

@@ -1,8 +1,22 @@
 # Experimental data
 
-Keep raw instrument files unchanged.  Convert a copy into the canonical CSV
+Keep raw instrument files unchanged. Convert a copy into the versioned
+per-run contract described in [docs/DATA_CONTRACT.md](../../docs/DATA_CONTRACT.md).
+The end-to-end validator is:
+
+```bash
+python -m models.run_record path/to/run-directory --output path/to/qa_report.json
+```
+
+The run-record contract uses `manifest.json`, `bath_batch.json`,
+`metadata.json`, and a canonical plating trace. Phase-I voltammetry and the
+cross-run campaign index remain separate contracts; do not rename their
+columns into the plating schema. The loader can explicitly map the older
+Hull-cell `current_A`/`cell_voltage_V` pair into the canonical plating names.
+
+Keep raw instrument files unchanged. Convert a copy into the canonical CSV
 schemas below and record the conversion, instrument, calibration, and sample
-identifiers in run notes.  One row represents one measurement point unless
+identifiers in run notes. One row represents one measurement point unless
 otherwise noted.
 
 ## Data lifecycle and evidence separation
