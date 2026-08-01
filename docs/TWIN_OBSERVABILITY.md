@@ -61,28 +61,28 @@ contractive mode does not.
 
 ## 2. Observability of the current 5-sensor suite
 
-**The current suite is rank-deficient: `rank(W_N) = 5` at every tested point.**
-Only 5 of the 7 states are reconstructible.
+**The current suite is rank-deficient: `rank(W_N) = 6` at every tested point.**
+6 of the 7 states are reconstructible; only `deposit_thickness` is not.
 
 | operating_point | rank | smallest nonzero σ | condition |
 |-----------------|-----:|-------------------:|----------:|
-| nominal | 5 | 6.13e-01 | 4.95e+02 |
-| lo_j_lo_T_lo_fe2 | 5 | 5.35e-01 | 5.67e+02 |
-| hi_j_hi_T_hi_fe2 | 5 | 1.64e+00 | 1.86e+02 |
-| lo_j_hi_T_hi_fe2 | 5 | 7.36e-02 | 4.12e+03 |
-| hi_j_lo_T_lo_fe2 | 5 | 1.05e+01 | 2.90e+01 |
+| nominal | 6 | 5.89e-04 | 5.15e+05 |
+| lo_j_lo_T_lo_fe2 | 6 | 6.55e-05 | 4.63e+06 |
+| hi_j_hi_T_hi_fe2 | 6 | 1.64e-03 | 1.86e+05 |
+| lo_j_hi_T_hi_fe2 | 6 | 6.55e-05 | 4.63e+06 |
+| hi_j_lo_T_lo_fe2 | 6 | 1.64e-03 | 1.86e+05 |
 
 Per-state observability at the nominal point:
 
 | state | flag | obs. score | rel. energy | est. σ |
 |-------|------|-----------:|------------:|-------:|
-| catholyte_temperature | observable | 1.000 | 0.186 | 0.292 °C |
-| anolyte_temperature | observable | 1.000 | 0.186 | 0.334 °C |
-| bulk_fe2 | **weak** | 1.000 | 0.045 | 0.084 M |
-| bulk_pH | observable | 1.000 | 0.260 | 0.046 pH |
-| current_density | observable | 1.000 | 1.000 | 0.40 mA/cm² |
-| deposit_thickness | **unobservable_divergent** | 0.000 | 0.000 | 5.13 µm (growing) |
-| cell_voltage | **unobservable_bounded** | 0.000 | 0.000 | 0.166 V |
+| catholyte_temperature | observable | 1.000 | 0.057 | 0.239 °C |
+| anolyte_temperature | observable | 1.000 | 0.070 | 0.291 °C |
+| bulk_fe2 | observable | 1.000 | 0.004 | 0.032 M |
+| bulk_pH | observable | 1.000 | 0.061 | 0.045 pH |
+| current_density | observable | 1.000 | 1.000 | 0.386 mA/cm² |
+| deposit_thickness | **unobservable_divergent** | 0.000 | 0.000 | 5.07 µm (growing) |
+| cell_voltage | **weak** | 1.000 | 0.002 | 0.076 V |
 
 ### 2.1 deposit_thickness (state 5) — unobservable and divergent (confirmed)
 
@@ -96,26 +96,27 @@ model error in `deposit_rate` appears as unbounded accumulated bias. Over a
 (σ ≈ 5.1 µm) and would keep growing without bound. This is the load-bearing
 sensor gap in the current suite.
 
-### 2.2 bulk_fe2 (state 2) — weakly observable through the v_cell coupling only
+### 2.2 bulk_fe2 (state 2) — observable through the v_cell coupling
 
-`bulk_fe2` reaches the output only through the VT-201 row, because the physics
-surrogate `v_cell(j, T, Fe²⁺)` depends on Fe²⁺ (`H[VT-201, 2] ≈ −0.07 M⁻¹`).
-It is therefore *observable* (score 1.000) but **weakly conditioned**: its
-Gramian energy is only ~4.5 % of the best-observed state, and its end-of-run
-error σ ≈ 0.084 M is ~4× the ~0.02 M an inline probe would give. Recovering a
-tight bulk-Fe²⁺ estimate from voltage alone relies on an accurate, calibrated
-`v_cell` surrogate.
+`bulk_fe2` reaches the output through the VT-201 row, because the physics
+surrogate `v_cell(j, T, Fe²⁺)` depends on Fe²⁺ (`H[VT-201, 2] ≈ −0.07 M⁻¹`). It
+is *observable* (score 1.000, flag observable), with end-of-run σ ≈ 0.032 M.
+Its Gramian energy is low (~0.4 % of the best-observed state), so it is thinly
+conditioned — recovering a tight bulk-Fe²⁺ estimate from voltage alone relies
+on an accurate, calibrated `v_cell` surrogate. An inline probe further tightens
+it (see §3).
 
-### 2.3 cell_voltage (state 6) — unobservable but bounded (finding beyond the brief)
+### 2.3 cell_voltage (state 6) — weakly observable through the coupled dynamics
 
-A second, previously-unanticipated structural gap: `H[:, 6] ≡ 0` as well.
-VT-201 observes the *physics-predicted* `v_cell(j, T, Fe²⁺)` (`h_obs` returns
-`pred.v_cell_V`), not the `cell_voltage` state `x[6]`, so no measurement
-corrects `x[6]`. Unlike deposit, `x[6]` mean-reverts to the observed
-`pred.v_cell` (`F[6,6] ≈ 0.90 < 1`), so the mode is **stable/detectable**: its
-error stays bounded (σ ≈ 0.17 V) and it is **not** a divergence risk. This is a
-measurement-model alignment gap, not an operational blind spot — the physical
-VT-201 exists; the twin simply never reconciles `x[6]` against it.
+VT-201 observes the physics-predicted `v_cell(j, T, Fe²⁺)` (`h_obs` returns
+`pred.v_cell_V`), not the `cell_voltage` state `x[6]`, so no measurement row
+directly observes `x[6]`. However, under the PR #29 coupled-bath dynamics `x[6]`
+relaxes toward the observed `v_cell` with a fast, physically-based electrical
+time constant, so `x[6]` becomes **weakly observable** through that propagation
+(score 1.000, flag `weak`) with a small, bounded end-of-run error (σ ≈ 0.08 V).
+This is a measurement-model alignment gap, not an operational blind spot — the
+physical VT-201 exists; the twin simply never reconciles `x[6]` against it
+directly, and a direct observation (CVT-201) removes the residual weakness.
 
 ---
 
@@ -127,11 +128,11 @@ ranked first (and divergent modes ahead of bounded ones).
 
 | rank | tag | target state | var before → after | reduction | rel. | resolves? |
 |-----:|-----|--------------|-------------------:|----------:|-----:|-----------|
-| 1 | **THK-101** | deposit_thickness | 26.29 → 0.117 | 26.18 | 1.00 | ✓ (divergent) |
-| 2 | **CVT-201** | cell_voltage | 0.0276 → 0.0001 | 0.0275 | 1.00 | ✓ (bounded) |
-| 3 | **FE2P-101** | bulk_fe2 | 0.0071 → 0.0003 | 0.0068 | 0.96 | ✓ conditioning |
-| 4 | pHAT-102 | bulk_pH | 0.0021 → 0.0011 | 0.0009 | 0.46 | redundancy |
-| 5 | TT-102 | catholyte_temperature | 0.0853 → 0.059 | 0.026 | 0.31 | redundancy |
+| 1 | **THK-101** | deposit_thickness | 25.75 → 0.117 | 25.63 | 1.00 | ✓ (divergent) |
+| 2 | **CVT-201** | cell_voltage | 0.0058 → 0.0001 | 0.0057 | 0.98 | conditioning (weak) |
+| 3 | **FE2P-101** | bulk_fe2 | 0.0010 → 0.0003 | 0.0008 | 0.72 | conditioning |
+| 4 | pHAT-102 | bulk_pH | 0.0020 → 0.0011 | 0.0009 | 0.45 | redundancy |
+| 5 | TT-102 | catholyte_temperature | 0.0571 → 0.0465 | 0.0106 | 0.19 | redundancy |
 
 **Physical rationale.**
 
@@ -141,16 +142,16 @@ ranked first (and divergent modes ahead of bounded ones).
   with unbounded bias — unacceptable for any thickness-based quality gate. A
   direct observation collapses the deposit covariance to the sensor floor
   (σ ≈ 0.01 µm) and removes the divergence. **Highest priority.**
-- **CVT-201 cell-voltage reconciliation.** Restores observability of state 6
-  (rank 6 → contributes to rank 7). Physically this is not a new instrument —
-  VT-201 already exists — but the measurement model must reconcile `x[6]`
-  against it (see §4). Its error is bounded either way, so it is the second
-  observability gap but not an urgency driver.
+- **CVT-201 cell-voltage reconciliation.** State 6 is now *weakly observable*
+  through the coupled dynamics (its error is already small and bounded σ ≈ 0.08 V),
+  so a direct observation does **not** change the Gramian rank — it removes the
+  residual weakness and the reliance on the dynamics-propagation alone.
+  Physically this is not a new instrument — VT-201 already exists — but the
+  measurement model should reconcile `x[6]` against it (see §4).
 - **FE2P-101 inline Fe²⁺ probe.** Does not change the rank (bulk_fe2 is already
-  observable), but removes the reliance on the weak `v_cell` coupling: the
-  Fe²⁺ σ drops ~5× (0.084 → 0.017 M) and its conditioning becomes comparable to
-  a directly-observed state. Important for bath-management and the 
-  Faraday-depletion model.
+  observable), but removes the reliance on the `v_cell` coupling and tightens its
+  conditioning towards a directly-observed floor. Useful for bath-management and
+  the Faraday-depletion model, not for observability.
 - **pHAT-102 surface-pH probe, TT-102 temperature redundancy.** Redundancies on
   already directly-observed states (3 and 0). Low marginal information gain;
   they improve fault tolerance / cross-checks but are **not** needed for
@@ -170,31 +171,34 @@ To make **all 7 states observable**, add:
    the weakly-conditioned bulk-Fe²⁺ estimate in line with the other states.
 
 With this set the Gramian is **full rank (7) at every tested operating point**
-(smallest singular value ≈ 5.5):
+(smallest singular value ≈ 1.0):
 
 | operating_point | rank | smallest σ | full observable |
 |-----------------|-----:|-----------:|:---------------:|
-| nominal | 7 | 5.52e+00 | ✓ |
-| lo_j_lo_T_lo_fe2 | 7 | 5.52e+00 | ✓ |
-| hi_j_hi_T_hi_fe2 | 7 | 5.51e+00 | ✓ |
-| lo_j_hi_T_hi_fe2 | 7 | 5.52e+00 | ✓ |
-| hi_j_lo_T_lo_fe2 | 7 | 5.50e+00 | ✓ |
+| nominal | 7 | 1.00e+00 | ✓ |
+| lo_j_lo_T_lo_fe2 | 7 | 1.00e+00 | ✓ |
+| hi_j_hi_T_hi_fe2 | 7 | 1.00e+00 | ✓ |
+| lo_j_hi_T_hi_fe2 | 7 | 1.00e+00 | ✓ |
+| hi_j_lo_T_lo_fe2 | 7 | 1.01e+00 | ✓ |
 
-> **Strict minimum for observability.** Rank 7 is already achieved with only
-> `{THK-101, CVT-201}` (two sensors); the Fe²⁺ probe does not change the rank
-> because bulk_fe2 is already observable — it is recommended to fix the weak
-> **conditioning** of bulk_fe2, which the voltage-only coupling leaves ~5× worse
-> than a directly-observed state. We therefore recommend all three.
+> **Strict minimum for observability.** Under the PR #29 coupled dynamics,
+> `cell_voltage` is already weakly observable, so **rank 7 is achieved with a
+> single additional sensor, `{THK-101}`** (the only remaining divergent state is
+> `deposit_thickness`). The recommended set adds CVT-201 and FE2P-101 not to
+> change the rank but to fix residual conditioning — cell_voltage (weak via
+> dynamics propagation) and bulk_fe2 (thin via the `v_cell` coupling). We
+> therefore recommend all three for the L1 data record.
 
 **Measurement-model note (flagged explicitly).** The brief permits a minimal
-`h_obs` change if a structural unobservability finding requires it. We found
-`cell_voltage` structurally unobservable because `h_obs` reports the
-physics-predicted `v_cell` rather than state `x[6]`. We have **not** changed
-`h_obs` in this analysis-only PR (doing so would sever the `v_cell` coupling
-that makes bulk_fe2 observable, and would alter existing twin behaviour). The
-CVT-201 recommendation encodes the minimal forward change for L1: reconcile the
-existing cell-voltage sensor against the `cell_voltage` state while retaining
-the physics coupling used for bulk-Fe²⁺ inference.
+`h_obs` change if a structural unobservability finding requires it. Under the
+PR #29 dynamics no state is *structurally* unobservable except `deposit_thickness`
+(no output equation references it — a genuine new-instrument gap). `cell_voltage`
+is weakly observable via the coupled dynamics rather than structurally blind, and
+we have **not** changed `h_obs` in this analysis (doing so would alter the
+`v_cell` coupling used for bulk-Fe²⁺ inference and change existing twin
+behaviour). The CVT-201 recommendation encodes the minimal forward change for
+L1: reconcile the existing cell-voltage sensor against the `cell_voltage` state
+while retaining the physics coupling used for bulk-Fe²⁺ inference.
 
 ---
 

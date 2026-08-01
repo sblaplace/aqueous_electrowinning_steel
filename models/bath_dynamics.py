@@ -78,13 +78,15 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, float] = {
     "UA_membrane_W_K": 50.0,               # W/K — membrane heat transfer coeff × area
     "UA_ambient_W_K": 5.0,                 # W/K — ambient losses (catholyte + anolyte)
     "T_ambient_C": 25.0,                   # °C — ambient temperature
+    "temperature_control_gain_W_K": 3000.0, # W/K — heater/chiller holding the operating setpoint
+    "pH_control_gain_M_hr_ph": 0.05,       # (M/hr) gentle acid-dose feedback (≈1 h pH loop)
     "T_reservoir_C": 55.0,                 # °C — initial reservoir temperature
 
     # --- Electrical relaxation ---
     "electrolyte_conductivity_S_m": 10.0,  # S/m — electrolyte conductivity
     "electrode_gap_m": 0.02,              # m — inter-electrode gap
     "C_dl_F_m2": 0.02,                    # F/m² — double-layer capacitance
-    "V_relax_min_hr": 10.0,               # hr — minimum voltage relaxation time (slow tracking)
+    "V_relax_min_hr": 0.1,                # hr — voltage relaxation floor (fast; ms-s physically)
 
     # --- Current density setpoint tracking ---
     "tau_j_hr": 0.5,                       # hr — current density setpoint tracking
@@ -254,8 +256,13 @@ def step(
     OH_production_mol_s = j_A_m2 * (1.0 - FE) / FARADAY * area_m2
     OH_production_M_hr = OH_production_mol_s * 3600.0 / V_cath_L
 
-    # Acid dose (positive = adds H+, lowers pH)
-    acid_dose_M_hr = _dp(dp, "acid_dose_rate_M_hr")
+    # Acid dose: explicit rate + pH feedback holding the pH setpoint (a real
+    # cell doses acid to hold pH against HER hydroxide production).  The steady-
+    # state dose that exactly cancels HER OH- is bath_dynamics.steady_state_acid_dose_M_hr.
+    base_acid = _dp(dp, "acid_dose_rate_M_hr")
+    K_pH = _dp(dp, "pH_control_gain_M_hr_ph")
+    pH_set = dp.get("pH", 3.5)
+    acid_dose_M_hr = base_acid + K_pH * (pH_set - pH)
 
     # Buffer capacity: d(pH)/dt = -(net_proton_rate_M_hr) / beta
     # Net proton rate = acid_dose - OH_production (OH- consumes protons equivalently)
@@ -311,8 +318,20 @@ def step(
     mass_anol_J_K = V_anol_L * (RHO_ELECTROLYTE_KG_M3 / 1000.0) * CP_ELECTROLYTE_J_KG_K
     mass_res_J_K = V_res_L * (RHO_ELECTROLYTE_KG_M3 / 1000.0) * CP_ELECTROLYTE_J_KG_K
 
+    # Active temperature control: hold the cell (and reservoir) near the
+    # design-point operating setpoint (heater/chiller).  A real electrowinning
+    # cell regulates its process temperature this way.  The reservoir is
+    # conditioned to the same setpoint so the large recirculation conductance
+    # reinforces (rather than drags) the compartment temperature toward the tank.
+    K_T_ctrl = _dp(dp, "temperature_control_gain_W_K")
+    T_setpoint = _dp(dp, "temperature_C")
+    Q_ctrl_cath_W = K_T_ctrl * (T_setpoint - T_cath)
+    Q_ctrl_anol_W = K_T_ctrl * (T_setpoint - T_anol)
+    Q_ctrl_res_W = K_T_ctrl * (T_setpoint - aux.T_reservoir_C)
+
     # Catholyte energy balance: dT_c/dt = (Q_in - Q_out) / mass_cath [K/s]
     Q_net_cath_W = (Q_cath_W
+                    + Q_ctrl_cath_W
                     - Q_cool_W
                     - Q_membrane_W
                     - Q_amb_cath_W
@@ -322,6 +341,7 @@ def step(
 
     # Anolyte energy balance
     Q_net_anol_W = (Q_anol_W
+                    + Q_ctrl_anol_W
                     + Q_membrane_W
                     - Q_amb_anol_W
                     + flow_thermal_W_K * (aux.T_reservoir_C - T_anol))
@@ -334,6 +354,7 @@ def step(
     Q_amb_res_W = UA_amb * (aux.T_reservoir_C - T_amb)
     Q_net_res_W = (flow_thermal_W_K * (T_cath - aux.T_reservoir_C)
                    + flow_thermal_W_K * (T_anol - aux.T_reservoir_C)
+                   + Q_ctrl_res_W
                    - Q_amb_res_W)
     dT_res_dt_K_s = Q_net_res_W / mass_res_J_K
     dT_res_dt_C_hr = dT_res_dt_K_s * 3600.0
@@ -355,12 +376,14 @@ def step(
     # Add a mass-transfer relaxation contribution that grows as fe2 depletes
     # (lower fe2 → slower diffusion equilibration)
     tau_mt_s = 1.0 / max(fe2, 0.01)  # seconds, heuristic
-    tau_V_s = max(tau_elec_s + tau_mt_s, 1.0)  # at least 1 second
+    tau_V_s = max(tau_elec_s + tau_mt_s, 1.0)  # seconds
     tau_V_hr = max(tau_V_s / 3600.0, _dp(dp, "V_relax_min_hr"))
 
-    # Drive toward physics-predicted voltage
-    dV_dt = (v_pred - V_cell) / tau_V_hr
-    x_next[6] = V_cell + dV_dt * dt_hr
+    # Exact exponential tracking of the physics-predicted cell voltage.  This is
+    # stable for any tau (explicit Euler goes unstable when tau < dt), so the
+    # state can relax with a physically short electrical time constant instead of
+    # an artificial 10 h floor that let the weakly-observed voltage drift.
+    x_next[6] = v_pred + (V_cell - v_pred) * math.exp(-dt_hr / tau_V_hr)
 
     # =====================================================================
     # 5. CURRENT DENSITY (index 4) — operator setpoint tracking

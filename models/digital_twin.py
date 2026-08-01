@@ -217,7 +217,15 @@ def generate_synthetic_readings(
     readings["AT-301A"] = 20.9 + rng.normal(0, 0.2)
     readings["AIT-501"] = 420.0 + 5.0 * math.sin(2 * math.pi * t_hr / 24.0) + rng.normal(0, 1.0)
     readings["AIT-502"] = 15.0 + rng.normal(0, 0.3)
-    readings["VT-201"] = dp.get("cell_voltage_V", 2.5) + 0.05 * math.sin(2 * math.pi * t_hr / 4.0) + rng.normal(0, 0.01)
+    # VT-201: the measurement model h_obs reports the physics-predicted v_cell,
+    # so a self-consistent synthetic stream must too.  (Emitting an arbitrary
+    # design ``cell_voltage_V`` here makes the EKF see a persistent large
+    # innovation, which destabilises the filter once the states track well.)
+    pmodel = get_default_process_model()
+    _p = pmodel.predict(
+        dp.get("j_avg_mA_cm2", 150.0), dp.get("temperature_C", 60.0),
+        dp.get("fe2_M", 1.0))
+    readings["VT-201"] = _p.v_cell_V + 0.05 * math.sin(2 * math.pi * t_hr / 4.0) + rng.normal(0, 0.01)
     readings["CT-201"] = dp.get("j_avg_mA_cm2", 150.0) * dp.get("electrode_area_m2", 1.0) * 10.0 + rng.normal(0, 5.0)
 
     # Inject fault

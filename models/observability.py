@@ -185,13 +185,17 @@ CANDIDATE_SENSORS: List[CandidateSensor] = [
 ]
 
 # Minimum set (by count) that restores full observability of all 7 states.
+# With the PR #29 coupled dynamics, cell_voltage is already weakly observable
+# (rank 6); only deposit_thickness remains divergent-unobservable, so a single
+# thickness sensor achieves rank 7.
 MINIMUM_SET_FOR_FULL_OBSERVABILITY: Tuple[CandidateSensor, ...] = (
     THICKNESS_SENSOR,
-    CELL_VOLTAGE_DIRECT,
 )
 
-# Recommended set: the minimum set plus the inline Fe2+ probe, which does not
-# change the rank but materially improves the (weak) conditioning of bulk_fe2.
+# Recommended set: the strict minimum plus cell-voltage reconciliation and the
+# inline Fe2+ probe.  Neither changes the rank (cell_voltage is already weakly
+# observable; bulk_fe2 already observable) — they fix residual conditioning and
+# remove reliance on the dynamics/v_cell coupling.
 RECOMMENDED_MINIMUM_SENSORS: Tuple[CandidateSensor, ...] = (
     FE2_PROBE,
     THICKNESS_SENSOR,
