@@ -29,11 +29,10 @@ This bridges synthetic screening to real data without hardcoding plant data.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Optional, Dict, Any, List
 import math
 import numpy as np
 from scipy.optimize import curve_fit, least_squares
-from scipy.special import erfc
 
 from .carburization import (
     carbon_diffusivity_m2_s,
@@ -41,10 +40,8 @@ from .carburization import (
 )
 from .carbon_potential import (
     carbon_activity_from_co_co2,
-    carbon_wt_from_activity,
-    austenite_max_carbon_wt_percent,
 )
-from .tempering import tempered_hardness_hollomon_jaffe, hollomon_jaffe_parameter
+from .tempering import hollomon_jaffe_parameter
 from .electrochemistry import R_GAS
 
 
@@ -198,7 +195,7 @@ def fit_diffusivity_from_foil_data(
         )
         logD_fit, Cs_fit = popt
         perr = np.sqrt(np.diag(pcov)) if pcov is not None else [np.nan, np.nan]
-    except Exception as e:
+    except Exception:
         # Fallback to least_squares manual
         def residuals(p):
             return avg_C_model_robust(t_s, p[0], p[1]) - C_avg_meas
@@ -285,7 +282,6 @@ def fit_tempering_softening(
     for d in measured_data:
         T_C = d["T_C"]
         t_hr = d["t_hr"]
-        from .tempering import hollomon_jaffe_parameter
 
         P = hollomon_jaffe_parameter(T_C, t_hr, d.get("C_HJ", 19.5))
         HV_q = d["HV_q"]

@@ -1,6 +1,5 @@
 """Tests for the TEA sensitivity sweep."""
 import numpy as np
-import pytest
 
 from models.run_tea_sensitivity import (
     compute_lcofe,

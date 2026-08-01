@@ -46,9 +46,9 @@ from models.uncertainty.design_space import (
 from models.uncertainty.specification import SPECS_A36, SPECS_ELECTROWINNING
 
 
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 # Default sweep ranges (2 most impactful operating parameters)
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 
 DEFAULT_RANGES_2D = {
     "j_avg": (50.0, 300.0),       # mA/cm²
@@ -64,9 +64,9 @@ FULL_RANGES_4D = {
 }
 
 
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 # Plotting functions
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 
 def plot_confidence_map(result: DesignSpaceResult, out_path: Path) -> None:
     """Contour plot of the confidence surface over 2 operating dimensions."""
@@ -249,8 +249,8 @@ def plot_margins(optimum: RobustOptimum, out_path: Path) -> None:
     ax.set_xticklabels(params, fontsize=9, rotation=30, ha="right")
     ax.set_ylabel("Design Margin (% of range)")
     ax.set_title(
-        f"Design Margins at Robust Optimum\n"
-        f"(P >= 90% confidence window around optimum point)",
+        "Design Margins at Robust Optimum\n"
+        "(P >= 90% confidence window around optimum point)",
         fontweight="bold",
     )
     ax.legend()
@@ -267,9 +267,9 @@ def plot_margins(optimum: RobustOptimum, out_path: Path) -> None:
     plt.close(fig)
 
 
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 # Main
-# --------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------
 
 def main(
     n_grid: int = 8,
@@ -312,14 +312,14 @@ def main(
 
     # Plot confidence map
     plot_confidence_map(ds_result, FIG_DIR / "design_space_confidence_map.png")
-    print(f"  ✅ design_space_confidence_map.png")
+    print("  ✅ design_space_confidence_map.png")
 
     report: dict = {"grid_exploration": ds_result.summary_dict()}
 
     # ── Step 2: Robust optimum ────────────────────────────────────────
     if not skip_optimization:
         print(f"\n{'─' * 40}")
-        print(f"Step 2: Bayesian optimization (target P >= 95%)")
+        print("Step 2: Bayesian optimization (target P >= 95%)")
         print(f"  Calls: {n_calls}, MC={mc_samples}/call")
 
         opt_result = robust_optimum(
@@ -340,15 +340,15 @@ def main(
         print(f"  Time: {opt_result.elapsed_seconds:.1f}s")
 
         if opt_result.design_margins:
-            print(f"\n  Design margins (90% confidence window):")
+            print("\n  Design margins (90% confidence window):")
             for param, margin in opt_result.design_margins.items():
                 print(f"    {param}: {margin['lo_90']:.2f} — {margin['hi_90']:.2f} "
                       f"({margin['margin_lo_pct']:.0f}% / {margin['margin_hi_pct']:.0f}%)")
 
         plot_convergence(opt_result, FIG_DIR / "design_space_robust_optimum.png")
         plot_margins(opt_result, FIG_DIR / "design_space_margins.png")
-        print(f"  ✅ design_space_robust_optimum.png")
-        print(f"  ✅ design_space_margins.png")
+        print("  ✅ design_space_robust_optimum.png")
+        print("  ✅ design_space_margins.png")
 
         report["robust_optimum"] = opt_result.summary_dict()
     else:
@@ -378,7 +378,7 @@ def main(
     print(f"  Time: {pareto_result.elapsed_seconds:.1f}s")
 
     plot_pareto(pareto_result, FIG_DIR / "design_space_pareto.png")
-    print(f"  ✅ design_space_pareto.png")
+    print("  ✅ design_space_pareto.png")
 
     report["pareto_front"] = pareto_result.summary_dict()
 

@@ -21,14 +21,12 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.membrane_fouling import (
-    CleaningAgent,
     CSTRFoulingCoupling,
     FoulingRateParams,
     HermiaModel,
     MembraneFoulingModel,
     MembraneParams,
     hermia_flux,
-    membrane_replacement_cost,
 )
 
 ROOT = Path(__file__).resolve().parents[1]

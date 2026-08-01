@@ -1,5 +1,3 @@
-import pytest
-from pathlib import Path
 from models.pid import generate_pid_overview, generate_pid_detailed
 
 def test_pid_overview(tmp_path):

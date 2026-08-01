@@ -25,16 +25,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.pilot_costing import (
-    estimate_capex,
     capex_at_all_scales,
     capex_by_category,
     capex_sensitivity_tornado,
     PilotOPEXModel,
-    PilotCAPEXResult,
     PID_EQUIPMENT,
-    SCALE_LAB,
     SCALE_PILOT,
-    SCALE_PRODUCTION,
     equipment_table,
 )
 
@@ -233,7 +229,7 @@ def main():
     opex_model = PilotOPEXModel()
     pilot_capex = scales["pilot"]
     opex = opex_model.estimate(SCALE_PILOT, pilot_capex)
-    print(f"\n┌─ OPEX at Pilot Scale (10 kg/day) ──────────────────────────┐")
+    print("\n┌─ OPEX at Pilot Scale (10 kg/day) ──────────────────────────┐")
     for key in [
         "Electrowinning electricity ($/yr)", "Gas costs ($/yr)",
         "Furnace electricity ($/yr)", "Quench media ($/yr)",

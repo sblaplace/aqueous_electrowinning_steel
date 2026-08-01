@@ -4,7 +4,6 @@ import pytest
 import numpy as np
 from models.transient import (
     TransientConfig,
-    TransientResult,
     UpsetType,
     simulate_startup,
     simulate_shutdown,

@@ -32,8 +32,7 @@ References
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Any
-import numpy as np
+from typing import Dict, List, Any
 
 
 # ─── Feedstock definitions ─────────────────────────────────────────

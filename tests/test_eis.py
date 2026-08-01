@@ -6,7 +6,6 @@ from models.eis import (
     load_spectrum,
     summarize_spectrum,
     cpe_impedance,
-    warburg_impedance,
     randles_impedance,
     randles_cpe_impedance,
     fit_randles_spectrum,

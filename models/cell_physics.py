@@ -26,16 +26,14 @@ References
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Any, Optional
 import numpy as np
 
 from .speciation import SolutionComposition, solve_speciation
 from .transport import NernstPlanckFilm, NernstPlanckState
 from .electrochemistry import (
-    CellVoltageModel, MembraneModel, FeShuttleAnode,
-    conductivity_S_m, diffusivity_m2_s, viscosity_Pa_s,
-    specific_energy_kWh_per_t, FARADAY, M_FE, Z_FE,
+    CellVoltageModel, MembraneModel, specific_energy_kWh_per_t, FARADAY, M_FE, Z_FE,
 )
 from .kinetics import DepositionKinetics
 

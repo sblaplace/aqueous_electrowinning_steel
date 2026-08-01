@@ -1,7 +1,6 @@
 """Test that the pilot costing driver runs without errors and produces output."""
 
 import json
-from pathlib import Path
 from models.run_pilot_costing import main
 
 

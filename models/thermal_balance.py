@@ -10,7 +10,7 @@ References:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 import math
 import numpy as np
 
@@ -28,14 +28,14 @@ class CellThermalParams:
     current_A: float = 10.0    # A, total operating current
     volume_L: float = 2.0      # L, total electrolyte volume
     hardware_C_J_K: float = 500.0  # J/K, thermal mass of cell body/electrodes
-    
+
     T_init_C: float = 25.0     # °C, initial electrolyte temperature
     T_amb_C: float = 22.0      # °C, ambient air temperature
     UA_amb_W_K: float = 1.5    # W/K, ambient overall heat transfer coefficient * area
-    
+
     A_surface_m2: float = 0.04 # m^2, open top electrolyte surface area for evaporation
     relative_humidity: float = 0.50 # Ambient relative humidity (0-1)
-    
+
     # Active cooling jacket parameters
     cooling_active: bool = False
     T_cool_in_C: float = 15.0  # °C, coolant inlet temperature
@@ -50,14 +50,14 @@ def evaporative_heat_loss_W(T_C: float, T_amb_C: float, A_surf_m2: float, RH: fl
     p_sat_T = 0.133322 * math.exp(18.3036 - 3816.44 / (T_C + 227.02))
     p_sat_amb = 0.133322 * math.exp(18.3036 - 3816.44 / (T_amb_C + 227.02))
     p_v_amb = RH * p_sat_amb
-    
+
     # Mass transfer coefficient km ~ 0.015 m/s for free convection over liquid
     # Evaporation rate m_dot (g/s) = km * A * (rho_v_sat - rho_v_amb)
     # Vapor density rho_v ~ p_v / (R_spec * T_K) with R_spec = 0.4615 kJ/(kg*K)
     T_K = T_C + 273.15
     d_pv = max(0.0, p_sat_T - p_v_amb) # kPa
     m_dot_g_s = 0.015 * A_surf_m2 * (d_pv / (0.4615 * T_K)) * 1000.0 # g/s
-    
+
     Q_evap = m_dot_g_s * H_FG_WATER # W
     return max(0.0, float(Q_evap))
 
@@ -77,44 +77,44 @@ def simulate_thermal_transient(p: CellThermalParams, t_end_hr: float = 4.0, dt_s
     Q_amb_array = np.zeros(total_steps)
     Q_evap_array = np.zeros(total_steps)
     Q_jacket_array = np.zeros(total_steps)
-    
+
     # Total cell thermal mass (J/K)
     C_elec = p.volume_L * 1000.0 * RHO_WATER * CP_WATER
     C_total = C_elec + p.hardware_C_J_K
-    
+
     # Heat generation (W)
     Q_gen = max(0.0, p.current_A * (p.V_cell - E_THERM_FE))
-    
+
     T_curr = p.T_init_C
-    
+
     for i in range(total_steps):
         T_array[i] = T_curr
         Q_gen_array[i] = Q_gen
-        
+
         Q_amb = p.UA_amb_W_K * (T_curr - p.T_amb_C)
         Q_evap = evaporative_heat_loss_W(T_curr, p.T_amb_C, p.A_surface_m2, p.relative_humidity)
-        
+
         if p.cooling_active:
             Q_jacket = p.UA_jacket_W_K * (T_curr - p.T_cool_in_C)
         else:
             Q_jacket = 0.0
-            
+
         Q_amb_array[i] = Q_amb
         Q_evap_array[i] = Q_evap
         Q_jacket_array[i] = Q_jacket
-        
+
         dT_dt = (Q_gen - Q_amb - Q_evap - Q_jacket) / C_total
         T_curr += dT_dt * dt_s
-        
+
     # Steady state equilibrium temperature
     T_ss = T_array[-1]
-    
+
     # Cooling duty required to maintain target temperature T_target (e.g. 50 °C)
     T_target = 50.0
     Q_amb_target = p.UA_amb_W_K * (T_target - p.T_amb_C)
     Q_evap_target = evaporative_heat_loss_W(T_target, p.T_amb_C, p.A_surface_m2, p.relative_humidity)
     Q_cool_req_W = max(0.0, Q_gen - Q_amb_target - Q_evap_target)
-    
+
     return {
         "time_hr": t_array,
         "temperature_C": T_array,

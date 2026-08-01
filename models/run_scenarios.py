@@ -406,7 +406,7 @@ def main():
         print(f"  Electrolyte: {s.electrolyte_composition}")
         print(f"  Anode: {s.anode_type}")
         print(f"  References: {s.references}")
-        print(f"  ─────────────────────────────────────")
+        print("  ─────────────────────────────────────")
         print(f"  V_cell = {abs(s.E_anode_eq - s.E_cathode_eq):.3f} (thermo) "
               f"+ {s.eta_cathode:.2f} (η_c) + {s.eta_anode:.2f} (η_a) "
               f"+ {s.ir_drop:.2f} (iR) = {s.V_cell:.3f} V")

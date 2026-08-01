@@ -1,14 +1,11 @@
 """Tests for the physics-coupled process model (digital twin measurement model)."""
 from __future__ import annotations
 
-import json
 import math
-from pathlib import Path
 
-import numpy as np
 import pytest
 
-from models.twin_physics import CellProcessModel, ProcessPrediction, default_process_model
+from models.twin_physics import CellProcessModel, ProcessPrediction
 
 
 def _small_model(tmp_path) -> CellProcessModel:

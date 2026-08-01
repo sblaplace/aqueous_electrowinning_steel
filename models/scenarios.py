@@ -12,7 +12,7 @@ Scenarios:
 """
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .anode import AnodeKinetics

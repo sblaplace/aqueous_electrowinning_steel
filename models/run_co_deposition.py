@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -346,7 +345,7 @@ def main() -> None:
 
         # Print representative point summary
         res_100 = model.run_at_current(100.0)
-        print(f"  @ 100 mA/cm²:")
+        print("  @ 100 mA/cm²:")
         print(f"    Alloy: Fe = {res_100['alloy_kinetics']['fe_wt_percent']} wt%, "
               f"Ni = {res_100['alloy_kinetics']['ni_wt_percent']} wt%")
         print(f"    Anomalous: {'YES' if res_100['alloy_kinetics']['is_anomalous'] else 'NO'}")
@@ -386,7 +385,7 @@ def main() -> None:
     }
     report_path = DATA_DIR / "co_deposition_report.json"
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
-    print(f"\n✅ Phase III co-deposition driver complete.")
+    print("\n✅ Phase III co-deposition driver complete.")
     print(f"  Report: {report_path}")
     print(f"  Figures: {len(list(FIG_DIR.glob('co_deposition_*.png')))} generated")
 

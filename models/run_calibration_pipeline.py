@@ -17,9 +17,6 @@ import sys
 from pathlib import Path
 
 from .calibration_pipeline import (
-    CalibrationReport,
-    generate_calibration_figures,
-    load_calibrated_params,
     run_calibration_pipeline,
     validate_calibration,
     load_csv_safe,
@@ -57,7 +54,7 @@ Output:
 
     domains = args.domains.split(",") if args.domains else None
 
-    print(f"Calibration Pipeline")
+    print("Calibration Pipeline")
     print(f"  Data dir:    {args.data_dir}")
     print(f"  Output dir:  {args.output_dir}")
     print(f"  Domains:     {', '.join(domains) if domains else 'all'}")

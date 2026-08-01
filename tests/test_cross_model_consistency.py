@@ -12,11 +12,10 @@ import numpy as np
 import pytest
 
 from models.kinetics import limiting_current_density
-from models.boundary_layer import CathodeBoundaryLayer
 from models.diffusion_layer_1d import DiffusionLayer1D
 from models.co_deposition import surface_pH_from_current
-from models.pourbaix import FePourbaix, LOGKSP_FEOH2
-from models.electrochemistry import FARADAY, R_GAS, E0_FE
+from models.pourbaix import LOGKSP_FEOH2
+from models.electrochemistry import R_GAS
 
 
 # ─── Test 1: Limiting-current — NP diffusion limit vs Levich ───────────────

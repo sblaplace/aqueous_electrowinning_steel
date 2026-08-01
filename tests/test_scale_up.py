@@ -9,10 +9,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.scale_up import (
-    GeometryResult,
-    MassTransportResult,
-    SecondaryCurrentResult,
-    ThermalResult,
     boundary_layer_thickness,
     mass_transport_scaling,
     optimize_geometry,

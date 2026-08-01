@@ -11,7 +11,7 @@ References:
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any
 import numpy as np
 
 from .kinetics import DepositionKinetics
@@ -57,7 +57,7 @@ def evaluate_operating_point(
     """
     reasons = []
     status = STATUS_PASS
-    
+
     # 1. Thermal constraint check
     if T_C > constraints.max_membrane_T_C:
         reasons.append(f"Temperature {T_C:.1f} °C exceeds membrane limit {constraints.max_membrane_T_C} °C")
@@ -67,7 +67,7 @@ def evaluate_operating_point(
     spec_comp = SolutionComposition(c_FeSO4=c_Fe2_M, c_Na2SO4=0.5, c_H2SO4=10.0**(-pH_bulk), T_C=T_C)
     spec_res = solve_speciation(spec_comp)
     pH_precip = spec_res["pH_precip_Fe_OH2"]
-    
+
     # 3. Boundary layer cathode surface pH & Fe(OH)2 supersaturation calculation
     bl_model = CathodeBoundaryLayer(
         bulk_pH=pH_bulk,
@@ -79,13 +79,13 @@ def evaluate_operating_point(
     )
     bl_res = bl_model.solve(j_mA_cm2)
     pH_surface = bl_res.surface_pH
-    
+
     # Hydroxide precipitation occurs when Fe(OH)2 supersaturation >= 1.0 or active precipitation flag
     if bl_res.precipitation_active or bl_res.feoh2_supersaturation >= 1.0:
         reasons.append(f"Fe(OH)2 precipitation active (supersaturation = {bl_res.feoh2_supersaturation:.2f} >= 1.0)")
         if status == STATUS_PASS:
             status = FAIL_HYDROXIDE_PRECIPITATION
-            
+
     # 4. Kinetics & Faradaic Efficiency
     kin_model = DepositionKinetics(
         pH=pH_bulk,
@@ -99,13 +99,13 @@ def evaluate_operating_point(
     j_lim = kin_model.i_lim / 10.0 # Convert A/m^2 to mA/cm^2
     E_cath = kin_model.potential_at_current(j_mA_cm2)
     eta_c = abs(E_cath - kin_model.fe_E_eq)
-    
+
     # Check Mass transfer limit
     if j_lim > 0 and (j_mA_cm2 / j_lim) > constraints.max_j_ratio_lim:
         reasons.append(f"Current density {j_mA_cm2:.1f} mA/cm2 exceeds {constraints.max_j_ratio_lim*100:.0f}% of j_lim ({j_lim:.1f} mA/cm2)")
         if status == STATUS_PASS:
             status = FAIL_MASS_TRANSFER
-            
+
     # Check Faradaic Efficiency
     if FE < constraints.min_FE:
         reasons.append(f"FE ({FE*100:.1f}%) below minimum requirement ({constraints.min_FE*100:.1f}%)")
@@ -122,18 +122,18 @@ def evaluate_operating_point(
         divided_cell=divided_cell
     )
     V_cell = v_model.V_cell
-    
+
     # Specific energy E = 959.9 * V_cell / FE (kWh/t Fe)
     FE_eff = max(0.01, FE)
     specific_energy = 959.9 * V_cell / FE_eff
-    
+
     if V_cell > constraints.max_V_cell or specific_energy > constraints.max_specific_energy_kWh_t:
         reasons.append(f"V_cell ({V_cell:.2f} V) or energy ({specific_energy:.0f} kWh/t) exceeds threshold")
         if status == STATUS_PASS:
             status = FAIL_HIGH_VOLTAGE
 
     is_pass = (status == STATUS_PASS)
-    
+
     return {
         "j_mA_cm2": j_mA_cm2,
         "pH_bulk": pH_bulk,
@@ -164,23 +164,23 @@ def map_2d_operating_window(
     """Map 2D grid of operating conditions and classify each point."""
     if fixed_params is None:
         fixed_params = {"T_C": 50.0, "c_Fe2_M": 1.0, "delta_um": 30.0, "j_mA_cm2": 200.0, "pH_bulk": 2.5}
-        
+
     nx = len(x_vals)
     ny = len(y_vals)
-    
+
     pass_mask = np.zeros((ny, nx), dtype=bool)
     status_grid = np.zeros((ny, nx), dtype=int)
     FE_grid = np.zeros((ny, nx), dtype=float)
     V_cell_grid = np.zeros((ny, nx), dtype=float)
     pH_surf_grid = np.zeros((ny, nx), dtype=float)
     energy_grid = np.zeros((ny, nx), dtype=float)
-    
+
     for i, y in enumerate(y_vals):
         for j_idx, x in enumerate(x_vals):
             p = fixed_params.copy()
             p[param_x_name] = float(x)
             p[param_y_name] = float(y)
-            
+
             res = evaluate_operating_point(
                 j_mA_cm2=p["j_mA_cm2"],
                 pH_bulk=p["pH_bulk"],
@@ -189,16 +189,16 @@ def map_2d_operating_window(
                 delta_um=p.get("delta_um", 30.0),
                 constraints=constraints
             )
-            
+
             pass_mask[i, j_idx] = res["is_pass"]
             status_grid[i, j_idx] = res["status_code"]
             FE_grid[i, j_idx] = res["FE"]
             V_cell_grid[i, j_idx] = res["V_cell"]
             pH_surf_grid[i, j_idx] = res["pH_surface"]
             energy_grid[i, j_idx] = res["specific_energy_kWh_t"]
-            
+
     pass_fraction = float(np.mean(pass_mask))
-    
+
     return {
         "x_name": param_x_name,
         "x_vals": x_vals,

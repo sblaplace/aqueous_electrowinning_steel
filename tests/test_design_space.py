@@ -32,7 +32,7 @@ from models.uncertainty.design_space import (
     robust_optimum,
 )
 from models.uncertainty.monte_carlo import DEFAULT_DESIGN_POINT
-from models.uncertainty.specification import SPECS_A36, SPECS_ELECTROWINNING
+from models.uncertainty.specification import SPECS_A36
 
 
 # ---------------------------------------------------------------------------

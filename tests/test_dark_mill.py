@@ -2,8 +2,7 @@
 
 import pytest
 from models.dark_mill import (
-    SiteDefinition, GridSpec, ClimateSpec, Feedstock,
-    StackDesign, MassBalance, SiteReport,
+    SiteDefinition, GridSpec, ClimateSpec, StackDesign, SiteReport,
     size_dark_mill, run_site, run_all_sites, comparison_table,
     EXAMPLE_SITES, FEEDSTOCKS,
 )

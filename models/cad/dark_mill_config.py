@@ -21,11 +21,9 @@ Origin: center of floor, Z up.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, Tuple, List
+from dataclasses import dataclass
+from typing import Dict, Any
 import math
-import json
-from pathlib import Path
 
 
 # ─── Config ───────────────────────────────────────────────────────

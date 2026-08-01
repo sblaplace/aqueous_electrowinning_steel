@@ -106,7 +106,7 @@ import numpy as np
 from scipy.optimize import brentq
 
 # Repository imports — pinned to existing module APIs
-from .kinetics import DepositionKinetics, TafelBranch, limiting_current_density
+from .kinetics import limiting_current_density
 from .electrochemistry import FARADAY, R_GAS, M_FE, Z_FE, E0_FE
 from .pourbaix import her_line
 

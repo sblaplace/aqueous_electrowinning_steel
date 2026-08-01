@@ -1,7 +1,6 @@
 """Tests for deposit morphology prediction model."""
 
 import math
-import numpy as np
 import pytest
 
 from models.deposit_morphology import (

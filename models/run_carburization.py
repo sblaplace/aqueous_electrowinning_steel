@@ -20,7 +20,6 @@ import argparse
 import json
 from pathlib import Path
 import sys
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,7 +34,6 @@ from models.carburization import (
     CarburizationParams,
     CarburizationModel,
     carbon_diffusivity_m2_s,
-    hardness_from_carbon_wt,
     estimate_carburizing_time_for_case_depth,
 )
 

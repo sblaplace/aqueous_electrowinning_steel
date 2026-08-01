@@ -5,7 +5,6 @@ import pytest
 
 from models.membrane_fouling import (
     CleaningAgent,
-    CleaningParams,
     CleaningResult,
     CSTRFoulingCoupling,
     FluxDeclineResult,

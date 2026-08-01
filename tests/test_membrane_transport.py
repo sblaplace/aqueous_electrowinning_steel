@@ -10,10 +10,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.membrane_transport import (  # noqa: E402
-    AnolyteState,
     CatholyteState,
     FUMASEP_FKE50,
-    MembraneSpec,
     MembraneTransportModel,
     NAFION_N117,
     crossover_vs_current_density,

@@ -36,16 +36,12 @@ import matplotlib.pyplot as plt
 
 from models.hydrogen_embrittlement import (
     HydrogenEmbrittlementModel,
-    HDiffusionParams,
-    h_diffusivity_m2_s,
     effective_diffusivity_m2_s,
-    hydrogen_uptake_from_electrolysis,
     he_susceptibility_index,
     bakeout_time_hr,
-    bakeout_schedule,
     synthetic_h_uptake_data,
 )
-from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
+from models.mechanical_properties import build_mechanical_model_from_phase3_result
 from models.co_deposition import build_phase3_model
 
 FIG_DIR = ROOT / "docs" / "figures"

@@ -3,14 +3,13 @@
 import json
 import os
 import matplotlib.pyplot as plt
-import numpy as np
 
 from .thermal_balance import CellThermalParams, simulate_thermal_transient
 
 
 def main():
     print("=== Running Cell Heat Balance & Thermal Management Model ===")
-    
+
     # 1. Uncooled benchtop cell (10 A, 2.5 V, 2 L)
     p_uncooled = CellThermalParams(
         V_cell=2.5,
@@ -19,7 +18,7 @@ def main():
         cooling_active=False
     )
     res_uncooled = simulate_thermal_transient(p_uncooled, t_end_hr=4.0)
-    
+
     # 2. Actively cooled cell with jacket (15 °C inlet)
     p_cooled = CellThermalParams(
         V_cell=2.5,
@@ -30,16 +29,16 @@ def main():
         UA_jacket_W_K=12.0
     )
     res_cooled = simulate_thermal_transient(p_cooled, t_end_hr=4.0)
-    
+
     print(f"Uncooled Steady-State Temperature: {res_uncooled['T_ss_C']:.1f} °C (Max: {res_uncooled['T_max_C']:.1f} °C)")
     print(f"Heat Generation Power: {res_uncooled['heat_gen_power_W']:.1f} W")
     print(f"Cooling Duty Required for 50 °C Hold: {res_uncooled['cooling_duty_50C_W']:.1f} W")
     print(f"Actively Cooled Steady-State Temperature: {res_cooled['T_ss_C']:.1f} °C")
-    
+
     # Save JSON report
     os.makedirs("experiments/data", exist_ok=True)
     os.makedirs("docs/figures", exist_ok=True)
-    
+
     report_data = {
         "uncooled": {
             "T_ss_C": res_uncooled["T_ss_C"],
@@ -52,14 +51,14 @@ def main():
             "T_max_C": res_cooled["T_max_C"],
         }
     }
-    
+
     with open("experiments/data/thermal_balance_report.json", "w") as f:
         json.dump(report_data, f, indent=2)
     print("Saved experiments/data/thermal_balance_report.json")
-    
+
     # Plot thermal transient profiles
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5))
-    
+
     t_hr = res_uncooled["time_hr"]
     ax1.plot(t_hr, res_uncooled["temperature_C"], 'r-', linewidth=2, label="Uncooled Cell")
     ax1.plot(t_hr, res_cooled["temperature_C"], 'b--', linewidth=2, label="Jacketed Cooled Cell")
@@ -70,7 +69,7 @@ def main():
     ax1.set_title("Transient Electrolyte Temperature Profile")
     ax1.grid(True, alpha=0.3)
     ax1.legend()
-    
+
     # Heat loss breakdown for uncooled cell
     ax2.plot(t_hr, res_uncooled["Q_gen_W"], 'k-', label="Joule/Overpotential Gen")
     ax2.plot(t_hr, res_uncooled["Q_amb_W"], 'g--', label="Ambient Convective Loss")
@@ -80,7 +79,7 @@ def main():
     ax2.set_title("Heat Generation & Loss Breakdown")
     ax2.grid(True, alpha=0.3)
     ax2.legend()
-    
+
     plt.tight_layout()
     fig_path = "docs/figures/thermal_balance_profiles.png"
     plt.savefig(fig_path, dpi=150)

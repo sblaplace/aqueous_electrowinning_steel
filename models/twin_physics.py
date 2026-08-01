@@ -23,9 +23,9 @@ between ``predict`` and the real sensors is the signal calibration acts on.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, Optional, Sequence
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator

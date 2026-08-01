@@ -16,7 +16,6 @@ Covers:
 """
 
 import numpy as np
-import pytest
 
 from models.electrochemistry import (
     CellVoltageModel,
@@ -27,14 +26,10 @@ from models.electrochemistry import (
     viscosity_Pa_s,
     specific_energy_kWh_per_kg,
     nernst_shift,
-    E0_FE,
-    E0_OER,
     E0_FE3_FE2,
     FARADAY,
-    R_GAS,
     M_FE,
     Z_FE,
-    T_REF,
 )
 
 

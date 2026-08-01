@@ -20,7 +20,7 @@ molar concentration in mol/L.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable
 
 import numpy as np
 from scipy.optimize import brentq

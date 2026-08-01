@@ -1,21 +1,14 @@
 """Tests for bath startup kinetics — Fe²⁺ air oxidation and ascorbic acid stabilization."""
 
-import pytest
 import numpy as np
 from models.bath_startup import (
     BathParams,
     g_per_L_to_mol_L,
     dissolved_o2_saturation_mol_L,
     fe2_oxidation_rate,
-    aa_reduction_rate,
-    aa_autoxidation_rate,
     simulate_bath,
     recommend_ascorbic_loading,
     ascorbic_consumption_summary,
-    sensitivity_ph,
-    sensitivity_temperature,
-    M_AA,
-    ASCORBIC_PKA1,
 )
 
 

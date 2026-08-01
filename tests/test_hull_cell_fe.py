@@ -12,7 +12,6 @@ import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -21,14 +20,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from models.hull_cell_fe import (  # noqa: E402
     DeltaProfile,
     HullCellFEConfig,
-    HullCellFEResult,
-    ZoneResult,
-    appearance_from_fe,
     compare_fe_windows,
     fe_sensitivity_to_delta,
     hull_cell_fe_prediction,
 )
-from models.hull_cell import HullCellGeometry  # noqa: E402
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────

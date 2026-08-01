@@ -9,10 +9,6 @@ import numpy as np
 
 from models.uncertainty.specification import (
     Specification,
-    SpecResult,
-    SpecReport,
-    Operator,
-    Criticality,
     check_specifications,
     check_mc_specifications,
     load_specs_from_yaml,
@@ -20,8 +16,6 @@ from models.uncertainty.specification import (
     _extract_value,
     _check_one,
     SPECS_A36,
-    SPECS_1010,
-    SPECS_1020,
     SPECS_CARBURIZED,
     SPECS_ELECTROWINNING,
     ALL_STANDARD_SPECS,
@@ -290,7 +284,7 @@ specifications:
     tolerance_pct: 0
 """
     try:
-        import yaml
+        pass
     except pytest.skip.Exception:
         pytest.skip("PyYAML not installed")
 

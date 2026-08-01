@@ -18,14 +18,9 @@ import pytest
 from models.pulse_optimization import (
     PulseOptimizationSweep,
     is_non_dominated,
-    compute_pareto_front,
     _frequency_grain_factor,
     _frequency_ce_factor,
     J_PEAK_VALUES,
-    DUTY_CYCLE_VALUES,
-    FREQUENCY_VALUES,
-    WAVEFORM_VALUES,
-    MECHANISM_VALUES,
 )
 from models.mechanical_properties import estimate_grain_size_um
 

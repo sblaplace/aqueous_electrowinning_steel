@@ -20,7 +20,6 @@ import math
 import time
 
 import numpy as np
-import pytest
 
 from models.uncertainty.monte_carlo import (
     MonteCarloEngine,

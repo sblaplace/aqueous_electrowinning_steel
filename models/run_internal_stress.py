@@ -23,23 +23,16 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Patch
 
 from .internal_stress import (
-    COUPON_E_GPA,
     COUPON_LENGTH_MM,
-    COUPON_NU,
-    COUPON_THICKNESS_MM,
     DIAL_GAUGE_RESOLUTION_UM,
     PROFILOMETER_RESOLUTION_UM,
     cantilever_deflection_m,
     coupon_curvature_protocol,
     deposit_stress_from_conditions,
-    finite_thickness_correction,
     model_scope,
     peel_verdict_from_conditions,
-    stoney_stress_finite_thickness_MPa,
-    stress_evolution,
     stress_profile,
     stress_uncertainty_MPa,
 )

@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from models.foil_calibration import (
     FoilMeasurement,

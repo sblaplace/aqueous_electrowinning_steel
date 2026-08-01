@@ -16,7 +16,6 @@ import pytest
 
 from models.uncertainty.parameter_registry import REGISTRY
 from models.uncertainty.validation_planner import (
-    Experiment,
     ValidationPlan,
     UncertaintyTrajectory,
     experiment_catalog,

@@ -14,9 +14,6 @@ Covers:
 from __future__ import annotations
 
 import json
-import math
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -33,7 +30,6 @@ from models.calibration_pipeline import (
     load_csv,
     load_csv_safe,
     run_calibration_pipeline,
-    validate_calibration,
     write_calibrated_parameters,
     CalibrationReport,
 )
@@ -97,7 +93,7 @@ def test_hall_petch_fit_converges():
 
 def test_eis_fit_converges_synthetic():
     """EIS Randles fit on a synthetic spectrum converges."""
-    from models.eis import fit_randles_spectrum, synthetic_randles_spectrum
+    from models.eis import synthetic_randles_spectrum
 
     df = synthetic_randles_spectrum(
         rs_ohm=5.0, rct_ohm=100.0, cdl_F=1e-4,

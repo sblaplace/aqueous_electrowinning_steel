@@ -31,7 +31,6 @@ import matplotlib.pyplot as plt
 from models.carbon_potential import (
     carbon_potential_summary,
     carbon_wt_from_activity,
-    carbon_activity_from_co_co2,
     austenite_max_carbon_wt_percent,
 )
 

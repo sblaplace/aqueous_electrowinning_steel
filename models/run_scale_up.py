@@ -30,7 +30,6 @@ from models.scale_up import (
     optimize_geometry,
     primary_current_distribution,
     scale_up_analysis,
-    secondary_current_distribution,
     thermal_management,
     uniformity_index,
     wagner_number,

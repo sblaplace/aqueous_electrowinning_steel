@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .uncertainty.bayesian_calibration import (
-    ParameterPrior,
     default_priors,
     calibrate_ensemble,
     calibrate_mcmc,

@@ -36,10 +36,9 @@ FIG_DIR = ROOT / "docs" / "figures"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from models.uncertainty.monte_carlo import MonteCarloEngine, MonteCarloResult, DEFAULT_DESIGN_POINT
+from models.uncertainty.monte_carlo import MonteCarloEngine, MonteCarloResult
 from models.uncertainty.specification import (
     SPECS_A36, SPECS_1010, SPECS_1020, SPECS_CARBURIZED, SPECS_ELECTROWINNING,
-    ALL_STANDARD_SPECS,
 )
 
 
@@ -192,7 +191,7 @@ def main(
     print(f"\nCompleted in {result.elapsed_seconds:.1f}s")
     print(f"Outputs: {len(result.output_distributions)}")
     print(f"Overall confidence: {result.overall_confidence*100:.1f}%")
-    print(f"Pass rates:")
+    print("Pass rates:")
     for name, rate in result.pass_rates.items():
         print(f"  {name}: {rate*100:.1f}%")
 

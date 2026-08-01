@@ -1,6 +1,5 @@
 """Tests for the measurement-only process gate engine."""
 
-import pytest
 
 from models.process_gates import (
     EvidenceRecord,

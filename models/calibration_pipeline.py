@@ -23,14 +23,13 @@ from __future__ import annotations
 
 import json
 import logging
-import warnings
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import curve_fit, least_squares
+from scipy.optimize import curve_fit
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +231,7 @@ def fit_tafel_domain(data: pd.DataFrame) -> FitResult:
 
 def fit_eis_domain(data: pd.DataFrame) -> FitResult:
     """Fit Randles equivalent circuit parameters from EIS spectrum."""
-    from .eis import fit_randles_spectrum, load_spectrum
+    from .eis import fit_randles_spectrum
 
     freq = data["frequency_hz"].to_numpy(float)
     z = data["z_real_ohm"].to_numpy(float) + 1j * data["z_imag_ohm"].to_numpy(float)

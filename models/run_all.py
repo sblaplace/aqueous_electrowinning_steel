@@ -66,10 +66,8 @@ from models.run_pulse import main as run_pulse_main
 from models.run_voltammetry import main as run_volt_main
 from models.run_eis import main as run_eis_main
 from models.run_hull_cell import main as run_hull_main
-from models.run_closed_loop import main as run_closed_loop_main
 from models.run_technoeconomic import main as run_techno_main
 from models.run_scenarios import main as run_scenarios_main
-from models.run_mechanical_properties import main as run_mechanical_main
 from models.run_carburization import main as run_carburization_main
 from models.run_carbon_potential import main as run_carbon_potential_main
 from models.run_tempering import main as run_tempering_main
@@ -84,10 +82,8 @@ from models.run_adhesion_peel import main as run_adhesion_peel_main
 from models.run_internal_stress import main as run_internal_stress_main
 from models.run_rde_levich import main as run_rde_levich_main
 
-from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
 from models.process_flow import generate_process_flow_diagram, generate_detailed_flow_with_composition
-from models.carburization import CarburizationModel, CarburizationParams
 
 
 def _load_json(p: Path) -> dict:

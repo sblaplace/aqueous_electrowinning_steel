@@ -108,7 +108,7 @@ def main() -> None:
     best = fits["randles_warburg"]
     i0_A = exchange_current_from_rct(best.rct_ohm,
                                      n_electrons=2, temperature_K=TEMPERATURE_K)
-    print(f"\nExchange current from Rct (linearized Butler–Volmer, 60 °C):")
+    print("\nExchange current from Rct (linearized Butler–Volmer, 60 °C):")
     print(f"  ✅ i₀ = {i0_A*1e3:.3f} mA for {AREA_CM2} cm² "
           f"({i0_A*1e3/AREA_CM2:.3f} mA/cm² combined Fe + HER)")
 

@@ -12,7 +12,6 @@ Usage:
 """
 
 import sys
-import os
 import json
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,7 +29,6 @@ from models import (
     LevelizedCost,
     sensitivity_analysis,
     compare_routes,
-    BENCHMARK_COSTS,
     specific_energy_kWh_per_t,
 )
 
@@ -74,7 +72,7 @@ def run_base_case():
         electrolyte_type="alkaline",
     )
 
-    print(f"\n┌─ Electrolyzer Stack Parameters ──────────────────────────────┐")
+    print("\n┌─ Electrolyzer Stack Parameters ──────────────────────────────┐")
     print(f"│  Current density:        {params.current_density_mA_cm2:>6.0f} mA/cm²       │")
     print(f"│  Current efficiency:     {params.current_efficiency*100:>6.0f} %             │")
     print(f"│  Cell voltage:           {params.cell_voltage:>6.2f} V              │")
@@ -88,7 +86,7 @@ def run_base_case():
     # ─── Energy Consumption ──────────────────────────────────────────
     e_spec = specific_energy_kWh_per_t(cell.V_cell, params.current_efficiency)
     print(f"\n  Specific energy consumption: {e_spec:.0f} kWh/t Fe")
-    print(f"  (Target from literature: <1,500 kWh/t Fe)")
+    print("  (Target from literature: <1,500 kWh/t Fe)")
 
     # ─── Plant Configuration ─────────────────────────────────────────
     n_stacks = 10
@@ -107,7 +105,7 @@ def run_base_case():
     print("└──────────────────────────────────────────────────────────────┘")
 
     # ─── CAPEX Breakdown ─────────────────────────────────────────────
-    print(f"\n┌─ CAPEX Breakdown ────────────────────────────────────────────┐")
+    print("\n┌─ CAPEX Breakdown ────────────────────────────────────────────┐")
     capex_items = [
         ("Electrodes", "Electrodes ($)"),
         ("Membranes/separators", "Membranes/separators ($)"),
@@ -129,7 +127,7 @@ def run_base_case():
     print("└──────────────────────────────────────────────────────────────┘")
 
     # ─── OPEX Breakdown ──────────────────────────────────────────────
-    print(f"\n┌─ OPEX Breakdown (Annual) ────────────────────────────────────┐")
+    print("\n┌─ OPEX Breakdown (Annual) ────────────────────────────────────┐")
     opex_items = [
         ("Electricity", "Electricity ($/yr)"),
         ("Electrolyte makeup", "Electrolyte makeup ($/yr)"),
@@ -153,7 +151,7 @@ def run_base_case():
     # ─── Levelized Cost ──────────────────────────────────────────────
     lcofe = lc_model.calculate(capex["Total CAPEX ($)"], opex["Total OPEX ($/yr)"], annual_prod)
 
-    print(f"\n┌─ Levelized Cost of Iron (LCOFe) ─────────────────────────────┐")
+    print("\n┌─ Levelized Cost of Iron (LCOFe) ─────────────────────────────┐")
     print(f"│  Capital recovery factor: {lcofe['Capital recovery factor']:>8.4f}            │")
     print(f"│  Annualized CAPEX:     ${lcofe['Annualized CAPEX ($/yr)']/1e6:>8.2f}M/yr          │")
     print(f"│  Annual OPEX:          ${lcofe['Annual OPEX ($/yr)']/1e6:>8.2f}M/yr          │")
@@ -180,7 +178,7 @@ def plot_cost_comparison(base_lcofe: float):
 
     routes = list(comparison.keys())
     base_costs = [comparison[r]["Base cost ($/t Fe)"] for r in routes]
-    co2_costs = [comparison[r][f"Carbon cost @$50/tCO2 ($/t Fe)"] for r in routes]
+    co2_costs = [comparison[r]["Carbon cost @$50/tCO2 ($/t Fe)"] for r in routes]
 
     fig, ax = plt.subplots(figsize=(10, 6))
 

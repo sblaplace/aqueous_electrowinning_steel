@@ -50,7 +50,6 @@ from typing import Any, Dict, Optional, Tuple, Union
 import numpy as np
 
 from .adhesion_peel import (
-    ALPHA_FE_PER_K,
     E_FE_GPA,
     HOFFMAN_DELTA_M,
     NU_FE,
@@ -58,12 +57,10 @@ from .adhesion_peel import (
     PeelConditions,
     SubstrateSpec,
     biaxial_modulus_Pa,
-    critical_thickness_um,
     energy_release_rate,
     evaluate_peel,
     hoffman_intrinsic_stress_MPa,
     hydrogen_stress_MPa,
-    residual_stress,
     stoney_stress_MPa,  # the thin-film inverse; re-exported as our own
     thermal_mismatch_stress_MPa,
 )

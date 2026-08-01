@@ -6,7 +6,6 @@ experiment metadata repeated in a sidecar JSON file or supplied as columns.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 import pandas as pd
 
 REQUIRED_COLUMNS = {

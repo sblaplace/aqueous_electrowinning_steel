@@ -16,15 +16,14 @@ All electrolyte properties reuse the transport module constants.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Tuple
 
 import numpy as np
-from scipy.optimize import minimize_scalar, brentq
+from scipy.optimize import brentq
 
 from .electrochemistry import (
     E0_FE,
     FARADAY,
-    M_FE,
     R_GAS,
     Z_FE,
     specific_energy_kWh_per_kg,

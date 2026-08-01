@@ -13,19 +13,15 @@ import pytest
 
 from models.run_manifest import (
     VALID_EXPERIMENT_TYPES,
-    VALID_VIDEO_STATUSES,
     load_bath_batch,
-    load_experiment_manifest,
     validate_experiment_manifest,
 )
 from models.plating_data import (
     PlatingRun,
     compute_derived,
     detect_anomalies,
-    load_mass_log,
     load_plating_run,
     load_timeseries,
-    load_video_index,
 )
 
 

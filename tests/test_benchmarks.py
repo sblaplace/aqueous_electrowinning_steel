@@ -16,7 +16,6 @@ Benchmarks are grouped by module and cover the critical paths:
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 # ---------------------------------------------------------------------------
@@ -76,7 +75,7 @@ def mechanical_model():
 @pytest.fixture
 def mc_sample():
     """One pre-drawn MC sample vector + design point."""
-    from models.uncertainty.monte_carlo import _run_single_sample, DEFAULT_DESIGN_POINT
+    from models.uncertainty.monte_carlo import DEFAULT_DESIGN_POINT
     from models.uncertainty.sample import sample_parameters
     samples = sample_parameters(1, seed=42)
     return samples[0], dict(DEFAULT_DESIGN_POINT)

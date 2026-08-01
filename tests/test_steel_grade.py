@@ -1,12 +1,10 @@
 """Tests for steel grade routing and post-processing integration."""
 
-import pytest
 from models.steel_grade import (
-    SteelGradeSpec, STEEL_GRADES, select_route, size_post_processing,
-    CarburizationSizing, CoDepositionSizing, PostProcessingResult,
+    STEEL_GRADES, select_route, size_post_processing,
 )
 from models.dark_mill import (
-    SiteDefinition, GridSpec, ClimateSpec, size_dark_mill, EXAMPLE_SITES,
+    SiteDefinition, size_dark_mill, EXAMPLE_SITES,
 )
 
 

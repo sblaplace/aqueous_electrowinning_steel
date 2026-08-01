@@ -1,7 +1,4 @@
-import numpy as np
 import pandas as pd
-import pytest
-from pathlib import Path
 from models.run_voltammetry import generate_synthetic_cv, main
 
 
@@ -12,7 +9,7 @@ def test_generate_synthetic_cv_properties(tmp_path):
     # Check file exists and DataFrame properties
     assert csv_file.exists()
     assert isinstance(df, pd.DataFrame)
-    
+
     # Check required columns are present
     required_cols = {
         "timestamp_s", "potential_V_vs_ref", "current_A", "working_electrode_area_cm2",
@@ -20,17 +17,17 @@ def test_generate_synthetic_cv_properties(tmp_path):
         "electrolyte_id", "reference_electrode", "notes"
     }
     assert required_cols.issubset(df.columns)
-    
+
     # Check values
     assert (df["working_electrode_area_cm2"] == 1.0).all()
     assert (df["pH"] == 3.0).all()
     assert (df["fe2_concentration_M"] == 1.0).all()
     assert (df["reference_electrode"] == "Ag/AgCl").all()
     assert (df["cycle"] == 1).all()
-    
+
     # Check timestamps are rounded/non-decreasing
     assert (df["timestamp_s"].diff().dropna() >= 0).all()
-    
+
     # Potential range should be within expected bounds
     assert df["potential_V_vs_ref"].min() < -0.2
     assert df["potential_V_vs_ref"].max() > -1.2

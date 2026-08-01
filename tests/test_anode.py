@@ -15,15 +15,11 @@ from models.anode import (
     AnodeMaterial,
     DSA_IRO2_TA2O5,
     NICO_SPINEL,
-    NIFE_LDH,
-    PT_TI,
     bubble_fraction,
     bubble_resistance_multiplier,
     concentration_overpotential_oer,
     full_cell_voltage,
     E0_OER_ACIDIC,
-    E0_OER_ALKALINE,
-    E0_CER,
 )
 
 

@@ -40,7 +40,6 @@ from models.tempering import (
     recommended_tempering_for_target_hv,
 )
 from models.carburization import CarburizationParams, CarburizationModel
-from models.carbon_potential import carbon_potential_summary
 
 FIG_DIR = ROOT / "docs" / "figures"
 DATA_DIR = ROOT / "experiments" / "data"

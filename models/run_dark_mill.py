@@ -18,10 +18,10 @@ from pathlib import Path
 import numpy as np
 
 from models.dark_mill import (
-    EXAMPLE_SITES, run_site, run_all_sites, comparison_table, size_dark_mill,
+    EXAMPLE_SITES, run_all_sites, comparison_table, size_dark_mill,
 )
 from models.steel_grade import (
-    STEEL_GRADES, SteelGradeSpec, select_route, size_post_processing,
+    STEEL_GRADES, select_route,
 )
 
 

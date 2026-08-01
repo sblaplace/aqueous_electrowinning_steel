@@ -41,11 +41,11 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, Literal, Tuple
 import math
 import numpy as np
-from scipy.special import erf, erfc
+from scipy.special import erfc
 from scipy.optimize import brentq
 
 # Constants
-from .electrochemistry import R_GAS, M_FE, RHO_FE
+from .electrochemistry import R_GAS, RHO_FE
 
 M_C = 12.011e-3
 CP_FE_J_KG_K = 449.0  # specific heat around 300-900°C average (J/kg/K)

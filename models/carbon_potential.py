@@ -29,10 +29,8 @@ References:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any
 import math
-import numpy as np
 
 from .electrochemistry import R_GAS
 

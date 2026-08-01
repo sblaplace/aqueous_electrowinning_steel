@@ -12,7 +12,7 @@ References:
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 import numpy as np
 
 # Physical constants
@@ -75,12 +75,12 @@ def solve_speciation(comp: SolutionComposition, max_iter: int = 200, tol: float 
     """
     T_K = comp.T_C + 273.15
     A_dh = davies_A(comp.T_C)
-    
+
     # Temperature adjustment for Ka2(HSO4-): dH0 ~ -22.4 kJ/mol
     Ka2_T = K_HSO4_25 * math.exp((-22400.0 / R) * (1.0 / T_K - 1.0 / 298.15))
     # Temperature adjustment for K_pair(FeSO4): dH0 ~ +8.0 kJ/mol (endothermic pair formation)
     K_pair_T = K_FESO4_PAIR_25 * math.exp((8000.0 / R) * (1.0 / T_K - 1.0 / 298.15))
-    
+
     # Initial guesses assuming no pairing/association
     c_Fe2 = comp.c_FeSO4
     c_Na = 2.0 * comp.c_Na2SO4
@@ -88,45 +88,45 @@ def solve_speciation(comp: SolutionComposition, max_iter: int = 200, tol: float 
     c_HSO4 = 0.0
     c_FeSO4_pair = 0.0
     c_SO4 = comp.c_FeSO4 + comp.c_Na2SO4 + comp.c_H2SO4
-    
+
     # Initial ionic strength
     I = 0.5 * (4.0 * c_Fe2 + 1.0 * c_Na + 1.0 * c_H + 4.0 * c_SO4)
-    
+
     for _ in range(max_iter):
         I_prev = I
-        
+
         # Calculate activity coefficients
         gamma1 = davies_gamma(1, I, A_dh)  # H+, Na+, HSO4-
         gamma2 = davies_gamma(2, I, A_dh)  # Fe2+, SO4(2-)
         gamma0 = 1.0                       # Neutral FeSO4(aq)
-        
+
         # Conditional equilibrium constants (concentration quotient Kc = K_thermo / gamma_ratio)
         Kc_HSO4 = Ka2_T * gamma1 / (gamma1 * gamma2)  # Ka2 = (a_H * a_SO4) / a_HSO4
         Kc_pair = K_pair_T * (gamma2 * gamma2) / gamma0  # K_pair = a_FeSO4 / (a_Fe2 * a_SO4)
-        
+
         # Inner loop to solve nonlinear system for given gamma values
         for _inner in range(20):
             # c_FeSO4_pair = Kc_pair * c_Fe2 * c_SO4
             # c_Fe2 = comp.c_FeSO4 - c_FeSO4_pair  => c_Fe2 = comp.c_FeSO4 / (1 + Kc_pair * c_SO4)
             c_Fe2 = comp.c_FeSO4 / (1.0 + Kc_pair * c_SO4)
             c_FeSO4_pair = comp.c_FeSO4 - c_Fe2
-            
+
             # c_HSO4 = (c_H * c_SO4) / Kc_HSO4
             # c_H = 2*c_H2SO4 - c_HSO4  => c_H = 2*c_H2SO4 / (1 + c_SO4 / Kc_HSO4)
             c_H = (2.0 * comp.c_H2SO4) / (1.0 + c_SO4 / Kc_HSO4)
             c_HSO4 = 2.0 * comp.c_H2SO4 - c_H
-            
+
             # Update c_SO4 from SO4 balance:
             # c_SO4 = Total_SO4 - c_HSO4 - c_FeSO4_pair
             c_SO4_new = (comp.c_FeSO4 + comp.c_Na2SO4 + comp.c_H2SO4) - c_HSO4 - c_FeSO4_pair
             c_SO4_new = max(1e-8, c_SO4_new)
-            
+
             c_SO4 = 0.5 * (c_SO4 + c_SO4_new)
-        
+
         # Recalculate ionic strength
         I_new = 0.5 * (4.0 * c_Fe2 + 1.0 * c_Na + 1.0 * c_H + 1.0 * c_HSO4 + 4.0 * c_SO4)
         I = max(1e-6, 0.5 * (I + I_new))
-        
+
         if abs(I - I_prev) / I < tol:
             break
 
@@ -134,24 +134,24 @@ def solve_speciation(comp: SolutionComposition, max_iter: int = 200, tol: float 
     gamma_Fe2 = davies_gamma(2, I, A_dh)
     gamma_H = davies_gamma(1, I, A_dh)
     gamma_SO4 = davies_gamma(2, I, A_dh)
-    
+
     a_Fe2 = gamma_Fe2 * c_Fe2
     a_H = gamma_H * c_H
     pH_act = -math.log10(max(1e-14, a_H))
     pH_conc = -math.log10(max(1e-14, c_H))
-    
+
     # Nernst potential vs SHE for Fe2+/Fe
     E_rev_Fe = E0_FE2_FE + (R * T_K / (2.0 * F)) * math.log(max(1e-12, a_Fe2))
-    
+
     # Estimate Kw and Ksp(Fe(OH)2) at temperature T
     Kw_T = KW_25 * math.exp((-55800.0 / R) * (1.0 / T_K - 1.0 / 298.15))
     Ksp_T = KSP_FE_OH2_25 * math.exp((-25000.0 / R) * (1.0 / T_K - 1.0 / 298.15))
-    
+
     # Hydroxide activity for precipitation: a_OH = sqrt(Ksp_T / a_Fe2)
     a_OH_precip = math.sqrt(max(1e-30, Ksp_T / max(1e-12, a_Fe2)))
     a_H_precip = Kw_T / max(1e-30, a_OH_precip)
     pH_precip = -math.log10(max(1e-14, a_H_precip))
-    
+
     # Approximate electrolyte conductivity kappa (S/m) via ionic mobility
     # Limiting molar conductivities at 25 °C (S*cm^2/mol -> S*m^2/mol by / 10000)
     # Fe2+: 108.0, Na+: 50.1, H+: 349.6, SO4(2-): 160.0, HSO4-: 50.0
@@ -160,7 +160,7 @@ def solve_speciation(comp: SolutionComposition, max_iter: int = 200, tol: float 
     T_factor = 1.0 + 0.022 * (comp.T_C - 25.0)
     # Ionic strength screening factor (Walden/Debye-Hückel-Onsager effect ~ 1 / (1 + 0.5*sqrt(I)))
     I_factor = 1.0 / (1.0 + 0.45 * math.sqrt(I))
-    
+
     kappa = 1000.0 * (
         c_Fe2 * lambda_25['Fe2'] +
         c_Na * lambda_25['Na'] +
@@ -168,7 +168,7 @@ def solve_speciation(comp: SolutionComposition, max_iter: int = 200, tol: float 
         c_SO4 * lambda_25['SO4'] +
         c_HSO4 * lambda_25['HSO4']
     ) * T_factor * I_factor  # S/m
-    
+
     return {
         "temperature_C": comp.T_C,
         "ionic_strength_M": float(I),
@@ -200,7 +200,7 @@ def speciation_temperature_sweep(comp: SolutionComposition, T_min: float = 20.0,
         c = SolutionComposition(c_FeSO4=comp.c_FeSO4, c_Na2SO4=comp.c_Na2SO4,
                                 c_H2SO4=comp.c_H2SO4, c_H3BO3=comp.c_H3BO3, T_C=float(T))
         res_list.append(solve_speciation(c))
-    
+
     out = {"temperature_C": temps}
     keys = res_list[0].keys()
     for k in keys:

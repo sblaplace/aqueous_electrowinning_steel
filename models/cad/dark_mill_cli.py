@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from .dark_mill_config import (
@@ -63,7 +62,7 @@ def print_deployment_report(cfg: DarkMillConfig):
     print(f"  20ft container:       {'YES' if transport['fits_length_20ft'] else 'NO — needs 40ft'}")
     print(f"  Weight (loaded):      ~{transport['weight_estimate_kg']:.0f} kg ({transport['weight_estimate_kg']/1000:.1f} t)")
     print(f"  Forklift pockets:     YES (2 × {cfg.forklift_pocket_length:.0f}mm)")
-    print(f"  Crane lift points:    4 corners")
+    print("  Crane lift points:    4 corners")
     print()
     print("RAINWATER:")
     print(f"  Roof slope:           {rain['roof_slope_deg']}° → {rain['roof_height_diff_mm']}mm drop")
@@ -71,7 +70,7 @@ def print_deployment_report(cfg: DarkMillConfig):
     print(f"  Low side:             {rain['low_side']}")
     print(f"  Recommendation:       {rain['recommendation']}")
     print(f"  Door risk:            {rain['door_risk']}")
-    print(f"  Puddle risk zones:")
+    print("  Puddle risk zones:")
     for zone in rain['puddle_risk_zones']:
         print(f"    - {zone}")
     print()

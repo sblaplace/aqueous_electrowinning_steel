@@ -1,7 +1,5 @@
 """Tests for carburization screening model."""
 
-import pytest
-import numpy as np
 from models.carburization import (
     CarburizationModel,
     CarburizationParams,

@@ -6,11 +6,9 @@ import pytest
 from models.purification import (
     CementationModel,
     CementationParams,
-    ElectrowinningParams,
     HydrolysisModel,
     HydrolysisParams,
     IonExchangeModel,
-    IonExchangeParams,
     PurificationFeedstock,
     PurificationModel,
     SelectiveElectrowinningModel,

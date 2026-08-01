@@ -20,15 +20,14 @@ traverses for calibration.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional, Literal
+from dataclasses import dataclass
+from typing import Dict, Optional, Literal
 
 from .carburization import (
     CarburizationModel, CarburizationParams,
-    estimate_carburizing_time_for_case_depth, carbon_diffusivity_m2_s,
+    estimate_carburizing_time_for_case_depth,
 )
 from .carbon_potential import (
-    carbon_potential_summary, carbon_wt_from_activity,
     austenite_max_carbon_wt_percent,
 )
 

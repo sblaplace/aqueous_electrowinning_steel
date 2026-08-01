@@ -18,13 +18,11 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.lca import (
     ElectricityMix,
-    ChemicalSources,
     LCAResult,
     compute_lca,
     compare_routes,
@@ -52,14 +50,14 @@ def run_base_case():
     mix = ElectricityMix(renewable=1.0)
     result = compute_lca(SPECIFIC_ENERGY_KWH_PER_KG, electricity_mix=mix)
 
-    print(f"\n  Electricity mix: 100% renewable")
+    print("\n  Electricity mix: 100% renewable")
     print(f"  Specific energy: {result.specific_energy_kWh_per_kg:.2f} kWh/kg")
     print(f"\n  GWP:             {result.gwp_kgCO2eq:.4f} kg CO₂-eq / kg steel")
     print(f"  Acidification:   {result.acidification_kgSO2eq:.6f} kg SO₂-eq / kg")
     print(f"  Eutrophication:  {result.eutrophication_kgPO4eq:.8f} kg PO₄-eq / kg")
     print(f"  Water:           {result.water_L:.2f} L / kg steel")
     print(f"  Land use:        {result.land_use_m2:.6f} m² / kg steel")
-    print(f"\n  GWP breakdown:")
+    print("\n  GWP breakdown:")
     print(f"    Electricity:     {result.electricity_gwp:.4f} kg CO₂-eq")
     print(f"    Chemicals/ore:   {result.chemicals_gwp:.4f} kg CO₂-eq")
     print(f"    Heat treatment:  {result.heat_treatment_gwp:.4f} kg CO₂-eq")
@@ -235,7 +233,7 @@ def run_breakeven_analysis():
     """Find breakeven renewable fraction for <0.5 kg CO₂/kg target."""
     target = 0.5
     frac = breakeven_renewable_fraction(SPECIFIC_ENERGY_KWH_PER_KG, target_co2_kg_per_kg=target)
-    print(f"\n  Breakeven analysis:")
+    print("\n  Breakeven analysis:")
     print(f"    Target:    <{target} kg CO₂-eq / kg steel")
     print(f"    Required:  ≥{frac * 100:.1f}% renewable electricity in coal/renewable mix")
     return frac

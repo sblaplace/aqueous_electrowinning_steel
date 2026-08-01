@@ -12,9 +12,7 @@ Tests for the FMEA module — >=6 test cases covering:
 
 from __future__ import annotations
 
-import math
 
-import numpy as np
 import pytest
 
 from models.uncertainty.fmea import (

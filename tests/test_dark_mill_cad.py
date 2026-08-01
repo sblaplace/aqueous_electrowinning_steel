@@ -1,15 +1,12 @@
 """Tests for the dark mill 3D CAD model."""
 
 import pytest
-import math
 
 from models.cad.dark_mill_config import (
     DarkMillConfig,
     check_transportability,
     check_rainwater,
     check_maintenance_access,
-    TRAILER_MAX_WIDTH,
-    TRAILER_MAX_HEIGHT,
 )
 
 

@@ -1,13 +1,9 @@
 """Tests for hydrogen embrittlement screening model."""
 
-import pytest
 import numpy as np
 from models.hydrogen_embrittlement import (
     HydrogenEmbrittlementModel,
-    HDiffusionParams,
     TrapSiteParams,
-    HESusceptibilityParams,
-    BakeoutParams,
     h_diffusivity_m2_s,
     effective_diffusivity_m2_s,
     hydrogen_uptake_from_electrolysis,

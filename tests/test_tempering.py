@@ -1,4 +1,3 @@
-import pytest
 import numpy as np
 from models.tempering import (
     AlloyComposition,

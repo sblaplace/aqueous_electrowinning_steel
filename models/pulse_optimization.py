@@ -23,19 +23,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from itertools import product
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 
 from .co_deposition import PhaseIIICoDeposition
-from .electrochemistry import FARADAY, M_FE, Z_FE, specific_energy_kWh_per_kg
+from .electrochemistry import specific_energy_kWh_per_kg
 from .mechanical_properties import (
     MechanicalPropertiesModel,
     estimate_grain_size_um,
-    hall_petch_yield_MPa,
-    carbon_dispersion_strengthening_MPa,
-    solid_solution_strengthening_MPa,
 )
 
 

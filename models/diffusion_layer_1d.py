@@ -45,7 +45,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
-from .electrochemistry import E0_FE, FARADAY, M_FE, R_GAS, Z_FE
+from .electrochemistry import E0_FE, FARADAY, R_GAS, Z_FE
 from .pourbaix import LOGKSP_FEOH2
 
 # ─── Reference temperature ────────────────────────────────────────────

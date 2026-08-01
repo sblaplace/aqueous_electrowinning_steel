@@ -9,7 +9,6 @@ Requires CadQuery + OCC (needs libGL on headless systems).
 
 from __future__ import annotations
 
-from typing import Optional
 import math
 
 try:
@@ -414,9 +413,14 @@ def build_dark_mill(cfg: DarkMillConfig):
     assembly = assembly.union(build_forklift_pockets(cfg))
     assembly = assembly.union(build_lifting_lugs(cfg))
 
-    # Post-processing (if configured)
-    if cfg.post_processing_route != "none":
-        assembly = assembly.union(build_post_processing_equipment(cfg))
+    # Post-processing equipment (route-dependent, mirrors build_dark_mill_assembly)
+    if cfg.post_processing_route == "carburize":
+        assembly = assembly.union(build_carburization_furnace(cfg))
+        assembly = assembly.union(build_quench_tank(cfg))
+        assembly = assembly.union(build_gas_supply_panel(cfg))
+    elif cfg.post_processing_route == "codeposit":
+        assembly = assembly.union(build_particle_hopper(cfg))
+        assembly = assembly.union(build_ultrasonic_bath(cfg))
 
     return assembly
 

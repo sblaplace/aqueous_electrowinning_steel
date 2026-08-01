@@ -23,7 +23,6 @@ import numpy as np
 
 from .uncertainty.parameter_registry import REGISTRY
 from .uncertainty.validation_planner import (
-    experiment_catalog,
     plan_validation_experiments,
     sequential_planner,
     uncertainty_reduction_trajectory,
@@ -220,7 +219,7 @@ def main():
                         help="Directory for plots and JSON")
     args = parser.parse_args()
     summary = run(args.output_dir)
-    print(f"\nPlanner complete.")
+    print("\nPlanner complete.")
     print(f"  {summary['n_experiments']} experiments, "
           f"${summary['total_cost_usd']:.0f} total")
     print(f"  Final remaining variance: "

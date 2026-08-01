@@ -2,18 +2,14 @@
 
 import pytest
 from models.pilot_costing import (
-    EquipmentItem,
     six_tenths_scale,
     estimate_capex,
     capex_at_all_scales,
     capex_by_category,
     capex_sensitivity_tornado,
     PilotOPEXModel,
-    PilotCAPEXResult,
     PID_EQUIPMENT,
-    SCALE_LAB,
     SCALE_PILOT,
-    SCALE_PRODUCTION,
     equipment_table,
 )
 

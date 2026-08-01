@@ -37,7 +37,7 @@ import math
 import numpy as np
 
 from .electrochemistry import FARADAY, R_GAS
-from .kinetics import DepositionKinetics, limiting_current_density
+from .kinetics import DepositionKinetics
 
 # ─── Physical Constants ──────────────────────────────────────────
 
@@ -404,7 +404,7 @@ def predict_morphology(
         temperature_C=kinetics.temperature_C,
     )
     if nuc_ratio > 1.0:
-        factors.append(f"high nucleation rate (fine grain/powder risk)")
+        factors.append("high nucleation rate (fine grain/powder risk)")
 
     # Step 5: Fe(OH)₂ precipitation check
     if feoh2_supersaturation > 1.0:

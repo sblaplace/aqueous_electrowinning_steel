@@ -1,13 +1,10 @@
 """Unit tests for the Phase III co-deposition model."""
 from __future__ import annotations
 
-import numpy as np
-import pytest
 
 from models.co_deposition import (
     GuglielmiCarbonIncorporation,
     AnomalousFeNiKinetics,
-    PhaseIIICoDeposition,
     build_phase3_model,
 )
 
@@ -96,5 +93,5 @@ class TestPhaseIIICoDeposition:
 
 class TestModuleImports:
     def test_import_from_init(self):
-        from models import PhaseIIICoDeposition, GuglielmiCarbonIncorporation, AnomalousFeNiKinetics
+        from models import PhaseIIICoDeposition
         assert PhaseIIICoDeposition is not None

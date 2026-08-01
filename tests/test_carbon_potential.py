@@ -1,5 +1,3 @@
-import pytest
-import math
 from models.carbon_potential import (
     carbon_activity_from_co_co2,
     carbon_activity_from_ch4_h2,

@@ -29,14 +29,11 @@ This is ~2% of total specific energy (~3 kWh/kg) and is included
 in the OPEX model as grinding_energy_kWh_per_t.
 """
 
-import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
-import json
 
 from .electrochemistry import (
-    CellVoltageModel, specific_energy_kWh_per_t,
-    specific_energy_kWh_per_kg, FARADAY, M_FE, Z_FE,
+    specific_energy_kWh_per_t,
     current_density_to_production,
 )
 

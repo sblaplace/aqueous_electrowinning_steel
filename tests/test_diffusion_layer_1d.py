@@ -21,16 +21,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.diffusion_layer_1d import (  # noqa: E402
     DiffusionLayer1D,
-    DiffusionLayerResult,
-    FilmProfile,
     _diffusivity_T,
     _Ka_T,
     faradaic_efficiency,
     KA2_25C,
     KAB_25C,
-    T_REF,
 )
-from models.electrochemistry import FARADAY  # noqa: E402
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────

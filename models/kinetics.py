@@ -22,7 +22,7 @@ from typing import Iterable, Optional
 import numpy as np
 from scipy.optimize import brentq
 
-from .electrochemistry import FARADAY, R_GAS, M_FE, Z_FE
+from .electrochemistry import FARADAY, M_FE, Z_FE
 from .pourbaix import her_line
 
 T_REF = 298.15

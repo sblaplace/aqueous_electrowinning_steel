@@ -1,9 +1,7 @@
 """Tests for pulse-coupled co-deposition coupling."""
 
-import pytest
 from models.co_deposition import (
     AnomalousFeNiKinetics,
-    PhaseIIICoDeposition,
     build_phase3_model,
     surface_pH_from_current,
     surface_pH_from_pulse,

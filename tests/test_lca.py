@@ -3,7 +3,6 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -12,7 +11,6 @@ from models.lca import (
     ElectricityMix,
     ChemicalSources,
     LCAResult,
-    ComparisonTable,
     REFERENCE_ROUTES,
     compute_lca,
     compare_routes,

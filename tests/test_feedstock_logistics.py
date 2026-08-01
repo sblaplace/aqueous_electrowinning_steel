@@ -3,22 +3,14 @@
 import pytest
 from models.feedstock_logistics import (
     DesignPoint,
-    RawMaterial,
-    MaterialBalance,
-    MaterialLineItem,
     material_balance,
     electrolyte_recycling,
     site_score,
     compare_locations,
     electricity_sensitivity,
-    RAW_MATERIALS,
     CANDIDATE_LOCATIONS,
     LocationData,
     LocationWeight,
-    LocationScore,
-    LocationRanking,
-    RecyclingEconomics,
-    SensitivityResult,
 )
 
 

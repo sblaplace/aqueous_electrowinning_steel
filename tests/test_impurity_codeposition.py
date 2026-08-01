@@ -2,21 +2,12 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from models.impurity_codeposition import (
     ImpurityCoDeposition,
     BathKinetics,
     compare_bath_types,
-    SULFATE_KINETICS,
-    CHLORIDE_KINETICS,
     CU_HOT_SHORTNESS_WT,
-    E0_CU,
-    E0_NI,
-    E0_ZN,
-    M_CU,
-    M_NI,
-    M_ZN,
 )
 
 

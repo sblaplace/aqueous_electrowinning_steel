@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from models.feedstock_logistics import (
     DesignPoint, material_balance, electrolyte_recycling,
     compare_locations, electricity_sensitivity,
-    CANDIDATE_LOCATIONS, LocationWeight, RAW_MATERIALS,
+    CANDIDATE_LOCATIONS,
 )
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "figures"

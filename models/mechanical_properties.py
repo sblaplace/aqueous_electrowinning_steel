@@ -34,7 +34,7 @@ References (screening calibrations)
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, Dict, Any, Literal
 import math
 import numpy as np

@@ -33,7 +33,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from models.uncertainty.fmea import (
-    FailureMode,
     FMEAReport,
     generate_fmea,
     critical_failure_paths,
@@ -230,7 +229,7 @@ def main(
     # Critical paths
     critical = critical_failure_paths(fmea)
     if critical:
-        print(f"\nCritical failure paths (RPN > 100):")
+        print("\nCritical failure paths (RPN > 100):")
         for fm in critical:
             print(f"  {fm.id}: {fm.mode} — RPN={fm.rpn} (S={fm.severity} O={fm.occurrence} D={fm.detection})")
 

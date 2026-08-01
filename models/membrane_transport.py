@@ -76,11 +76,10 @@ Fluxes: mol/(m²·s).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 
-from .electrochemistry import FARADAY, R_GAS
+from .electrochemistry import FARADAY
 
 # ─── Iron redox constants ──────────────────────────────────────────────
 E0_FE3_FE2 = 0.771        # V vs. SHE  (Fe³⁺ + e⁻ → Fe²⁺)

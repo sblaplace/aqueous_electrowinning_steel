@@ -1,11 +1,8 @@
 """Tests for mechanical properties screening model."""
 
-import pytest
 import numpy as np
 from models.mechanical_properties import (
     MechanicalPropertiesModel,
-    GrainSizeParams,
-    MechanicalPropertiesParams,
     estimate_grain_size_um,
     hall_petch_yield_MPa,
     solid_solution_strengthening_MPa,

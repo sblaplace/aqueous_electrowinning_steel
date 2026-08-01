@@ -15,10 +15,8 @@ Tests for the confidence report module — >=8 test cases covering:
 from __future__ import annotations
 
 import math
-import time
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 from models.uncertainty.confidence_report import (
@@ -27,24 +25,16 @@ from models.uncertainty.confidence_report import (
     qualification_verdict,
     plot_confidence_report,
     _resolve_spec_set,
-    _top_uncertainty_drivers,
-    _compute_design_margins,
-    SPEC_SET_MAP,
 )
 from models.uncertainty.monte_carlo import MonteCarloResult
 from models.uncertainty.specification import (
     SPECS_A36,
-    SPECS_1010,
-    SPECS_1020,
     SPECS_CARBURIZED,
-    Specification,
 )
-from models.uncertainty.fmea import FMEAReport, FailureMode, generate_fmea
+from models.uncertainty.fmea import FMEAReport, FailureMode
 from models.uncertainty.validation_planner import (
     ValidationPlan,
-    plan_validation_experiments,
 )
-from models.uncertainty.parameter_registry import REGISTRY
 
 
 # ---------------------------------------------------------------------------

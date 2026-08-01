@@ -185,15 +185,15 @@ def main() -> None:
     # 3. Separate sweeps and perform baseline correction
     print("\nSegmenting sweeps and applying baseline correction...")
     sweeps = segment_sweeps(df)
-    
+
     # Cycle 2 forward is index 2 (Cycle 1 FWD=0, C1 REV=1, C2 FWD=2, C2 REV=3)
     c2_forward = sweeps[2]
-    
+
     # Automatically find the current at Fe onset (-0.63 V vs Ag/AgCl)
     idx_onset = (c2_forward["potential_V_vs_ref"] - (-0.63)).abs().idxmin()
     onset_current_A = c2_forward.loc[idx_onset]["current_A"]
     print(f"  Detected baseline onset current at -0.63 V: {onset_current_A*1e3:.3f} mA")
-    
+
     c2_forward_corrected = baseline_correct(c2_forward, baseline_current_A=onset_current_A)
 
     # 4. Perform Tafel Fitting
@@ -207,7 +207,7 @@ def main() -> None:
         equilibrium_potential_V=-0.37,
         current_column="current_A",
     )
-    print(f"  ✅ HER Tafel Fit (-0.55 to -0.45 V vs Ag/AgCl):")
+    print("  ✅ HER Tafel Fit (-0.55 to -0.45 V vs Ag/AgCl):")
     print(f"    - Tafel Slope: {her_fit.slope_V_decade*1000:.1f} mV/decade")
     print(f"    - Extrapolated Exchange Current: {her_fit.exchange_current_A*1e6:.3f} µA")
     print(f"    - R²: {her_fit.r_squared:.5f}")
@@ -221,23 +221,23 @@ def main() -> None:
         equilibrium_potential_V=-0.63,
         current_column="current_corrected_A",
     )
-    print(f"  ✅ Fe Tafel Fit (-0.73 to -0.67 V vs Ag/AgCl, corrected):")
+    print("  ✅ Fe Tafel Fit (-0.73 to -0.67 V vs Ag/AgCl, corrected):")
     print(f"    - Tafel Slope: {fe_fit.slope_V_decade*1000:.1f} mV/decade")
     print(f"    - Extrapolated Exchange Current: {fe_fit.exchange_current_A*1e6:.3f} µA")
     print(f"    - R²: {fe_fit.r_squared:.5f}")
 
     # Extrema analysis
     ext = extrema(c2_forward_corrected)
-    print(f"  ✅ Peak Extrema (Cycle 2 Forward):")
+    print("  ✅ Peak Extrema (Cycle 2 Forward):")
     print(f"    - Cathodic Peak Potential: {ext['cathodic_peak_potential_V']:.3f} V vs Ag/AgCl")
     print(f"    - Cathodic Peak Current: {ext['cathodic_peak_current_A']*1000:.2f} mA")
 
     # 5. Generate Figures
     print("\nGenerating Voltammetry and Tafel figures...")
-    
+
     # Figure 1: Voltammetry Analysis
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-    
+
     # Left: Complete Cyclic Voltammetry
     ax = axes[0]
     for i, sweep in enumerate(sweeps):
@@ -246,9 +246,9 @@ def main() -> None:
         label = f"Cycle {cyc} {seg}" if i < 4 else None
         color = "blue" if cyc == 1 else "red"
         style = "-" if seg == "forward" else "--"
-        ax.plot(sweep["potential_V_vs_ref"], sweep["current_density_mA_cm2"], 
+        ax.plot(sweep["potential_V_vs_ref"], sweep["current_density_mA_cm2"],
                 color=color, linestyle=style, label=label, alpha=0.8)
-    
+
     ax.axhline(0, color="gray", lw=0.8, ls=":")
     ax.axvline(-0.63, color="green", lw=1.0, ls="--", label="Fe/Fe²⁺ E$_{eq}$")
     ax.axvline(-0.37, color="orange", lw=1.0, ls="--", label="HER E$_{eq}$")
@@ -261,12 +261,12 @@ def main() -> None:
     # Right: Baseline subtraction visualization
     ax = axes[1]
     c2f = c2_forward.copy()
-    
+
     ax.plot(c2f["potential_V_vs_ref"], c2f["current_A"] * 1000.0, "k-", label="Total Measured Current")
     ax.axhline(onset_current_A * 1000.0, color="r", lw=1.2, ls="--", label="Onset HER Baseline")
-    ax.plot(c2_forward_corrected["potential_V_vs_ref"], c2_forward_corrected["current_corrected_A"] * 1000.0, 
+    ax.plot(c2_forward_corrected["potential_V_vs_ref"], c2_forward_corrected["current_corrected_A"] * 1000.0,
             "g-.", label="Corrected Fe Current")
-    
+
     ax.set_xlabel("Potential (V vs Ag/AgCl)")
     ax.set_ylabel("Current (mA)")
     ax.set_title("HER Baseline Subtraction (Cycle 2 Forward)", fontweight="bold")
@@ -281,18 +281,18 @@ def main() -> None:
 
     # Figure 2: Tafel Analysis
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-    
+
     # Left: HER Tafel Plot
     ax = axes[0]
     # Extract data in HER fitting region
     her_sel = c2_forward[c2_forward["potential_V_vs_ref"].between(-0.55, -0.45)]
     eta_h = -0.37 - her_sel["potential_V_vs_ref"].to_numpy()
     log_i_h = np.log10(np.abs(her_sel["current_A"].to_numpy()))
-    
+
     # Fitted line
     eta_fit_h = np.linspace(0.08, 0.20, 100)
     log_i_fit_h = (1.0 / her_fit.slope_V_decade) * eta_fit_h + her_fit.intercept_log10_A
-    
+
     ax.scatter(eta_h, log_i_h, color="orange", facecolors="none", edgecolors="orange", label="Synthetic Data")
     ax.plot(eta_fit_h, log_i_fit_h, "r-", label="Tafel Fit")
     ax.set_xlabel("HER Overpotential η$_H$ (V)")
@@ -300,7 +300,7 @@ def main() -> None:
     ax.set_title("HER Tafel Plot & Fit (Slope = {:.1f} mV/dec)".format(her_fit.slope_V_decade * 1000.0), fontweight="bold")
     ax.legend(fontsize=9)
     ax.grid(True, alpha=0.3)
-    ax.text(0.12, log_i_h.min() + 0.2, f"i$_0$ = {her_fit.exchange_current_A*1e6:.2f} µA\nR² = {her_fit.r_squared:.5f}", 
+    ax.text(0.12, log_i_h.min() + 0.2, f"i$_0$ = {her_fit.exchange_current_A*1e6:.2f} µA\nR² = {her_fit.r_squared:.5f}",
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.8), fontsize=9)
 
     # Right: Fe Tafel Plot
@@ -309,11 +309,11 @@ def main() -> None:
     fe_sel = c2_forward_corrected[c2_forward_corrected["potential_V_vs_ref"].between(-0.73, -0.67)]
     eta_fe = -0.63 - fe_sel["potential_V_vs_ref"].to_numpy()
     log_i_fe = np.log10(np.abs(fe_sel["current_corrected_A"].to_numpy()))
-    
+
     # Fitted line
     eta_fit_fe = np.linspace(0.03, 0.12, 100)
     log_i_fit_fe = (1.0 / fe_fit.slope_V_decade) * eta_fit_fe + fe_fit.intercept_log10_A
-    
+
     ax.scatter(eta_fe, log_i_fe, color="green", facecolors="none", edgecolors="green", label="Baseline-Corrected Fe")
     ax.plot(eta_fit_fe, log_i_fit_fe, "r-", label="Tafel Fit")
     ax.set_xlabel("Fe Overpotential η$_{Fe}$ (V)")
@@ -321,7 +321,7 @@ def main() -> None:
     ax.set_title("Fe Tafel Plot & Fit (Slope = {:.1f} mV/dec)".format(fe_fit.slope_V_decade * 1000.0), fontweight="bold")
     ax.legend(fontsize=9)
     ax.grid(True, alpha=0.3)
-    ax.text(0.06, log_i_fe.min() + 0.2, f"i$_0$ = {fe_fit.exchange_current_A*1e6:.2f} µA\nR² = {fe_fit.r_squared:.5f}", 
+    ax.text(0.06, log_i_fe.min() + 0.2, f"i$_0$ = {fe_fit.exchange_current_A*1e6:.2f} µA\nR² = {fe_fit.r_squared:.5f}",
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.8), fontsize=9)
 
     plt.tight_layout()

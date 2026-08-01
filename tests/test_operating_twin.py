@@ -3,7 +3,6 @@
 import pytest
 
 from models.operating_twin import (
-    ControlCommand,
     OperatingTwin,
     SensorSnapshot,
     TwinConfig,
