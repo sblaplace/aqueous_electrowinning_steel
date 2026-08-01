@@ -396,6 +396,23 @@ class DigitalTwin:
             "electrode_area_m2": 1.0,
         }
         self.model = model
+        # If a physics process model is supplied, seed the operating point from
+        # physics so the EKF starts at a self-consistent reference condition.
+        if model is not None and not design_point:
+            n = None
+            nom = getattr(model, "nominal", None)
+            if callable(nom):
+                n = nom()
+            elif isinstance(nom, dict):
+                n = nom
+            if n:
+                self.design_point = {
+                    "temperature_C": n.get("temperature_C", 60.0),
+                    "pH": 3.5,
+                    "cell_voltage_V": n.get("cell_voltage_V", 2.5),
+                    "j_avg_mA_cm2": n.get("j_avg_mA_cm2", 150.0),
+                    "electrode_area_m2": 1.0,
+                }
         self.rng = np.random.default_rng(seed)
 
         # Initial state
@@ -473,6 +490,19 @@ class DigitalTwin:
         )
         self._history.append(state)
         return state
+
+    def physics_predict(self, j_mA_cm2: float, temperature_C: float, fe2_M: float):
+        """Physics-predicted observables at an operating point via the process model.
+
+        Requires the twin to have been constructed with a ``CellProcessModel``
+        (the ``model`` argument).  Raises if no physics model is attached.
+        """
+        if self.model is None:
+            raise ValueError(
+                "DigitalTwin has no physics process model. "
+                "Construct it with DigitalTwin(model=CellProcessModel(...))."
+            )
+        return self.model.predict(j_mA_cm2, temperature_C, fe2_M)
 
     def predict_ahead(self, horizon_hr: float, n_steps: int = 50) -> PredictionEnvelope:
         """Forward-predict state and uncertainty.

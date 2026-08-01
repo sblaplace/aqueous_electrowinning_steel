@@ -396,6 +396,12 @@ from .feedstock_logistics import (
     SensitivityResult,
     electricity_sensitivity,
 )
+from .twin_physics import (
+    CellProcessModel,
+    ProcessPrediction,
+    default_process_model,
+    generate_physics_readings,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -741,4 +747,9 @@ __all__ = [
     "compare_locations",
     "SensitivityResult",
     "electricity_sensitivity",
+    # ── Physics process model (digital twin measurement model) ────────
+    "CellProcessModel",
+    "ProcessPrediction",
+    "default_process_model",
+    "generate_physics_readings",
 ]
