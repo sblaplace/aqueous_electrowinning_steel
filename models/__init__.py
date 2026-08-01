@@ -422,6 +422,10 @@ from .observability import (
     characterize_current_suite,
     evaluate_sensor_set_over_grid,
 )
+from .env_coupling import (
+    DisturbanceInputs,
+    disturbance_from_environment,
+)
 from .crate import (
     Crate,
     CrateConfig,
@@ -813,6 +817,9 @@ __all__ = [
     "ProcessPrediction",
     "default_process_model",
     "generate_physics_readings",
+    # ── Environmental disturbance coupling (cell ⇄ crate) ───────────────
+    "DisturbanceInputs",
+    "disturbance_from_environment",
     # ── Observability & sensor placement (digital twin EKF) ───────────
     "CandidateSensor",
     "ObservabilityResult",
