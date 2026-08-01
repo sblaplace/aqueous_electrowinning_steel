@@ -222,11 +222,9 @@ retained with their resolution so the record shows what changed and where.*
 
 6. **Feedstock sourcing.** Global spent pickle liquor + copperas: ~3–6 Mt Fe/yr vs 1,900 Mt steel/yr. Beachhead, not thesis. Chase negative-cost feedstocks: acid mine drainage, red mud, pickle liquor you're paid to take. A −$50/t feedstock is worth more to the model than 10 points of FE.
 
-7. **Deposit internal stress.** Still missing. No Stoney/bent-strip model
+7. ~~**Deposit internal stress.** Still missing. No Stoney/bent-strip model
    exists; `run_mechanical_properties.py` explicitly disclaims texture and
-   residual stress. Internal stress governs whether thick deposits crack or
-   curl off the substrate, and it is measurable for ~$200 (Tier 0 item 6).
-   This is now the largest un-modelled physics gap on the product path.
+   residual stress.~~ **Addressed** in `models/internal_stress.py` (forward/inverse Stoney, exact two-layer finite-thickness correction, GUM uncertainty budget, mechanism decomposition from plating conditions, additive relief, and the Tier 0 coupon curvature protocol).
 
 8. **Deposit adhesion / release.** Newly surfaced by the architecture screen.
    Continuous harvesting requires the deposit to come off the cathode on
@@ -342,7 +340,7 @@ model is a hypothesis generator, not evidence.
 - [ ] Instrumented divided-beaker cell: polarization, FE, voltage decomposition, crossover, and iron-speciation curves — **wet lab**; this is the gate-2/gate-3 dataset
 - [x] Cell architecture paper study (drum, belt, rotating cylinder, filter-press) — `models/cell_architecture.py` + `run_cell_architecture.py`: literature Sherwood correlations per architecture, harvest-continuity duty cycle, $/m² → $/annual tonne, and a computable kill-criterion-#3 threshold
 - [ ] RDE + Levich for kinetics/transport separation — **not started**; the measurement that makes `diffusion_layer_1d` calibratable. Highest-value remaining Tier 1 model+experiment pair
-- [ ] Stoney stress measurement on thin shim — **not started**; no internal-stress model exists (`run_mechanical_properties.py` lists this as a known gap)
+- [x] Stoney stress measurement on thin shim — **protocol specified** (`models/internal_stress.py`, `coupon_curvature_protocol`: bent-strip cantilever deflection, finite-thickness correction, GUM budget, and decision rules)
 - [x] Purification circuit design (cementation, hydrolysis for Cu/Ni/Zn removal) — `models/purification.py` + `run_purification.py`: four-stage screen (cementation, hydrolysis, selective EW, ion exchange) with Cu spec check and stage costs
 
 ### Tier 2 — After Tier 1 shows a viable operating window.
@@ -402,7 +400,7 @@ A dark mill producing precision electroforms funds the R&D to get to commodity i
 - Tier 0 checklist complete at desk level (all checkboxes marked)
 - Platform requirement added: reconfigurable/redeployable platform + fixed proving ground (this document, §The Vision)
 - `models/deposit_morphology.py` + tests and `scripts/dft_h_adsorption_fe.py` landed in `cfed4d0` — no longer untracked
-- Tier 1 desk items closed: 1D diffusion-layer model, purification circuit, and the cell architecture screen. Remaining Tier 1 is wet-lab (Hull cell, divided beaker cell) plus two unbuilt models: **RDE/Levich** and **Stoney internal stress**
+- Tier 1 desk items closed: 1D diffusion-layer model, purification circuit, cell architecture screen, and Stoney internal stress model. Remaining Tier 1 is wet-lab (Hull cell, divided beaker cell) plus one unbuilt model: **RDE/Levich**
 - Test coverage reconciled: `technoeconomic`, `kinetics`, `pourbaix`, `scenarios` and `cell_physics` now have direct tests (they previously had none despite carrying every kill criterion). Only `process_flow` (figure generation) and `supply_chain` (frozen per §What to Freeze) remain untested
 - `models/README.md` completed: it documented 30 of 57 modules, now all of them
 

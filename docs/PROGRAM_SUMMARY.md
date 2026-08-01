@@ -72,16 +72,16 @@ Three qualifications keep this from being a decision:
 3. All correlations are transferred from other chemistries and all costs are
    engineering estimates. This is screening evidence, not measurement.
 
-## Deposit adhesion and the continuous-foil branch
+## Deposit adhesion and internal stress (the continuous-foil branch)
 
-`models/adhesion_peel.py` computes what the architecture screen declined to:
-whether the deposit releases. It treats peeling as an energy balance — stored
+`models/adhesion_peel.py` and `models/internal_stress.py` compute what the architecture screen declined to:
+whether the deposit releases and what internal stresses drive that release. `adhesion_peel.py` treats peeling as an energy balance — stored
 elastic energy `G = (1−ν)σ²h/E` against interfacial toughness
-`Γ = W_adh × φ_plastic × roughness × f_H` — with residual stress decomposed
-into Hoffman grain coalescence, hydrogen effusion, and thermal mismatch, and
-with two failure modes that adhesion alone cannot express: the web tearing
+`Γ = W_adh × φ_plastic × roughness × f_H` — with two failure modes that adhesion alone cannot express: the web tearing
 under its own peel force, and the crack abandoning the interface to run
 through the deposit when the interface is tougher than the film.
+
+`internal_stress.py` provides the deposit stress model (Stoney / bent-strip) that feeds this energy balance, decomposing residual stress into Hoffman grain coalescence, hydrogen effusion, and thermal mismatch, and computing exact two-layer laminate finite-thickness corrections alongside a full GUM standard-uncertainty budget.
 
 At the drum's 25 µm target on a low-hydrogen deposit, the reference passive
 TiO₂ surface returns a controlled peel at ~5 N/m, the metallic negative
@@ -97,16 +97,15 @@ giving 28 µm carrying ~240 ppm diffusible hydrogen — flips the verdict to
 spontaneous delamination, with hydrogen contributing 373 of 414 MPa of
 residual stress. **Hydrogen management, not drum surface selection, is the
 lever on peelability**, which ties this branch back to the same HER problem
-that governs Faradaic efficiency.
+that governs Faradaic efficiency. `internal_stress.py` demonstrates that Pulse Reverse Electrowinning (PRE) and saccharin additive relief can mitigate this stress.
 
 The branch verdict is `proceed_with_coupon_test`. It is not `proceed` because
 the outcome moves within the plausible range of the plastic amplification
 factor — measured peel work over thermodynamic work of adhesion — which spans
 an order of magnitude in the literature and cannot be estimated from first
-principles. The module therefore specifies the replacement measurement: a
-$1,750, 3-day peel and coupon-curvature set with explicit kill, confirm, and
-redirect-to-flake decision rules. This is screening fracture mechanics; no
-iron peel data exists in this repository.
+principles. The suite therefore specifies the replacement measurements: a
+$1,750 peel test (`adhesion_peel.coupon_test_protocol`) paired with a $200 Stoney bent-strip coupon-curvature protocol (`internal_stress.coupon_curvature_protocol`) with explicit kill, confirm, and redirect-to-flake decision rules. This is screening fracture mechanics and mechanics; no
+iron peel or internal-stress data exists in this repository.
 
 ## Deployment hypothesis
 

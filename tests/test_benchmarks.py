@@ -170,3 +170,36 @@ class TestMonteCarloEngineBench:
 
     # N=200 and above benchmark separately — too slow for CI round-trips.
     # Use: pytest tests/test_benchmarks.py -k mc_n200 --benchmark-max-time=600
+
+
+# ---------------------------------------------------------------------------
+# 8. Deposit internal stress and peel pipeline
+# ---------------------------------------------------------------------------
+
+class TestInternalStressBench:
+    def test_deposit_stress_from_conditions(self, benchmark):
+        from models.internal_stress import deposit_stress_from_conditions
+        benchmark(
+            deposit_stress_from_conditions,
+            j_mA_cm2=100.0,
+            current_efficiency_percent=85.0,
+            deposition_time_s=900.0,
+        )
+
+    def test_peel_verdict_from_conditions(self, benchmark):
+        from models.internal_stress import peel_verdict_from_conditions
+        benchmark(
+            peel_verdict_from_conditions,
+            j_mA_cm2=100.0,
+            current_efficiency_percent=85.0,
+            deposition_time_s=900.0,
+        )
+
+    def test_stress_profile_200_points(self, benchmark):
+        from models.internal_stress import stress_profile
+        benchmark(
+            stress_profile,
+            plateau_stress_MPa=400.0,
+            h_max_um=50.0,
+            n_points=200,
+        )

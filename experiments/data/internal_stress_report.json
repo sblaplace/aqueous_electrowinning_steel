@@ -1,0 +1,454 @@
+{
+  "title": "Deposit internal stress (Stoney / bent-strip) report",
+  "purpose": "Predict internal residual stress from deposition conditions (intrinsic, hydrogen, thermal), evaluate bent-strip cantilever deflection and GUM uncertainty budget, and connect stress state to drum-and-strip adhesion and peel.",
+  "model_scope": {
+    "computes": [
+      "Forward Stoney: stress \u2192 curvature \u2192 cantilever deflection",
+      "Inverse Stoney / bent-strip: deflection \u2192 stress",
+      "Exact two-layer laminate curvature and the finite-thickness correction",
+      "GUM uncertainty budget for the measured stress",
+      "Stress decomposition from plating conditions (intrinsic, hydrogen, thermal)",
+      "Saccharin and chloride bath corrections (screening estimates)",
+      "Stress evolution with thickness (local vs Stoney-averaged)",
+      "Peel-driving force G(\u03c3, h) and the drum verdict from bath conditions",
+      "The coupon-curvature experiment design with decision rules"
+    ],
+    "does_not_compute": [
+      "Texture (crystallographic) stress contributions",
+      "Local stress at defects, pinholes, edge build-up, nodules",
+      "Time-resolved in-situ stress transients (only end-state + exponential relaxation)",
+      "Additives beyond saccharin/chloride (e.g. organic brighteners, thiourea)",
+      "Stress relief by annealing or hydrogen bake-out kinetics",
+      "Ductility-limited cracking (see mechanical_properties.py)"
+    ],
+    "calibration_required": [
+      "Measured \u03c3(h) by coupon curvature in the actual bath (the protocol above)",
+      "Diffusible H by thermal desorption on the same coupons",
+      "Grain size by metallography on the same coupons",
+      "Saccharin relief constant for this bath chemistry"
+    ],
+    "key_uncertainty": "The screening constants: HOFFMAN_DELTA_M, the saccharin relief fit, the chloride shift, and the absorption-fraction factor in hydrogen_embrittlement. All four are literature-order estimates, and all four are replaced by the coupon protocol's measurements.",
+    "limitations": "Screening mechanics with literature values and engineering estimates. No iron internal-stress data exists in this repository; the protocol is specified so the first measured number replaces the widest assumption."
+  },
+  "reference_case": {
+    "components": {
+      "intrinsic_MPa": 8.490945674044266,
+      "hydrogen_MPa": 372.56772174371054,
+      "thermal_MPa": 33.28450704225352,
+      "total_MPa": 414.3431744600083
+    },
+    "dominant_mechanism": "hydrogen",
+    "sign": "tensile",
+    "derived": {
+      "grain_size_um": 3.5,
+      "C_H_diffusible_ppm": 240.73403778125632,
+      "thickness_um": 28.116355658290008,
+      "deposition_rate_um_hr": 112.46542263316003
+    },
+    "corrections": {
+      "saccharin_g_L": 0.0,
+      "intrinsic_relief_fraction": 0.0,
+      "chloride_shift_MPa": 0.0,
+      "raw_intrinsic_MPa": 8.490945674044266
+    },
+    "substrate": "ti_passive_tio2",
+    "sources": {
+      "grain_size": "mechanical_properties.estimate_grain_size_um",
+      "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+      "thickness": "Faraday's law at the supplied j, FE and time",
+      "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+      "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+      "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+      "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+      "chloride": "internal_stress screening shift (Di Bari electroforming)"
+    }
+  },
+  "peel_verdicts": {
+    "dc": {
+      "inputs": {
+        "j_mA_cm2": 100.0,
+        "current_efficiency_percent": 85.0,
+        "deposition_time_s": 900.0,
+        "waveform": "dc",
+        "bath_pH": 3.0,
+        "temperature_C": 60.0,
+        "substrate": "ti_passive_tio2",
+        "saccharin_g_L": 0.0,
+        "chloride_bath": false
+      },
+      "stress": {
+        "components": {
+          "intrinsic_MPa": 8.490945674044266,
+          "hydrogen_MPa": 372.56772174371054,
+          "thermal_MPa": 33.28450704225352,
+          "total_MPa": 414.3431744600083
+        },
+        "dominant_mechanism": "hydrogen",
+        "sign": "tensile",
+        "derived": {
+          "grain_size_um": 3.5,
+          "C_H_diffusible_ppm": 240.73403778125632,
+          "thickness_um": 28.116355658290008,
+          "deposition_rate_um_hr": 112.46542263316003
+        },
+        "corrections": {
+          "saccharin_g_L": 0.0,
+          "intrinsic_relief_fraction": 0.0,
+          "chloride_shift_MPa": 0.0,
+          "raw_intrinsic_MPa": 8.490945674044266
+        },
+        "substrate": "ti_passive_tio2",
+        "sources": {
+          "grain_size": "mechanical_properties.estimate_grain_size_um",
+          "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+          "thickness": "Faraday's law at the supplied j, FE and time",
+          "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+          "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+          "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+          "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+          "chloride": "internal_stress screening shift (Di Bari electroforming)"
+        }
+      },
+      "equivalent_inputs_to_peel_model": {
+        "grain_size_um": 3.5,
+        "C_H_diffusible_ppm": 240.7340377812563,
+        "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+      },
+      "peel": {
+        "substrate_id": "ti_passive_tio2",
+        "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+        "evidence_level": "commercial",
+        "electrically_conductive": true,
+        "residual_stress_MPa": 414.3,
+        "stress_breakdown_MPa": {
+          "intrinsic_MPa": 8.5,
+          "hydrogen_MPa": 372.6,
+          "thermal_MPa": 33.3,
+          "total_MPa": 414.3
+        },
+        "driving_force_G_J_m2": 16.2426,
+        "work_of_adhesion_J_m2": 0.3,
+        "interfacial_toughness_J_m2": 1.24,
+        "film_tearing_energy_J_m2": 976.08,
+        "hydrogen_retention_factor": 0.15,
+        "peel_force_N_per_m": 0.0,
+        "web_stress_MPa": 0.0,
+        "allowable_web_stress_MPa": 173.6,
+        "critical_thickness_um": 2.1,
+        "self_release_ratio": 13.1053,
+        "cohesive_ratio": 0.0013,
+        "tear_margin": null,
+        "outcome": "spontaneous_delamination",
+        "peelable": false,
+        "good_for_flake_harvest": true,
+        "reasons": [
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.11): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+        ]
+      },
+      "verdict": "spontaneous_delamination",
+      "peelable": false,
+      "good_for_flake_harvest": true
+    },
+    "pre": {
+      "inputs": {
+        "j_mA_cm2": 100.0,
+        "current_efficiency_percent": 95.0,
+        "deposition_time_s": 900.0,
+        "waveform": "pre",
+        "bath_pH": 3.0,
+        "temperature_C": 60.0,
+        "substrate": "ti_passive_tio2",
+        "saccharin_g_L": 0.0,
+        "chloride_bath": false
+      },
+      "stress": {
+        "components": {
+          "intrinsic_MPa": 21.41001065469103,
+          "hydrogen_MPa": 124.18924058123692,
+          "thermal_MPa": 33.28450704225352,
+          "total_MPa": 178.88375827818146
+        },
+        "dominant_mechanism": "hydrogen",
+        "sign": "tensile",
+        "derived": {
+          "grain_size_um": 1.3880567524446104,
+          "C_H_diffusible_ppm": 80.24467926041882,
+          "thickness_um": 31.424162206324134,
+          "deposition_rate_um_hr": 125.69664882529653
+        },
+        "corrections": {
+          "saccharin_g_L": 0.0,
+          "intrinsic_relief_fraction": 0.0,
+          "chloride_shift_MPa": 0.0,
+          "raw_intrinsic_MPa": 21.41001065469103
+        },
+        "substrate": "ti_passive_tio2",
+        "sources": {
+          "grain_size": "mechanical_properties.estimate_grain_size_um",
+          "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+          "thickness": "Faraday's law at the supplied j, FE and time",
+          "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+          "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+          "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+          "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+          "chloride": "internal_stress screening shift (Di Bari electroforming)"
+        }
+      },
+      "equivalent_inputs_to_peel_model": {
+        "grain_size_um": 1.3880567524446101,
+        "C_H_diffusible_ppm": 80.24467926041882,
+        "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+      },
+      "peel": {
+        "substrate_id": "ti_passive_tio2",
+        "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+        "evidence_level": "commercial",
+        "electrically_conductive": true,
+        "residual_stress_MPa": 178.9,
+        "stress_breakdown_MPa": {
+          "intrinsic_MPa": 21.4,
+          "hydrogen_MPa": 124.2,
+          "thermal_MPa": 33.3,
+          "total_MPa": 178.9
+        },
+        "driving_force_G_J_m2": 3.3836,
+        "work_of_adhesion_J_m2": 0.3,
+        "interfacial_toughness_J_m2": 1.38,
+        "film_tearing_energy_J_m2": 1623.5,
+        "hydrogen_retention_factor": 0.15,
+        "peel_force_N_per_m": 0.0,
+        "web_stress_MPa": 0.0,
+        "allowable_web_stress_MPa": 258.3,
+        "critical_thickness_um": 12.8,
+        "self_release_ratio": 2.4605,
+        "cohesive_ratio": 0.0008,
+        "tear_margin": null,
+        "outcome": "spontaneous_delamination",
+        "peelable": false,
+        "good_for_flake_harvest": true,
+        "reasons": [
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 2.46): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+        ]
+      },
+      "verdict": "spontaneous_delamination",
+      "peelable": false,
+      "good_for_flake_harvest": true
+    },
+    "saccharin": {
+      "inputs": {
+        "j_mA_cm2": 100.0,
+        "current_efficiency_percent": 85.0,
+        "deposition_time_s": 900.0,
+        "waveform": "dc",
+        "bath_pH": 3.0,
+        "temperature_C": 60.0,
+        "substrate": "ti_passive_tio2",
+        "saccharin_g_L": 1.5,
+        "chloride_bath": false
+      },
+      "stress": {
+        "components": {
+          "intrinsic_MPa": 4.197104614476437,
+          "hydrogen_MPa": 372.56772174371054,
+          "thermal_MPa": 33.28450704225352,
+          "total_MPa": 410.04933340044045
+        },
+        "dominant_mechanism": "hydrogen",
+        "sign": "tensile",
+        "derived": {
+          "grain_size_um": 3.5,
+          "C_H_diffusible_ppm": 240.73403778125632,
+          "thickness_um": 28.116355658290008,
+          "deposition_rate_um_hr": 112.46542263316003
+        },
+        "corrections": {
+          "saccharin_g_L": 1.5,
+          "intrinsic_relief_fraction": 0.5056964470628461,
+          "chloride_shift_MPa": 0.0,
+          "raw_intrinsic_MPa": 8.490945674044266
+        },
+        "substrate": "ti_passive_tio2",
+        "sources": {
+          "grain_size": "mechanical_properties.estimate_grain_size_um",
+          "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+          "thickness": "Faraday's law at the supplied j, FE and time",
+          "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+          "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+          "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+          "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+          "chloride": "internal_stress screening shift (Di Bari electroforming)"
+        }
+      },
+      "equivalent_inputs_to_peel_model": {
+        "grain_size_um": 7.080669315854569,
+        "C_H_diffusible_ppm": 240.7340377812563,
+        "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+      },
+      "peel": {
+        "substrate_id": "ti_passive_tio2",
+        "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+        "evidence_level": "commercial",
+        "electrically_conductive": true,
+        "residual_stress_MPa": 410.0,
+        "stress_breakdown_MPa": {
+          "intrinsic_MPa": 4.2,
+          "hydrogen_MPa": 372.6,
+          "thermal_MPa": 33.3,
+          "total_MPa": 410.0
+        },
+        "driving_force_G_J_m2": 15.9077,
+        "work_of_adhesion_J_m2": 0.3,
+        "interfacial_toughness_J_m2": 1.24,
+        "film_tearing_energy_J_m2": 976.08,
+        "hydrogen_retention_factor": 0.15,
+        "peel_force_N_per_m": 0.0,
+        "web_stress_MPa": 0.0,
+        "allowable_web_stress_MPa": 173.6,
+        "critical_thickness_um": 2.2,
+        "self_release_ratio": 12.835,
+        "cohesive_ratio": 0.0013,
+        "tear_margin": null,
+        "outcome": "spontaneous_delamination",
+        "peelable": false,
+        "good_for_flake_harvest": true,
+        "reasons": [
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 12.84): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+        ]
+      },
+      "verdict": "spontaneous_delamination",
+      "peelable": false,
+      "good_for_flake_harvest": true
+    }
+  },
+  "uncertainty_budget_reference": {
+    "sigma_MPa": 249.99999999999994,
+    "u_sigma_MPa": 13.436953458740525,
+    "relative_uncertainty": 0.05374781383496211,
+    "contributions_MPa": {
+      "deflection": 1.6108502869066248,
+      "substrate_thickness": 2.499999999999999,
+      "film_thickness": 9.999999999999996,
+      "substrate_modulus": 6.476683937823832,
+      "poisson": 3.5211267605633796,
+      "gauge_length": 4.166666666666666
+    },
+    "dominant_uncertainty": "film_thickness",
+    "deflection_um": 1551.975388601036
+  },
+  "coupon_curvature_protocol": {
+    "title": "Bent-strip / Stoney coupon-curvature set (Tier 0 item 6)",
+    "gates": "docs/RESEARCH_PROGRAM.md Missing Physics item 7; Tier 0 item 6; adhesion_peel.calibration_required ('Residual stress by coupon curvature (Stoney) in the actual bath')",
+    "runs_alongside": "The Day-1 Hull cell and adhesion coupon set (docs/FIRST_LAB_DAY.md) \u2014 same bath, same rectifier, same session; the 316L shim is the same material as the R3/R4 gravimetric coupons.",
+    "coupons": [
+      {
+        "material": "316L shim stock",
+        "thickness_mm": 0.2,
+        "role": "thin \u2014 maximizes deflection sensitivity, stays in Stoney validity to ~20 \u00b5m",
+        "n_replicates": 3
+      },
+      {
+        "material": "316L shim stock",
+        "thickness_mm": 0.4,
+        "role": "reference geometry for the uncertainty budget; matches FE coupons",
+        "n_replicates": 3
+      },
+      {
+        "material": "Titanium shim (drum surface)",
+        "thickness_mm": 0.4,
+        "role": "stress on the actual drum candidate (adhesion_peel reference substrate)",
+        "n_replicates": 3
+      }
+    ],
+    "plating_plan": [
+      {
+        "run": "DC baseline",
+        "conditions": "100 mA/cm\u00b2, 50\u201360 \u00b0C, bath B0 per FIRST_LAB_DAY.md, mask one face, plate 10\u2013100 \u00b5m (thickness series by time)",
+        "yields": "\u03c3(h) \u2014 the thickness sweep resolves the interfacial transient"
+      },
+      {
+        "run": "Waveform comparison",
+        "conditions": "DC vs PE vs PRE at equal average j (same thickness)",
+        "yields": "\u03c3(waveform) \u2014 does pulsing buy stress relief along with FE?"
+      },
+      {
+        "run": "Saccharin \u00b1",
+        "conditions": "\u00b12 g/L saccharin in a fresh B0 aliquot",
+        "yields": "intrinsic-term relief constant for this bath (calibrates the screening fit)"
+      }
+    ],
+    "measurements": [
+      {
+        "measurement": "Cantilever deflection \u03b4 before/after plating",
+        "instrument": "Dial gauge (10 \u00b5m) or stylus profilometer (1 \u00b5m) over 60 mm gauge length; 3 traces per coupon",
+        "yields": "\u03c3 via bent_strip_stress_MPa() / stoney_stress_MPa()",
+        "replaces_in_model": "HOFFMAN_DELTA_M and the whole forward intrinsic estimate"
+      },
+      {
+        "measurement": "Deposit thickness by mass and cross-section",
+        "instrument": "Analytical balance + metallographic mount",
+        "yields": "h_f for Stoney; Faradaic cross-check",
+        "replaces_in_model": "Faraday-law thickness assumption"
+      },
+      {
+        "measurement": "Diffusible hydrogen (optional on one coupon)",
+        "instrument": "Inert-gas fusion analyser (outsourced)",
+        "yields": "C_H to separate hydrogen stress from intrinsic stress",
+        "replaces_in_model": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis absorption-fraction screening factor"
+      }
+    ],
+    "uncertainty_budget": {
+      "reference_stress_MPa": 414.3431744600083,
+      "reference_thickness_um": 56.232711316580016,
+      "deflection_at_reference_um": 5785.674883579191,
+      "small_deflection_valid": true,
+      "u_sigma_dial_gauge_MPa": 16.39951867445482,
+      "stress_resolution_dial_gauge_MPa": 0.7161535737792495,
+      "stress_resolution_profilometer_MPa": 0.07161535737792496,
+      "dominant_uncertainty": "substrate_modulus",
+      "note": "If the reference deflection is below the instrument floor, thin the shim (\u03b4 \u221d h_s\u207b\u00b2) or lengthen the gauge (\u03b4 \u221d L\u00b2)."
+    },
+    "decision_rules": [
+      {
+        "if": "measured \u03c3 within \u00b150% of the model decomposition at \u22653 thicknesses",
+        "then": "model confirmed as a screening tool; proceed to use \u03c3(h) in the peel window (adhesion_peel) with measured inputs",
+        "class": "confirm"
+      },
+      {
+        "if": "\u03c3 > 400 MPa tensile at the 25 \u00b5m drum target, or self-delamination observed",
+        "then": "foil branch at risk from the film side; prioritize H suppression (waveform, temperature, additives) before any drum scale-up",
+        "class": "kill-or-redirect (foil branch)"
+      },
+      {
+        "if": "\u03c3(h) trend or sign disagrees with the mechanism decomposition",
+        "then": "recalibrate the intrinsic and hydrogen terms against the measured C_H and grain size before using the peel model",
+        "class": "redirect"
+      }
+    ],
+    "budget_usd": {
+      "shim_stock_and_masking": 60,
+      "dial_gauge_or_profilometer_access": 120,
+      "consumables": 20,
+      "total": 200,
+      "note": "Shared Day-1 items (rectifier, bath, balance) excluded; hydrogen analysis extra if run."
+    },
+    "replaces_in_model_set": [
+      "HOFFMAN_DELTA_M (intrinsic term) \u2014 via measured \u03c3 at known grain size",
+      "absorption-fraction screening factor (hydrogen term) \u2014 via measured C_H",
+      "the forward residual-stress estimate used by adhesion_peel",
+      "plastic amplification cross-check for the peel interface (paired with adhesion_peel.coupon_test_protocol)"
+    ]
+  },
+  "findings": [
+    "Baseline DC electrowinning (100 mA/cm\u00b2, 85% FE, 60 \u00b0C) produces a total tensile residual stress of 414.3 MPa on reference TiO\u2082 drum cathodes, with hydrogen effusion contributing 372.6 MPa (90% of the total stress).",
+    "Because hydrogen dominance (372.6 MPa) overwhelms the interfacial fracture toughness of passive oxides, the drum-and-strip verdict for DC baseline electrowinning is 'spontaneous_delamination'.",
+    "Pulse Reverse Electrowinning (PRE) at 95% efficiency reduces hydrogen effusion stress to 124.2 MPa, lowering total deposit stress to 178.9 MPa \u2014 demonstrating that pulse waveforms can mitigate hydrogen embrittlement and internal stress.",
+    "Saccharin additive (1.5 g/L) relieves intrinsic grain-boundary stress, reducing the intrinsic contribution from 8.5 MPa to 4.2 MPa, while chloride baths introduce a \u221230 MPa compressive shift.",
+    "On a standard 0.4 mm 316L coupon (L = 60 mm), a 25 \u00b5m deposit at 250 MPa induces a free-end cantilever deflection of 1552.0 \u00b5m, well above the 10 \u00b5m dial-gauge resolution floor and yielding a relative standard uncertainty of 5.4%.",
+    "The coupon curvature protocol (Bent-strip / Stoney coupon-curvature set (Tier 0 item 6)) specifies a $200 experiment across 3 coupons with explicit kill/confirm rules to replace screening estimates with measured \u03c3(h) data."
+  ],
+  "figures": [
+    "docs/figures/internal_stress_mechanism_decomposition.png",
+    "docs/figures/internal_stress_coupon_measurability.png",
+    "docs/figures/internal_stress_evolution_and_peel.png"
+  ]
+}
