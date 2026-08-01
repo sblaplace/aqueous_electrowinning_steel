@@ -13,7 +13,7 @@
     "does_not_compute": [
       "Faradaic efficiency (supplied by kinetics/diffusion_layer_1d)",
       "Cell voltage (supplied by electrochemistry.CellVoltageModel)",
-      "Deposit adhesion or peelability - the gating unknown for drums",
+      "Deposit adhesion or peelability - see models/adhesion_peel.py, which computes the peel window this module leaves open",
       "Current distribution within the electrode (see scale_up.py)",
       "Bubble effects on transport or ohmic drop",
       "Mechanical reliability of rotating/moving hardware in acid"
@@ -107,9 +107,9 @@
       "installed_cost ($/m2)": 3718.0,
       "capex_per_annual_tonne ($/t/yr)": 308.0,
       "capital_charge ($/t Fe)": 28.85,
-      "notes": "The electrodeposited copper foil machine, adapted. Industrially proven at 300-1200 mA/cm\u00b2 with continuous peel, which is exactly the combination the program asks for. The open question is whether iron peels: Cu foil relies on a passive TiO2 release layer, and Fe adhesion on titanium is not characterised here.",
+      "notes": "The electrodeposited copper foil machine, adapted. Industrially proven at 300-1200 mA/cm\u00b2 with continuous peel, which is exactly the combination the program asks for. The open question is whether iron peels: Cu foil relies on a passive TiO2 release layer, and Fe adhesion on titanium is not characterised here. models/adhesion_peel.py takes up that question.",
       "limitations": [
-        "Peelability of iron from the drum is UNVERIFIED - the gating risk",
+        "Peelability of iron from the drum is UNVERIFIED experimentally; models/adhesion_peel.py screens it and returns a coupon test",
         "High $/m\u00b2: precision drum plus winding line",
         "Thin foil only; thickness is set by drum speed",
         "Hydrogen in the deposit may embrittle the foil during winding"
@@ -317,7 +317,7 @@
     "Architectures meeting the ~5x zinc areal-productivity target: rotating_cylinder.",
     "The plate-and-frame baseline currently assumed in technoeconomic.py reaches only 0.66x the zinc benchmark (0.62 capacity factor after harvest downtime), which is the case for studying alternatives.",
     "Every architecture screened falls within the $60/t Fe cell capital budget; cell cost is therefore not the binding constraint at these assumed productivities.",
-    "Highest-value unknown: whether iron peels cleanly from a drum cathode. Copper foil relies on a passive TiO\u2082 release layer; iron adhesion on titanium is uncharacterised here and gates the drum-and-strip route entirely."
+    "Highest-value unknown: whether iron peels cleanly from a drum cathode. Copper foil relies on a passive TiO\u2082 release layer; iron adhesion on titanium is uncharacterised experimentally and gates the drum-and-strip route entirely. models/adhesion_peel.py now screens that question and specifies the coupon test that settles it."
   ],
   "figures": [
     "docs/figures/cell_architecture_comparison.png",

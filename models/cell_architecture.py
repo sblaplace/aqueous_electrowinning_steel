@@ -447,10 +447,12 @@ ARCHITECTURES: Dict[str, ArchitectureSpec] = {
             "proven at 300-1200 mA/cm² with continuous peel, which is exactly "
             "the combination the program asks for. The open question is "
             "whether iron peels: Cu foil relies on a passive TiO2 release "
-            "layer, and Fe adhesion on titanium is not characterised here."
+            "layer, and Fe adhesion on titanium is not characterised here. "
+            "models/adhesion_peel.py takes up that question."
         ),
         limitations=[
-            "Peelability of iron from the drum is UNVERIFIED - the gating risk",
+            "Peelability of iron from the drum is UNVERIFIED experimentally; "
+            "models/adhesion_peel.py screens it and returns a coupon test",
             "High $/m²: precision drum plus winding line",
             "Thin foil only; thickness is set by drum speed",
             "Hydrogen in the deposit may embrittle the foil during winding",
@@ -1044,7 +1046,8 @@ def model_scope() -> Dict[str, Any]:
         "does_not_compute": [
             "Faradaic efficiency (supplied by kinetics/diffusion_layer_1d)",
             "Cell voltage (supplied by electrochemistry.CellVoltageModel)",
-            "Deposit adhesion or peelability - the gating unknown for drums",
+            "Deposit adhesion or peelability - see models/adhesion_peel.py, "
+            "which computes the peel window this module leaves open",
             "Current distribution within the electrode (see scale_up.py)",
             "Bubble effects on transport or ohmic drop",
             "Mechanical reliability of rotating/moving hardware in acid",

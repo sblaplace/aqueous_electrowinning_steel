@@ -77,6 +77,7 @@ from models.run_thermal_balance import main as run_thermal_balance_main
 from models.run_operating_window import main as run_operating_window_main
 from models.run_experimental_matrix import main as run_experimental_matrix_main
 from models.run_cell_architecture import main as run_cell_architecture_main
+from models.run_adhesion_peel import main as run_adhesion_peel_main
 
 from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -355,7 +356,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
     }
 
     # 1 Electrochemistry
-    print("\n[1/17] Electrochemistry (Pourbaix + kinetics)...")
+    print("\n[1/18] Electrochemistry (Pourbaix + kinetics)...")
     try:
         run_electrochem_main()
         master["steps"]["electrochemistry"] = _load_json(DATA_DIR / "electrochemistry_report.json")
@@ -365,7 +366,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["electrochemistry"] = {"error": str(e)}
 
     # 2 Transport
-    print("\n[2/17] Transport (Nernst-Planck)...")
+    print("\n[2/18] Transport (Nernst-Planck)...")
     try:
         run_transport_main()
         master["steps"]["transport"] = _load_json(DATA_DIR / "transport_report.json")
@@ -375,7 +376,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["transport"] = {"error": str(e)}
 
     # 3 Pulse
-    print("\n[3/17] Pulse-reverse dynamics...")
+    print("\n[3/18] Pulse-reverse dynamics...")
     try:
         if not quick:
             run_pulse_main()
@@ -387,7 +388,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["pulse"] = {"error": str(e)}
 
     # 4 Voltammetry
-    print("\n[4/17] Voltammetry / Tafel...")
+    print("\n[4/18] Voltammetry / Tafel...")
     try:
         run_volt_main()
         master["steps"]["voltammetry"] = _load_json(DATA_DIR / "voltammetry_report.json")
@@ -398,7 +399,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["voltammetry"] = {"error": str(e)}
 
     # 5 EIS
-    print("\n[5/17] EIS...")
+    print("\n[5/18] EIS...")
     try:
         run_eis_main()
         master["steps"]["eis"] = _load_json(DATA_DIR / "eis_report.json")
@@ -408,7 +409,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["eis"] = {"error": str(e)}
 
     # 6 Hull cell
-    print("\n[6/17] Hull cell + gravimetric FE...")
+    print("\n[6/18] Hull cell + gravimetric FE...")
     try:
         run_hull_main()
         master["steps"]["hull_cell"] = _load_json(DATA_DIR / "hull_cell_report.json")
@@ -418,7 +419,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["hull_cell"] = {"error": str(e)}
 
     # 7 Co-deposition (Phase III)
-    print("\n[7/17] Co-deposition (Fe-Ni + C)...")
+    print("\n[7/18] Co-deposition (Fe-Ni + C)...")
     try:
         co_summary = _run_co_deposition_full()
         master["steps"]["co_deposition"] = co_summary
@@ -430,7 +431,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         co_summary = {}
 
     # 8 Mechanical properties
-    print("\n[8/17] Mechanical properties (Hall-Petch + ss + dispersion)...")
+    print("\n[8/18] Mechanical properties (Hall-Petch + ss + dispersion)...")
     try:
         mech_report = _run_mechanical_properties(co_summary) if co_summary else _run_mechanical_properties(
             {"hydroxide_suppression": {"at_100_mA_cm2": {"alloy_kinetics": {"ni_wt_percent": 2.0},
@@ -445,7 +446,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["mechanical_properties"] = {"error": str(e)}
 
     # 8b Carburization post-processing
-    print("\n[9/17] Carburization (Fickian case hardening)...")
+    print("\n[9/18] Carburization (Fickian case hardening)...")
     try:
         # Call with explicit kwargs to avoid argparse clash with --quick
         run_carburization_main(temperature=900.0, surface_c=1.10, initial_c=0.02, thickness=1000.0, duration=4.0, dt=0.2)
@@ -457,7 +458,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["carburization"] = {"error": str(e)}
 
     # 9 Carbon potential
-    print("\n[10/17] Carbon potential (gas atmosphere)...")
+    print("\n[10/18] Carbon potential (gas atmosphere)...")
     try:
         run_carbon_potential_main()
         master["steps"]["carbon_potential"] = _load_json(DATA_DIR / "carbon_potential_report.json")
@@ -468,7 +469,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["carbon_potential"] = {"error": str(e)}
 
     # 10 Tempering + RA
-    print("\n[11/17] Tempering + retained austenite...")
+    print("\n[11/18] Tempering + retained austenite...")
     try:
         run_tempering_main()
         master["steps"]["tempering"] = _load_json(DATA_DIR / "tempering_report.json")
@@ -479,7 +480,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["tempering"] = {"error": str(e)}
 
     # 11 Foil calibration (synthetic example)
-    print("\n[12/17] Foil + O2 probe calibration (synthetic)...")
+    print("\n[12/18] Foil + O2 probe calibration (synthetic)...")
     try:
         # Synthetic foil measurements: use foil_calibration module to fit D from its own synthetic data
         from models.foil_calibration import FoilMeasurement, fit_diffusivity_from_foil_data, fit_carbon_potential_offset
@@ -500,7 +501,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["foil_calibration"] = {"error": str(e)}
 
     # 12 Techno + Scenarios
-    print("\n[13/17] Technoeconomics + scenarios...")
+    print("\n[13/18] Technoeconomics + scenarios...")
     try:
         run_techno_main()
         run_scenarios_main()
@@ -512,7 +513,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["technoeconomic"] = {"error": str(e)}
 
     # 13 Process flow + PID
-    print("\n[14/17] Process flow diagrams + pilot P&ID...")
+    print("\n[14/18] Process flow diagrams + pilot P&ID...")
     try:
         pf1 = generate_process_flow_diagram()
         pf2 = generate_detailed_flow_with_composition()
@@ -535,7 +536,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["process_flow"] = {"error": str(e)}
 
     # 15 Pulse-coupled co-deposition analytics extra
-    print("\n[15/17] Pulse-coupled co-deposition analytics...")
+    print("\n[15/18] Pulse-coupled co-deposition analytics...")
     try:
         from models.co_deposition import build_phase3_model
         import matplotlib
@@ -586,7 +587,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["pulse_coupled_co_deposition"] = {"error": str(e)}
 
     # Pre-lab pre-experiment modeling suite (Speciation, Thermal Balance, Operating Window, DOE Matrix)
-    print("\n[16/17] Pre-lab modeling suite (Speciation, Thermal, Operating Window, DOE Matrix)...")
+    print("\n[16/18] Pre-lab modeling suite (Speciation, Thermal, Operating Window, DOE Matrix)...")
     try:
         run_speciation_main()
         master["steps"]["speciation"] = _load_json(DATA_DIR / "speciation_report.json")
@@ -603,7 +604,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["pre_lab_suite"] = {"error": str(e)}
 
     # Cell architecture screen (areal productivity, $/m², kill criterion #3)
-    print("\n[17/17] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
+    print("\n[17/18] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
     try:
         run_cell_architecture_main()
         master["steps"]["cell_architecture"] = _load_json(
@@ -614,6 +615,19 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ cell architecture: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["cell_architecture"] = {"error": str(e)}
+
+    # Deposit adhesion / peel screen (the drum-and-strip gating unknown)
+    print("\n[18/18] Adhesion & peel screen (does iron peel from a drum?)...")
+    try:
+        run_adhesion_peel_main()
+        master["steps"]["adhesion_peel"] = _load_json(
+            DATA_DIR / "adhesion_peel_report.json"
+        )
+        print("  ✅ adhesion & peel")
+    except Exception as e:
+        print(f"  ❌ adhesion & peel: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["adhesion_peel"] = {"error": str(e)}
 
     # Dashboard
     print("\n[Dashboard] Generating master dashboard...")

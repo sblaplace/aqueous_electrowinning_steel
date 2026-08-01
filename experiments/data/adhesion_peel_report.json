@@ -1,0 +1,437 @@
+{
+  "title": "Deposit adhesion and peel screen",
+  "purpose": "Resolve the gating unknown cell_architecture.py flagged and declined to compute: whether electrodeposited iron peels from a drum cathode, and therefore whether the continuous-foil architecture branch survives.",
+  "model_scope": {
+    "provenance": "Screening model. No wet-lab iron adhesion data exists in this repository. Surface energies are clean-surface literature values; interface energies and plastic amplification factors are engineering estimates by bonding class, transferred from copper-foil and electroforming practice.",
+    "computes": [
+      "Residual stress decomposed into intrinsic, hydrogen and thermal",
+      "Steady-state strain-energy release rate G(\u03c3, h)",
+      "Interfacial toughness from work of adhesion \u00d7 plastic \u00d7 roughness",
+      "Hydrogen knockdown of interfacial toughness (Rice-Wang form)",
+      "Steady-state peel force per width at arbitrary peel angle",
+      "Web stress and the tear-before-peel criterion",
+      "Critical self-delamination thickness",
+      "Substrate ranking and the drum-and-strip branch verdict",
+      "Stoney inversion of measured coupon curvature"
+    ],
+    "does_not_compute": [
+      "Mode-mixity of the interfacial crack (assumed steady-state peel)",
+      "Rate/temperature dependence of the plastic dissipation term",
+      "Adhesion evolution over drum service life or passivation drift",
+      "Localised adhesion failure: pinholes, edge build-up, nodules",
+      "Deposit morphology (see deposit_morphology.py)",
+      "Whether the peeled foil is metallurgically acceptable"
+    ],
+    "calibration_required": [
+      "90\u00b0 peel toughness of iron on the actual drum surface",
+      "Residual stress by coupon curvature (Stoney) in the actual bath",
+      "Hoffman relaxation distance \u0394 for this deposit",
+      "Diffusible hydrogen by thermal desorption",
+      "Observed critical self-release thickness"
+    ],
+    "key_uncertainty": "plastic_amplification spans roughly an order of magnitude in the peel literature and is the single parameter most likely to flip the verdict. amplification_robustness() reports whether it does."
+  },
+  "conditions": {
+    "thickness_um": 25.0,
+    "grain_size_um": 0.5,
+    "C_H_ppm": 2.0,
+    "bath_temperature_C": 60.0,
+    "ambient_temperature_C": 25.0,
+    "peel_angle_deg": 90.0,
+    "foil_yield_strength_MPa": 400.0,
+    "foil_elongation_fraction": 0.05,
+    "hydrogen_fraction_effused": 1.0,
+    "max_winder_tension_N_per_m": 200.0,
+    "min_controllable_tension_N_per_m": 5.0,
+    "web_stress_safety_factor": 0.5
+  },
+  "substrates": [
+    {
+      "substrate_id": "ti_passive_tio2",
+      "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+      "evidence_level": "commercial",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 95.8,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": 33.3,
+        "total_MPa": 95.8
+      },
+      "driving_force_G_J_m2": 0.7723,
+      "work_of_adhesion_J_m2": 0.3,
+      "interfacial_toughness_J_m2": 5.78,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 5.0,
+      "web_stress_MPa": 0.2,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 187.2,
+      "self_release_ratio": 0.1336,
+      "cohesive_ratio": 0.0058,
+      "tear_margin": 998.096,
+      "outcome": "clean_peel",
+      "peelable": true,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Controlled strip predicted: 5 N/m peel force, 998.1\u00d7 margin against web tearing, G/\u0393 = 0.13."
+      ]
+    },
+    {
+      "substrate_id": "stainless_316_passive",
+      "substrate_name": "316L stainless, passive Cr\u2082O\u2083 (tankhouse blank practice)",
+      "evidence_level": "commercial",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 18.8,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": -43.7,
+        "total_MPa": 18.8
+      },
+      "driving_force_G_J_m2": 0.0299,
+      "work_of_adhesion_J_m2": 0.8,
+      "interfacial_toughness_J_m2": 43.51,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 43.5,
+      "web_stress_MPa": 1.7,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 36404.8,
+      "self_release_ratio": 0.0007,
+      "cohesive_ratio": 0.0435,
+      "tear_margin": 115.0,
+      "outcome": "clean_peel",
+      "peelable": true,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Controlled strip predicted: 43 N/m peel force, 115.0\u00d7 margin against web tearing, G/\u0393 = 0.00."
+      ]
+    },
+    {
+      "substrate_id": "chromium_plated",
+      "substrate_name": "Hard-chromium plated mandrel (electroforming practice)",
+      "evidence_level": "commercial",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 120.8,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": 58.2,
+        "total_MPa": 120.8
+      },
+      "driving_force_G_J_m2": 1.2272,
+      "work_of_adhesion_J_m2": 0.4,
+      "interfacial_toughness_J_m2": 4.0,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 2.8,
+      "web_stress_MPa": 0.1,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 81.4,
+      "self_release_ratio": 0.3072,
+      "cohesive_ratio": 0.004,
+      "tear_margin": 1806.455,
+      "outcome": "marginal_peel",
+      "peelable": true,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Peel force 2.8 N/m is below the controllable-tension floor 5.0 N/m: release happens but the web cannot be tracked or tensioned reliably."
+      ]
+    },
+    {
+      "substrate_id": "copper_substrate",
+      "substrate_name": "Copper cathode (metallic, high adhesion)",
+      "evidence_level": "lab",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 13.6,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": -48.9,
+        "total_MPa": 13.6
+      },
+      "driving_force_G_J_m2": 0.0157,
+      "work_of_adhesion_J_m2": 3.0,
+      "interfacial_toughness_J_m2": 426.03,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 426.0,
+      "web_stress_MPa": 17.0,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 679989.1,
+      "self_release_ratio": 0.0,
+      "cohesive_ratio": 0.426,
+      "tear_margin": 11.737,
+      "outcome": "bonded_no_release",
+      "peelable": false,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Required peel force 426 N/m exceeds the winder ceiling 200 N/m: the deposit stays on the drum."
+      ]
+    },
+    {
+      "substrate_id": "ti_bare_etched",
+      "substrate_name": "Titanium, etched/depassivated (metallic contact)",
+      "evidence_level": "lab",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 95.8,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": 33.3,
+        "total_MPa": 95.8
+      },
+      "driving_force_G_J_m2": 0.7723,
+      "work_of_adhesion_J_m2": 3.0,
+      "interfacial_toughness_J_m2": 549.86,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 549.1,
+      "web_stress_MPa": 22.0,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 17799.1,
+      "self_release_ratio": 0.0014,
+      "cohesive_ratio": 0.5499,
+      "tear_margin": 9.106,
+      "outcome": "bonded_no_release",
+      "peelable": false,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Required peel force 549 N/m exceeds the winder ceiling 200 N/m: the deposit stays on the drum."
+      ]
+    },
+    {
+      "substrate_id": "ptfe_release_coating",
+      "substrate_name": "PTFE / polymer release coating",
+      "evidence_level": "concept",
+      "electrically_conductive": false,
+      "residual_stress_MPa": -854.9,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": -917.4,
+        "total_MPa": -854.9
+      },
+      "driving_force_G_J_m2": 61.4778,
+      "work_of_adhesion_J_m2": 0.02,
+      "interfacial_toughness_J_m2": 0.05,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 0.0,
+      "web_stress_MPa": 0.0,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 0.0,
+      "self_release_ratio": 1212.1489,
+      "cohesive_ratio": 0.0001,
+      "tear_margin": null,
+      "outcome": "spontaneous_delamination",
+      "peelable": false,
+      "good_for_flake_harvest": true,
+      "reasons": [
+        "Surface is electrically insulating and cannot serve as a cathode \u2014 disqualified regardless of its release behaviour.",
+        "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 1212.15): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+      ]
+    }
+  ],
+  "foil_route_verdict": {
+    "reference_substrate": "ti_passive_tio2",
+    "outcome": "clean_peel",
+    "verdict": "proceed_with_coupon_test",
+    "verdict_robust_to_amplification": false,
+    "dominant_outcome_over_amplification_range": "marginal_peel",
+    "outcome_fractions": {
+      "spontaneous_delamination": 0.05,
+      "marginal_peel": 0.5,
+      "clean_peel": 0.45
+    },
+    "peelable_alternatives": [
+      "stainless_316_passive",
+      "chromium_plated"
+    ],
+    "self_releasing_substrates": [
+      "ptfe_release_coating"
+    ],
+    "result": {
+      "substrate_id": "ti_passive_tio2",
+      "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+      "evidence_level": "commercial",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 95.8,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 59.4,
+        "hydrogen_MPa": 3.1,
+        "thermal_MPa": 33.3,
+        "total_MPa": 95.8
+      },
+      "driving_force_G_J_m2": 0.7723,
+      "work_of_adhesion_J_m2": 0.3,
+      "interfacial_toughness_J_m2": 5.78,
+      "film_tearing_energy_J_m2": 1000.0,
+      "hydrogen_retention_factor": 0.78,
+      "peel_force_N_per_m": 5.0,
+      "web_stress_MPa": 0.2,
+      "allowable_web_stress_MPa": 200.0,
+      "critical_thickness_um": 187.2,
+      "self_release_ratio": 0.1336,
+      "cohesive_ratio": 0.0058,
+      "tear_margin": 998.096,
+      "outcome": "clean_peel",
+      "peelable": true,
+      "good_for_flake_harvest": false,
+      "reasons": [
+        "Controlled strip predicted: 5 N/m peel force, 998.1\u00d7 margin against web tearing, G/\u0393 = 0.13."
+      ]
+    },
+    "interpretation": "The foil branch is neither confirmed nor killed by the screen: the reference surface returns 'clean_peel' and viable alternatives are [stainless_316_passive, chromium_plated]. The verdict moves within the plausible plastic-amplification range, so the peel coupon is the cheapest way to resolve it and must precede any drum spend."
+  },
+  "derived_operating_point": {
+    "inputs": {
+      "j_mA_cm2": 100.0,
+      "current_efficiency_percent": 85.0,
+      "deposition_time_s": 900.0
+    },
+    "derived": {
+      "thickness_um": 28.116355658290008,
+      "grain_size_um": 3.5,
+      "C_H_diffusible_ppm": 240.73403778125632,
+      "foil_yield_strength_MPa": 347.1571295295718,
+      "deposition_rate_um_hr": 112.46542263316003
+    },
+    "sources": {
+      "grain_size": "mechanical_properties.estimate_grain_size_um",
+      "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+      "yield_strength": "mechanical_properties.MechanicalPropertiesModel",
+      "thickness": "Faraday's law at the supplied j, FE and time"
+    },
+    "result": {
+      "substrate_id": "ti_passive_tio2",
+      "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+      "evidence_level": "commercial",
+      "electrically_conductive": true,
+      "residual_stress_MPa": 414.3,
+      "stress_breakdown_MPa": {
+        "intrinsic_MPa": 8.5,
+        "hydrogen_MPa": 372.6,
+        "thermal_MPa": 33.3,
+        "total_MPa": 414.3
+      },
+      "driving_force_G_J_m2": 16.2426,
+      "work_of_adhesion_J_m2": 0.3,
+      "interfacial_toughness_J_m2": 1.24,
+      "film_tearing_energy_J_m2": 976.08,
+      "hydrogen_retention_factor": 0.15,
+      "peel_force_N_per_m": 0.0,
+      "web_stress_MPa": 0.0,
+      "allowable_web_stress_MPa": 173.6,
+      "critical_thickness_um": 2.1,
+      "self_release_ratio": 13.1053,
+      "cohesive_ratio": 0.0013,
+      "tear_margin": null,
+      "outcome": "spontaneous_delamination",
+      "peelable": false,
+      "good_for_flake_harvest": true,
+      "reasons": [
+        "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.11): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+      ]
+    }
+  },
+  "coupon_test_protocol": {
+    "title": "Iron-on-substrate adhesion coupon set (Day-1 add-on)",
+    "gates": "docs/PROGRAM_SUMMARY.md gate 2; cell_architecture.py drum_and_strip branch",
+    "runs_alongside": "The Phase-II Hull cell order in docs/FIRST_LAB_DAY.md \u2014 same bath, same rectifier, same session.",
+    "coupons": [
+      {
+        "substrate": "ti_passive_tio2",
+        "role": "reference drum surface",
+        "n_replicates": 3,
+        "evidence_level": "commercial"
+      },
+      {
+        "substrate": "ti_bare_etched",
+        "role": "negative control (expect strong bond)",
+        "n_replicates": 3,
+        "evidence_level": "lab"
+      },
+      {
+        "substrate": "stainless_316_passive",
+        "role": "alternative release surface",
+        "n_replicates": 3,
+        "evidence_level": "commercial"
+      },
+      {
+        "substrate": "chromium_plated",
+        "role": "alternative release surface",
+        "n_replicates": 3,
+        "evidence_level": "commercial"
+      },
+      {
+        "substrate": "copper_substrate",
+        "role": "negative control (expect strong bond)",
+        "n_replicates": 3,
+        "evidence_level": "lab"
+      }
+    ],
+    "measurements": [
+      {
+        "measurement": "90\u00b0 peel test, ASTM B571 / D6862 geometry",
+        "instrument": "Load cell on a motorised stage, 10 mm strip",
+        "yields": "Peel force per width \u2192 interfacial toughness \u0393",
+        "replaces_in_model": "plastic_amplification \u2014 the least-constrained parameter in interfacial_toughness()"
+      },
+      {
+        "measurement": "Coupon curvature before and after deposition",
+        "instrument": "Stylus profilometer or optical flat on 100 \u00b5m shim stock",
+        "yields": "Residual stress via stoney_stress_MPa()",
+        "replaces_in_model": "HOFFMAN_DELTA_M and the whole forward residual-stress estimate"
+      },
+      {
+        "measurement": "Deposit thickness by mass and by cross-section",
+        "instrument": "Analytical balance + metallographic mount",
+        "yields": "h for G = (1\u2212\u03bd)\u03c3\u00b2h/E, and a Faradaic cross-check",
+        "replaces_in_model": "Faraday-law thickness assumption"
+      },
+      {
+        "measurement": "Thermal-desorption or hot-extraction hydrogen",
+        "instrument": "Inert-gas fusion analyser (outsourced)",
+        "yields": "Diffusible H (ppm)",
+        "replaces_in_model": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis absorption-fraction estimate"
+      },
+      {
+        "measurement": "Spontaneous-release thickness ladder",
+        "instrument": "Same cell, four plating durations",
+        "yields": "Observed critical thickness h_c",
+        "replaces_in_model": "critical_thickness_um() \u2014 a direct, single-number test of the whole energy balance"
+      }
+    ],
+    "decision_rules": {
+      "kills_foil_branch": "Iron on passive TiO\u2082 requires >200 N/m to peel, or the peeled strip fractures at any thickness that plates in a reasonable drum residence time.",
+      "confirms_foil_branch": "A reproducible peel force between 5 and 200 N/m with an intact strip and \u22652\u00d7 margin to web yielding.",
+      "redirects_to_flake": "Deposits self-release below the target foil thickness \u2014 adopt the flake/powder harvest path and delete the winder."
+    },
+    "estimated_cost_usd": {
+      "coupon_stock_and_masking": 250,
+      "peel_fixture_and_load_cell": 900,
+      "profilometry_access": 0,
+      "hydrogen_analysis_outsourced": 600,
+      "total": 1750
+    },
+    "estimated_duration_days": 3,
+    "why_now": "It is the cheapest experiment that can delete an entire architecture branch. Every drum, winder and tension-control decision downstream is contingent on its result, and the screen's verdict is not robust to the one parameter it cannot estimate from first principles."
+  },
+  "findings": [
+    "Reference drum surface (passive TiO\u2082) at 96 MPa residual stress returns 'clean_peel': peel force 5.0 N/m against a 5\u2013200 N/m machine window.",
+    "Conductive surfaces inside the peel window: ti_passive_tio2, stainless_316_passive, chromium_plated.",
+    "Rejected as too strongly bonded to strip: copper_substrate, ti_bare_etched \u2014 including the deliberate metallic negative controls, which is the check that the screen discriminates at all.",
+    "Rejected on physics rather than omission: ptfe_release_coating release beautifully and cannot pass current, so they cannot be a cathode.",
+    "Verdict for the drum-and-strip branch: proceed_with_coupon_test (robust to the plastic-amplification uncertainty: False).",
+    "Propagating a real operating point (100 mA/cm\u00b2, 85% FE, 15 min) through the existing models gives 28 \u00b5m of deposit carrying 241 ppm diffusible hydrogen, and the deposit then returns 'spontaneous_delamination' \u2014 hydrogen, not the substrate, dominates the stress state at 373 MPa.",
+    "Critical self-delamination thickness on the reference surface is 187 \u00b5m at the screen's baseline conditions, which bounds foil thickness from above independently of any winder capability.",
+    "The screen does not settle the question and is not meant to: it converts an unpriced unknown into a $1,750, 3-day coupon test with explicit kill and confirm rules (coupon_test_protocol)."
+  ],
+  "figures": [
+    "docs/figures/adhesion_substrate_screen.png",
+    "docs/figures/adhesion_foil_window.png",
+    "docs/figures/adhesion_robustness.png"
+  ]
+}

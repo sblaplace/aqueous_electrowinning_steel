@@ -1,7 +1,7 @@
 [project]
 name = "aqueous-electrowinning-steel"
 version = "0.5.0"
-description = "Aqueous electrowinning for sustainable steel — thermodynamics, kinetics, transport, cell architecture, pulse, co-deposition, mechanical, carburization, tempering, techno-economics"
+description = "Aqueous electrowinning for sustainable steel — thermodynamics, kinetics, transport, cell architecture, adhesion/peel, pulse, co-deposition, mechanical, carburization, tempering, techno-economics"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
@@ -50,6 +50,7 @@ aq-steel-monte-carlo = "models.run_monte_carlo:main"
 aq-steel-closed-loop = "models.run_closed_loop:main"
 aq-steel-dark-mill = "models.run_dark_mill:main"
 aq-steel-sensitivity = "models.run_transport_sensitivity:main"
+aq-steel-adhesion = "models.run_adhesion_peel:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"
