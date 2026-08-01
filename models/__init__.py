@@ -441,6 +441,7 @@ from .operating_twin import (
     TwinMode,
     TwinState as OperatingTwinState,
     ControlCommand,
+    ShutdownRequest,
 )
 
 __all__ = [
@@ -828,4 +829,5 @@ __all__ = [
     "TwinMode",
     "OperatingTwinState",
     "ControlCommand",
+    "ShutdownRequest",
 ]
