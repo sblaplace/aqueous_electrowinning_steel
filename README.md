@@ -49,6 +49,7 @@ python -m models.run_pulse                  # Transient pulse & pulse-reverse dy
 python -m models.run_voltammetry            # Synthetic voltammetry sweep, Phase I analysis & Tafel fitting
 python -m models.run_eis                    # Synthetic EIS spectrum & Randles fitting
 python -m models.run_hull_cell              # Phase II angled-panel current screen + gravimetric FE example
+python -m models.run_hull_cell_inverse      # Thickness profile → local FE(j) calibration (inverse Hull analysis)
 python -m models.run_co_deposition          # Phase III Fe–Ni/carbon co-deposition screen + pulse-coupled
 python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/HV/grade
 python -m models.run_carburization          # Post-deposition carburization: case depth, HV profile, energy
@@ -73,6 +74,7 @@ aq-steel-sensitivity                           # Sobol GSA of the FE engine (whi
 aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
 aq-steel-stress                                # Internal stress and coupon-curvature protocol
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
+aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 
 # Run the test suite
 pytest tests -q
@@ -100,6 +102,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/tafel.py` | Tafel-region fitting with exchange-current and $R^2$ estimates |
 | `models/eis.py` | Equivalent-circuit EIS: Randles/CPE/Warburg models, complex NLLS fitting, $R_{ct}$→$i_0$ conversion |
 | `models/hull_cell.py` | Phase II variable-gap angled-panel primary-current screen and gravimetric apparent Fe Faradaic efficiency |
+| `models/hull_cell_inverse.py` | Inverse Hull-cell analysis: measured thickness profile → strip-wise local FE, binned FE(j) calibration table, mass-closure vs gravimetry, and FE-space sigmoid fit `FE(j) = sigmoid(a + b·ln j)` |
 | `models/co_deposition.py` | Phase III anomalous Fe–Ni kinetics, Guglielmi C, **pulse-coupled pH recovery & δ thinning** (`run_at_current_pulsed`) |
 | `models/mechanical_properties.py` | Phase III → structural: Hall-Petch grain-size, Ni SS, C dispersion → YS/UTS/HV/elongation + grade mapping |
 | `models/carburization.py` | Post-deposition gaseous carburization: Fickian finite-slab, case depth, Maynier HV, tempering flag, energy & composite strength |
@@ -194,6 +197,21 @@ and conductivity gradients.  Gravimetric output is **apparent** Fe FE until
 deposit composition and dry mass are verified; an FE above 100% is retained as
 a QA flag rather than hidden.  See `models/README.md` and
 `experiments/data/README.md` for the model scope and procedure.
+
+**The inverse step (`models/hull_cell_inverse.py`) turns the same panel into a
+FE(j) calibration.**  Given the measured deposit-thickness profile across the
+angled panel, each strip's thickness is converted to the charge that must have
+produced it and divided by the strip's primary current — yielding local
+apparent FE at every strip's current density in a single run.  The module
+checks mass closure against the weighed mass gain (profile-integrated mass vs
+gravimetry), exploits the identity that the current-weighted mean of the local
+FE profile equals the whole-panel gravimetric FE, and fits the Tafel-consistent
+form $\\mathrm{FE}(j)=\\mathrm{sigmoid}(a+b\\ln j)$ by nonlinear least squares
+**in FE space** (logit-space fitting is noise-biased at high FE).  A
+Monte-Carlo round trip shows a 10-strip point-micrometer profile pins FE at a
+reference current density to ~±2% while the slope needs profilometry, more
+strips, or repeated panels.  This is the direct calibration path from the
+Day-1 Hull run into `diffusion_layer_1d.py` and the Bayesian pipeline.
 
 ### Cell Architecture: Where the CAPEX Actually Goes
 
@@ -373,11 +391,9 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 The Apache 2.0 license includes an **express patent grant**: any Contributor who submits code also grants a royalty-free patent license for patents necessarily infringed by their contribution. This protects the project's freedom to operate — no one can contribute code and later assert patent rights over it.
 
-> **Inconsistency to resolve:** `pyproject.toml` currently declares
-> `license = {text = "MIT"}`, and there is no `LICENSE` file in the
-> repository. Until an owner decides, treat the licence as unsettled — the
-> metadata claim and this section contradict each other, and neither is
-> authoritative without a `LICENSE` file.
+> **Consistency note:** the repository-level `LICENSE` file and the
+> `license = {text = "Apache-2.0"}` declaration in `pyproject.toml` agree.
+> The project is Apache-2.0 licensed.
 
 ---
 

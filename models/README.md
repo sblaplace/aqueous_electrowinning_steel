@@ -16,6 +16,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `voltammetry.py` | Phase I CV/LSV analysis, scan rate estimation, baseline correction, polarization curves |
 | `eis.py` | Phase I EIS: Randles/CPE/Warburg equivalent circuits, complex NLLS spectrum fitting, Rct→exchange-current conversion |
 | `hull_cell.py` | Phase II angled-panel primary current-density screen, galvanostatic trace loading, and gravimetric apparent Fe Faradaic efficiency |
+| `hull_cell_inverse.py` | Inverse Hull-cell analysis: measured deposit-thickness profile → strip-wise local Fe FE, binned FE(j) calibration table, mass-closure check vs gravimetry, and an FE-space sigmoid fit `FE(j) = sigmoid(a + b·ln j)` |
 | `co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon incorporation screen + pulse-coupled pH recovery & transport enhancement (`run_at_current_pulsed`) |
 | `mechanical_properties.py` | Phase III → structural: Hall-Petch grain-size, Ni solid-solution, Guglielmi C dispersion → YS/UTS/HV/elongation, grade mapping |
 | `carburization.py` | Post-deposition gaseous/plasma carburization: Fickian finite-slab diffusion, case depth, Maynier HV, Hollomon-Jaffe tempering, energy & composite strength |
@@ -164,6 +165,44 @@ been verified.  Retained electrolyte, oxides, codeposits, and incomplete drying
 can give an apparent value above 100%; the API intentionally leaves that value
 visible as a quality-control signal.  Optional balance and charge uncertainties
 are propagated to the reported FE uncertainty.
+
+## Inverse Hull-Cell Notes (thickness profile → FE(j) calibration)
+
+`hull_cell_inverse.py` turns the measured deposit-thickness profile of a
+Hull panel into a **local FE-vs-j calibration** in one step.  Each strip's
+thickness is converted to the charge that must have produced it (at 100 % Fe)
+and divided by the charge the primary map assigns to that strip:
+
+\[
+\mathrm{FE}(s) = \frac{h(s)\,\rho_\mathrm{Fe}\,nF/M}{t_\mathrm{run}\,
+j_\mathrm{primary}(s)}.
+\]
+
+Three checks keep the result honest:
+
+1. **Mass closure.**  The profile-integrated iron mass must agree with the
+   weighed mass gain of the same panel (default tolerance ±15 %; profilometry
+   on a rough deposit reads high/low easily).  A mismatch is resolved before
+   the FE map is trusted.
+2. **Gravimetric identity.**  The current-weighted mean of the local FE
+   profile *equals* the whole-panel gravimetric FE — the profile and the
+   weighing describe the same panel or they do not.
+3. **Tafel-consistent shape.**  With Fe and HER both in the Tafel region,
+   `FE(j) = sigmoid(a + b·ln j)` with `b = 1 - α_H/α_Fe < 0`.  The fit is
+   performed by nonlinear least squares **in FE space**: least squares on the
+   logit transform is biased under measurement noise because logit is convex
+   for FE > 0.5, and noisy high-FE (thin-deposit) strips dominate the mean.
+   Monte-Carlo round trips show a 10-strip point-micrometer profile (σ_h =
+   2 µm) recovers FE at a reference current density to ~±2 % but only the
+   slope to ~±0.2; profilometry-grade noise (σ_h = 0.5 µm) brings the slope
+   to ~±0.05.  In protocol terms: one coarse panel pins FE(j) points, not the
+   slope.
+
+FE above 100 % is retained as a `above_100` QA flag (retained salts/oxides),
+never clipped; `zero_deposit` strips are flagged and excluded from the fit.
+`run_hull_cell_inverse.py` demonstrates the full pipeline on a synthetic
+Day-1-style panel (2 A, 10 × 5 cm, 1.5 → 9 cm gap) and writes a JSON report
+plus a recovery figure.
 
 ## Phase IV Durability and Closed-Loop Notes
 
