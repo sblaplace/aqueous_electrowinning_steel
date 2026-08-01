@@ -57,7 +57,8 @@ python -m models.run_tempering              # Tempering + retained austenite: Ms
 python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
 python -m models.run_cell_architecture      # Cell architecture screen: productivity, $/m², kill criterion #3
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> ranked "which experiment to do next"
-python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
+python -m models.run_adhesion_peel          # Does iron peel from a drum? Peel window + coupon test
+python -m models.run_all                    # Full suite (18 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -67,6 +68,7 @@ aq-steel-carbon-potential                      # carbon potential only
 aq-steel-tempering                             # tempering only
 aq-steel-architecture                          # cell architecture screen only
 aq-steel-sensitivity                           # Sobol GSA of the FE engine (which experiment next)
+aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
 
 # Run the test suite
 pytest tests -q
@@ -111,6 +113,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/purification.py` | Cu/Ni/Zn removal train: cementation, hydrolysis, selective EW, ion exchange |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |
+| `models/adhesion_peel.py` | Deposit release mechanics: residual stress (Hoffman + hydrogen effusion + thermal mismatch), energy release rate, work of adhesion with thickness-confined plastic amplification, peel force, web-tear and cohesive-failure criteria → the continuous-foil peel window and its coupon test |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
 
 ### Selected Model Results
@@ -223,11 +226,58 @@ may cost only ~$1,600/m². **Productivity, not cell price, is the lever.**
 
 Caveats are structural, not cosmetic: the rotating cylinder makes powder only
 (a feedstock-path answer), and drum-and-strip — the one route to continuous
-coherent foil — rests on the unverified assumption that **iron peels from a
-titanium drum**. Copper foil relies on a passive TiO₂ release layer; iron
-adhesion is uncharacterised here and is the cheapest high-value experiment the
-screen identifies. All correlations are transferred from other chemistries and
-all costs are engineering estimates.
+coherent foil — rests on the assumption that **iron peels from a titanium
+drum**. Copper foil relies on a passive TiO₂ release layer. That assumption is
+taken up directly in the next section. All correlations are transferred from
+other chemistries and all costs are engineering estimates.
+
+### Does Iron Peel From a Drum? The Foil Route's Gating Unknown
+
+The architecture screen named its own blocker and declined to compute it.
+`models/adhesion_peel.py` computes it. Peeling is an energy competition: a
+residually stressed film stores `G = (1−ν)σ²h/E` per unit area, and the
+interface resists with a toughness `Γ = W_adh × φ_plastic × roughness × f_H`.
+Three residual-stress mechanisms are carried separately — Hoffman grain
+coalescence (`σ ∝ 1/d`), hydrogen left behind when codeposited H effuses, and
+thermal mismatch on cool-down.
+
+At the drum's 25 µm target thickness, on a low-hydrogen deposit:
+
+| Surface | Evidence | σ_res (MPa) | G (J/m²) | Γ (J/m²) | Peel (N/m) | Outcome |
+|---|---|---:|---:|---:|---:|---|
+| Ti drum, passive TiO₂ | commercial (for Cu) | 96 | 0.77 | 5.8 | 5 | clean peel |
+| 316L stainless, passive | commercial | 19 | 0.03 | 43.5 | 43 | clean peel |
+| Hard-chromium mandrel | commercial (for Ni) | 121 | 1.23 | 4.0 | 3 | marginal peel |
+| Copper (negative control) | lab | 14 | 0.02 | 426 | 426 | bonded, no release |
+| Ti, etched/depassivated | lab | 96 | 0.77 | 550 | 549 | bonded, no release |
+| PTFE release coating | concept | −855 | 61.5 | 0.05 | 0 | self-releases — **but insulating** |
+
+Four results carry the argument. First, the screen **discriminates**: the
+deliberate metallic controls come back bonded, and the polymer release coating
+is rejected on physics — it releases perfectly and cannot pass current, so it
+cannot be a cathode. Second, adhesion is not the only way to fail. A crack
+prefers the cheaper path, so when the interface is tougher than the deposit's
+own tearing energy the crack leaves the interface and runs through the foil;
+work of adhesion alone cannot predict that, which is why copper-foil experience
+does not transfer to iron by analogy. Third, the foil window is **bounded from
+both sides** — the deposit must release hard enough to strip and hold on well
+enough to be wound — and above a critical thickness of ~187 µm the reference
+surface self-delaminates regardless of the winder.
+
+Fourth, and most consequential: propagating a *real* operating point through
+the existing models (100 mA/cm², 85% FE, 15 min → 28 µm carrying ~240 ppm
+diffusible H via `hydrogen_embrittlement.py`) flips the verdict to spontaneous
+delamination, with hydrogen contributing 373 of 414 MPa. **The substrate is not
+the main variable — the hydrogen is.** The same HER the program fights for
+Faradaic reasons also decides whether the deposit stays on the drum.
+
+The branch verdict is therefore `proceed_with_coupon_test`, not `proceed`: the
+outcome moves within the plausible range of the plastic amplification factor,
+the one parameter that cannot be estimated from first principles. So the module
+ends by specifying the experiment that replaces it — a $1,750, 3-day peel and
+coupon-curvature set with explicit kill, confirm, and redirect-to-flake rules,
+run alongside the Day-1 Hull cell. Every number above is screening fracture
+mechanics; **no iron peel data exists in this repository.**
 
 ---
 

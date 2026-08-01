@@ -416,8 +416,9 @@ def _findings(results, assessment, zinc: float) -> list:
     findings.append(
         "Highest-value unknown: whether iron peels cleanly from a drum "
         "cathode. Copper foil relies on a passive TiO₂ release layer; iron "
-        "adhesion on titanium is uncharacterised here and gates the "
-        "drum-and-strip route entirely."
+        "adhesion on titanium is uncharacterised experimentally and gates the "
+        "drum-and-strip route entirely. models/adhesion_peel.py now screens "
+        "that question and specifies the coupon test that settles it."
     )
     return findings
 

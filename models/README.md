@@ -45,6 +45,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | Module | Contents |
 |--------|----------|
 | `cell_architecture.py` | **Reactor-type screen.** Plate-and-frame, rotating cylinder, drum-and-strip, moving belt, fluidized bed compared on literature Sherwood correlations, practical/footprint current ceilings, harvest duty cycle, areal productivity, $/m² → $/annual tonne, and the kill-criterion-#3 affordability threshold |
+| `adhesion_peel.py` | **Deposit release mechanics.** Hoffman intrinsic + hydrogen-effusion + thermal-mismatch residual stress, Hutchinson-Suo energy release rate, Dupré work of adhesion with thickness-confined plastic amplification and Rice-Wang hydrogen knockdown, Kendall peel force, web-tear and cohesive-failure criteria → peel window, substrate ranking, drum-and-strip branch verdict, and the coupon test that replaces the estimate |
 | `scale_up.py` | Primary/secondary current distribution, Wagner number, boundary-layer growth, thermal management, geometry optimization |
 | `thermal_balance.py` | Joule heating vs cooling duty; steady-state electrolyte temperature |
 | `pid.py` | Pilot P&ID generation (overview and detailed) |

@@ -65,12 +65,48 @@ Three qualifications keep this from being a decision:
 1. The rotating cylinder yields powder only — a feedstock-path (Option A)
    answer, not a product-path one.
 2. Drum-and-strip is the only screened route to continuous coherent foil, and
-   it depends on an untested assumption: that **iron peels from a titanium
-   drum**. Copper foil production relies on a passive TiO₂ release layer; iron
-   adhesion is uncharacterised. A peel-coupon test is nearly free alongside the
-   Day-1 Hull cell order and should be added to it.
+   it depends on an assumption that had no experimental support: that **iron
+   peels from a titanium drum**. `models/adhesion_peel.py` now screens it (see
+   below); a peel-coupon test remains nearly free alongside the Day-1 Hull cell
+   order and should be added to it.
 3. All correlations are transferred from other chemistries and all costs are
    engineering estimates. This is screening evidence, not measurement.
+
+## Deposit adhesion and the continuous-foil branch
+
+`models/adhesion_peel.py` computes what the architecture screen declined to:
+whether the deposit releases. It treats peeling as an energy balance — stored
+elastic energy `G = (1−ν)σ²h/E` against interfacial toughness
+`Γ = W_adh × φ_plastic × roughness × f_H` — with residual stress decomposed
+into Hoffman grain coalescence, hydrogen effusion, and thermal mismatch, and
+with two failure modes that adhesion alone cannot express: the web tearing
+under its own peel force, and the crack abandoning the interface to run
+through the deposit when the interface is tougher than the film.
+
+At the drum's 25 µm target on a low-hydrogen deposit, the reference passive
+TiO₂ surface returns a controlled peel at ~5 N/m, the metallic negative
+controls (copper, depassivated titanium) come back bonded at 400–550 N/m, and
+a PTFE release coating is rejected for being electrically insulating rather
+than for its release behaviour. Critical self-delamination thickness on the
+reference surface is ~187 µm, which bounds foil thickness from above
+independently of any winder.
+
+The operationally important result is not the substrate ranking. Propagating a
+real operating point through the existing models — 100 mA/cm², 85% FE, 15 min,
+giving 28 µm carrying ~240 ppm diffusible hydrogen — flips the verdict to
+spontaneous delamination, with hydrogen contributing 373 of 414 MPa of
+residual stress. **Hydrogen management, not drum surface selection, is the
+lever on peelability**, which ties this branch back to the same HER problem
+that governs Faradaic efficiency.
+
+The branch verdict is `proceed_with_coupon_test`. It is not `proceed` because
+the outcome moves within the plausible range of the plastic amplification
+factor — measured peel work over thermodynamic work of adhesion — which spans
+an order of magnitude in the literature and cannot be estimated from first
+principles. The module therefore specifies the replacement measurement: a
+$1,750, 3-day peel and coupon-curvature set with explicit kill, confirm, and
+redirect-to-flake decision rules. This is screening fracture mechanics; no
+iron peel data exists in this repository.
 
 ## Deployment hypothesis
 
@@ -89,7 +125,7 @@ The ferric/ferrous anode-shuttle concept is an invention hypothesis only. Any pa
 ## Program gates and dependency order
 
 1. Build claim charts for active Electra family members and search relevant AWARE and sulfate divided-cell filings.
-2. Screen the actual sulfate feed surrogate in a Hull cell for deposition window, morphology, and gross plating behavior. **Add an iron-on-titanium peel/adhesion coupon to this run** — it is nearly free and it gates the entire continuous-foil architecture branch.
+2. Screen the actual sulfate feed surrogate in a Hull cell for deposition window, morphology, and gross plating behavior. **Add the iron-on-substrate peel/adhesion coupon set to this run** (`adhesion_peel.coupon_test_protocol`) — it is nearly free, it gates the entire continuous-foil architecture branch, and it replaces the model's least-constrained parameter with a measurement.
 3. Run an instrumented divided-cell matrix to measure FE, V_cell decomposition, crossover, iron speciation, deposit morphology, and impurity behavior versus current density.
 4. Demonstrate a continuous run long enough to expose bath drift, membrane fouling, crossover, component degradation, and reagent loss.
 5. Calibrate the transport and TEA models only to the measured data; include auxiliary loads and separations.
