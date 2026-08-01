@@ -32,13 +32,11 @@ FIG_DIR = ROOT / "docs" / "figures"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from models.digital_twin import (
+from models.digital_twin import (  # noqa: E402
     DigitalTwin,
     STATE_KEYS,
     STATE_INDEX,
-    OBSERVABLE_TAGS,
     generate_synthetic_readings,
-    Anomaly,
 )
 
 
@@ -122,7 +120,15 @@ def plot_state(result: dict, save_path: Path) -> None:
         ax.legend(fontsize=7, loc="upper right")
         ax.grid(True, alpha=0.3)
 
-    axes[-1].set_xlabel("Time (hr)")
+    # Hide unused axes
+    for idx in range(len(STATE_KEYS), len(axes)):
+        axes[idx].set_visible(False)
+
+    # Set xlabel on bottom axes
+    axes[4].set_xlabel("Time (hr)")
+    axes[5].set_xlabel("Time (hr)")
+    axes[6].set_xlabel("Time (hr)")
+
     fig.suptitle("Digital Twin — State Estimation", fontsize=13)
     fig.tight_layout()
     fig.savefig(save_path, dpi=150)
@@ -142,11 +148,11 @@ def plot_anomalies(result: dict, save_path: Path) -> None:
         by_sensor.setdefault(a.sensor_tag, []).append(a)
 
     # Plot a few key sensors
-    for tag in ["TT-101", "VT-201"]:
+    for i, tag in enumerate(["TT-101", "VT-201"]):
         key_map = {"TT-101": "catholyte_temperature", "VT-201": "cell_voltage"}
         state_key = key_map.get(tag)
         if state_key and state_key in result["state_log"]:
-            ax = axes[0] if tag == "TT-101" else axes[1]
+            ax = axes[i]
             mean = result["state_log"][state_key]
             sigma2 = 2.0 * result["state_sigma"][state_key]
             ax.plot(times, mean, linewidth=0.8, label=f"{tag} estimate")
@@ -156,7 +162,8 @@ def plot_anomalies(result: dict, save_path: Path) -> None:
             for a in by_sensor.get(tag, []):
                 color = {"residual": "red", "drift": "orange", "rate_of_change": "purple"}.get(a.kind, "gray")
                 ax.axvline(a.timestamp_hr, color=color, alpha=0.5, linewidth=1.5, linestyle="--")
-                ax.annotate(a.kind, (a.timestamp_hr, mean[min(int(a.timestamp_hr / 0.1), len(mean)-1)]),
+                idx = min(int(a.timestamp_hr / 0.1), len(mean)-1)
+                ax.annotate(a.kind, (a.timestamp_hr, mean[idx]),
                            fontsize=6, color=color, rotation=45, xytext=(5, 5), textcoords="offset points")
 
             ax.set_ylabel(f"{tag} ({state_key})")
@@ -194,9 +201,9 @@ def plot_prediction(result: dict, save_path: Path) -> None:
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     plot_indices = [
-        ("catholyte_temperature", 0),
-        ("cell_voltage", 4),
-        ("current_density", 5),
+        ("catholyte_temperature", STATE_INDEX["catholyte_temperature"]),
+        ("cell_voltage", STATE_INDEX["cell_voltage"]),
+        ("current_density", STATE_INDEX["current_density"]),
         ("confidence", None),
     ]
 
@@ -209,7 +216,7 @@ def plot_prediction(result: dict, save_path: Path) -> None:
                           alpha=0.2, color="steelblue", label="2σ envelope")
             ax.set_ylabel(label.replace("_", " "))
         else:
-            ax.plot(pred.timestamps_hr, pred.confidence, linewidth=1.0, color="green")
+            ax.plot(pred.timestamps_hr, pred.confidence, linewidth=1.0, color="green", label="confidence")
             ax.set_ylabel("P(all specs met)")
             ax.set_ylim(0, 1.05)
         ax.set_xlabel("Time (hr)")
