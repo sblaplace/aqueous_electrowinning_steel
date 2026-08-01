@@ -20,6 +20,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `co_deposition.py` | Phase III anomalous Fe–Ni kinetics and Guglielmi carbon incorporation screen + pulse-coupled pH recovery & transport enhancement (`run_at_current_pulsed`) |
 | `mechanical_properties.py` | Phase III → structural: Hall-Petch grain-size, Ni solid-solution, Guglielmi C dispersion → YS/UTS/HV/elongation, grade mapping |
 | `carburization.py` | Post-deposition gaseous/plasma carburization: Fickian finite-slab diffusion, case depth, Maynier HV, Hollomon-Jaffe tempering, energy & composite strength |
+| `thermomechanical.py` | **Deposit → sheet bridge.** Cold-rolling pass schedule (true strain), JMAK recrystallization X=1-exp(-(kt)ⁿ), recovery, normal grain growth D²-Dᵣₓ²=Kt·exp(-Q/RT), annealed strength via the Hall-Petch/solid-solution/dispersion machinery, deposit-vs-annealed contrast, grade routing, and anneal energy for the techno-economic balance |
 | `process_flow.py` | Process block-flow diagram generator (BFD: ore→leach→cell→wash→carburize→product + recycle/purge) + detailed variant |
 | `anode.py` | OER/CER anode kinetics, bubble resistance, and full-cell voltage coupling |
 | `closed_loop.py` | Phase IV charge-throughput anode wear, CSTR electrolyte balances, process costs and QA flags |

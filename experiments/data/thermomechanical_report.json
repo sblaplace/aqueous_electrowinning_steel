@@ -1,0 +1,52 @@
+{
+  "title": "Thermomechanical processing (cold roll + recrystallization) screening",
+  "date": "2026-08-01T02:42:52.048467",
+  "params": {
+    "deposit_grain_size_um": 1.0,
+    "total_reduction_frac": 0.5,
+    "n_passes": 2,
+    "anneal_temperature_C": 700.0,
+    "anneal_time_min": 60.0,
+    "ni_wt_percent": 0.0,
+    "carbon_wt_percent": 0.0,
+    "current_efficiency_percent": 95.0
+  },
+  "summary": {
+    "deposit_grain_um": 1.0,
+    "total_reduction_frac": 0.5,
+    "true_strain": 0.693,
+    "n_passes": 2,
+    "anneal_temperature_C": 700.0,
+    "anneal_time_min": 60.0,
+    "recrystallized_grain_um": 10.03,
+    "final_grain_um": 10.26,
+    "fraction_recrystallized": 1.0,
+    "time_to_full_rx_min": 9.65,
+    "annealed_yield_MPa": 252.3,
+    "annealed_uts_MPa": 315.4,
+    "annealed_hv": 82.3,
+    "annealed_elongation_pct": 20.4,
+    "annealed_grade": "AISI 1018-like (low-Cstructural, good weldability)",
+    "deposit_yield_MPa": 591.1,
+    "deposit_uts_MPa": 738.9,
+    "deposit_elongation_pct": 12.0,
+    "annealing_energy_kWh_per_kg": 0.14,
+    "flags": []
+  },
+  "figures": [
+    "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_recrystallization.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_temperature_sweep.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_reduction_sweep.png",
+    "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_deposit_vs_annealed.png"
+  ],
+  "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_thermomechanical.csv",
+  "model_notes": [
+    "JMAK recrystallization X=1-exp(-(k t)^n), k=k0\u00b7\u03b5^m\u00b7exp(-Q/RT); Q\u2248210 kJ/mol, n=2 (screening means)",
+    "Recrystallized grain size D_rx = D_rx_ref\u00b7(D0/D0_ref)^0.35\u00b7(\u03b5_ref/\u03b5)^0.55\u00b7(T/T_ref)^0.6",
+    "Normal grain growth D\u00b2-D_rx\u00b2 = K_gg\u00b7t\u00b7exp(-Q_gg/RT), Q_gg\u2248240 kJ/mol",
+    "Annealed strength reuses mechanical_properties Hall-Petch + solid solution + dispersion machinery",
+    "Energy is heating only (Cp=449 J/kg/K, 60% furnace eff.); no atmosphere or soak credit",
+    "Does NOT model texture development, abnormal grain growth, recrystallized C redistribution, or hydrogen",
+    "Screening constants must be calibrated with real rolling trials, EBSD, and hardness traverses"
+  ]
+}

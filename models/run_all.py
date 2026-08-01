@@ -73,6 +73,7 @@ from models.run_mechanical_properties import main as run_mechanical_main
 from models.run_carburization import main as run_carburization_main
 from models.run_carbon_potential import main as run_carbon_potential_main
 from models.run_tempering import main as run_tempering_main
+from models.run_thermomechanical import main as run_thermomechanical_main
 from models.run_pid import main as run_pid_main
 from models.run_speciation import main as run_speciation_main
 from models.run_thermal_balance import main as run_thermal_balance_main
@@ -482,6 +483,20 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ tempering: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["tempering"] = {"error": str(e)}
+
+    # 10b Thermomechanical (cold roll + recrystallization anneal)
+    print("\n[11b/19] Thermomechanical (roll + recrystallize foil to sheet)...")
+    try:
+        run_thermomechanical_main(reduction=0.5, passes=2, anneal_temp=700.0,
+                                  anneal_time=60.0, grain=1.0, ni=0.0,
+                                  carbon=0.0, ce=95.0)
+        master["steps"]["thermomechanical"] = _load_json(
+            DATA_DIR / "thermomechanical_report.json")
+        print("  ✅ thermomechanical")
+    except Exception as e:
+        print(f"  ❌ thermomechanical: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["thermomechanical"] = {"error": str(e)}
 
     # 11 Foil calibration (synthetic example)
     print("\n[12/19] Foil + O2 probe calibration (synthetic)...")

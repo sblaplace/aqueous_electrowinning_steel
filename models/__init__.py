@@ -152,6 +152,16 @@ from .tempering import (
     case_hardness_after_tempering,
     recommended_tempering_for_target_hv,
 )
+from .thermomechanical import (
+    ThermomechanicalModel,
+    ThermomechanicalParams,
+    ThermomechanicalResult,
+    RollingSchedule,
+    jmak_fraction_recrystallized,
+    recrystallized_grain_size_um,
+    grain_growth_um,
+    time_for_fraction,
+)
 from .foil_calibration import (
     FoilMeasurement,
     CaseDepthMeasurement,
@@ -438,6 +448,15 @@ __all__ = [
     "tempering_curve",
     "case_hardness_after_tempering",
     "recommended_tempering_for_target_hv",
+    # ── Thermomechanical (roll + recrystallize) ───────────────────────
+    "ThermomechanicalModel",
+    "ThermomechanicalParams",
+    "ThermomechanicalResult",
+    "RollingSchedule",
+    "jmak_fraction_recrystallized",
+    "recrystallized_grain_size_um",
+    "grain_growth_um",
+    "time_for_fraction",
     # ── Foil calibration & O2 probe ───────────────────────────────────
     "FoilMeasurement",
     "CaseDepthMeasurement",

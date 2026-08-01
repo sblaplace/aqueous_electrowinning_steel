@@ -55,6 +55,7 @@ python -m models.run_mechanical_properties  # Phase III → mechanical: YS/UTS/H
 python -m models.run_carburization          # Post-deposition carburization: case depth, HV profile, energy
 python -m models.run_carbon_potential       # Gas carburizing atmosphere: a_C from CO/CO2, CH4/H2, dew point, Acm
 python -m models.run_tempering              # Tempering + retained austenite: Ms, KM RA, Hollomon-Jaffe
+python -m models.run_thermomechanical       # Deposit→sheet: cold roll + recrystallization (JMAK) + grain growth + annealed grade
 python -m models.run_closed_loop            # Phase IV anode durability + closed-loop CSTR screen
 python -m models.run_cell_architecture      # Cell architecture screen: productivity, $/m², kill criterion #3
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> ranked "which experiment to do next"
@@ -69,6 +70,7 @@ aq-steel --quick                               # full suite
 aq-steel-carburization                         # carburization only
 aq-steel-carbon-potential                      # carbon potential only
 aq-steel-tempering                             # tempering only
+aq-steel-thermomechanical                      # roll + recrystallize foil to sheet only
 aq-steel-architecture                          # cell architecture screen only
 aq-steel-sensitivity                           # Sobol GSA of the FE engine (which experiment next)
 aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
@@ -108,6 +110,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/carburization.py` | Post-deposition gaseous carburization: Fickian finite-slab, case depth, Maynier HV, tempering flag, energy & composite strength |
 | `models/carbon_potential.py` | Gas atmosphere: CO/CO2 Boudouard, CH4/H2, dew-point via WGS, O2 probe, Acm solubility, a_C ↔ C wt% |
 | `models/tempering.py` | Tempering + RA: Andrews Ms, Koistinen-Marburger RA, Hollomon-Jaffe P, tempered HV/YS, case tempering, recommended T |
+| `models/thermomechanical.py` | **Deposit → structural sheet.** Cold-rolling pass schedule (true strain), JMAK recrystallization `X=1-exp(-(kt)ⁿ)`, recovery, normal grain growth `D²-Dᵣₓ²=Kt·exp(-Q/RT)`, annealed strength via the Hall-Petch/solid-solution/dispersion machinery, deposit-vs-annealed contrast, grade routing, and anneal energy | 
 | `models/process_flow.py` | Process block-flow diagrams: ore→leach→cell→wash→carburize→product + recycle/purge, detailed variant |
 | `models/anode.py` | OER/CER kinetics, bubble resistance, and anode/full-cell voltage coupling |
 | `models/closed_loop.py` | Phase IV charge-throughput anode wear and closed-loop electrolyte CSTR balances |
@@ -301,6 +304,45 @@ ends by specifying the experiment that replaces it — a $1,750, 3-day peel and
 coupon-curvature set with explicit kill, confirm, and redirect-to-flake rules,
 run alongside the Day-1 Hull cell. Every number above is screening fracture
 mechanics; **no iron peel data exists in this repository.**
+
+### From Deposit to Structural Sheet: Thermomechanical Processing
+
+Even when the foil releases cleanly, a fine-grained, hydrogen-affected deposit
+is not structural sheet — it is brittle. The step that turns it into sheet is
+the one the flow diagram lists as an open "Rolling?" question and that the
+suite previously did not model. `models/thermomechanical.py` closes that gap:
+
+* a **cold-rolling pass schedule** giving the cumulative true strain `ε = ln(h₀/h_f)`;
+* **JMAK recrystallization** kinetics `X(t,T,ε) = 1−exp(−(kt)ⁿ)` with
+  `k = k₀·εᵐ·exp(−Q_rx/RT)` and the time to full recrystallization;
+* **normal grain growth** `D²−D_rx² = K_gg·t·exp(−Q_gg/RT)` during/after the anneal;
+* a **recrystallized grain size** `D_rx` that falls with strain and rises with
+  starting grain size and anneal temperature; and
+* **annealed properties** computed by reusing the repository's
+  `mechanical_properties` Hall-Petch / solid-solution / dispersion machinery,
+  so strength, ductility and AISI grade come out of the same engine as the
+  as-deposited screening — plus the anneal energy for the cost models.
+
+A default run (1 µm as-deposited grain, 50% cold reduction, 700 °C × 1 h) shows
+exactly the transformation the step exists to deliver — strength is traded for
+ductility and the foil routes into a common structural grade:
+
+| Property | As-deposited foil | Recrystallized-annealed sheet |
+|---|--:|--:|
+| Grain size (µm) | 1.0 | 10.3 |
+| Yield strength (MPa) | 591 | 252 |
+| Elongation (%) | 12 | 20 |
+| Fraction recrystallized | — | 1.00 (t₉₉ ≈ 10 min) |
+| Grade screen | fine-grained high-strength low-C | AISI 1018-like (weldable) |
+| Anneal energy | — | 0.14 kWh/kg |
+
+The temperature screen is the design lever: below ~600 °C recrystallization is
+incomplete in an hour, and above ~850 °C grain growth begins to erode strength
+(10 → 46 µm across 700→950 °C). Cold reduction fineness the recrystallized
+grain (28 → 5 µm from 10% → 90% reduction). As with every downstream model here,
+these are **screening** kinetics — the activation energies, Avrami exponent and
+recrystallized-grain-size coefficients must be calibrated with real rolling
+trials, EBSD orientation mapping and hardness traverses.
 
 ---
 
