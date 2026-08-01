@@ -23,6 +23,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
+# Import the process model
+from .twin_physics import CellProcessModel
+
 
 # ---------------------------------------------------------------------------
 # Sensor definitions
@@ -55,33 +58,63 @@ SENSOR_SPECS: Dict[str, SensorSpec] = {
     "CT-201": SensorSpec("CT-201", "rectifier_current", "A", 0.0, 5000.0, 5.0),
 }
 
-# Map sensor tags to the state vector index
+# Physical state vector bounded to what the physics predicts and the cell tracks:
+# catholyte/anolyte temperature, bulk Fe²⁺, bulk pH, current density, deposit thickness, cell voltage.
 STATE_KEYS: List[str] = [
     "catholyte_temperature",  # 0
     "anolyte_temperature",    # 1
-    "catholyte_pH",           # 2
-    "dissolved_O2",           # 3
-    "cell_voltage",           # 4
-    "current_density",        # 5  (mA/cm² derived from current / area)
-    "carbon_activity",        # 6  (a_C, dimensionless 0-1)
-    "ni_concentration",       # 7  (M)
+    "bulk_fe2",               # 2  (Fe²⁺ concentration in M)
+    "bulk_pH",                # 3
+    "current_density",        # 4  (mA/cm²)
+    "deposit_thickness",      # 5  (µm)
+    "cell_voltage",           # 6  (V)
 ]
 
 STATE_INDEX: Dict[str, int] = {k: i for i, k in enumerate(STATE_KEYS)}
 N_STATES = len(STATE_KEYS)
 
-# Observation matrix mapping: which sensor observes which state
+# Observation matrix mapping: which sensor observes which state directly
+# TT-101 (catholyte temp) -> 0
+# TT-201 (anolyte temp) -> 1
+# pHAT-101 (catholyte bulk pH) -> 3
+# CT-201 (current density) -> 4
+# VT-201 (cell voltage) -> 6
 _OBS_MAP: Dict[str, int] = {
     "TT-101": 0,
     "TT-201": 1,
-    "pHAT-101": 2,
-    "AT-201": 3,
-    "VT-201": 4,
-    "CT-201": 5,
+    "pHAT-101": 3,
+    "CT-201": 4,
+    "VT-201": 6,
 }
 
 # Sensor tags that can be used as observations
 OBSERVABLE_TAGS: List[str] = list(_OBS_MAP.keys())
+
+
+# ---------------------------------------------------------------------------
+# Module level default process model caching for fast initialization in tests
+# ---------------------------------------------------------------------------
+
+_DEFAULT_MODEL: Optional[CellProcessModel] = None
+
+def get_default_process_model() -> CellProcessModel:
+    """Retrieve or build the default CellProcessModel."""
+    global _DEFAULT_MODEL
+    if _DEFAULT_MODEL is None:
+        from .twin_physics import default_process_model
+        _DEFAULT_MODEL = default_process_model()
+    return _DEFAULT_MODEL
+
+
+_DEFAULT_DP = {
+    "temperature_C": 60.0,
+    "pH": 3.5,
+    "cell_voltage_V": 2.5,
+    "j_avg_mA_cm2": 150.0,
+    "electrode_area_m2": 1.0,
+    "electrolyte_volume_L": 1000.0,
+    "fe2_M": 1.0,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -192,42 +225,180 @@ def generate_synthetic_readings(
 
 
 # ---------------------------------------------------------------------------
-# EKF implementation
+# EKF implementation helper functions
 # ---------------------------------------------------------------------------
 
-def _f_state_transition(x: np.ndarray, dt_hr: float) -> np.ndarray:
-    """Deterministic state transition (constant + slow mean-reversion)."""
-    # Mean-revert toward nominal values
-    nominal = np.array([60.0, 61.5, 3.5, 7.5, 2.5, 150.0, 0.8, 0.5])
-    tau_hr = np.array([2.0, 2.0, 4.0, 3.0, 1.0, 0.5, 6.0, 8.0])  # time constants
-    alpha = 1.0 - np.exp(-dt_hr / tau_hr)
-    return x + alpha * (nominal - x)
+def _f_state_transition(
+    x: np.ndarray,
+    dt_hr: float,
+    model: Optional[CellProcessModel] = None,
+    design_point: Optional[Dict[str, float]] = None,
+) -> np.ndarray:
+    """Deterministic state transition using the physics model and setpoints."""
+    if model is None:
+        model = get_default_process_model()
+    if design_point is None:
+        dp = _DEFAULT_DP
+    else:
+        dp = design_point
+
+    nominal_T = dp.get("temperature_C", 60.0)
+    nominal_pH = dp.get("pH", 3.5)
+    nominal_j = dp.get("j_avg_mA_cm2", 150.0)
+
+    x_next = x.copy()
+
+    # 1. Control-driven states mean-revert to setpoint
+    # catholyte_temperature (index 0) and anolyte_temperature (index 1)
+    alpha_T = 1.0 - math.exp(-dt_hr / 2.0)
+    x_next[0] = x[0] + alpha_T * (nominal_T - x[0])
+    x_next[1] = x[1] + alpha_T * (nominal_T + 1.5 - x[1])
+
+    # current_density (index 4)
+    alpha_j = 1.0 - math.exp(-dt_hr / 0.5)
+    x_next[4] = x[4] + alpha_j * (nominal_j - x[4])
+
+    # bulk_pH (index 3) mean-reverts to setpoint pH
+    alpha_pH = 1.0 - math.exp(-dt_hr / 4.0)
+    x_next[3] = x[3] + alpha_pH * (nominal_pH - x[3])
+
+    # 2. Physics-driven state dynamics
+    # Query physics process model at current operating point (j, T, fe2)
+    j_val = max(1e-3, x[4])
+    T_val = max(0.0, x[0])
+    fe2_val = max(1e-6, x[2])
+    pred = model.predict(j_mA_cm2=j_val, temperature_C=T_val, fe2_M=fe2_val)
+
+    # bulk_fe2 (index 2) depletes via Faraday consumption
+    j_A_m2 = j_val * 10.0
+    FE = pred.current_efficiency
+    electrode_area_m2 = dp.get("electrode_area_m2", 1.0)
+    volume_L = dp.get("electrolyte_volume_L", 1000.0)
+    # 1 mol Fe per mol Fe2+; consumption rate in mol/s is j_A_m2 * FE * area / (z_FE * F)
+    # z_FE = 2.0, F = 96485.3321
+    rate_fe2 = - (j_A_m2 * FE / (2.0 * 96485.3321)) * electrode_area_m2 * 3600.0 / volume_L
+    x_next[2] = max(1e-6, x[2] + rate_fe2 * dt_hr)
+
+    # deposit_thickness (index 5) integrates the growth rate (deposit_rate_um_hr)
+    x_next[5] = max(0.0, x[5] + pred.deposit_rate_um_hr * dt_hr)
+
+    # cell_voltage (index 6) mean-reverts to predicted cell voltage
+    alpha_V = 1.0 - math.exp(-dt_hr / 1.0)
+    x_next[6] = x[6] + alpha_V * (pred.v_cell_V - x[6])
+
+    return x_next
 
 
-def _F_jacobian(x: np.ndarray, dt_hr: float) -> np.ndarray:
-    """Jacobian of state transition."""
-    tau_hr = np.array([2.0, 2.0, 4.0, 3.0, 1.0, 0.5, 6.0, 8.0])
-    alpha = 1.0 - np.exp(-dt_hr / tau_hr)
-    F = np.eye(N_STATES)
-    for i in range(N_STATES):
-        F[i, i] = 1.0 - alpha[i]
+def _F_jacobian(
+    x: np.ndarray,
+    dt_hr: float,
+    model: Optional[CellProcessModel] = None,
+    design_point: Optional[Dict[str, float]] = None,
+) -> np.ndarray:
+    """Numerical Jacobian of the state transition function."""
+    n = len(x)
+    F = np.zeros((n, n))
+    eps = 1e-5
+    fx = _f_state_transition(x, dt_hr, model, design_point)
+    for i in range(n):
+        x_perturbed = x.copy()
+        x_perturbed[i] += eps
+        fx_perturbed = _f_state_transition(x_perturbed, dt_hr, model, design_point)
+        F[:, i] = (fx_perturbed - fx) / eps
     return F
 
 
-def _H_observation(tags: List[str]) -> Tuple[np.ndarray, np.ndarray]:
-    """Build observation matrix H, noise R, and observation vector z from tags.
+def h_obs(
+    x: np.ndarray,
+    obs_tags: List[str],
+    model: CellProcessModel,
+    design_point: Optional[Dict[str, float]] = None,
+) -> np.ndarray:
+    """Non-linear measurement model mapping state x to predicted observations."""
+    if design_point is None:
+        dp = _DEFAULT_DP
+    else:
+        dp = design_point
 
-    Returns (H, R).
-    """
-    n_obs = len(tags)
+    j_val = max(1e-3, x[4])
+    T_val = max(0.0, x[0])
+    fe2_val = max(1e-6, x[2])
+    pred = model.predict(j_mA_cm2=j_val, temperature_C=T_val, fe2_M=fe2_val)
+
+    area = dp.get("electrode_area_m2", 1.0)
+
+    preds = []
+    for tag in obs_tags:
+        if tag == "TT-101":
+            preds.append(x[0])
+        elif tag == "TT-201":
+            preds.append(x[1])
+        elif tag == "pHAT-101":
+            preds.append(x[3])
+        elif tag == "CT-201":
+            # CT-201 measures total current in Amperes: j_mA_cm2 * area * 10
+            preds.append(x[4] * area * 10.0)
+        elif tag == "VT-201":
+            preds.append(pred.v_cell_V)
+        else:
+            preds.append(0.0)
+    return np.array(preds)
+
+
+def H_jacobian(
+    x: np.ndarray,
+    obs_tags: List[str],
+    model: CellProcessModel,
+    design_point: Optional[Dict[str, float]] = None,
+) -> np.ndarray:
+    """Numerical Jacobian of the measurement model h_obs."""
+    n_obs = len(obs_tags)
     H = np.zeros((n_obs, N_STATES))
+    eps = 1e-5
+    h0 = h_obs(x, obs_tags, model, design_point)
+    for i in range(N_STATES):
+        x_perturbed = x.copy()
+        x_perturbed[i] += eps
+        h_perturbed = h_obs(x_perturbed, obs_tags, model, design_point)
+        H[:, i] = (h_perturbed - h0) / eps
+    return H
+
+
+def _R_observation(tags: List[str]) -> np.ndarray:
+    """Construct the measurement noise covariance matrix R."""
+    n_obs = len(tags)
     R = np.zeros((n_obs, n_obs))
     for i, tag in enumerate(tags):
-        if tag in _OBS_MAP:
-            H[i, _OBS_MAP[tag]] = 1.0
-            R[i, i] = SENSOR_SPECS[tag].noise_std ** 2
+        spec = SENSOR_SPECS.get(tag)
+        if spec is not None:
+            R[i, i] = spec.noise_std ** 2
+        else:
+            R[i, i] = 1e-4
+    return R
+
+
+def _H_observation(
+    tags: List[str],
+    x: Optional[np.ndarray] = None,
+    model: Optional[CellProcessModel] = None,
+    design_point: Optional[Dict[str, float]] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Construct observation matrix H and measurement noise matrix R.
+
+    Provided for backwards compatibility and test interface conformity.
+    """
+    if x is None:
+        x = np.array([60.0, 61.5, 1.0, 3.5, 150.0, 0.0, 2.5])
+    if model is None:
+        model = get_default_process_model()
+    H = H_jacobian(x, tags, model, design_point)
+    R = _R_observation(tags)
     return H, R
 
+
+# ---------------------------------------------------------------------------
+# EKF implementation
+# ---------------------------------------------------------------------------
 
 class ExtendedKalmanFilter:
     """EKF for the digital twin state estimation."""
@@ -243,28 +414,36 @@ class ExtendedKalmanFilter:
         self.Q_diag = (
             process_noise_std ** 2
             if process_noise_std is not None
-            else np.array([0.1, 0.1, 0.01, 0.05, 0.005, 1.0, 0.005, 0.005])
+            else np.array([0.1, 0.1, 0.001, 0.01, 1.0, 0.1, 0.005])
         )
 
-    def predict(self, dt_hr: float) -> None:
-        F = _F_jacobian(self.x, dt_hr)
-        self.x = _f_state_transition(self.x, dt_hr)
+    def predict(
+        self,
+        dt_hr: float,
+        model: CellProcessModel,
+        design_point: Dict[str, float],
+    ) -> None:
+        F = _F_jacobian(self.x, dt_hr, model, design_point)
+        self.x = _f_state_transition(self.x, dt_hr, model, design_point)
         self.P = F @ self.P @ F.T + np.diag(self.Q_diag)
 
     def update(
         self,
         z: np.ndarray,
-        H: np.ndarray,
+        obs_tags: List[str],
         R: np.ndarray,
+        model: CellProcessModel,
+        design_point: Dict[str, float],
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Kalman update. Returns (innovation, S)."""
-        y = z - H @ self.x
+        h_x = h_obs(self.x, obs_tags, model, design_point)
+        y = z - h_x
+        H = H_jacobian(self.x, obs_tags, model, design_point)
         S = H @ self.P @ H.T + R
         K = self.P @ H.T @ np.linalg.inv(S)
         self.x = self.x + K @ y
-        I = np.eye(N_STATES)
-        I_KH = I - K @ H
-        self.P = I_KH @ self.P  # Joseph form omitted for speed; acceptable for well-conditioned S
+        identity = np.eye(N_STATES)
+        self.P = (identity - K @ H) @ self.P
         return y, S
 
 
@@ -292,7 +471,7 @@ class AnomalyDetector:
         # History per sensor: list of (time, value)
         self._history: Dict[str, List[Tuple[float, float]]] = {tag: [] for tag in SENSOR_SPECS}
 
-    def check(
+    def check(  # noqa: C901
         self,
         readings: Dict[str, float],
         predicted: Dict[str, float],
@@ -394,13 +573,14 @@ class DigitalTwin:
             "cell_voltage_V": 2.5,
             "j_avg_mA_cm2": 150.0,
             "electrode_area_m2": 1.0,
+            "electrolyte_volume_L": 1000.0,
+            "fe2_M": 1.0,
         }
-        self.model = model
-        # If a physics process model is supplied, seed the operating point from
-        # physics so the EKF starts at a self-consistent reference condition.
+
+        # Seed operating point from physics if model is supplied but design_point is not
         if model is not None and not design_point:
-            n = None
             nom = getattr(model, "nominal", None)
+            n = None
             if callable(nom):
                 n = nom()
             elif isinstance(nom, dict):
@@ -412,22 +592,25 @@ class DigitalTwin:
                     "cell_voltage_V": n.get("cell_voltage_V", 2.5),
                     "j_avg_mA_cm2": n.get("j_avg_mA_cm2", 150.0),
                     "electrode_area_m2": 1.0,
+                    "electrolyte_volume_L": 1000.0,
+                    "fe2_M": n.get("fe2_M", 1.0),
                 }
+
+        self.model = model if model is not None else get_default_process_model()
         self.rng = np.random.default_rng(seed)
 
         # Initial state
         x0 = np.array([
-            self.design_point.get("temperature_C", 60.0),   # catholyte_temp
+            self.design_point.get("temperature_C", 60.0),        # catholyte_temp
             self.design_point.get("temperature_C", 60.0) + 1.5,  # anolyte_temp
-            self.design_point.get("pH", 3.5),                # pH
-            7.5,                                               # dissolved_O2
-            self.design_point.get("cell_voltage_V", 2.5),    # cell_voltage
-            self.design_point.get("j_avg_mA_cm2", 150.0),   # current_density
-            0.8,                                               # carbon_activity
-            0.5,                                               # ni_concentration
+            self.design_point.get("fe2_M", 1.0),                 # bulk_fe2
+            self.design_point.get("pH", 3.5),                    # bulk_pH
+            self.design_point.get("j_avg_mA_cm2", 150.0),        # current_density
+            0.0,                                                 # deposit_thickness
+            self.design_point.get("cell_voltage_V", 2.5),        # cell_voltage
         ], dtype=float)
 
-        P0 = np.diag([1.0, 1.0, 0.1, 0.5, 0.05, 10.0, 0.05, 0.05])
+        P0 = np.diag([1.0, 1.0, 0.01, 0.1, 10.0, 1.0, 0.05])
 
         self.ekf = ExtendedKalmanFilter(x0, P0)
         self.anomaly_detector = AnomalyDetector()
@@ -452,26 +635,31 @@ class DigitalTwin:
         """
         self._t_hr += dt_hr
 
-        # Predict
-        self.ekf.predict(dt_hr)
+        # Predict state forward
+        self.ekf.predict(dt_hr, self.model, self.design_point)
 
-        # Build observation from available tags
-        obs_tags = [t for t in sensor_readings if t in _OBS_MAP]
+        # Build observation from available tags (keeping the order defined in _OBS_MAP)
+        obs_tags = [t for t in _OBS_MAP if t in sensor_readings]
         if obs_tags:
-            H, R = _H_observation(obs_tags)
+            R = _R_observation(obs_tags)
             z = np.array([sensor_readings[t] for t in obs_tags])
-            innovation, S = self.ekf.update(z, H, R)
+            innovation, S = self.ekf.update(z, obs_tags, R, self.model, self.design_point)
         else:
             innovation = np.zeros(len(OBSERVABLE_TAGS))
             S = np.eye(len(OBSERVABLE_TAGS))
 
         # Predicted values for anomaly detection
+        h_x = h_obs(self.ekf.x, obs_tags, self.model, self.design_point)
         predicted = {
-            tag: float(self.ekf.x[_OBS_MAP[tag]]) for tag in obs_tags if tag in _OBS_MAP
+            tag: float(h_x[i]) for i, tag in enumerate(obs_tags)
         }
+
+        # Calculate predicted standard deviations of the measurements (diag of H P H.T)
+        H = H_jacobian(self.ekf.x, obs_tags, self.model, self.design_point)
+        meas_cov = H @ self.ekf.P @ H.T
         predicted_sigma = {
-            tag: float(math.sqrt(max(self.ekf.P[_OBS_MAP[tag], _OBS_MAP[tag]], 0)))
-            for tag in obs_tags if tag in _OBS_MAP
+            tag: float(math.sqrt(max(meas_cov[i, i], 0.0)))
+            for i, tag in enumerate(obs_tags)
         }
 
         anomalies = self.anomaly_detector.check(
@@ -492,11 +680,7 @@ class DigitalTwin:
         return state
 
     def physics_predict(self, j_mA_cm2: float, temperature_C: float, fe2_M: float):
-        """Physics-predicted observables at an operating point via the process model.
-
-        Requires the twin to have been constructed with a ``CellProcessModel``
-        (the ``model`` argument).  Raises if no physics model is attached.
-        """
+        """Physics-predicted observables at an operating point via the process model."""
         if self.model is None:
             raise ValueError(
                 "DigitalTwin has no physics process model. "
@@ -525,19 +709,18 @@ class DigitalTwin:
 
         x = self.ekf.x.copy()
         P = self.ekf.P.copy()
-
         Q_diag = self.ekf.Q_diag
 
         for i in range(n_steps):
-            F = _F_jacobian(x, dt)
-            x = _f_state_transition(x, dt)
+            F = _F_jacobian(x, dt, self.model, self.design_point)
+            x = _f_state_transition(x, dt, self.model, self.design_point)
             P = F @ P @ F.T + np.diag(Q_diag)
             means[i] = x
             sigmas[i] = np.sqrt(np.maximum(np.diag(P), 0.0))
 
         # Confidence: probability that states stay within physical tolerances
-        # around the CURRENT state (not a fixed nominal)
-        tolerances = np.array([5.0, 5.0, 0.5, 2.0, 0.2, 20.0, 0.2, 0.2])
+        # around the CURRENT state
+        tolerances = np.array([5.0, 5.0, 0.2, 0.5, 20.0, 50.0, 0.2])
         reference = self.ekf.x.copy()
         confidence = np.ones(n_steps)
         for i in range(n_steps):
@@ -563,9 +746,8 @@ class DigitalTwin:
         """Return (timestamp, P_all_specs_met) for each update step."""
         result = []
         for state in self._history:
-            # Simplified: confidence based on covariance trace
+            # Confidence based on covariance trace
             trace = np.trace(state.state_covariance)
-            # Normalize: small trace = high confidence
             conf = float(np.exp(-trace / 100.0))
             result.append((state.timestamp_hr, conf))
         return result

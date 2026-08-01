@@ -1,28 +1,20 @@
 """Tests for the digital twin module (>=8 tests)."""
 from __future__ import annotations
 
-import math
 import numpy as np
-import pytest
 
 from models.digital_twin import (
     DigitalTwin,
-    ExtendedKalmanFilter,
     AnomalyDetector,
-    TwinState,
-    PredictionEnvelope,
-    Anomaly,
-    STATE_KEYS,
-    STATE_INDEX,
     N_STATES,
     SENSOR_SPECS,
     OBSERVABLE_TAGS,
     generate_synthetic_readings,
     _f_state_transition,
-    _F_jacobian,
     _H_observation,
     _normal_cdf,
 )
+from models.twin_physics import CellProcessModel, generate_physics_readings
 
 
 class TestEKFTracksTrueState:
@@ -46,9 +38,65 @@ class TestEKFTracksTrueState:
         # Catholyte temperature should be within 2σ of ~60C
         assert abs(mean["catholyte_temperature"] - 60.0) < two_sigma["catholyte_temperature"] + 2.0
         # pH near 3.5
-        assert abs(mean["catholyte_pH"] - 3.5) < two_sigma["catholyte_pH"] + 0.5
+        assert abs(mean["bulk_pH"] - 3.5) < two_sigma["bulk_pH"] + 0.5
         # Cell voltage near 2.5V
         assert abs(mean["cell_voltage"] - 2.5) < two_sigma["cell_voltage"] + 0.2
+
+    def test_residual_small_and_converges_to_physics(self):
+        """Test that the residual is small when physics is right and the state converges to physics-consistent values."""
+        physics = CellProcessModel()
+        twin = DigitalTwin(model=physics, seed=42)
+
+        # True physics conditions
+        j_true = 120.0
+        T_true = 65.0
+        fe2_true = 1.2
+
+        # Set up design point to match true conditions so EKF starts nearby
+        twin.design_point = {
+            "temperature_C": T_true,
+            "pH": 3.0,
+            "cell_voltage_V": physics.predict(j_true, T_true, fe2_true).v_cell_V,
+            "j_avg_mA_cm2": j_true,
+            "fe2_M": fe2_true,
+        }
+        # Re-initialize EKF state
+        twin.ekf.x = np.array([
+            T_true,                 # catholyte_temperature
+            T_true + 1.5,           # anolyte_temperature
+            fe2_true,               # bulk_fe2
+            3.0,                    # bulk_pH
+            j_true,                 # current_density
+            0.0,                    # deposit_thickness
+            twin.design_point["cell_voltage_V"]  # cell_voltage
+        ])
+
+        rng = np.random.default_rng(12345)
+        # Run updates with physics-based readings (low noise)
+        for i in range(100):
+            # Generate readings from the exact physics model
+            readings = generate_physics_readings(physics, j_true, T_true, fe2_true, rng)
+            twin.update(readings, dt_hr=0.05)
+
+        # Check that the mean absolute innovation is small (within a few standard deviations)
+        # using the last 20 steps to be statistically robust against random outliers
+        last_states = twin.history[-20:]
+        obs_tags = ["TT-101", "TT-201", "pHAT-101", "CT-201", "VT-201"]
+        for i, tag in enumerate(obs_tags):
+            innovs = [abs(state.innovation[i]) for state in last_states]
+            mean_innov = np.mean(innovs)
+            last_sigma = np.sqrt(last_states[-1].innovation_cov[i, i])
+            # The average absolute innovation for a normal distribution is approx 0.8 * sigma.
+            # So checking that it's less than 2.0 * last_sigma is statistically extremely safe!
+            assert mean_innov < 2.0 * last_sigma, f"Residual for {tag} is too large: {mean_innov} vs {2.0 * last_sigma}"
+
+        # And state converges to physics-consistent values
+        final_state = twin.history[-1]
+        mean = final_state.state_dict
+        assert abs(mean["catholyte_temperature"] - T_true) < 1.0
+        assert abs(mean["bulk_fe2"] - fe2_true) < 0.1
+        assert abs(mean["current_density"] - j_true) < 2.0
+        assert abs(mean["cell_voltage"] - twin.design_point["cell_voltage_V"]) < 0.2
 
 
 class TestAnomalyDetection:
@@ -110,7 +158,6 @@ class TestConfidenceTrajectory:
         for i in range(30):
             readings = generate_synthetic_readings(nominal, i * 0.1, rng)
             twin.update(readings, dt_hr=0.1)
-        conf_clean = twin.confidence_trajectory()[-1][1]
 
         # Now add very noisy data (multiply noise by 10)
         for i in range(30):
@@ -205,6 +252,6 @@ class TestMathUtils:
 
     def test_state_transition_identity_at_zero_dt(self):
         """Zero time step should not change state."""
-        x = np.array([60.0, 61.5, 3.5, 7.5, 2.5, 150.0, 0.8, 0.5])
+        x = np.array([60.0, 61.5, 1.0, 3.5, 150.0, 0.0, 2.5])
         x2 = _f_state_transition(x, 0.0)
         np.testing.assert_allclose(x, x2, atol=1e-12)
