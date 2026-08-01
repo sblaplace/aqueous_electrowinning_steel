@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from .env_coupling import disturbance_from_environment
 
 # Import the process model and bath dynamics
 from .twin_physics import CellProcessModel
