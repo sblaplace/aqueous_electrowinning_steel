@@ -36,12 +36,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
 from .electrochemistry import FARADAY, Z_FE
 from .twin_physics import CellProcessModel
+from .env_coupling import DisturbanceInputs
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +81,7 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, float] = {
     "T_ambient_C": 25.0,                   # °C — ambient temperature
     "temperature_control_gain_W_K": 3000.0, # W/K — heater/chiller holding the operating setpoint
     "pH_control_gain_M_hr_ph": 0.05,       # (M/hr) gentle acid-dose feedback (≈1 h pH loop)
+    "heat_exchange_area_m2": 10.0,         # m² — exposed surface for convective/rain cooling
     "T_reservoir_C": 55.0,                 # °C — initial reservoir temperature
 
     # --- Electrical relaxation ---
@@ -153,6 +155,22 @@ def _dp(dp: Dict[str, Any], key: str) -> float:
     return dp.get(key, BATH_DYNAMICS_DEFAULTS.get(key, 0.0))
 
 
+def _enabled_env(dp: Dict[str, Any]) -> Optional[DisturbanceInputs]:
+    """Return the enabled :class:`DisturbanceInputs` in the design point.
+
+    Returns ``None`` when coupling is absent or disabled, so the calling
+    dynamics apply zero disturbance (the brief's default / byte-identical
+    coupling-off behaviour).
+    """
+    env = dp.get("_env_dist")
+    if isinstance(env, DisturbanceInputs):
+        return env if env.enabled else None
+    if isinstance(env, dict):
+        d = DisturbanceInputs.from_dict(env)
+        return d if d.enabled else None
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Core dynamics step
 # ---------------------------------------------------------------------------
@@ -196,6 +214,9 @@ def step(
     dp = design_point
     x_next = x.copy()
 
+    # Environmental disturbance (coupling-on only; zero by default)
+    env = _enabled_env(dp)
+
     # --- Extract state values (clamped for physics queries) ---
     T_cath = x[0]          # catholyte temperature (°C)
     T_anol = x[1]          # anolyte temperature (°C)
@@ -237,6 +258,9 @@ def step(
     makeup_M_hr = _dp(dp, "fe2_makeup_rate_M_hr")
 
     dfe2_dt = -consumption_M_hr + recirc_fe2_M_hr + makeup_M_hr
+    # Ingress dilution (coupling-on): dilute with Fe2+-free water toward 0.
+    if env is not None:
+        dfe2_dt -= env.ingress_dilution_rate_1_hr * fe2
     x_next[2] = max(1e-6, fe2 + dfe2_dt * dt_hr)
 
     # Reservoir Fe2+ balance:
@@ -274,6 +298,9 @@ def step(
     recirc_pH_hr = (flow_L_hr / V_cath_L) * (aux.pH_reservoir - pH)
 
     dpH_dt = -net_proton_M_hr / max(beta, 1e-6) + recirc_pH_hr
+    # Ingress dilution drags pH toward neutral rainwater (coupling-on).
+    if env is not None:
+        dpH_dt += env.ingress_dilution_rate_1_hr * (7.0 - pH)
     x_next[3] = max(0.0, min(14.0, pH + dpH_dt * dt_hr))
 
     # Reservoir pH (slowly tracks catholyte return)
@@ -302,10 +329,19 @@ def step(
 
     # Ambient losses
     UA_amb = _dp(dp, "UA_ambient_W_K")
-    T_amb = _dp(dp, "T_ambient_C")
-    # Increased ambient loss coefficients to stabilize thermal balance
-    Q_amb_cath_W = UA_amb * 1.0 * (T_cath - T_amb)
-    Q_amb_anol_W = UA_amb * 1.0 * (T_anol - T_amb)
+    T_amb = env.T_ambient_C if env is not None else _dp(dp, "T_ambient_C")
+    Q_amb_cath_W = UA_amb * (T_cath - T_amb)
+    Q_amb_anol_W = UA_amb * (T_anol - T_amb)
+
+    # Environmental convective + rain cooling (coupling-on; zero by default)
+    Q_conv_cath_W = 0.0
+    Q_conv_anol_W = 0.0
+    Q_rain_cath_W = 0.0
+    if env is not None:
+        A_heat = _dp(dp, "heat_exchange_area_m2")
+        Q_conv_cath_W = env.h_conv_W_m2_K * A_heat * (T_cath - T_amb)
+        Q_conv_anol_W = env.h_conv_W_m2_K * A_heat * (T_anol - T_amb)
+        Q_rain_cath_W = env.rain_cooling_W_m2 * A_heat
 
     # Recirculation heat exchange: flow * rho * Cp * (T_res - T_comp) / 3600
     # flow in L/hr → m³/s: flow/1000/3600; rho in kg/m³; Cp in J/(kg·K)
@@ -335,6 +371,8 @@ def step(
                     - Q_cool_W
                     - Q_membrane_W
                     - Q_amb_cath_W
+                    - Q_conv_cath_W
+                    - Q_rain_cath_W
                     + flow_thermal_W_K * (aux.T_reservoir_C - T_cath))
     dT_cath_dt_K_s = Q_net_cath_W / mass_cath_J_K
     dT_cath_dt_C_hr = dT_cath_dt_K_s * 3600.0
@@ -344,6 +382,7 @@ def step(
                     + Q_ctrl_anol_W
                     + Q_membrane_W
                     - Q_amb_anol_W
+                    - Q_conv_anol_W
                     + flow_thermal_W_K * (aux.T_reservoir_C - T_anol))
     dT_anol_dt_K_s = Q_net_anol_W / mass_anol_J_K
     dT_anol_dt_C_hr = dT_anol_dt_K_s * 3600.0

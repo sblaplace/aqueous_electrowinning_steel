@@ -26,6 +26,7 @@ import numpy as np
 # Import the process model and bath dynamics
 from .twin_physics import CellProcessModel
 from . import bath_dynamics as _bath_dynamics
+from .env_coupling import disturbance_from_environment
 
 
 # ---------------------------------------------------------------------------
@@ -591,6 +592,8 @@ class DigitalTwin:
         design_point: Optional[Dict[str, float]] = None,
         model: Optional[Any] = None,
         seed: int = 42,
+        env_state: Optional[Dict[str, Any]] = None,
+        crate_state: Optional[Dict[str, Any]] = None,
     ):
         self.design_point = design_point or {
             "temperature_C": 60.0,
@@ -663,6 +666,23 @@ class DigitalTwin:
         self._t_hr: float = 0.0
         self._history: List[TwinState] = []
         self._anomaly_log: List[Anomaly] = []
+
+    def set_environment(
+        self,
+        env_state: Optional[Dict[str, Any]] = None,
+        crate_state: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Set the environmental-disturbance coupling from env/crate observations.
+
+        ``disturbance_from_environment`` is a pure, deterministic mapping.  With
+        no observations it returns a disabled / zero :class:`DisturbanceInputs`,
+        so switching coupling on only changes the disturbance terms the bath
+        dynamics apply (the uncoupled twin is unchanged).  Call again to update
+        the disturbance as the environment / site snapshot changes.
+        """
+        self.design_point["_env_dist"] = disturbance_from_environment(
+            env_state, crate_state
+        )
 
     def update(self, sensor_readings: Dict[str, float], dt_hr: float = 0.1) -> TwinState:
         """Incorporate new sensor readings into the twin state.
