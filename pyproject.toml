@@ -88,6 +88,9 @@ packages = ["models"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra"
+markers = [
+    "slow: long-running full-fidelity tests (sweeps, Monte Carlo, Sobol, Bayesian/EIS, optimization, benchmarks). Run on demand per docs/TESTING.md, not in the fast feedback loop.",
+]
 
 [tool.ruff]
 line-length = 100

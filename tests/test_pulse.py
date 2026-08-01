@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.slow
 from models.pulse import (
     PulseDepositionModel,
     PulseResult,

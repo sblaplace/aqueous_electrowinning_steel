@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.slow
 from models.hull_cell import HullCellGeometry, hull_current_distribution
 from models.hull_cell_inverse import (
     IRON_DENSITY_G_CM3,

@@ -15,6 +15,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.slow
+
 from models.pulse_optimization import (
     PulseOptimizationSweep,
     is_non_dominated,

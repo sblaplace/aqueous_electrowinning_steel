@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.slow
+
 from models.eis import (
     load_spectrum,
     summarize_spectrum,

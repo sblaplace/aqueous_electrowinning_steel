@@ -5,6 +5,7 @@ import math
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.slow
 from models.uncertainty.bayesian_calibration import (
     ParameterPrior,
     CalibrationResult,

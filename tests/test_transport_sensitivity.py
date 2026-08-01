@@ -10,6 +10,9 @@ evaluation relies on.
 """
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from models.transport_sensitivity import (
     OUTPUT_KEYS,

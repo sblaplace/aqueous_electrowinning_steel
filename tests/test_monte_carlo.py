@@ -16,6 +16,9 @@ Tests for the Monte Carlo engine — >=8 test cases covering:
 
 from __future__ import annotations
 
+import pytest
+pytestmark = pytest.mark.slow
+
 import math
 import time
 

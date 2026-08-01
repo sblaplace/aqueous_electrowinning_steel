@@ -10,6 +10,9 @@ These tests verify that the conservation-law dynamics correctly implement:
 from __future__ import annotations
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.slow
 
 from models import bath_dynamics
 from models.bath_dynamics import BathAux, step

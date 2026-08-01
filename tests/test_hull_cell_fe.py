@@ -15,6 +15,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.slow
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.hull_cell_fe import (  # noqa: E402
