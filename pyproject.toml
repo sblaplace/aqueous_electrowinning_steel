@@ -53,6 +53,7 @@ aq-steel-dark-mill = "models.run_dark_mill:main"
 aq-steel-sensitivity = "models.run_transport_sensitivity:main"
 aq-steel-adhesion = "models.run_adhesion_peel:main"
 aq-steel-stress = "models.run_internal_stress:main"
+aq-steel-rde = "models.run_rde_levich:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

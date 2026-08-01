@@ -1,0 +1,152 @@
+{
+  "title": "RDE kinetics/transport separation (Levich + Koutecky-Levich)",
+  "purpose": "Extract D, the Nernst film thickness, and the Fe/HER Tafel kinetics from one RDE polarization set, calibrating diffusion_layer_1d's free boundary-layer parameter from measurement rather than assumption.",
+  "model_scope": {
+    "computes": [
+      "Levich limiting current i_lim = 0.62 z F D^(2/3) omega^(1/2) nu^(-1/6) C_bulk",
+      "Diffusivity D from a Levich plot (i_lim vs omega^(1/2))",
+      "Nernst film thickness delta on the RDE (the number that calibrates diffusion_layer_1d / transport.py)",
+      "Koutecky-Levich kinetic-current correction (1/i_k = 1/i - 1/i_lim)",
+      "Fe and HER Tafel slopes + exchange-current densities from a single RDE polarization set",
+      "Automatic plateau / kinetic-window / HER-window recommendation from the data",
+      "Synthetic RDE polarization simulator for method validation and experiment planning",
+      "RDE measurement matrix with resolution requirements and gate rules"
+    ],
+    "does_not_compute": [
+      "Rotation-rate-independent convection inside the film (assumed steady, well-established Cochran flow)",
+      "Activity coefficients, complexation, or ion-pairing corrections to C_bulk",
+      "Non-ideal Levich behaviour at very high omega (transition to turbulence)",
+      "Migration enhancement of i_lim (supporting-electrolyte-free limit; see transport.py)",
+      "Boron/borate or sulfate transport-limited corrections to the HER branch",
+      "Anodic branch fitting (module is cathodic-only by design)"
+    ],
+    "calibration_required": [
+      "One RDE polarization set in the actual bath to fix D (and hence delta) for diffusion_layer_1d",
+      "Tafel slopes to be confirmed by Levich-line independence of the kinetic current",
+      "Kinematic viscosity of the real electrolyte (the water-only value is a screening input)"
+    ],
+    "key_uncertainty": "nu (kinematic viscosity) is taken as water-only here; real sulfate/chloride baths raise nu a few percent, which shifts D by ~nu^(1/4). Measure nu (Ostwald viscometer) before trusting absolute D; the method's internal cross-checks (Tafel linearity, Levich R^2) are what gate acceptance.",
+    "limitations": "Screening model demonstrating the method on synthetic data. No wet-lab RDE current exists in this repository; the module converts a free model parameter (delta) into a measured one the first time it is run against real data."
+  },
+  "true_parameters": {
+    "D_m2_s": 7.2e-10,
+    "C_fe_M": 1.0,
+    "nu_m2_s": 8.9e-07,
+    "fe_i0_A_m2": 500.0,
+    "fe_tafel_V": 0.12,
+    "fe_E_eq_V": -0.44,
+    "her_i0_A_m2": 0.02,
+    "her_tafel_V": 0.15,
+    "pH": 2.0
+  },
+  "experiment": {
+    "omega_rpm": [
+      400.0,
+      900.0,
+      1600.0,
+      2500.0
+    ],
+    "potential_min_V": -1.05,
+    "potential_max_V": -0.5
+  },
+  "analysis": {
+    "plateau_E_V": -0.7721052631578947,
+    "windows": {
+      "plateau_E_V": -0.7721052631578947,
+      "kinetic_window_V": [
+        -0.6794736842105263,
+        -0.5
+      ],
+      "her_window_V": [
+        -1.05,
+        -0.7894736842105263
+      ]
+    },
+    "levich": {
+      "B_A_m2_per_sqrt_rps": 974.4501452214786,
+      "r_squared": 0.9943626688839787,
+      "n_points": 4,
+      "D_m2_s": 7.139412361953515e-10,
+      "i_lim_by_omega_A_m2": [
+        6306.725508185623,
+        9460.088262278434,
+        12613.451016371246,
+        15766.813770464058
+      ]
+    },
+    "nernst_layer_m_at_1600rpm": 1.0902783772950551e-05,
+    "fe_tafel": {
+      "tafel_slope_V_decade": 0.11721331127211357,
+      "i0_A_m2": 481.1071202056337,
+      "r_squared": 0.9998365141457047,
+      "n_points": 32,
+      "overpotential_min_V": 0.06,
+      "overpotential_max_V": 0.23947368421052634
+    },
+    "her_tafel": {
+      "tafel_slope_V_decade": 0.1410136993404146,
+      "i0_A_m2": 0.008706753684482742,
+      "r_squared": 0.9944735460533853,
+      "n_points": 46,
+      "overpotential_min_V": 0.6711549936089871,
+      "overpotential_max_V": 0.9316813093984608
+    },
+    "E_eq_fe_V": -0.44,
+    "E_eq_her_V": -0.11831869060153916,
+    "recovery_checks": {
+      "D_ref_m2_s": 7.2e-10,
+      "D_recovered_m2_s": 7.139412361953515e-10,
+      "relative_error_pct": -0.8414949728678459,
+      "delta_ref_m_at_1600rpm": 1.0902783772950551e-05
+    }
+  },
+  "experiment_design": {
+    "rotation_matrix_rpm": [
+      400.0,
+      577.0799623628855,
+      832.5532074018732,
+      1201.1244339814311,
+      1732.8621078878657,
+      2500.0
+    ],
+    "expected_i_lim_A_m2": [
+      11726.993725488013,
+      14085.578700830587,
+      16918.532744336044,
+      20321.26306633694,
+      24408.365598341716,
+      29317.484313720033
+    ],
+    "expected_nernst_layer_m": [
+      2.5360077280179578e-05,
+      2.1113613679572876e-05,
+      1.7578206788772463e-05,
+      1.4634792442365895e-05,
+      1.218424338755242e-05,
+      1.014403091207183e-05
+    ],
+    "i_lim_spread_ratio": 2.5,
+    "current_precision_requirement_pct": 40.0,
+    "diffusivity_at_T_C": 1.5439328517829522e-09,
+    "kinematic_viscosity_at_T_C": 4.7093090396496756e-07,
+    "gates": [
+      "Levich plot R^2 >= 0.995 over the plateau (else re-run with more rotation rates / wider omega range)",
+      "Recovered D within 25% of literature D_Fe2 (7.2e-10 m^2/s at 25 C, Arrhenius-scaled) or of the FE engine's calibration anchor",
+      "Fe Tafel fit R^2 >= 0.98 and a slope in 0.06-0.18 V/decade (single-step 2e- transfer, alpha~0.5)",
+      "HER Tafel fit R^2 >= 0.98 in a window where total current exceeds the fastest-rotation i_lim by >10% (Fe fully saturated)",
+      "Koutecky-Levich intercept positive (1/i_k > 0); a negative intercept means the plateau potential was mis-placed"
+    ]
+  },
+  "findings": [
+    "Levich plateau @ -0.77 V recovers D = 7.14e-10 m\u00b2/s (true 7.2e-10, -0.8%)",
+    "Nernst film thickness at 1600 rpm = 10.9 \u00b5m \u2014 the value to feed diffusion_layer_1d as its boundary layer.",
+    "Fe Tafel b = 0.117 V/dec, i0 = 481 A/m\u00b2 (true 0.120, 500; R\u00b2=1.000)",
+    "HER Tafel b = 0.141 V/dec, i0 = 0.0087 A/m\u00b2 (true 0.150, 0.02; R\u00b2=0.994)",
+    "Design: 400\u20132500 rpm gives an i_lim spread of 2.5\u00d7; current meter should resolve ~40.0%."
+  ],
+  "figures": [
+    "docs/figures/rde_levich_levich_kl.png",
+    "docs/figures/rde_levich_polarization.png",
+    "docs/figures/rde_levich_tafel.png"
+  ]
+}

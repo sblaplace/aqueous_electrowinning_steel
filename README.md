@@ -59,7 +59,8 @@ python -m models.run_cell_architecture      # Cell architecture screen: producti
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> ranked "which experiment to do next"
 python -m models.run_adhesion_peel          # Does iron peel from a drum? Peel window + coupon test
 python -m models.run_internal_stress        # Residual stress (Stoney / bent-strip) + coupon curvature protocol
-python -m models.run_all                    # Full suite (19 steps) + master_report.json + dashboard
+python -m models.run_rde_levich             # RDE kinetics/transport separation (Levich + Koutecky-Levich) → D, δ, Fe/HER Tafel
+python -m models.run_all                    # Full suite (20 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -71,6 +72,7 @@ aq-steel-architecture                          # cell architecture screen only
 aq-steel-sensitivity                           # Sobol GSA of the FE engine (which experiment next)
 aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
 aq-steel-stress                                # Internal stress and coupon-curvature protocol
+aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 
 # Run the test suite
 pytest tests -q

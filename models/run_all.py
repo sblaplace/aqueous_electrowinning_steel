@@ -25,7 +25,9 @@ What it does
 12. Anode durability + closed-loop CSTR Phase IV (closed_loop)
 13. Techno-economics + scenario comparison (technoeconomic, scenarios)
 14. Process-flow diagrams + pilot P&ID (process_flow, pid)
-15. Dashboard summary figure + master JSON
+15. Internal stress & coupon curvature (Stoney/bent-strip) + adhesion/peel (adhesion_peel, internal_stress)
+16. RDE kinetics/transport separation — Levich + Koutecky-Levich (rde_levich)
+17. Dashboard summary figure + master JSON
 
 Outputs
 -------
@@ -79,6 +81,7 @@ from models.run_experimental_matrix import main as run_experimental_matrix_main
 from models.run_cell_architecture import main as run_cell_architecture_main
 from models.run_adhesion_peel import main as run_adhesion_peel_main
 from models.run_internal_stress import main as run_internal_stress_main
+from models.run_rde_levich import main as run_rde_levich_main
 
 from models.co_deposition import PhaseIIICoDeposition
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -605,7 +608,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["pre_lab_suite"] = {"error": str(e)}
 
     # Cell architecture screen (areal productivity, $/m², kill criterion #3)
-    print("\n[17/19] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
+    print("\n[17/20] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
     try:
         run_cell_architecture_main()
         master["steps"]["cell_architecture"] = _load_json(
@@ -618,7 +621,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["cell_architecture"] = {"error": str(e)}
 
     # Deposit adhesion / peel screen (the drum-and-strip gating unknown)
-    print("\n[18/19] Adhesion & peel screen (does iron peel from a drum?)...")
+    print("\n[18/20] Adhesion & peel screen (does iron peel from a drum?)...")
     try:
         run_adhesion_peel_main()
         master["steps"]["adhesion_peel"] = _load_json(
@@ -631,7 +634,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["adhesion_peel"] = {"error": str(e)}
 
     # Deposit internal stress and coupon curvature (Stoney / bent-strip)
-    print("\n[19/19] Internal stress & coupon curvature (Stoney / bent-strip)...")
+    print("\n[19/20] Internal stress & coupon curvature (Stoney / bent-strip)...")
     try:
         run_internal_stress_main()
         master["steps"]["internal_stress"] = _load_json(
@@ -642,6 +645,20 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ internal stress: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["internal_stress"] = {"error": str(e)}
+
+    # RDE kinetics/transport separation (Levich + Koutecky-Levich) — calibrates
+    # diffusion_layer_1d's boundary-layer parameter from a measurement method
+    print("\n[20/20] RDE kinetics/transport separation (Levich + Koutecky-Levich)...")
+    try:
+        run_rde_levich_main()
+        master["steps"]["rde_levich"] = _load_json(
+            DATA_DIR / "rde_levich_report.json"
+        )
+        print("  ✅ rde & levich")
+    except Exception as e:
+        print(f"  ❌ rde & levich: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["rde_levich"] = {"error": str(e)}
 
     # Dashboard
     print("\n[Dashboard] Generating master dashboard...")
