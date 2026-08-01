@@ -1,0 +1,64 @@
+{
+  "scenarios": {
+    "default": {
+      "dynamic_pressure_Pa": 980.0,
+      "wind_force_N": 7431.8,
+      "fs_overturn": 27.96,
+      "net_bearing_kPa": 1.48,
+      "fs_bearing": 67.38,
+      "fs_slide": 2.97,
+      "ingress_risk": "medium",
+      "min_ballast_kg": 0.0,
+      "stable": true,
+      "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+    },
+    "gusty_end_on": {
+      "dynamic_pressure_Pa": 1852.8,
+      "wind_force_N": 70196.6,
+      "fs_overturn": 0.59,
+      "net_bearing_kPa": 1.48,
+      "fs_bearing": 67.38,
+      "fs_slide": 0.31,
+      "ingress_risk": "medium",
+      "min_ballast_kg": 6893.0,
+      "stable": false,
+      "mounting_spec": "6893 kg ballast, tie-down anchors, lowered CG or fixed anchorage, medium-grade sealing + drainage"
+    },
+    "ballasted_storm": {
+      "dynamic_pressure_Pa": 1852.8,
+      "wind_force_N": 70196.6,
+      "fs_overturn": 1.65,
+      "net_bearing_kPa": 4.12,
+      "fs_bearing": 24.26,
+      "fs_slide": 0.87,
+      "ingress_risk": "medium",
+      "min_ballast_kg": 6893.0,
+      "stable": false,
+      "mounting_spec": "6893 kg ballast, tie-down anchors, medium-grade sealing + drainage"
+    },
+    "soft_ground": {
+      "dynamic_pressure_Pa": 980.0,
+      "wind_force_N": 7431.8,
+      "fs_overturn": 27.96,
+      "net_bearing_kPa": 1.48,
+      "fs_bearing": 26.95,
+      "fs_slide": 2.97,
+      "ingress_risk": "medium",
+      "min_ballast_kg": 0.0,
+      "stable": true,
+      "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+    },
+    "flooded_site": {
+      "dynamic_pressure_Pa": 980.0,
+      "wind_force_N": 7431.8,
+      "fs_overturn": 27.96,
+      "net_bearing_kPa": 1.48,
+      "fs_bearing": 67.38,
+      "fs_slide": 2.97,
+      "ingress_risk": "high",
+      "min_ballast_kg": 0.0,
+      "stable": true,
+      "mounting_spec": "no ballast required, high-grade sealing + drainage, elevate above flood level"
+    }
+  }
+}

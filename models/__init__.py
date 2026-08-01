@@ -402,6 +402,16 @@ from .twin_physics import (
     default_process_model,
     generate_physics_readings,
 )
+from .crate import (
+    Crate,
+    CrateConfig,
+    CrateSpec,
+    WindLoad,
+    GroundSpec,
+    EnvironmentalLoads,
+    CrateVerdict,
+    evaluate_crate,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -752,4 +762,13 @@ __all__ = [
     "ProcessPrediction",
     "default_process_model",
     "generate_physics_readings",
+    # ── Crate structural/environmental model ───────────────────────────
+    "Crate",
+    "CrateConfig",
+    "CrateSpec",
+    "WindLoad",
+    "GroundSpec",
+    "EnvironmentalLoads",
+    "CrateVerdict",
+    "evaluate_crate",
 ]
