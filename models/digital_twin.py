@@ -23,8 +23,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-# Import the process model
+# Import the process model and bath dynamics
 from .twin_physics import CellProcessModel
+from . import bath_dynamics as _bath_dynamics
 
 
 # ---------------------------------------------------------------------------
@@ -114,6 +115,18 @@ _DEFAULT_DP = {
     "electrode_area_m2": 1.0,
     "electrolyte_volume_L": 1000.0,
     "fe2_M": 1.0,
+    # Bath dynamics defaults (conservation-law dynamics; see bath_dynamics.py)
+    "recirculation_flow_L_hr": 6000.0,
+    "reservoir_volume_L": 50000.0,
+    "catholyte_volume_L": 800.0,
+    "anolyte_volume_L": 2000.0,
+    "fe2_makeup_rate_M_hr": 0.0,
+    "fe2_reservoir_M": 1.0,
+    "buffer_capacity_beta": 0.05,
+    "acid_dose_rate_M_hr": 0.0,
+    "pH_reservoir": 3.5,
+    # cooling_power_W: not set — auto-balances Joule heating
+    "T_reservoir_C": 55.0,
 }
 
 
@@ -234,7 +247,17 @@ def _f_state_transition(
     model: Optional[CellProcessModel] = None,
     design_point: Optional[Dict[str, float]] = None,
 ) -> np.ndarray:
-    """Deterministic state transition using the physics model and setpoints."""
+    """Deterministic state transition using coupled bath/recirculation dynamics.
+
+    Each state's dynamics come from a conservation law (Fe2+ mass, acid/base +
+    buffer for pH, thermal balance for T) plus recirculation exchange between
+    the cell and a finite reservoir.  Cell voltage relaxes toward the physics
+    model's predicted voltage through a state-dependent electrical time constant.
+
+    The auxiliary reservoir state (T_reservoir, fe2_reservoir, pH_reservoir)
+    is stored in ``design_point["_bath_aux"]`` and advanced alongside the EKF
+    state.  It is *not* part of the 7-state EKF vector.
+    """
     if model is None:
         model = get_default_process_model()
     if design_point is None:
@@ -242,49 +265,15 @@ def _f_state_transition(
     else:
         dp = design_point
 
-    nominal_T = dp.get("temperature_C", 60.0)
-    nominal_pH = dp.get("pH", 3.5)
-    nominal_j = dp.get("j_avg_mA_cm2", 150.0)
+    # Retrieve (or create) the auxiliary reservoir state
+    aux = _bath_dynamics.get_aux(dp)
 
-    x_next = x.copy()
+    # Advance both the EKF state and the auxiliary reservoir
+    x_next, aux_next = _bath_dynamics.step(x, aux, dt_hr, dp, model)
 
-    # 1. Control-driven states mean-revert to setpoint
-    # catholyte_temperature (index 0) and anolyte_temperature (index 1)
-    alpha_T = 1.0 - math.exp(-dt_hr / 2.0)
-    x_next[0] = x[0] + alpha_T * (nominal_T - x[0])
-    x_next[1] = x[1] + alpha_T * (nominal_T + 1.5 - x[1])
-
-    # current_density (index 4)
-    alpha_j = 1.0 - math.exp(-dt_hr / 0.5)
-    x_next[4] = x[4] + alpha_j * (nominal_j - x[4])
-
-    # bulk_pH (index 3) mean-reverts to setpoint pH
-    alpha_pH = 1.0 - math.exp(-dt_hr / 4.0)
-    x_next[3] = x[3] + alpha_pH * (nominal_pH - x[3])
-
-    # 2. Physics-driven state dynamics
-    # Query physics process model at current operating point (j, T, fe2)
-    j_val = max(1e-3, x[4])
-    T_val = max(0.0, x[0])
-    fe2_val = max(1e-6, x[2])
-    pred = model.predict(j_mA_cm2=j_val, temperature_C=T_val, fe2_M=fe2_val)
-
-    # bulk_fe2 (index 2) depletes via Faraday consumption
-    j_A_m2 = j_val * 10.0
-    FE = pred.current_efficiency
-    electrode_area_m2 = dp.get("electrode_area_m2", 1.0)
-    volume_L = dp.get("electrolyte_volume_L", 1000.0)
-    # 1 mol Fe per mol Fe2+; consumption rate in mol/s is j_A_m2 * FE * area / (z_FE * F)
-    # z_FE = 2.0, F = 96485.3321
-    rate_fe2 = - (j_A_m2 * FE / (2.0 * 96485.3321)) * electrode_area_m2 * 3600.0 / volume_L
-    x_next[2] = max(1e-6, x[2] + rate_fe2 * dt_hr)
-
-    # deposit_thickness (index 5) integrates the growth rate (deposit_rate_um_hr)
-    x_next[5] = max(0.0, x[5] + pred.deposit_rate_um_hr * dt_hr)
-
-    # cell_voltage (index 6) mean-reverts to predicted cell voltage
-    alpha_V = 1.0 - math.exp(-dt_hr / 1.0)
-    x_next[6] = x[6] + alpha_V * (pred.v_cell_V - x[6])
+    # Write the advanced aux back into design_point so the next predict step
+    # picks up where this one left off.
+    _bath_dynamics.set_aux(dp, aux_next)
 
     return x_next
 
@@ -295,16 +284,42 @@ def _F_jacobian(
     model: Optional[CellProcessModel] = None,
     design_point: Optional[Dict[str, float]] = None,
 ) -> np.ndarray:
-    """Numerical Jacobian of the state transition function."""
+    """Numerical Jacobian of the state transition function.
+
+    Snapshots the auxiliary reservoir state before each perturbation so the
+    Jacobian is computed consistently (the aux state advances only once, via
+    the final ``_f_state_transition`` call in ``predict``).
+    """
+    if model is None:
+        model = get_default_process_model()
+    if design_point is None:
+        dp = _DEFAULT_DP
+    else:
+        dp = design_point
+
     n = len(x)
     F = np.zeros((n, n))
     eps = 1e-5
-    fx = _f_state_transition(x, dt_hr, model, design_point)
+
+    # Snapshot the auxiliary state so perturbations don't accumulate aux drift
+    aux_snapshot = _bath_dynamics.get_aux(dp)
+
+    fx = _f_state_transition(x, dt_hr, model, dp)
+    # Restore aux after the base evaluation
+    _bath_dynamics.set_aux(dp, aux_snapshot)
+
     for i in range(n):
         x_perturbed = x.copy()
         x_perturbed[i] += eps
-        fx_perturbed = _f_state_transition(x_perturbed, dt_hr, model, design_point)
+        # Restore aux before each perturbation
+        _bath_dynamics.set_aux(dp, aux_snapshot)
+        fx_perturbed = _f_state_transition(x_perturbed, dt_hr, model, dp)
         F[:, i] = (fx_perturbed - fx) / eps
+
+    # Leave aux at the snapshot (the predict step will advance it properly
+    # via the subsequent _f_state_transition call)
+    _bath_dynamics.set_aux(dp, aux_snapshot)
+
     return F
 
 
@@ -411,10 +426,12 @@ class ExtendedKalmanFilter:
     ):
         self.x = x0.copy()
         self.P = P0.copy()
+        # Process noise standard deviations for each state
+        # Increased temperature noise (0.5°C) to account for thermal model uncertainties
         self.Q_diag = (
             process_noise_std ** 2
             if process_noise_std is not None
-            else np.array([0.1, 0.1, 0.001, 0.01, 1.0, 0.1, 0.005])
+            else np.array([0.5, 0.5, 0.01, 0.05, 1.0, 0.1, 0.05])
         )
 
     def predict(
@@ -599,15 +616,35 @@ class DigitalTwin:
         self.model = model if model is not None else get_default_process_model()
         self.rng = np.random.default_rng(seed)
 
+        # Initialize the auxiliary reservoir state if not already present
+        if "_bath_aux" not in self.design_point:
+            T_nom = self.design_point.get("temperature_C", 60.0)
+            _bath_dynamics.set_aux(self.design_point, _bath_dynamics.BathAux(
+                T_reservoir_C=self.design_point.get("T_reservoir_C", T_nom),
+                fe2_reservoir_M=self.design_point.get(
+                    "fe2_reservoir_M",
+                    self.design_point.get("fe2_M", 1.0)),
+                pH_reservoir=self.design_point.get("pH_reservoir",
+                    self.design_point.get("pH", 3.5)),
+            ))
+
         # Initial state
+        # With coupled bath dynamics, the anolyte temperature emerges from the
+        # energy balance rather than being a fixed offset.  Initialize it near
+        # the catholyte temperature so the system starts close to steady state.
+        T_nom = self.design_point.get("temperature_C", 60.0)
+        j_nom = self.design_point.get("j_avg_mA_cm2", 150.0)
+        fe2_nom = self.design_point.get("fe2_M", 1.0)
+        V_init = self.design_point.get("cell_voltage_V", 2.5)
+
         x0 = np.array([
-            self.design_point.get("temperature_C", 60.0),        # catholyte_temp
-            self.design_point.get("temperature_C", 60.0) + 1.5,  # anolyte_temp
-            self.design_point.get("fe2_M", 1.0),                 # bulk_fe2
+            T_nom,                      # catholyte_temp
+            T_nom,                      # anolyte_temp (emerges from energy balance)
+            fe2_nom,                    # bulk_fe2
             self.design_point.get("pH", 3.5),                    # bulk_pH
-            self.design_point.get("j_avg_mA_cm2", 150.0),        # current_density
+            j_nom,                      # current_density
             0.0,                                                 # deposit_thickness
-            self.design_point.get("cell_voltage_V", 2.5),        # cell_voltage
+            V_init,                     # cell_voltage (from design_point)
         ], dtype=float)
 
         P0 = np.diag([1.0, 1.0, 0.01, 0.1, 10.0, 1.0, 0.05])
