@@ -1,0 +1,101 @@
+{
+  "grid_exploration": {
+    "param_names": [
+      "T_bath",
+      "j_avg"
+    ],
+    "ranges": {
+      "j_avg": [
+        50.0,
+        300.0
+      ],
+      "T_bath": [
+        30.0,
+        80.0
+      ]
+    },
+    "n_grid": 4,
+    "mc_samples_per_point": 100,
+    "max_confidence": 0.0,
+    "best_point": {
+      "T_bath": 30.0,
+      "j_avg": 50.0
+    },
+    "elapsed_seconds": 29.89,
+    "spec_set_name": "ASTM_A36",
+    "grid_confidences": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "robust_optimum": {
+    "optimum_point": {
+      "j_avg": 249.1357
+    },
+    "optimum_confidence": 0.0,
+    "achieved_target": false,
+    "n_calls": 20,
+    "target": 0.95,
+    "elapsed_seconds": 57.5,
+    "spec_set_name": "ASTM_A36",
+    "design_margins": {
+      "j_avg": {
+        "optimum": 249.1357,
+        "lo_90": 249.1357,
+        "hi_90": 249.1357,
+        "margin_lo_pct": 0.0,
+        "margin_hi_pct": 0.0
+      }
+    }
+  },
+  "pareto_front": {
+    "n_front_points": 3,
+    "dominated_count": 6,
+    "n_evaluated": 9,
+    "elapsed_seconds": 18.71,
+    "spec_set_name": "ASTM_A36",
+    "front": [
+      {
+        "point": {
+          "T_bath": 30.0,
+          "j_avg": 50.0
+        },
+        "confidence": 0.0,
+        "cost": 0.5774,
+        "energy": 2584.877
+      },
+      {
+        "point": {
+          "T_bath": 55.0,
+          "j_avg": 50.0
+        },
+        "confidence": 0.0,
+        "cost": 0.5774,
+        "energy": 2584.877
+      },
+      {
+        "point": {
+          "T_bath": 80.0,
+          "j_avg": 50.0
+        },
+        "confidence": 0.0,
+        "cost": 0.5774,
+        "energy": 2584.877
+      }
+    ]
+  }
+}

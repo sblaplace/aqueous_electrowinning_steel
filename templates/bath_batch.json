@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BathBatchRecord",
+  "description": "Records one prepared batch of iron plating electrolyte. Linked from experiment manifests via batch_id.",
+  "type": "object",
+  "required": [
+    "batch_id",
+    "date_mixed",
+    "operator",
+    "composition",
+    "source_chemicals",
+    "storage"
+  ],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "description": "Unique identifier: B-YYYYMMDD-NNN",
+      "pattern": "^B-[0-9]{8}-[0-9]{3}$"
+    },
+    "date_mixed": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date the bath was prepared"
+    },
+    "operator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "composition": {
+      "type": "object",
+      "required": ["fe2_g_L", "h3bo3_g_L", "pH", "volume_mL"],
+      "properties": {
+        "fe2_g_L": {
+          "type": "number",
+          "minimum": 0,
+          "description": "FeSO4·7H2O concentration as Fe²⁺ (g/L)"
+        },
+        "h3bo3_g_L": {
+          "type": "number",
+          "minimum": 0,
+          "description": "H3BO3 boric acid concentration (g/L)"
+        },
+        "ascorbic_acid_g_L": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Ascorbic acid antioxidant concentration (g/L)"
+        },
+        "pH": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 14,
+          "description": "Measured pH at room temperature"
+        },
+        "temperature_C": {
+          "type": "number",
+          "description": "Temperature at time of pH measurement (°C)"
+        },
+        "volume_mL": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Total bath volume prepared (mL)"
+        },
+        "additives": {
+          "type": "array",
+          "description": "Optional: wetting agents, grain refiners, etc.",
+          "items": {
+            "type": "object",
+            "required": ["name", "concentration", "unit"],
+            "properties": {
+              "name": {"type": "string"},
+              "concentration": {"type": "number"},
+              "unit": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "source_chemicals": {
+      "type": "object",
+      "description": "Lot numbers for traceability. Water source matters for impurity budget.",
+      "properties": {
+        "feso4_lot": {
+          "type": "string",
+          "description": "FeSO4·7H2O supplier lot number"
+        },
+        "h3bo3_lot": {
+          "type": "string",
+          "description": "H3BO3 supplier lot number"
+        },
+        "ascorbic_acid_lot": {
+          "type": "string",
+          "description": "Ascorbic acid supplier lot number"
+        },
+        "water_source": {
+          "type": "string",
+          "description": "DI, RO, or Milli-Q with resistivity (MΩ·cm)"
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "description": "How the bath is stored between experiments",
+      "properties": {
+        "container": {
+          "type": "string",
+          "description": "Material and shape (e.g. HDPE carboy, glass beaker with lid)"
+        },
+        "cover": {
+          "type": "string",
+          "enum": ["sealed", "loose_lid", "open", "argon_blanket"]
+        },
+        "temperature_C": {
+          "type": "number",
+          "description": "Storage temperature (°C)"
+        },
+        "duration_before_first_use_hr": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Hours between mixing and first experiment"
+        }
+      }
+    },
+    "video": {
+      "type": "object",
+      "description": "Optional recording of the mixing procedure",
+      "properties": {
+        "recorded": {"type": "boolean"},
+        "filename": {"type": "string"}
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Post-mixing bath analysis (optional, filled after mixing)",
+      "properties": {
+        "fe2_measured_g_L": {"type": "number"},
+        "fe3_measured_g_L": {"type": "number"},
+        "pH_measured": {"type": "number"},
+        "conductivity_mS_cm": {"type": "number"},
+        "date_analyzed": {"type": "string", "format": "date"}
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text: deviations from protocol, observations, etc."
+    }
+  }
+}

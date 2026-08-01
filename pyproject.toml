@@ -15,6 +15,7 @@ dependencies = [
     "pint>=0.22",
     "pyyaml>=6.0",
     "numba>=0.60",
+    "scikit-optimize>=0.10",
 ]
 
 [project.optional-dependencies]
@@ -56,6 +57,16 @@ aq-steel-sensitivity = "models.run_transport_sensitivity:main"
 aq-steel-adhesion = "models.run_adhesion_peel:main"
 aq-steel-stress = "models.run_internal_stress:main"
 aq-steel-rde = "models.run_rde_levich:main"
+aq-steel-lca = "models.run_lca:main"
+aq-steel-feedstock = "models.run_feedstock_logistics:main"
+aq-steel-validation-planner = "models.run_validation_planner:main"
+aq-steel-transient = "models.run_transient:main"
+aq-steel-confidence = "models.run_confidence_report:main"
+aq-steel-design-space = "models.run_design_space:cli"
+aq-steel-digital-twin = "models.run_digital_twin:main"
+aq-steel-fmea = "models.run_fmea:cli"
+aq-steel-process-control = "models.run_process_control:main"
+aq-steel-tea-sensitivity = "models.run_tea_sensitivity:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

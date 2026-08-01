@@ -1,0 +1,51 @@
+{
+  "base_case": {
+    "GWP (kg CO₂-eq/kg)": 0.3643,
+    "Acidification (kg SO₂-eq/kg)": 0.001386,
+    "Eutrophication (kg PO₄-eq/kg)": 0.00012033,
+    "Water consumption (L/kg)": 9.64,
+    "Land use (m²/kg)": 0.014444,
+    "Electricity GWP share": 0.0872,
+    "Specific energy (kWh/kg)": 2.89
+  },
+  "breakeven_renewable_fraction": 0.95,
+  "comparison": {
+    "Aqueous Electrowinning": {
+      "GWP (kg CO₂-eq/kg)": 0.3643,
+      "Acidification (kg SO₂-eq/kg)": 0.001386,
+      "Eutrophication (kg PO₄-eq/kg)": 0.00012033,
+      "Water consumption (L/kg)": 9.64,
+      "Land use (m²/kg)": 0.014444,
+      "Electricity GWP share": 0.0872,
+      "Specific energy (kWh/kg)": 2.89
+    },
+    "BOF (primary)": {
+      "GWP (kg CO₂-eq/kg)": "1.80–2.20 (mid 2.00)",
+      "Acidification (kg SO₂-eq/kg)": 0.012,
+      "Eutrophication (kg PO₄-eq/kg)": 0.0003,
+      "Water consumption (L/kg)": 45.0,
+      "Land use (m²/kg)": 0.0
+    },
+    "EAF (scrap)": {
+      "GWP (kg CO₂-eq/kg)": "0.40–0.70 (mid 0.55)",
+      "Acidification (kg SO₂-eq/kg)": 0.004,
+      "Eutrophication (kg PO₄-eq/kg)": 0.00015,
+      "Water consumption (L/kg)": 12.0,
+      "Land use (m²/kg)": 0.0
+    },
+    "DRI-EAF (natural gas)": {
+      "GWP (kg CO₂-eq/kg)": "0.60–1.20 (mid 0.90)",
+      "Acidification (kg SO₂-eq/kg)": 0.005,
+      "Eutrophication (kg PO₄-eq/kg)": 0.0002,
+      "Water consumption (L/kg)": 25.0,
+      "Land use (m²/kg)": 0.0
+    },
+    "DRI-EAF (green H₂)": {
+      "GWP (kg CO₂-eq/kg)": "0.05–0.20 (mid 0.10)",
+      "Acidification (kg SO₂-eq/kg)": 0.0015,
+      "Eutrophication (kg PO₄-eq/kg)": 5e-05,
+      "Water consumption (L/kg)": 35.0,
+      "Land use (m²/kg)": 0.002
+    }
+  }
+}

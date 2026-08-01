@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExperimentManifest",
+  "description": "Full metadata for one aqueous electrowinning experiment run. Every field is designed to make the experiment reproducible — even questions nobody thought to ask at the time.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "date",
+    "operator",
+    "experiment_type",
+    "bath_batch",
+    "equipment",
+    "setup",
+    "video"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier: <type>-YYYYMMDD-NNN (e.g. hull-20260801-001)",
+      "pattern": "^[a-z]+-[0-9]{8}-[0-9]{3}$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date of the experiment (YYYY-MM-DD)"
+    },
+    "operator": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Person or lab identifier running the experiment"
+    },
+    "experiment_type": {
+      "type": "string",
+      "enum": ["hull_cell", "beaker_galvanostatic", "divided_cell"],
+      "description": "Which cell configuration was used"
+    },
+    "bath_batch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Reference to a bath_batch.json batch_id (e.g. B20260801-001)"
+    },
+    "equipment": {
+      "type": "object",
+      "description": "Instrument models, serial numbers, and calibration status",
+      "required": ["power_supply", "cell"],
+      "properties": {
+        "power_supply": {
+          "type": "object",
+          "required": ["model", "asset_id"],
+          "properties": {
+            "model": {"type": "string"},
+            "asset_id": {"type": "string"},
+            "calibration_date": {"type": "string", "format": "date"}
+          }
+        },
+        "coulomb_counter": {
+          "type": "object",
+          "properties": {
+            "model": {"type": "string"},
+            "asset_id": {"type": "string"},
+            "calibration_date": {"type": "string", "format": "date"}
+          }
+        },
+        "multimeter": {
+          "type": "object",
+          "properties": {
+            "model": {"type": "string"},
+            "asset_id": {"type": "string"},
+            "calibration_date": {"type": "string", "format": "date"}
+          }
+        },
+        "cell": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {"type": "string", "enum": ["hull", "beaker", "divided", "custom"]},
+            "volume_mL": {"type": "number", "exclusiveMinimum": 0},
+            "material": {"type": "string"},
+            "custom_id": {"type": "string"}
+          }
+        },
+        "cameras": {
+          "type": "array",
+          "description": "Recording devices. See video_protocol.md for camera positions.",
+          "items": {
+            "type": "object",
+            "required": ["position", "model"],
+            "properties": {
+              "position": {"type": "string", "enum": ["overhead", "panel", "instruments", "wide"]},
+              "model": {"type": "string"},
+              "asset_id": {"type": "string"},
+              "resolution": {"type": "string"},
+              "memory_card_id": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "setup": {
+      "type": "object",
+      "description": "Electrochemical cell configuration",
+      "required": ["anode", "cathode"],
+      "properties": {
+        "bath_composition": {
+          "type": "string",
+          "description": "Free-text summary; formal record is in bath_batch.json"
+        },
+        "anode": {
+          "type": "object",
+          "required": ["material"],
+          "properties": {
+            "material": {"type": "string"},
+            "geometry": {"type": "string"},
+            "area_cm2": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "cathode": {
+          "type": "object",
+          "required": ["material"],
+          "properties": {
+            "material": {"type": "string"},
+            "geometry": {"type": "string"},
+            "area_cm2": {"type": "number", "exclusiveMinimum": 0},
+            "preparation": {"type": "string", "description": "Surface prep: grit, polish, solvent, acid dip"}
+          }
+        },
+        "cell_geometry": {
+          "type": "object",
+          "properties": {
+            "gap_cm": {"type": "number", "exclusiveMinimum": 0},
+            "electrode_arrangement": {"type": "string", "enum": ["parallel", "angled", "concentric"]}
+          }
+        },
+        "stirring": {
+          "type": "object",
+          "properties": {
+            "method": {"type": "string", "enum": ["none", "magnetic", "pump", "air"]},
+            "speed_rpm": {"type": "number", "minimum": 0},
+            "flow_rate_mL_min": {"type": "number", "minimum": 0}
+          }
+        },
+        "membrane": {
+          "type": "object",
+          "properties": {
+            "type": {"type": "string"},
+            "area_cm2": {"type": "number", "exclusiveMinimum": 0}
+          }
+        }
+      }
+    },
+    "ambient": {
+      "type": "object",
+      "description": "Environmental conditions not controlled by the cell",
+      "properties": {
+        "room_temp_C": {"type": "number"},
+        "humidity_percent": {"type": "number", "minimum": 0, "maximum": 100},
+        "ventilation": {"type": "string", "enum": ["fume_hood", "open_lab", "enclosed"]}
+      }
+    },
+    "video": {
+      "type": "object",
+      "description": "Recording status — always record, even if some cameras fail",
+      "required": ["recording_status"],
+      "properties": {
+        "recording_status": {
+          "type": "string",
+          "enum": ["complete", "partial", "none", "not_applicable"],
+          "description": "'none' requires a justification in notes"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Why recording was partial or absent"
+        },
+        "camera_positions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["overhead", "panel", "instruments", "wide"]
+          },
+          "description": "Which cameras were active"
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text observations, deviations, unexpected events"
+    },
+    "files": {
+      "type": "object",
+      "description": "Relative paths to data files for this run",
+      "properties": {
+        "timeseries_csv": {"type": "string"},
+        "mass_log_csv": {"type": "string"},
+        "video_index_csv": {"type": "string"},
+        "bath_analysis_csv": {"type": "string"}
+      }
+    }
+  }
+}

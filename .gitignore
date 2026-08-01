@@ -59,3 +59,4 @@ Thumbs.db
 # Test artifacts
 .pytest_cache/
 .worktrees/
+.benchmarks/

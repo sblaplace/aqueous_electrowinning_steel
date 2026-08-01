@@ -1,0 +1,640 @@
+{
+  "total_modes": 22,
+  "mean_rpn": 172.2,
+  "max_rpn": 350,
+  "critical_count": 20,
+  "modes": [
+    {
+      "id": "MS-003",
+      "component": "Microstructure",
+      "mode": "Hydrogen embrittlement",
+      "effect": "Delayed cracking, catastrophic brittle fracture under load",
+      "severity": 10,
+      "cause": "Co-deposited hydrogen during high-HER plating conditions",
+      "occurrence": 5,
+      "detection": 7,
+      "rpn": 350,
+      "mitigation": "Post-deposition bake (200\u00b0C/4h), low-CE plating window avoidance, hydrogen permeation monitoring",
+      "residual_rpn": 80
+    },
+    {
+      "id": "CD-002",
+      "component": "Co-deposition",
+      "mode": "Carbon agglomeration",
+      "effect": "Non-uniform carbon distribution, weak spots, poor wear resistance",
+      "severity": 8,
+      "cause": "Inadequate particle suspension, settling in quiescent zones",
+      "occurrence": 5,
+      "detection": 6,
+      "rpn": 240,
+      "mitigation": "Ultrasonic agitation, surfactant dispersants, pulsed flow to prevent settling",
+      "residual_rpn": 48
+    },
+    {
+      "id": "HT-003",
+      "component": "Heat treatment",
+      "mode": "Quench cracking",
+      "effect": "Part rejection, catastrophic failure in service",
+      "severity": 10,
+      "cause": "Excessive thermal stress during rapid quench, sharp geometry features",
+      "occurrence": 3,
+      "detection": 8,
+      "rpn": 240,
+      "mitigation": "Interrupted quench (martempering), generous fillet radii in design, UT inspection post-quench",
+      "residual_rpn": 40
+    },
+    {
+      "id": "QC-003",
+      "component": "Quality control",
+      "mode": "Specification drift over campaign",
+      "effect": "Gradual quality degradation not caught by pass/fail checks",
+      "severity": 8,
+      "cause": "Slow process parameter drift, bath aging, equipment wear",
+      "occurrence": 5,
+      "detection": 6,
+      "rpn": 240,
+      "mitigation": "SPC trend analysis with Western Electric rules, campaign-level Cpk tracking, periodic re-validation",
+      "residual_rpn": 48
+    },
+    {
+      "id": "CD-001",
+      "component": "Co-deposition",
+      "mode": "Anomalous suppression",
+      "effect": "Unexpected Ni/Fe ratio shift, inconsistent alloy composition",
+      "severity": 7,
+      "cause": "Hydroxide suppression mechanism instability at boundary layer",
+      "occurrence": 6,
+      "detection": 5,
+      "rpn": 210,
+      "mitigation": "Real-time ICP-OES at cathode boundary, controlled mass transport (rotating cylinder electrode)",
+      "residual_rpn": 63
+    },
+    {
+      "id": "EC-002",
+      "component": "Electrochemistry",
+      "mode": "Bath contamination",
+      "effect": "Inclusions in deposit, poor surface finish, reduced ductility",
+      "severity": 8,
+      "cause": "Dissolved Cr, Cu, Zn from auxiliary equipment or anode corrosion",
+      "occurrence": 5,
+      "detection": 5,
+      "rpn": 200,
+      "mitigation": "Continuous electrolyte purification (ion exchange), anode material selection, regular ICP-OES monitoring",
+      "residual_rpn": 32
+    },
+    {
+      "id": "EC-001",
+      "component": "Electrochemistry",
+      "mode": "HER competition",
+      "effect": "Reduced faradaic efficiency, hydrogen porosity in deposit",
+      "severity": 7,
+      "cause": "High overpotential, low pH, catalytic cathode surface",
+      "occurrence": 7,
+      "detection": 4,
+      "rpn": 196,
+      "mitigation": "pH control (3.0\u20133.5), pulse plating to limit peak overpotential, HER-inhibiting surfactants",
+      "residual_rpn": 63
+    },
+    {
+      "id": "PR-001",
+      "component": "Process",
+      "mode": "Membrane fouling",
+      "effect": "Increased cell voltage, reduced throughput, electrolyte crossover",
+      "severity": 7,
+      "cause": "Fe(OH)\u2083 precipitation, CaSO\u2084 scaling, organic/biofilm growth on cation-exchange membrane",
+      "occurrence": 7,
+      "detection": 4,
+      "rpn": 196,
+      "mitigation": "Periodic acid wash cycle, electrolyte pre-filtration, anti-fouling membrane coating",
+      "residual_rpn": 63
+    },
+    {
+      "id": "CD-003",
+      "component": "Co-deposition",
+      "mode": "Inclusion incorporation",
+      "effect": "Brittle deposits, crack initiation sites, fatigue life reduction",
+      "severity": 9,
+      "cause": "Organic breakdown products, colloidal impurities co-depositing with metal",
+      "occurrence": 3,
+      "detection": 7,
+      "rpn": 189,
+      "mitigation": "Electrolyte filtration (<1 \u00b5m), activated carbon treatment, periodic bath replacement",
+      "residual_rpn": 54
+    },
+    {
+      "id": "MS-002",
+      "component": "Microstructure",
+      "mode": "Preferred texture (columnar grains)",
+      "effect": "Anisotropic mechanical properties, weak transverse direction",
+      "severity": 6,
+      "cause": "High current density without pulse reversal, limited nucleation sites",
+      "occurrence": 5,
+      "detection": 6,
+      "rpn": 180,
+      "mitigation": "Pulse plating with reverse pulse, grain refiner addition, current density optimization",
+      "residual_rpn": 54
+    },
+    {
+      "id": "HT-004",
+      "component": "Heat treatment",
+      "mode": "Excessive retained austenite",
+      "effect": "Dimensional instability, soft spots, transformation-induced cracking",
+      "severity": 7,
+      "cause": "High carbon/nickel content shifting Ms below room temperature",
+      "occurrence": 5,
+      "detection": 5,
+      "rpn": 175,
+      "mitigation": "Sub-zero treatment (-80\u00b0C), double temper, XRD retained austenite monitoring",
+      "residual_rpn": 42
+    },
+    {
+      "id": "QC-002",
+      "component": "Quality control",
+      "mode": "Sampling bias in composition analysis",
+      "effect": "Systematic error in Ni/C content, incorrect mechanical property prediction",
+      "severity": 7,
+      "cause": "Non-uniform deposit composition, single-point ICP-OES sampling",
+      "occurrence": 5,
+      "detection": 5,
+      "rpn": 175,
+      "mitigation": "Multi-point sampling grid, cross-section line scan, statistical process control",
+      "residual_rpn": 42
+    },
+    {
+      "id": "EC-003",
+      "component": "Electrochemistry",
+      "mode": "Anode degradation",
+      "effect": "Increased cell voltage, contamination, process instability",
+      "severity": 6,
+      "cause": "Oxidative dissolution of DSA or Pb-based anode at high current density",
+      "occurrence": 4,
+      "detection": 6,
+      "rpn": 144,
+      "mitigation": "DSA coating with IrO\u2082/TiO\u2082, voltage monitoring with automated anode replacement alerts",
+      "residual_rpn": 36
+    },
+    {
+      "id": "HT-005",
+      "component": "Heat treatment",
+      "mode": "Distortion / warpage",
+      "effect": "Out-of-tolerance dimensions, machining allowance exceeded",
+      "severity": 6,
+      "cause": "Non-uniform heating/cooling, gravity sag in furnace, asymmetric geometry",
+      "occurrence": 6,
+      "detection": 4,
+      "rpn": 144,
+      "mitigation": "Fixture-based quenching, symmetric racking, CFD-optimized furnace flow",
+      "residual_rpn": 36
+    },
+    {
+      "id": "MS-001",
+      "component": "Microstructure",
+      "mode": "Grain growth during processing",
+      "effect": "Reduced yield strength (Hall-Petch), loss of nanostructure benefits",
+      "severity": 7,
+      "cause": "Thermal excursion during post-deposition handling or slow cooling",
+      "occurrence": 4,
+      "detection": 5,
+      "rpn": 140,
+      "mitigation": "EBSD monitoring, controlled cooling rate specification, thermal budget tracking",
+      "residual_rpn": 42
+    },
+    {
+      "id": "HT-001",
+      "component": "Heat treatment",
+      "mode": "Decarburization",
+      "effect": "Soft surface layer, reduced wear/case hardening effectiveness",
+      "severity": 7,
+      "cause": "Oxygen ingress in furnace, insufficient carburizing atmosphere control",
+      "occurrence": 5,
+      "detection": 4,
+      "rpn": 140,
+      "mitigation": "Endo-gas atmosphere control, oxygen probe monitoring, anti-scale coating for non-carburized surfaces",
+      "residual_rpn": 28
+    },
+    {
+      "id": "EC-004",
+      "component": "Electrochemistry",
+      "mode": "pH runaway",
+      "effect": "Precipitation of Fe(OH)\u2083, bath destabilization, deposit defects",
+      "severity": 8,
+      "cause": "Buffer exhaustion at high throughput, acid consumption exceeding replenishment",
+      "occurrence": 4,
+      "detection": 4,
+      "rpn": 128,
+      "mitigation": "Automated pH dosing system with redundant sensors, buffer capacity monitoring",
+      "residual_rpn": 32
+    },
+    {
+      "id": "PR-002",
+      "component": "Process",
+      "mode": "Electrolyte decomposition",
+      "effect": "Gas evolution, additive depletion, deposit quality degradation",
+      "severity": 6,
+      "cause": "Electrolytic breakdown of organic additives at high overpotential",
+      "occurrence": 4,
+      "detection": 5,
+      "rpn": 120,
+      "mitigation": "Additive concentration monitoring (CVSA), replenishment dosing system, current density limits",
+      "residual_rpn": 36
+    },
+    {
+      "id": "PR-004",
+      "component": "Process",
+      "mode": "Current interruption",
+      "effect": "Layered deposit with weak interlayer bonds, delamination risk",
+      "severity": 8,
+      "cause": "Power supply failure, contact resistance drift, anode short circuit",
+      "occurrence": 3,
+      "detection": 5,
+      "rpn": 120,
+      "mitigation": "UPS backup, contact resistance monitoring with auto-shutdown, redundant rectifiers",
+      "residual_rpn": 16
+    },
+    {
+      "id": "PR-003",
+      "component": "Process",
+      "mode": "Temperature excursion",
+      "effect": "Accelerated side reactions, changed kinetics, bath instability",
+      "severity": 7,
+      "cause": "Joule heating at high current, cooling system failure, ambient variation",
+      "occurrence": 5,
+      "detection": 3,
+      "rpn": 105,
+      "mitigation": "PID temperature control with redundant TC, heat exchanger sizing, alarm interlocks",
+      "residual_rpn": 14
+    },
+    {
+      "id": "QC-001",
+      "component": "Quality control",
+      "mode": "Measurement error in hardness testing",
+      "effect": "False accept/reject, incorrect tempering parameter adjustment",
+      "severity": 6,
+      "cause": "Indenter wear, surface roughness, insufficient test load for thin layers",
+      "occurrence": 4,
+      "detection": 4,
+      "rpn": 96,
+      "mitigation": "Indenter calibration schedule, surface preparation SOP, micro-hardness for thin layers",
+      "residual_rpn": 24
+    },
+    {
+      "id": "HT-002",
+      "component": "Heat treatment",
+      "mode": "Oxidation",
+      "effect": "Surface scale, dimensional change, post-treatment grinding required",
+      "severity": 5,
+      "cause": "Furnace atmosphere breach, quench medium contamination",
+      "occurrence": 4,
+      "detection": 3,
+      "rpn": 60,
+      "mitigation": "Vacuum or inert gas quenching, sealed furnace design, atmosphere dew point monitoring",
+      "residual_rpn": 20
+    }
+  ],
+  "critical_paths": [
+    {
+      "id": "MS-003",
+      "mode": "Hydrogen embrittlement",
+      "rpn": 350
+    },
+    {
+      "id": "CD-002",
+      "mode": "Carbon agglomeration",
+      "rpn": 240
+    },
+    {
+      "id": "HT-003",
+      "mode": "Quench cracking",
+      "rpn": 240
+    },
+    {
+      "id": "QC-003",
+      "mode": "Specification drift over campaign",
+      "rpn": 240
+    },
+    {
+      "id": "CD-001",
+      "mode": "Anomalous suppression",
+      "rpn": 210
+    },
+    {
+      "id": "EC-002",
+      "mode": "Bath contamination",
+      "rpn": 200
+    },
+    {
+      "id": "EC-001",
+      "mode": "HER competition",
+      "rpn": 196
+    },
+    {
+      "id": "PR-001",
+      "mode": "Membrane fouling",
+      "rpn": 196
+    },
+    {
+      "id": "CD-003",
+      "mode": "Inclusion incorporation",
+      "rpn": 189
+    },
+    {
+      "id": "MS-002",
+      "mode": "Preferred texture (columnar grains)",
+      "rpn": 180
+    },
+    {
+      "id": "HT-004",
+      "mode": "Excessive retained austenite",
+      "rpn": 175
+    },
+    {
+      "id": "QC-002",
+      "mode": "Sampling bias in composition analysis",
+      "rpn": 175
+    },
+    {
+      "id": "EC-003",
+      "mode": "Anode degradation",
+      "rpn": 144
+    },
+    {
+      "id": "HT-005",
+      "mode": "Distortion / warpage",
+      "rpn": 144
+    },
+    {
+      "id": "MS-001",
+      "mode": "Grain growth during processing",
+      "rpn": 140
+    },
+    {
+      "id": "HT-001",
+      "mode": "Decarburization",
+      "rpn": 140
+    },
+    {
+      "id": "EC-004",
+      "mode": "pH runaway",
+      "rpn": 128
+    },
+    {
+      "id": "PR-002",
+      "mode": "Electrolyte decomposition",
+      "rpn": 120
+    },
+    {
+      "id": "PR-004",
+      "mode": "Current interruption",
+      "rpn": 120
+    },
+    {
+      "id": "PR-003",
+      "mode": "Temperature excursion",
+      "rpn": 105
+    }
+  ],
+  "mitigation_roadmap": [
+    {
+      "id": "MS-003",
+      "mode": "Hydrogen embrittlement",
+      "component": "Microstructure",
+      "rpn": 350,
+      "residual_rpn": 80,
+      "rpn_reduction": 270,
+      "mitigation": "Post-deposition bake (200\u00b0C/4h), low-CE plating window avoidance, hydrogen permeation monitoring",
+      "priority": 1,
+      "estimated_effort": "high"
+    },
+    {
+      "id": "HT-003",
+      "mode": "Quench cracking",
+      "component": "Heat treatment",
+      "rpn": 240,
+      "residual_rpn": 40,
+      "rpn_reduction": 200,
+      "mitigation": "Interrupted quench (martempering), generous fillet radii in design, UT inspection post-quench",
+      "priority": 1,
+      "estimated_effort": "high"
+    },
+    {
+      "id": "CD-002",
+      "mode": "Carbon agglomeration",
+      "component": "Co-deposition",
+      "rpn": 240,
+      "residual_rpn": 48,
+      "rpn_reduction": 192,
+      "mitigation": "Ultrasonic agitation, surfactant dispersants, pulsed flow to prevent settling",
+      "priority": 1,
+      "estimated_effort": "high"
+    },
+    {
+      "id": "QC-003",
+      "mode": "Specification drift over campaign",
+      "component": "Quality control",
+      "rpn": 240,
+      "residual_rpn": 48,
+      "rpn_reduction": 192,
+      "mitigation": "SPC trend analysis with Western Electric rules, campaign-level Cpk tracking, periodic re-validation",
+      "priority": 1,
+      "estimated_effort": "high"
+    },
+    {
+      "id": "EC-002",
+      "mode": "Bath contamination",
+      "component": "Electrochemistry",
+      "rpn": 200,
+      "residual_rpn": 32,
+      "rpn_reduction": 168,
+      "mitigation": "Continuous electrolyte purification (ion exchange), anode material selection, regular ICP-OES monitoring",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "CD-001",
+      "mode": "Anomalous suppression",
+      "component": "Co-deposition",
+      "rpn": 210,
+      "residual_rpn": 63,
+      "rpn_reduction": 147,
+      "mitigation": "Real-time ICP-OES at cathode boundary, controlled mass transport (rotating cylinder electrode)",
+      "priority": 1,
+      "estimated_effort": "high"
+    },
+    {
+      "id": "CD-003",
+      "mode": "Inclusion incorporation",
+      "component": "Co-deposition",
+      "rpn": 189,
+      "residual_rpn": 54,
+      "rpn_reduction": 135,
+      "mitigation": "Electrolyte filtration (<1 \u00b5m), activated carbon treatment, periodic bath replacement",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "EC-001",
+      "mode": "HER competition",
+      "component": "Electrochemistry",
+      "rpn": 196,
+      "residual_rpn": 63,
+      "rpn_reduction": 133,
+      "mitigation": "pH control (3.0\u20133.5), pulse plating to limit peak overpotential, HER-inhibiting surfactants",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "PR-001",
+      "mode": "Membrane fouling",
+      "component": "Process",
+      "rpn": 196,
+      "residual_rpn": 63,
+      "rpn_reduction": 133,
+      "mitigation": "Periodic acid wash cycle, electrolyte pre-filtration, anti-fouling membrane coating",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "HT-004",
+      "mode": "Excessive retained austenite",
+      "component": "Heat treatment",
+      "rpn": 175,
+      "residual_rpn": 42,
+      "rpn_reduction": 133,
+      "mitigation": "Sub-zero treatment (-80\u00b0C), double temper, XRD retained austenite monitoring",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "QC-002",
+      "mode": "Sampling bias in composition analysis",
+      "component": "Quality control",
+      "rpn": 175,
+      "residual_rpn": 42,
+      "rpn_reduction": 133,
+      "mitigation": "Multi-point sampling grid, cross-section line scan, statistical process control",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "MS-002",
+      "mode": "Preferred texture (columnar grains)",
+      "component": "Microstructure",
+      "rpn": 180,
+      "residual_rpn": 54,
+      "rpn_reduction": 126,
+      "mitigation": "Pulse plating with reverse pulse, grain refiner addition, current density optimization",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "HT-001",
+      "mode": "Decarburization",
+      "component": "Heat treatment",
+      "rpn": 140,
+      "residual_rpn": 28,
+      "rpn_reduction": 112,
+      "mitigation": "Endo-gas atmosphere control, oxygen probe monitoring, anti-scale coating for non-carburized surfaces",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "EC-003",
+      "mode": "Anode degradation",
+      "component": "Electrochemistry",
+      "rpn": 144,
+      "residual_rpn": 36,
+      "rpn_reduction": 108,
+      "mitigation": "DSA coating with IrO\u2082/TiO\u2082, voltage monitoring with automated anode replacement alerts",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "HT-005",
+      "mode": "Distortion / warpage",
+      "component": "Heat treatment",
+      "rpn": 144,
+      "residual_rpn": 36,
+      "rpn_reduction": 108,
+      "mitigation": "Fixture-based quenching, symmetric racking, CFD-optimized furnace flow",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "PR-004",
+      "mode": "Current interruption",
+      "component": "Process",
+      "rpn": 120,
+      "residual_rpn": 16,
+      "rpn_reduction": 104,
+      "mitigation": "UPS backup, contact resistance monitoring with auto-shutdown, redundant rectifiers",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "MS-001",
+      "mode": "Grain growth during processing",
+      "component": "Microstructure",
+      "rpn": 140,
+      "residual_rpn": 42,
+      "rpn_reduction": 98,
+      "mitigation": "EBSD monitoring, controlled cooling rate specification, thermal budget tracking",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "EC-004",
+      "mode": "pH runaway",
+      "component": "Electrochemistry",
+      "rpn": 128,
+      "residual_rpn": 32,
+      "rpn_reduction": 96,
+      "mitigation": "Automated pH dosing system with redundant sensors, buffer capacity monitoring",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "PR-003",
+      "mode": "Temperature excursion",
+      "component": "Process",
+      "rpn": 105,
+      "residual_rpn": 14,
+      "rpn_reduction": 91,
+      "mitigation": "PID temperature control with redundant TC, heat exchanger sizing, alarm interlocks",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "PR-002",
+      "mode": "Electrolyte decomposition",
+      "component": "Process",
+      "rpn": 120,
+      "residual_rpn": 36,
+      "rpn_reduction": 84,
+      "mitigation": "Additive concentration monitoring (CVSA), replenishment dosing system, current density limits",
+      "priority": 1,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "QC-001",
+      "mode": "Measurement error in hardness testing",
+      "component": "Quality control",
+      "rpn": 96,
+      "residual_rpn": 24,
+      "rpn_reduction": 72,
+      "mitigation": "Indenter calibration schedule, surface preparation SOP, micro-hardness for thin layers",
+      "priority": 2,
+      "estimated_effort": "medium"
+    },
+    {
+      "id": "HT-002",
+      "mode": "Oxidation",
+      "component": "Heat treatment",
+      "rpn": 60,
+      "residual_rpn": 20,
+      "rpn_reduction": 40,
+      "mitigation": "Vacuum or inert gas quenching, sealed furnace design, atmosphere dew point monitoring",
+      "priority": 2,
+      "estimated_effort": "medium"
+    }
+  ]
+}

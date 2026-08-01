@@ -1,0 +1,124 @@
+{
+  "n_experiments": 7,
+  "total_cost_usd": 2550.0,
+  "total_duration_hours": 90.0,
+  "final_remaining_variance_pct": 40.72440688790005,
+  "experiments": [
+    {
+      "name": "o2_probe_calibration",
+      "cost_usd": 800.0,
+      "duration_hours": 24.0,
+      "constrained_params": [
+        "dG_boudouard_intercept",
+        "dG_boudouard_slope",
+        "dG_ch4_intercept",
+        "dG_ch4_slope"
+      ],
+      "gain_per_dollar": 0.00018519280727816512
+    },
+    {
+      "name": "vickers_hardness",
+      "cost_usd": 150.0,
+      "duration_hours": 4.0,
+      "constrained_params": [
+        "tabor_factor",
+        "HV_base_Maynier",
+        "HV_per_C_wt_Maynier"
+      ],
+      "gain_per_dollar": 2.739228354880903e-07
+    },
+    {
+      "name": "tensile_test",
+      "cost_usd": 350.0,
+      "duration_hours": 12.0,
+      "constrained_params": [
+        "sigma0_fe_MPa",
+        "k_hp_MPa_sqrt_m",
+        "k_ss_ni_MPa_per_wt"
+      ],
+      "gain_per_dollar": 1.0881678605207427e-08
+    },
+    {
+      "name": "foil_test",
+      "cost_usd": 200.0,
+      "duration_hours": 8.0,
+      "constrained_params": [
+        "D0_ferrite_m2_s",
+        "Q_ferrite_kJ_mol",
+        "D0_austenite_m2_s",
+        "Q_austenite_kJ_mol"
+      ],
+      "gain_per_dollar": 4.815008174224491e-09
+    },
+    {
+      "name": "icp_oes_composition",
+      "cost_usd": 250.0,
+      "duration_hours": 6.0,
+      "constrained_params": [
+        "k_ss_ni_MPa_per_wt",
+        "ss_ni_exp",
+        "ss_ni_sat_wt"
+      ],
+      "gain_per_dollar": 1.4066342649031837e-09
+    },
+    {
+      "name": "tempering_curve",
+      "cost_usd": 300.0,
+      "duration_hours": 20.0,
+      "constrained_params": [
+        "k_softening",
+        "C_HJ",
+        "softening_floor",
+        "KM_alpha_K_inv"
+      ],
+      "gain_per_dollar": 3.953249126031232e-11
+    },
+    {
+      "name": "ebsd_grain_size",
+      "cost_usd": 500.0,
+      "duration_hours": 16.0,
+      "constrained_params": [
+        "k_hp_MPa_sqrt_m",
+        "grain_d0_dc_ref_um",
+        "grain_j_exponent",
+        "grain_pe_factor_base"
+      ],
+      "gain_per_dollar": 6.1335796434731855e-12
+    }
+  ],
+  "trajectory": {
+    "experiment_names": [
+      "o2_probe_calibration",
+      "vickers_hardness",
+      "tensile_test",
+      "foil_test",
+      "icp_oes_composition",
+      "tempering_curve",
+      "ebsd_grain_size"
+    ],
+    "remaining_variance_pct": [
+      40.738301670987155,
+      40.72597514339019,
+      40.724832567136644,
+      40.7244473664827,
+      40.72441284742454,
+      40.72440810352559,
+      40.72440688790005
+    ],
+    "cumulative_cost_usd": [
+      800.0,
+      950.0,
+      1300.0,
+      1500.0,
+      1750.0,
+      2050.0,
+      2550.0
+    ]
+  },
+  "plots": [
+    "outputs/validation_experiment_sequence.png",
+    "outputs/validation_uncertainty_reduction.png",
+    "outputs/validation_cost_effectiveness.png",
+    "outputs/validation_plan_gantt.png"
+  ]
+}

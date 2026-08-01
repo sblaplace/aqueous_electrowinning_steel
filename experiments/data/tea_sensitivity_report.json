@@ -1,0 +1,326 @@
+{
+  "title": "Techno-Economic Sensitivity: Does the Winning Corner Exist?",
+  "date": "2026-07-29",
+  "sweep_parameters": {
+    "j_mA_cm2": {
+      "low": 50,
+      "high": 500
+    },
+    "V_cell_V": {
+      "low": 1.5,
+      "high": 4.0
+    },
+    "FE": {
+      "low": 0.5,
+      "high": 0.95
+    },
+    "electricity_$/kWh": {
+      "low": 0.01,
+      "high": 0.1
+    },
+    "cell_cost_$/m2": {
+      "low": 0,
+      "high": 2000
+    }
+  },
+  "n_samples": 100000,
+  "lcofe_distribution": {
+    "mean": 537.0,
+    "std": 230.0,
+    "p5": 259.0,
+    "p25": 370.0,
+    "p50": 491.0,
+    "p75": 651.0,
+    "p95": 983.0,
+    "min": 162.0,
+    "max": 2036.0
+  },
+  "dri_h2_benchmark": {
+    "low": 450.0,
+    "mid": 600.0,
+    "high": 1000.0
+  },
+  "pareto_analysis": {
+    "target_lcofe": 600.0,
+    "n_samples": 100000,
+    "n_below_target": 68460,
+    "pct_below_target": 68.46,
+    "winning_stats": {
+      "j_median": 325.5,
+      "j_p5": 133.5,
+      "j_p95": 482.9,
+      "FE_median": 0.763,
+      "FE_p5": 0.536,
+      "FE_p95": 0.932,
+      "V_median": 2.57,
+      "elec_median": 0.046,
+      "cell_cost_median": 949.0,
+      "LCOFe_median": 413.0,
+      "LCOFe_min": 162.0
+    },
+    "pareto_front": [
+      {
+        "j_mA_cm2": 424.9,
+        "FE": 0.937,
+        "V_cell": 1.63,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 38.0,
+        "LCOFe": 162.0
+      },
+      {
+        "j_mA_cm2": 480.0,
+        "FE": 0.856,
+        "V_cell": 1.77,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 30.0,
+        "LCOFe": 164.0
+      },
+      {
+        "j_mA_cm2": 471.0,
+        "FE": 0.942,
+        "V_cell": 2.01,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 466.0,
+        "LCOFe": 166.0
+      },
+      {
+        "j_mA_cm2": 417.7,
+        "FE": 0.924,
+        "V_cell": 1.73,
+        "elec_price": 0.012,
+        "cell_cost_per_m2": 50.0,
+        "LCOFe": 169.0
+      },
+      {
+        "j_mA_cm2": 446.6,
+        "FE": 0.925,
+        "V_cell": 1.58,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 647.0,
+        "LCOFe": 169.0
+      },
+      {
+        "j_mA_cm2": 429.0,
+        "FE": 0.948,
+        "V_cell": 2.13,
+        "elec_price": 0.01,
+        "cell_cost_per_m2": 210.0,
+        "LCOFe": 169.0
+      },
+      {
+        "j_mA_cm2": 486.1,
+        "FE": 0.91,
+        "V_cell": 1.66,
+        "elec_price": 0.01,
+        "cell_cost_per_m2": 1077.0,
+        "LCOFe": 169.0
+      },
+      {
+        "j_mA_cm2": 490.0,
+        "FE": 0.947,
+        "V_cell": 2.2,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 786.0,
+        "LCOFe": 171.0
+      },
+      {
+        "j_mA_cm2": 453.7,
+        "FE": 0.852,
+        "V_cell": 1.5,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 509.0,
+        "LCOFe": 172.0
+      },
+      {
+        "j_mA_cm2": 474.0,
+        "FE": 0.917,
+        "V_cell": 2.04,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 671.0,
+        "LCOFe": 172.0
+      },
+      {
+        "j_mA_cm2": 487.6,
+        "FE": 0.897,
+        "V_cell": 2.05,
+        "elec_price": 0.012,
+        "cell_cost_per_m2": 631.0,
+        "LCOFe": 174.0
+      },
+      {
+        "j_mA_cm2": 444.0,
+        "FE": 0.894,
+        "V_cell": 1.59,
+        "elec_price": 0.017,
+        "cell_cost_per_m2": 89.0,
+        "LCOFe": 175.0
+      },
+      {
+        "j_mA_cm2": 463.3,
+        "FE": 0.816,
+        "V_cell": 1.68,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 412.0,
+        "LCOFe": 175.0
+      },
+      {
+        "j_mA_cm2": 463.2,
+        "FE": 0.863,
+        "V_cell": 2.02,
+        "elec_price": 0.01,
+        "cell_cost_per_m2": 569.0,
+        "LCOFe": 177.0
+      },
+      {
+        "j_mA_cm2": 404.2,
+        "FE": 0.949,
+        "V_cell": 1.76,
+        "elec_price": 0.012,
+        "cell_cost_per_m2": 614.0,
+        "LCOFe": 178.0
+      },
+      {
+        "j_mA_cm2": 418.4,
+        "FE": 0.901,
+        "V_cell": 2.54,
+        "elec_price": 0.01,
+        "cell_cost_per_m2": 18.0,
+        "LCOFe": 178.0
+      },
+      {
+        "j_mA_cm2": 499.8,
+        "FE": 0.693,
+        "V_cell": 1.51,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 114.0,
+        "LCOFe": 178.0
+      },
+      {
+        "j_mA_cm2": 483.7,
+        "FE": 0.825,
+        "V_cell": 2.03,
+        "elec_price": 0.013,
+        "cell_cost_per_m2": 98.0,
+        "LCOFe": 178.0
+      },
+      {
+        "j_mA_cm2": 493.8,
+        "FE": 0.855,
+        "V_cell": 1.56,
+        "elec_price": 0.012,
+        "cell_cost_per_m2": 1347.0,
+        "LCOFe": 179.0
+      },
+      {
+        "j_mA_cm2": 443.3,
+        "FE": 0.879,
+        "V_cell": 2.49,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 66.0,
+        "LCOFe": 180.0
+      },
+      {
+        "j_mA_cm2": 499.2,
+        "FE": 0.78,
+        "V_cell": 1.66,
+        "elec_price": 0.014,
+        "cell_cost_per_m2": 340.0,
+        "LCOFe": 180.0
+      },
+      {
+        "j_mA_cm2": 490.2,
+        "FE": 0.806,
+        "V_cell": 1.74,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 738.0,
+        "LCOFe": 180.0
+      },
+      {
+        "j_mA_cm2": 399.6,
+        "FE": 0.885,
+        "V_cell": 1.72,
+        "elec_price": 0.013,
+        "cell_cost_per_m2": 199.0,
+        "LCOFe": 181.0
+      },
+      {
+        "j_mA_cm2": 373.1,
+        "FE": 0.93,
+        "V_cell": 1.76,
+        "elec_price": 0.012,
+        "cell_cost_per_m2": 383.0,
+        "LCOFe": 182.0
+      },
+      {
+        "j_mA_cm2": 395.5,
+        "FE": 0.874,
+        "V_cell": 2.14,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 30.0,
+        "LCOFe": 182.0
+      },
+      {
+        "j_mA_cm2": 392.7,
+        "FE": 0.922,
+        "V_cell": 2.48,
+        "elec_price": 0.01,
+        "cell_cost_per_m2": 158.0,
+        "LCOFe": 182.0
+      },
+      {
+        "j_mA_cm2": 379.8,
+        "FE": 0.818,
+        "V_cell": 1.55,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 150.0,
+        "LCOFe": 183.0
+      },
+      {
+        "j_mA_cm2": 410.8,
+        "FE": 0.862,
+        "V_cell": 2.03,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 222.0,
+        "LCOFe": 183.0
+      },
+      {
+        "j_mA_cm2": 452.9,
+        "FE": 0.885,
+        "V_cell": 1.91,
+        "elec_price": 0.017,
+        "cell_cost_per_m2": 77.0,
+        "LCOFe": 183.0
+      },
+      {
+        "j_mA_cm2": 435.3,
+        "FE": 0.835,
+        "V_cell": 1.53,
+        "elec_price": 0.011,
+        "cell_cost_per_m2": 920.0,
+        "LCOFe": 184.0
+      }
+    ]
+  },
+  "kill_criteria": {
+    "high_FE_low_elec": {
+      "condition": "FE >= 0.85 and elec <= $0.03/kWh",
+      "best_LCOFe": 162.0,
+      "best_j": 424.9,
+      "beats_DRI_H2": true
+    },
+    "mid_j_mid_FE": {
+      "condition": "j 200-300 mA/cm\u00b2, FE 0.73-0.83",
+      "n_samples": 5015,
+      "median_LCOFe": 438.0,
+      "min_LCOFe": 210.0,
+      "pct_below_DRI_H2": 86.7
+    },
+    "verdict": "STRONG: 68.46% of space beats DRI-H2. Wide winning corner.",
+    "pct_below_DRI_H2_mid": 68.46
+  },
+  "figures": [
+    "docs/figures/tea_pareto_front.png",
+    "docs/figures/tea_sensitivity_tornado.png",
+    "docs/figures/tea_dri_h2_comparison.png"
+  ]
+}
