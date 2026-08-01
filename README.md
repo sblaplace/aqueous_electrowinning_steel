@@ -386,6 +386,8 @@ trials, EBSD orientation mapping and hardness traverses.
 
 For the decision-grade program position, model scope, experimental gates, and preliminary IP framing, see **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)**.
 
+The roadmap from screening suite to a predictive physical twin is **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)**; the whole-system twin vision (cell → crate → site, including structural/environmental behavior) is **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)**.
+
 Pre-lab desk work (July 2026): **[docs/TIER0_ARCHAEOLOGY.md](docs/TIER0_ARCHAEOLOGY.md)** (prior-art anchors and prior corrections), **[docs/CLAIM_CHARTS_PRELIMINARY.md](docs/CLAIM_CHARTS_PRELIMINARY.md)** (Electra claim charts, desk level), and **[docs/FIRST_LAB_DAY.md](docs/FIRST_LAB_DAY.md)** (bath recipe + Hull/FE run protocol).
 
 The full technical exposition is available in **[RESEARCH_REPORT.md](RESEARCH_REPORT.md)**.
