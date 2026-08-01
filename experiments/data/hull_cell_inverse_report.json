@@ -1,0 +1,237 @@
+{
+  "title": "Inverse Hull-cell analysis — synthetic example",
+  "disclaimer": "Synthetic data generated from a known FE model + measurement noise; not wet-lab deposition or profilometry data. Local FE is apparent Fe FE pending deposit composition verification.",
+  "method": "strip FE = thickness·ρ·nF/(M·t) / primary_j(strip), primary map normalized to applied current; logit(FE) = a + b·ln(j) fit excludes QA-flagged strips; current-weighted mean of local FE must equal whole-panel gravimetric FE.",
+  "inputs": {
+    "applied_current_A": 2.0,
+    "duration_s": 3600.0,
+    "n_segments": 10,
+    "thickness_noise_sigma_um": 1.0,
+    "seed": 7,
+    "density_iron_g_cm3": 7.874
+  },
+  "hull_geometry": {
+    "panel_length_cm": 10.0,
+    "panel_width_cm": 5.0,
+    "near_edge_gap_cm": 1.5,
+    "far_edge_gap_cm": 9.0,
+    "panel_area_cm2": 50.0,
+    "panel_angle_deg": 48.590377890729144
+  },
+  "hull_distribution_summary": {
+    "n_segments": 10,
+    "panel_area_cm2": 50.0,
+    "total_current_A": 2.0,
+    "panel_average_current_density_mA_cm2": 40.0,
+    "near_edge_current_density_mA_cm2": 90.51775421236673,
+    "far_edge_current_density_mA_cm2": 19.424789651507602,
+    "current_density_min_mA_cm2": 19.424789651507602,
+    "current_density_max_mA_cm2": 90.51775421236673,
+    "near_edge_gap_cm": 1.5,
+    "far_edge_gap_cm": 9.0
+  },
+  "synthetic_truth_model": {
+    "fe_at_100_mA_cm2": 0.85,
+    "logit_a": 3.3464106204839386,
+    "logit_b": -0.35
+  },
+  "local_faradaic_efficiency_table": [
+    {
+      "position_cm_from_near_edge": 0.5,
+      "current_density_mA_cm2": 90.51775421236673,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.45258877106183365,
+      "deposit_thickness_um": 102.32838026491126,
+      "deposit_mass_mg_cm2": 80.57336662059113,
+      "deposition_current_density_mA_cm2": 77.33854654055162,
+      "apparent_faradaic_efficiency": 0.854401959190294,
+      "fe_uncertainty": 0.008349608945029606,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 1.5,
+      "current_density_mA_cm2": 64.22336868144988,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.32111684340724944,
+      "deposit_thickness_um": 74.11753772118448,
+      "deposit_mass_mg_cm2": 58.36014920166066,
+      "deposition_current_density_mA_cm2": 56.017134500530034,
+      "apparent_faradaic_efficiency": 0.8722235480729288,
+      "fe_uncertainty": 0.011768112850079577,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 2.5,
+      "current_density_mA_cm2": 49.8155148939376,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.249077574469688,
+      "deposit_thickness_um": 57.63095421869441,
+      "deposit_mass_mg_cm2": 45.378613351799984,
+      "deposition_current_density_mA_cm2": 43.55677499712414,
+      "apparent_faradaic_efficiency": 0.8743616339178873,
+      "fe_uncertainty": 0.0151717361923232,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 3.5,
+      "current_density_mA_cm2": 40.70223931842912,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.20351119659214562,
+      "deposit_thickness_um": 46.81698673672557,
+      "deposit_mass_mg_cm2": 36.86369535649771,
+      "deposition_current_density_mA_cm2": 35.38370976119327,
+      "apparent_faradaic_efficiency": 0.869330787536603,
+      "fe_uncertainty": 0.018568704398368656,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 4.5,
+      "current_density_mA_cm2": 34.413253000676754,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.17206626500338376,
+      "deposit_thickness_um": 40.14588263510082,
+      "deposit_mass_mg_cm2": 31.610867986878386,
+      "deposition_current_density_mA_cm2": 30.341770333395203,
+      "apparent_faradaic_efficiency": 0.8816885265917325,
+      "fe_uncertainty": 0.02196211588136424,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 5.5,
+      "current_density_mA_cm2": 29.81011568077316,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.1490505784038658,
+      "deposit_thickness_um": 34.36589004264882,
+      "deposit_mass_mg_cm2": 27.059701819581683,
+      "deposition_current_density_mA_cm2": 25.9733221574528,
+      "apparent_faradaic_efficiency": 0.8712922296442143,
+      "fe_uncertainty": 0.02535340212527368,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 6.5,
+      "current_density_mA_cm2": 26.294385530916824,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.13147192765458413,
+      "deposit_thickness_um": 31.38711918795157,
+      "deposit_mass_mg_cm2": 24.714217648593063,
+      "deposition_current_density_mA_cm2": 23.722003336777224,
+      "apparent_faradaic_efficiency": 0.9021699065332787,
+      "fe_uncertainty": 0.028743316681308893,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 7.5,
+      "current_density_mA_cm2": 23.521129363020787,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.11760564681510392,
+      "deposit_thickness_um": 29.47029683247582,
+      "deposit_mass_mg_cm2": 23.204911725891463,
+      "deposition_current_density_mA_cm2": 22.273292289410392,
+      "apparent_faradaic_efficiency": 0.9469482500456714,
+      "fe_uncertainty": 0.0321322942700105,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 8.5,
+      "current_density_mA_cm2": 21.27744966692153,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.10638724833460765,
+      "deposit_thickness_um": 25.03915933203658,
+      "deposit_mass_mg_cm2": 19.7158340580456,
+      "deposition_current_density_mA_cm2": 18.92429240376658,
+      "apparent_faradaic_efficiency": 0.8894060472476065,
+      "fe_uncertainty": 0.03552060336585054,
+      "fe_qa_flag": "ok"
+    },
+    {
+      "position_cm_from_near_edge": 9.5,
+      "current_density_mA_cm2": 19.424789651507602,
+      "segment_area_cm2": 5.0,
+      "segment_current_A": 0.09712394825753802,
+      "deposit_thickness_um": 22.756140677471862,
+      "deposit_mass_mg_cm2": 17.918185169441344,
+      "deposition_current_density_mA_cm2": 17.19881464273975,
+      "apparent_faradaic_efficiency": 0.8854054510394614,
+      "fe_uncertainty": 0.03890841876874121,
+      "fe_qa_flag": "ok"
+    }
+  ],
+  "binned_fe_curve_table": [
+    {
+      "j_min_mA_cm2": 19.424789651507602,
+      "j_max_mA_cm2": 26.426023309976685,
+      "j_geometric_mean_mA_cm2": 22.485330390610482,
+      "fe_current_weighted_mean": 0.9072076896653137,
+      "fe_strip_std": 0.02823072956604716,
+      "n_strips": 4,
+      "area_fraction": 0.4,
+      "current_fraction": 0.22629438553091685
+    },
+    {
+      "j_min_mA_cm2": 26.426023309976685,
+      "j_max_mA_cm2": 35.950696018231106,
+      "j_geometric_mean_mA_cm2": 32.02909697293835,
+      "fe_current_weighted_mean": 0.8768629495312333,
+      "fe_strip_std": 0.0073512920708191255,
+      "n_strips": 2,
+      "area_fraction": 0.2,
+      "current_fraction": 0.16055842170362478
+    },
+    {
+      "j_min_mA_cm2": 35.950696018231106,
+      "j_max_mA_cm2": 48.90832529112752,
+      "j_geometric_mean_mA_cm2": 40.702239318429115,
+      "fe_current_weighted_mean": 0.869330787536603,
+      "fe_strip_std": NaN,
+      "n_strips": 1,
+      "area_fraction": 0.1,
+      "current_fraction": 0.10175559829607281
+    },
+    {
+      "j_min_mA_cm2": 48.90832529112752,
+      "j_max_mA_cm2": 66.53624401512879,
+      "j_geometric_mean_mA_cm2": 56.56253335105859,
+      "fe_current_weighted_mean": 0.8731575264136027,
+      "fe_strip_std": 0.0015118549997291666,
+      "n_strips": 2,
+      "area_fraction": 0.2,
+      "current_fraction": 0.28509720893846874
+    },
+    {
+      "j_min_mA_cm2": 66.53624401512879,
+      "j_max_mA_cm2": 90.51775421236673,
+      "j_geometric_mean_mA_cm2": 90.51775421236674,
+      "fe_current_weighted_mean": 0.854401959190294,
+      "fe_strip_std": NaN,
+      "n_strips": 1,
+      "area_fraction": 0.1,
+      "current_fraction": 0.22629438553091683
+    }
+  ],
+  "logit_fit": {
+    "a": 3.0343321781763284,
+    "b": -0.2792266481990604,
+    "r_squared": 0.3940333703806861,
+    "n_points": 10,
+    "reference_j_mA_cm2": 100.0,
+    "fe_at_reference": 0.8517566827034054,
+    "note": "FE-space NLS fit of FE(j) = sigmoid(a + b·ln j); b = 1 - α_H/α_Fe < 0 expected. Apparent Fe FE pending deposit composition verification."
+  },
+  "implied_panel_faradaic_efficiency": 0.8768241524073526,
+  "fit_reliability_note": "Monte-Carlo round trip on a 10-strip panel: FE at the reference j is recovered to ~±1-2 % even at point-micrometer noise (2 µm); the slope b is only resolved to ~±0.1 (1 µm profilometry) to ~±0.2 (2 µm). Pin the slope with profilometry, more strips, or repeated panels; FE(j) points from the binned table are robust.",
+  "mass_closure": {
+    "integrated_mass_g": 1.8269977146949052,
+    "gravimetric_mass_g": 1.826997714694905,
+    "closure_ratio": 1.0000000000000002,
+    "tolerance": 0.15,
+    "mass_balanced": true,
+    "note": "profile-integrated mass agrees with the gravimetric mass gain"
+  },
+  "qa_flag_counts": {
+    "ok": 10,
+    "above_100": 0,
+    "zero_deposit": 0
+  },
+  "usage_note": "For real panels: measure thickness per run-sheet strip, rebuild the distribution with the same n_segments and measured geometry, pass the measured panel mass gain for the closure check, and re-run python -m models.run_hull_cell_inverse --current_A <A> with real inputs."
+}
