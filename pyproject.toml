@@ -69,6 +69,7 @@ aq-steel-process-control = "models.run_process_control:main"
 aq-steel-tea-sensitivity = "models.run_tea_sensitivity:main"
 aq-steel-crate = "models.run_crate:main"
 aq-steel-system-twin = "models.run_system_twin:main"
+aq-steel-twin-replay = "models.run_twin_replay:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

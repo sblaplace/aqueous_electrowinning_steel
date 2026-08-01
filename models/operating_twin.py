@@ -144,6 +144,31 @@ class SensorSnapshot:
 
 
 @dataclass(frozen=True)
+class ShutdownRequest:
+    """A request for a *separate* hardwired safe-state channel.
+
+    This is an intentionally one-way software boundary: the twin may request
+    a safe state, but it has no method, handle, or authority to open a
+    contactor, remove power, or actuate a valve.  A diverse physical safety
+    channel must validate and execute this request.
+    """
+
+    request_id: str
+    action: str
+    reasons: tuple[str, ...]
+    source_run_id: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "request_id": self.request_id,
+            "action": self.action,
+            "reasons": list(self.reasons),
+            "source_run_id": self.source_run_id,
+            "authority": "request_only; independent_channel_executes",
+        }
+
+
+@dataclass(frozen=True)
 class ControlCommand:
     """A bounded command and its safety decision."""
 
@@ -313,6 +338,22 @@ class OperatingTwin:
         if "freeze" in env_reasons:
             return "storm_mode_hold_freeze"
         return "storm_mode_hold_" + "_".join(env_reasons)
+
+    def shutdown_request(self, snapshot: SensorSnapshot, now_s: float | None = None) -> ShutdownRequest | None:
+        """Emit a request for the independent shutdown channel, never execute it."""
+        now = snapshot.timestamp_s if now_s is None else now_s
+        reasons = tuple(self._safety_reasons(snapshot, now_s=now))
+        if not reasons:
+            return None
+        action = self.environmental_safe_state(snapshot)
+        if action == "normal_operation":
+            action = "sensor_fault_hold"
+        return ShutdownRequest(
+            request_id=f"{self.config.cell_id}:{snapshot.timestamp_s:.3f}",
+            action=action,
+            reasons=reasons,
+            source_run_id=snapshot.source_run_id,
+        )
 
     def update(self, snapshot: SensorSnapshot, now_s: float | None = None) -> TwinState:
         """Ingest a snapshot, update charge/iron ledgers and evaluate safety."""
