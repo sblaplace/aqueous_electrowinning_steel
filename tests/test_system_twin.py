@@ -10,7 +10,6 @@ Verifies:
 All numbers screening-grade L0 until validated.
 """
 
-import pytest
 
 from models.dark_mill import ClimateSpec, SiteDefinition, EXAMPLE_SITES, size_dark_mill
 from models.system_twin import (
@@ -20,7 +19,6 @@ from models.system_twin import (
     evaluate_all_sites,
     LEGACY_THREE,
 )
-from models.crate import CrateConfig, CrateSpec, WindLoad, GroundSpec, EnvironmentalLoads
 from models.operating_twin import TwinConfig, SensorSnapshot, OperatingTwin
 
 
@@ -268,6 +266,6 @@ class TestSystemTwinDriver:
         report = evaluate_system_twin("red_mud_alumina_refinery")
         d = report.to_dict()
         # Should be JSON serializable without custom default (apart from numpy)
-        import json, pathlib
+        import json
         json_str = json.dumps(d)
         assert isinstance(json_str, str)

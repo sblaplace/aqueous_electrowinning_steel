@@ -38,20 +38,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, Tuple
-import math
 
 from .dark_mill import (
     SiteDefinition,
     SiteReport,
-    ClimateSpec,
-    GridSpec,
     EXAMPLE_SITES,
     size_dark_mill,
     site_to_crate_config,
     evaluate_crate_for_site,
 )
-from .crate import Crate, CrateVerdict, CrateSpec, WindLoad
-from .operating_twin import TwinConfig, SensorSnapshot, OperatingTwin, TwinMode
+from .crate import Crate, CrateVerdict, WindLoad
+from .operating_twin import TwinConfig, SensorSnapshot, OperatingTwin
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +115,6 @@ class SystemTwinReport:
     def to_dict(self) -> Dict[str, Any]:
         """JSON-serialisable dict for report persistence."""
         sd = self.site_report.stack_design
-        mb = self.site_report.mass_balance
 
         def _py_bool(v):
             # Convert numpy bool_ to Python bool recursively
@@ -214,7 +210,7 @@ class SystemTwinReport:
             f"  Operating twin mode under env: {self.operating_twin_modes}",
             "",
             f"{'='*72}",
-            f"COMBINED STABILITY VERDICT & GO/NO-GO",
+            "COMBINED STABILITY VERDICT & GO/NO-GO",
             f"{'='*72}",
         ])
         for k, v in gng.items():
@@ -365,7 +361,7 @@ def evaluate_system_twin(
     # For the system twin we also evaluate end-on (more limiting for overturning)
     crate_broadside = evaluate_crate_for_site(site, ballast_kg=ballast_kg)
     # End-on worst case
-    from .crate import Crate, CrateSpec, WindLoad, GroundSpec, EnvironmentalLoads, CrateConfig
+    from .crate import CrateConfig
     cfg_broad = site_to_crate_config(site, ballast_kg=ballast_kg)
     cfg_end = CrateConfig(
         crate=cfg_broad.crate,

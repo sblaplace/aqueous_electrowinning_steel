@@ -115,7 +115,6 @@ def _make_figures(reports: Dict, fig_dir: Path):
     fig, ax = plt.subplots(figsize=(8, 3.5))
     proc = [reports[k].credibility.process_level for k in keys]
     crate = [reports[k].credibility.crate_level for k in keys]
-    site_c = [reports[k].credibility.site_level for k in keys]
     ax.scatter(proc, crate, s=120, label="crate vs process")
     for i, k in enumerate(keys):
         ax.text(proc[i] + 0.05, crate[i] + 0.05, labels[i][:12], fontsize=8)

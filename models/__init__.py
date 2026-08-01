@@ -439,7 +439,7 @@ from .operating_twin import (
     TwinConfig,
     SensorSnapshot,
     TwinMode,
-    TwinState,
+    TwinState as OperatingTwinState,
     ControlCommand,
 )
 
@@ -826,6 +826,6 @@ __all__ = [
     "TwinConfig",
     "SensorSnapshot",
     "TwinMode",
-    "TwinState",
+    "OperatingTwinState",
     "ControlCommand",
 ]

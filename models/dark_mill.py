@@ -27,30 +27,27 @@ References
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 import math
-import json
 
 from .electrochemistry import (
-    FARADAY, M_FE, Z_FE, RHO_FE,
-    specific_energy_kWh_per_t, specific_energy_kWh_per_kg,
-    current_density_to_production, CellVoltageModel,
+    specific_energy_kWh_per_t, current_density_to_production,
 )
 from .technoeconomic import (
     ElectrolyzerParams, CAPEXModel, OPEXModel, LevelizedCost,
     BENCHMARK_COSTS, compare_routes,
 )
 from .supply_chain import (
-    Feedstock, FEEDSTOCKS, TransportModel, DeploymentScenario,
+    Feedstock, FEEDSTOCKS,
 )
 from .thermal_balance import CellThermalParams, simulate_thermal_transient
 from .cell_physics import (
     CellPhysics, BathRecipe, ProcessConditions, CellGeometry,
-    OperatingPoint, OperatingWindow,
+    OperatingPoint,
 )
 from .steel_grade import (
     SteelGradeSpec, PostProcessingRoute, PostProcessingResult,
-    STEEL_GRADES, select_route, size_post_processing,
+    STEEL_GRADES, size_post_processing,
 )
 
 # Crate import is lazy inside functions to avoid circular at import time
@@ -260,7 +257,7 @@ class SiteReport:
             f"  Per tonne Fe:     ${mb.feedstock_cost_per_t_Fe:.0f}/t Fe",
             f"  Transport:        {self.site.feedstock_distance_km:.0f} km by {self.site.feedstock.transport_mode}",
             "",
-            f"STACK DESIGN:",
+            "STACK DESIGN:",
             f"  Configuration:    {sd.n_stacks} stacks × {sd.cells_per_stack} cells",
             f"  Electrode area:   {sd.electrode_area_m2:.2f} m²/face",
             f"  Total active area: {sd.total_electrode_area_m2:.0f} m²",
@@ -276,7 +273,7 @@ class SiteReport:
             pp = self.physics_point
             lines.extend([
                 "",
-                f"CELL PHYSICS (from Nernst-Planck + speciation):",
+                "CELL PHYSICS (from Nernst-Planck + speciation):",
                 f"  FE (predicted):   {pp.current_efficiency*100:.1f}%",
                 f"  Transport limit:  {pp.transport_limit_mA_cm2:.0f} mA/cm²",
                 f"  Diffusion limit:  {pp.diffusion_limit_mA_cm2:.0f} mA/cm²",
@@ -289,13 +286,13 @@ class SiteReport:
 
         lines.extend([
             "",
-            f"MASS BALANCE (annual):",
+            "MASS BALANCE (annual):",
             f"  Iron produced:    {mb.iron_production_t_yr:.0f} t/yr",
             f"  Feedstock needed: {mb.feedstock_consumed_t_yr:.0f} t/yr",
             f"  Water:            {mb.water_consumption_m3_yr:.0f} m³/yr",
             f"  Waste (gangue):   {mb.waste_generated_t_yr:.0f} t/yr",
             "",
-            f"ENERGY BALANCE (annual):",
+            "ENERGY BALANCE (annual):",
             f"  Electrolysis:     {mb.electrolysis_energy_MWh_yr:.0f} MWh/yr",
             f"  Grinding:         {mb.grinding_energy_MWh_yr:.0f} MWh/yr",
             f"  Cooling:          {mb.cooling_energy_MWh_yr:.0f} MWh/yr",
@@ -334,19 +331,19 @@ class SiteReport:
 
         lines.extend([
             "",
-            f"CO2 FOOTPRINT:",
+            "CO2 FOOTPRINT:",
             f"  Scope 1 (direct): {mb.scope1_CO2_t_yr:.1f} t CO₂/yr",
             f"  Scope 2 (elec):   {mb.scope2_CO2_t_yr:.0f} t CO₂/yr",
             f"  Per tonne Fe:     {mb.scope2_CO2_t_yr/mb.iron_production_t_yr:.3f} t CO₂/t Fe",
             "",
-            f"ECONOMICS:",
+            "ECONOMICS:",
             f"  CAPEX:            ${self.capex['Total CAPEX ($)']:,.0f} ({self.capex['Total CAPEX (M$)']:.1f} M$)",
             f"  Annual OPEX:      ${self.opex['Total OPEX ($/yr)']:,.0f}",
             f"  LCOFe:            ${self.lcofe['LCOFe ($/t Fe)']:,.0f}/t Fe",
             f"  CAPEX share:      {self.lcofe['CAPEX share (%)']:.0f}%",
             "",
             f"{'='*70}",
-            f"GO / NO-GO ASSESSMENT",
+            "GO / NO-GO ASSESSMENT",
             f"{'='*70}",
         ])
 
@@ -365,7 +362,7 @@ class SiteReport:
             lines.extend([
                 "",
                 f"{'='*70}",
-                f"CRATE STRUCTURAL / ENVIRONMENTAL VERDICT",
+                "CRATE STRUCTURAL / ENVIRONMENTAL VERDICT",
                 f"{'='*70}",
                 f"  Wind:             {cv.notes.get('wind','') if hasattr(cv,'notes') else ''}",
                 f"  Dynamic pressure: {cv.dynamic_pressure_Pa:.0f} Pa",
