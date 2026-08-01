@@ -339,7 +339,7 @@ model is a hypothesis generator, not evidence.
 - [ ] Hull cell experiments for morphology and gross plating-behavior screening — **wet lab**; tooling ready (`models/hull_cell.py`, `docs/FIRST_LAB_DAY.md`)
 - [ ] Instrumented divided-beaker cell: polarization, FE, voltage decomposition, crossover, and iron-speciation curves — **wet lab**; this is the gate-2/gate-3 dataset
 - [x] Cell architecture paper study (drum, belt, rotating cylinder, filter-press) — `models/cell_architecture.py` + `run_cell_architecture.py`: literature Sherwood correlations per architecture, harvest-continuity duty cycle, $/m² → $/annual tonne, and a computable kill-criterion-#3 threshold
-- [ ] RDE + Levich for kinetics/transport separation — **not started**; the measurement that makes `diffusion_layer_1d` calibratable. Highest-value remaining Tier 1 model+experiment pair
+- [x] RDE + Levich for kinetics/transport separation — `models/rde_levich.py` + `run_rde_levich.py` + `aq-steel-rde`: Levich i_lim and D from a plateau (R²-through-origin detection), Nernst δ on the rotating disk (the number that calibrates `diffusion_layer_1d`), Koutecký–Levich kinetic correction, and Fe + HER Tafel slopes/i₀ from one RDE polarization set. Validated on synthetic data (D within ~1%, b_Fe within ~3%, b_HER within ~10%); the first wet-lab RDE set replaces the free δ parameter with a measurement. Remaining Tier 1 is now purely wet-lab.
 - [x] Stoney stress measurement on thin shim — **protocol specified** (`models/internal_stress.py`, `coupon_curvature_protocol`: bent-strip cantilever deflection, finite-thickness correction, GUM budget, and decision rules)
 - [x] Purification circuit design (cementation, hydrolysis for Cu/Ni/Zn removal) — `models/purification.py` + `run_purification.py`: four-stage screen (cementation, hydrolysis, selective EW, ion exchange) with Cu spec check and stage costs
 
@@ -400,7 +400,7 @@ A dark mill producing precision electroforms funds the R&D to get to commodity i
 - Tier 0 checklist complete at desk level (all checkboxes marked)
 - Platform requirement added: reconfigurable/redeployable platform + fixed proving ground (this document, §The Vision)
 - `models/deposit_morphology.py` + tests and `scripts/dft_h_adsorption_fe.py` landed in `cfed4d0` — no longer untracked
-- Tier 1 desk items closed: 1D diffusion-layer model, purification circuit, cell architecture screen, and Stoney internal stress model. Remaining Tier 1 is wet-lab (Hull cell, divided beaker cell) plus one unbuilt model: **RDE/Levich**
+- Tier 1 desk items closed: 1D diffusion-layer model, purification circuit, cell architecture screen, Stoney internal stress model, and the RDE/Levich kinetics-transport separation model (`models/rde_levich.py`). Remaining Tier 1 is wet-lab only (Hull cell, divided beaker cell, and the RDE measurement that the new module turns into a calibratable number for `diffusion_layer_1d`)
 - Test coverage reconciled: `technoeconomic`, `kinetics`, `pourbaix`, `scenarios` and `cell_physics` now have direct tests (they previously had none despite carrying every kill criterion). Only `process_flow` (figure generation) and `supply_chain` (frozen per §What to Freeze) remain untested
 - `models/README.md` completed: it documented 30 of 57 modules, now all of them
 
