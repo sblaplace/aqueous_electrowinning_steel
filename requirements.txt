@@ -21,3 +21,4 @@ pint>=0.22
 
 # Testing
 pytest>=7.0
+pytest-benchmark>=4.0

@@ -24,6 +24,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `process_flow.py` | Process block-flow diagram generator (BFD: ore→leach→cell→wash→carburize→product + recycle/purge) + detailed variant |
 | `anode.py` | OER/CER anode kinetics, bubble resistance, and full-cell voltage coupling |
 | `closed_loop.py` | Phase IV charge-throughput anode wear, CSTR electrolyte balances, process costs and QA flags |
+| `operating_twin.py` | Safety-first Level-5 supervisory boundary: versioned sensor state, freshness/quality checks, charge/iron ledger, latched trips, bounded commands, and explicit qualification arming |
 | `experimental_data.py` | Long-form experimental measurement loading, validation, and run summaries |
 | `campaign.py` | Experimental run-manifest validation, traceability links, and QA report |
 | `calibration.py` | QA-gated Phase-I LSV total-current calibration and EIS consistency fit, with traceable parameter reports |
