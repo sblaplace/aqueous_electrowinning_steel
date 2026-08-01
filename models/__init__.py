@@ -412,6 +412,36 @@ from .crate import (
     CrateVerdict,
     evaluate_crate,
 )
+from .system_twin import (
+    CredibilityVector,
+    SystemTwinReport,
+    evaluate_system_twin,
+    evaluate_all_sites as evaluate_all_system_twins,
+    LEGACY_THREE,
+)
+from .dark_mill import (
+    SiteDefinition,
+    ClimateSpec,
+    GridSpec,
+    StackDesign,
+    MassBalance,
+    SiteReport,
+    size_dark_mill,
+    site_to_crate_config,
+    evaluate_crate_for_site,
+    EXAMPLE_SITES,
+    run_site,
+    run_all_sites,
+    comparison_table,
+)
+from .operating_twin import (
+    OperatingTwin,
+    TwinConfig,
+    SensorSnapshot,
+    TwinMode,
+    TwinState,
+    ControlCommand,
+)
 
 __all__ = [
     "CellVoltageModel",
@@ -771,4 +801,31 @@ __all__ = [
     "EnvironmentalLoads",
     "CrateVerdict",
     "evaluate_crate",
+    # ── Whole-system twin (process + crate + site) ────────────────────
+    "CredibilityVector",
+    "SystemTwinReport",
+    "evaluate_system_twin",
+    "evaluate_all_system_twins",
+    "LEGACY_THREE",
+    # ── Dark mill (site definition + sizing + crate coupling) ─────────
+    "SiteDefinition",
+    "ClimateSpec",
+    "GridSpec",
+    "StackDesign",
+    "MassBalance",
+    "SiteReport",
+    "size_dark_mill",
+    "site_to_crate_config",
+    "evaluate_crate_for_site",
+    "EXAMPLE_SITES",
+    "run_site",
+    "run_all_sites",
+    "comparison_table",
+    # ── Operating twin (safety + environmental safe-state) ────────────
+    "OperatingTwin",
+    "TwinConfig",
+    "SensorSnapshot",
+    "TwinMode",
+    "TwinState",
+    "ControlCommand",
 ]

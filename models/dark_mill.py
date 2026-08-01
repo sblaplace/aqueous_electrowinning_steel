@@ -53,6 +53,9 @@ from .steel_grade import (
     STEEL_GRADES, select_route, size_post_processing,
 )
 
+# Crate import is lazy inside functions to avoid circular at import time
+# but we provide type hints via Any. For evaluation we import locally.
+
 # ─── Site Definition ──────────────────────────────────────────────
 
 @dataclass
@@ -73,7 +76,13 @@ class GridSpec:
 
 @dataclass
 class ClimateSpec:
-    """Site climate conditions affecting operations."""
+    """Site climate conditions affecting operations.
+
+    Extended with structural/environmental fields for the whole-system twin:
+    wind gust + terrain, rainfall, snow, freeze depth. These feed the crate
+    structural model and the operating twin's environmental safe-state limits.
+    All numbers are screening-grade (L0) until validated by site survey / load test.
+    """
     ambient_temp_C: float = 25.0              # annual average
     ambient_temp_range_C: float = 15.0        # ± range (for seasonal sizing)
     relative_humidity: float = 0.50           # annual average
@@ -81,6 +90,13 @@ class ClimateSpec:
     water_availability: str = "municipal"     # "municipal", "well", "river", "scarce"
     water_cost_per_m3: float = 2.0            # $/m³
     freeze_risk: bool = False                 # affects winterization costs
+
+    # ── Whole-system twin extensions (structural/environmental) ──
+    wind_gust_m_s: float = 40.0               # design 3-s gust (m/s) at site
+    wind_terrain: str = "open"                # "open" | "suburban" | "urban"
+    rainfall_intensity_mm_hr: float = 50.0    # design rainfall intensity (mm/hr)
+    snow_load_kPa: float = 0.0                # design roof snow load
+    freeze_depth_m: float = 0.0               # frost depth for foundation winterization
 
 
 @dataclass
@@ -96,6 +112,14 @@ class SiteDefinition:
     available_area_m2: float = 500.0          # site footprint
     labor_cost_per_yr: float = 1_500_000.0    # on-site labor (reduced for autonomous)
     notes: str = ""
+
+    # ── Whole-system twin: structural / environmental ground fields ──
+    soil_bearing_kPa: float = 100.0           # allowable bearing pressure
+    seismic_coefficient: Optional[float] = None  # base shear coeff (fraction of W), e.g. 0.15
+    flood_depth_m: float = 0.0                # plausible flood depth at grade
+    sealing_class: str = "industrial"         # "industrial" | "sealed" envelope
+    ground_friction_mu: float = 0.5           # soil-footer friction
+    ground_anchored: bool = False             # pre-provided tie-down
 
     # Physics inputs (sensible defaults for 1M FeSO4, pH 2, divided cell)
     bath: BathRecipe = field(default_factory=BathRecipe)
@@ -216,6 +240,8 @@ class SiteReport:
     go_no_go: Dict[str, Any]
     physics_point: Optional[OperatingPoint] = None  # from cell_physics solver
     post_processing: Optional[PostProcessingResult] = None  # grade-specific sizing
+    crate_verdict: Optional[Any] = None        # CrateVerdict from crate.py (avoid circular import)
+    credibility: Optional[Dict[str, int]] = None  # per-layer L# vector if evaluated via system_twin
 
     def summary(self) -> str:
         """Human-readable site assessment."""
@@ -333,7 +359,73 @@ class SiteReport:
         lines.append(f"  OVERALL: {'GO — site is viable for dark mill deployment' if overall else 'NO-GO — see failed criteria above'}")
         lines.append(f"{'='*70}")
 
+        # Crate structural summary if present
+        if self.crate_verdict is not None:
+            cv = self.crate_verdict
+            lines.extend([
+                "",
+                f"{'='*70}",
+                f"CRATE STRUCTURAL / ENVIRONMENTAL VERDICT",
+                f"{'='*70}",
+                f"  Wind:             {cv.notes.get('wind','') if hasattr(cv,'notes') else ''}",
+                f"  Dynamic pressure: {cv.dynamic_pressure_Pa:.0f} Pa",
+                f"  Wind force:       {cv.wind_force_N:.0f} N (sliding: {cv.wind_force_sliding_N:.0f} N)",
+                f"  FS overturn:      {cv.fs_overturn:.2f}",
+                f"  FS bearing:       {cv.fs_bearing:.2f} (p_net {cv.net_bearing_kPa:.1f} kPa)",
+                f"  FS sliding:       {cv.fs_slide:.2f}",
+                f"  Ingress risk:     {cv.ingress_risk}",
+                f"  Min ballast:      {cv.min_ballast_kg:.0f} kg",
+                f"  Mounting:         {cv.mounting_spec}",
+                f"  Stable:           {cv.stable}",
+            ])
+            if self.credibility is not None:
+                cred = self.credibility
+                lines.append(f"  Credibility:      process L{cred.get('process',0)} / crate L{cred.get('crate',0)} / site L{cred.get('site',0)}")
+
         return "\n".join(lines)
+
+
+# ─── Crate coupling helpers ────────────────────────────────────────
+
+def site_to_crate_config(site: SiteDefinition, ballast_kg: float = 0.0):
+    """Map a SiteDefinition's structural/environmental fields to a CrateConfig.
+
+    This is the L2/L3 layer coupling: ClimateSpec (wind, rain, snow) + SiteDefinition
+    (soil, seismic, flood, sealing) → CrateConfig for stability checks.
+    All numbers are screening-grade L0.
+    """
+    # Lazy import to avoid circular
+    from .crate import CrateSpec, WindLoad, GroundSpec, EnvironmentalLoads, CrateConfig
+
+    crate = CrateSpec()  # default 40-ft container, can be overridden by site in future
+    wind = WindLoad(
+        gust_m_s=site.climate.wind_gust_m_s,
+        direction="broadside",  # worst-case screening; system_twin can test end-on too
+        terrain=site.climate.wind_terrain,
+        altitude_m=site.climate.altitude_m,
+        temperature_C=site.climate.ambient_temp_C,
+    )
+    ground = GroundSpec(
+        p_allow_kPa=site.soil_bearing_kPa,
+        friction_mu=site.ground_friction_mu,
+        drainable=(site.flood_depth_m < 0.05 and site.climate.rainfall_intensity_mm_hr < 100),
+        flood_depth_m=site.flood_depth_m,
+        anchored=site.ground_anchored,
+    )
+    env = EnvironmentalLoads(
+        rain_intensity_mm_hr=site.climate.rainfall_intensity_mm_hr,
+        sealing_class=site.sealing_class,
+        snow_load_kPa=site.climate.snow_load_kPa,
+        seismic_base_coefficient=site.seismic_coefficient,
+    )
+    return CrateConfig(crate=crate, wind=wind, ground=ground, env=env, ballast_kg=ballast_kg)
+
+
+def evaluate_crate_for_site(site: SiteDefinition, ballast_kg: float = 0.0):
+    """Evaluate crate stability for a given SiteDefinition (screening L0)."""
+    from .crate import Crate
+    cfg = site_to_crate_config(site, ballast_kg=ballast_kg)
+    return Crate().evaluate(cfg)
 
 
 # ─── Sizing Engine ────────────────────────────────────────────────
@@ -579,10 +671,24 @@ def size_dark_mill(
         capex["Total CAPEX ($)"] += pp_capex
         capex["Total CAPEX (M$)"] = round(capex["Total CAPEX ($)"] / 1e6, 2)
 
-    # -- Step 7: Go/No-Go --
+    # -- Step 6b: Crate structural / environmental verdict (L2 layer) --
+    # Screening-grade L0 until real load test / site survey.
+    # Feeds the go/no-go so "does this site make sense?" also means
+    # "can a unit physically sit here through a storm?"
+    try:
+        crate_verdict = evaluate_crate_for_site(site)
+    except Exception:
+        # Don't fail the whole site assessment if crate eval fails — mark None
+        crate_verdict = None
+
+    # -- Step 7: Go/No-Go (including crate) --
     go_no_go = _assess_go_nogo(
         site, stack, mass_bal, capex, opex, lcofe, thermal_info, benchmarks,
+        crate_verdict=crate_verdict,
     )
+
+    # Credibility vector per-layer (all L0 screening until validated)
+    credibility = {"process": 0, "crate": 0, "site": 0}
 
     return SiteReport(
         site=site,
@@ -596,6 +702,8 @@ def size_dark_mill(
         go_no_go=go_no_go,
         physics_point=physics_point,
         post_processing=post_proc,
+        crate_verdict=crate_verdict,
+        credibility=credibility,
     )
 
 
@@ -608,18 +716,23 @@ def _assess_go_nogo(
     lcofe: Dict,
     thermal: Dict,
     benchmarks: Dict,
+    crate_verdict: Optional[Any] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Evaluate go/no-go criteria.
 
     Criteria from RESEARCH_PROGRAM.md kill criteria, adapted for
-    site-level assessment:
+    site-level assessment, plus crate structural/environmental checks that
+    answer "can a unit physically sit here through a storm?"
+
     1. Power: can the grid support the mill?
     2. LCOFe: competitive with DRI-H2?
     3. Area: fits within available footprint?
     4. Thermal: manageable operating temperature?
     5. Feedstock: sustainable supply?
     6. Water: available at site?
+    7. Energy kill criterion
+    8-11. Crate: overturning / bearing / sliding / ingress
     """
     criteria = {}
 
@@ -639,7 +752,6 @@ def _assess_go_nogo(
     }
 
     # 3. Site footprint
-    # Rough: ~2 m² per m² of electrode area (cell + aisle + BOP)
     area_needed = stack.total_electrode_area_m2 * 2.0 + 200  # +200 for BOP
     criteria["Site footprint"] = {
         "pass": area_needed <= site.available_area_m2,
@@ -649,14 +761,13 @@ def _assess_go_nogo(
     # 4. Thermal management
     T_op = thermal["steady_state_temp_C"]
     criteria["Operating temperature"] = {
-        "pass": T_op < 90.0,  # boiling risk above ~90°C
+        "pass": T_op < 90.0,
         "detail": f"Steady-state {T_op:.0f} °C (limit 90 °C)",
     }
 
     # 5. Feedstock sustainability
-    years_of_supply = 100_000.0 / mb.feedstock_consumed_t_yr if mb.feedstock_consumed_t_yr > 0 else float('inf')
     criteria["Feedstock supply"] = {
-        "pass": True,  # always passes for now — feedstock sourcing is site-specific
+        "pass": True,
         "detail": f"{mb.feedstock_consumed_t_yr:.0f} t/yr consumed ({site.feedstock.name})",
     }
 
@@ -667,13 +778,57 @@ def _assess_go_nogo(
         "detail": f"{mb.water_consumption_m3_yr:.0f} m³/yr, availability: {site.climate.water_availability}",
     }
 
-    # 7. Kill criterion from RESEARCH_PROGRAM: at j ≥ 300, FE ≥ 70%, energy ≤ 4000 kWh/t
+    # 7. Energy kill criterion
     specific_energy = mb.total_energy_MWh_yr * 1000 / mb.iron_production_t_yr if mb.iron_production_t_yr > 0 else float('inf')
     energy_pass = specific_energy <= 4000
     criteria["Energy kill criterion"] = {
         "pass": energy_pass,
         "detail": f"{specific_energy:.0f} kWh/t Fe (limit 4,000)",
     }
+
+    # 8-11. Crate structural / environmental (whole-system twin L2/L3)
+    if crate_verdict is not None:
+        # Overturning
+        try:
+            fs_ot = crate_verdict.fs_overturn
+            criteria["Crate overturning"] = {
+                "pass": fs_ot >= 1.5 or crate_verdict.min_ballast_kg == 0 or site.ground_anchored,
+                "detail": f"FS_over={fs_ot:.2f} (target 1.5), min ballast {crate_verdict.min_ballast_kg:.0f} kg, "
+                          f"mounting: {crate_verdict.mounting_spec}",
+            }
+        except Exception:
+            pass
+        # Bearing
+        try:
+            criteria["Crate bearing"] = {
+                "pass": crate_verdict.fs_bearing >= 1.0,
+                "detail": f"FS_bearing={crate_verdict.fs_bearing:.2f}, p_net {crate_verdict.net_bearing_kPa:.1f} kPa "
+                          f"vs {site.soil_bearing_kPa:.0f} kPa allowable",
+            }
+        except Exception:
+            pass
+        # Sliding
+        try:
+            criteria["Crate sliding"] = {
+                "pass": crate_verdict.fs_slide >= 1.5 or site.ground_anchored,
+                "detail": f"FS_slide={crate_verdict.fs_slide:.2f} (target 1.5), "
+                          f"wind {crate_verdict.wind_force_sliding_N:.0f} N",
+            }
+        except Exception:
+            pass
+        # Ingress / flood
+        try:
+            ingress_ok = crate_verdict.ingress_risk != "high"
+            # If flood depth > 0.3 m, require elevation regardless of sealing
+            if site.flood_depth_m > 0.3 and not ingress_ok:
+                ingress_ok = False
+            criteria["Crate ingress"] = {
+                "pass": ingress_ok,
+                "detail": f"ingress {crate_verdict.ingress_risk}, flood {site.flood_depth_m:.2f} m, "
+                          f"rain {site.climate.rainfall_intensity_mm_hr:.0f} mm/hr, sealing {site.sealing_class}",
+            }
+        except Exception:
+            pass
 
     return criteria
 
@@ -685,33 +840,51 @@ EXAMPLE_SITES: Dict[str, SiteDefinition] = {
         name="US Midwest — Pickle Liquor at Steel Mill",
         feedstock_key="pickle_liquor",
         grid=GridSpec(electricity_price_kWh=0.035, renewable_fraction=0.40, max_power_MW=5.0),
-        climate=ClimateSpec(ambient_temp_C=12.0, relative_humidity=0.65, water_cost_per_m3=1.5),
-        feedstock_distance_km=0.0,      # on-site
-        product_market_km=50.0,         # nearby EAF
+        climate=ClimateSpec(
+            ambient_temp_C=12.0, relative_humidity=0.65, water_cost_per_m3=1.5,
+            wind_gust_m_s=35.0, wind_terrain="suburban", rainfall_intensity_mm_hr=60.0,
+            snow_load_kPa=0.5, freeze_risk=True, freeze_depth_m=0.9,
+        ),
+        feedstock_distance_km=0.0,
+        product_market_km=50.0,
         target_capacity_t_Fe_yr=2000.0,
         available_area_m2=300.0,
+        soil_bearing_kPa=150.0, seismic_coefficient=0.06, flood_depth_m=0.0,
+        sealing_class="industrial", ground_friction_mu=0.5,
         notes="Co-located with a steel mill. Paid to take pickle liquor. Product feeds the mill's EAF.",
     ),
     "acid_mine_drainage_appalachia": SiteDefinition(
         name="Appalachia — Acid Mine Drainage Remediation",
         feedstock_key="acid_mine_drainage",
         grid=GridSpec(electricity_price_kWh=0.05, renewable_fraction=0.30, max_power_MW=2.0),
-        climate=ClimateSpec(ambient_temp_C=12.0, relative_humidity=0.70, water_cost_per_m3=0.5),
-        feedstock_distance_km=0.0,      # at the mine site
+        climate=ClimateSpec(
+            ambient_temp_C=12.0, relative_humidity=0.70, water_cost_per_m3=0.5,
+            wind_gust_m_s=40.0, wind_terrain="open", rainfall_intensity_mm_hr=80.0,
+            snow_load_kPa=0.8, freeze_risk=True, freeze_depth_m=0.6,
+        ),
+        feedstock_distance_km=0.0,
         product_market_km=300.0,
-        target_capacity_t_Fe_yr=500.0,  # smaller unit
+        target_capacity_t_Fe_yr=500.0,
         available_area_m2=200.0,
+        soil_bearing_kPa=80.0, seismic_coefficient=0.10, flood_depth_m=0.10,
+        sealing_class="industrial", ground_friction_mu=0.4,
         notes="Remediation co-benefit. Very dilute feedstock (2% Fe) — concentration step needed.",
     ),
     "red_mud_alumina_refinery": SiteDefinition(
         name="Red Mud — Alumina Refinery Co-Location",
         feedstock_key="red_mud",
         grid=GridSpec(electricity_price_kWh=0.03, renewable_fraction=0.60, max_power_MW=10.0),
-        climate=ClimateSpec(ambient_temp_C=28.0, relative_humidity=0.75, water_cost_per_m3=1.0),
+        climate=ClimateSpec(
+            ambient_temp_C=28.0, relative_humidity=0.75, water_cost_per_m3=1.0,
+            wind_gust_m_s=45.0, wind_terrain="open", rainfall_intensity_mm_hr=100.0,
+            snow_load_kPa=0.0, freeze_risk=False, freeze_depth_m=0.0,
+        ),
         feedstock_distance_km=0.0,
         product_market_km=100.0,
         target_capacity_t_Fe_yr=5000.0,
         available_area_m2=1000.0,
+        soil_bearing_kPa=100.0, seismic_coefficient=0.12, flood_depth_m=0.20,
+        sealing_class="industrial", ground_friction_mu=0.45,
         notes="Co-located with alumina refinery. Paid to take red mud. SIDERWIN demonstrated this route.",
     ),
     "wind_farm_ore": SiteDefinition(
@@ -719,23 +892,35 @@ EXAMPLE_SITES: Dict[str, SiteDefinition] = {
         feedstock_key="high_grade_ore",
         grid=GridSpec(electricity_price_kWh=0.025, renewable_fraction=0.95, max_power_MW=20.0,
                       grid_CO2_kg_per_kWh=0.02),
-        climate=ClimateSpec(ambient_temp_C=18.0, relative_humidity=0.40, water_cost_per_m3=3.0,
-                            water_availability="scarce"),
+        climate=ClimateSpec(
+            ambient_temp_C=18.0, relative_humidity=0.40, water_cost_per_m3=3.0,
+            water_availability="scarce",
+            wind_gust_m_s=55.0, wind_terrain="open", rainfall_intensity_mm_hr=30.0,
+            snow_load_kPa=0.2, freeze_risk=False, freeze_depth_m=0.0,
+        ),
         feedstock_distance_km=30.0,
         product_market_km=500.0,
         target_capacity_t_Fe_yr=10000.0,
         available_area_m2=2000.0,
-        notes="Next to a wind farm. Cheap clean electricity. Ore railed in. Water may be limiting.",
+        soil_bearing_kPa=120.0, seismic_coefficient=0.10, flood_depth_m=0.0,
+        sealing_class="sealed", ground_friction_mu=0.5,
+        notes="Next to a wind farm. Cheap clean electricity. Ore railed in. Water may be limiting. High wind exposure.",
     ),
     "copperas_tio2_plant": SiteDefinition(
         name="TiO2 Plant — Copperas Byproduct",
         feedstock_key="copperas",
         grid=GridSpec(electricity_price_kWh=0.06, renewable_fraction=0.20, max_power_MW=3.0),
-        climate=ClimateSpec(ambient_temp_C=20.0, relative_humidity=0.55, water_cost_per_m3=2.0),
+        climate=ClimateSpec(
+            ambient_temp_C=20.0, relative_humidity=0.55, water_cost_per_m3=2.0,
+            wind_gust_m_s=38.0, wind_terrain="suburban", rainfall_intensity_mm_hr=50.0,
+            snow_load_kPa=0.3, freeze_risk=False, freeze_depth_m=0.2,
+        ),
         feedstock_distance_km=0.0,
         product_market_km=150.0,
         target_capacity_t_Fe_yr=1500.0,
         available_area_m2=400.0,
+        soil_bearing_kPa=100.0, seismic_coefficient=0.08, flood_depth_m=0.0,
+        sealing_class="industrial", ground_friction_mu=0.5,
         notes="Copperas from TiO2 sulfate process. Negative-cost feedstock. Water-soluble — no grinding.",
     ),
 }

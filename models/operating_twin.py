@@ -39,6 +39,11 @@ class TwinConfig:
     These are deliberately required at construction time rather than silently
     borrowed from a screening model.  Values must come from the hardware
     qualification record before actuation is enabled.
+
+    Extended with whole-system-twin environmental limits: high-wind / flood /
+    ingress bound permissible operation (storm mode) as a safe-state limit.
+    If any environmental max is set, exceeding it triggers a latched safe-state
+    (TRIPPED or storm-hold) in the same way as a temperature trip.
     """
 
     cell_id: str
@@ -58,6 +63,13 @@ class TwinConfig:
     current_ramp_A_per_s: float = 0.1
     control_interval_s: float = 1.0
 
+    # ── Whole-system twin: environmental safe-state limits (storm mode) ──
+    max_wind_gust_m_s: float | None = None        # e.g. 40 m/s; None = no wind trip
+    max_flood_depth_m: float | None = None        # e.g. 0.1 m
+    max_rain_intensity_mm_hr: float | None = None # e.g. 100 mm/hr
+    max_snow_load_kPa: float | None = None
+    freeze_protection_required: bool = False      # if True, freeze triggers advisory
+
     def __post_init__(self) -> None:
         if not self.cell_id.strip():
             raise ValueError("cell_id is required")
@@ -76,11 +88,22 @@ class TwinConfig:
             raise ValueError("target current must lie inside the current limit")
         if not self.min_temperature_C <= self.target_temperature_C <= self.max_temperature_C:
             raise ValueError("target temperature must lie inside temperature limits")
+        # Environmental limits if set must be finite and non-negative
+        env_vals = (self.max_wind_gust_m_s, self.max_flood_depth_m,
+                    self.max_rain_intensity_mm_hr, self.max_snow_load_kPa)
+        for v in env_vals:
+            if v is not None and (not isfinite(v) or v < 0):
+                raise ValueError("environmental limits must be finite and non-negative if set")
 
 
 @dataclass(frozen=True)
 class SensorSnapshot:
-    """One synchronized, engineering-unit sensor snapshot."""
+    """One synchronized, engineering-unit sensor snapshot.
+
+    Extended with optional whole-system environmental fields for storm-mode
+    safe-state evaluation. These are optional so existing unit tests and
+    purely-cellular snapshots remain valid.
+    """
 
     timestamp_s: float
     current_A: float
@@ -92,6 +115,14 @@ class SensorSnapshot:
     sensor_quality: Mapping[str, str] = field(default_factory=dict)
     source_run_id: str = ""
 
+    # ── Whole-system twin: environmental observation (optional) ──
+    wind_gust_m_s: float | None = None
+    flood_depth_m: float | None = None
+    rain_intensity_mm_hr: float | None = None
+    snow_load_kPa: float | None = None
+    ingress_detected: bool = False
+    freeze_detected: bool = False
+
     def __post_init__(self) -> None:
         values = (self.timestamp_s, self.current_A, self.voltage_V,
                   self.temperature_C, self.pH, self.fe2_M, self.cathode_area_cm2)
@@ -101,6 +132,11 @@ class SensorSnapshot:
             raise ValueError("cathode_area_cm2 must be positive")
         if self.timestamp_s < 0:
             raise ValueError("timestamp_s cannot be negative")
+        # Environmental values if provided must be finite and non-negative
+        for name in ("wind_gust_m_s", "flood_depth_m", "rain_intensity_mm_hr", "snow_load_kPa"):
+            v = getattr(self, name)
+            if v is not None and (not isfinite(v) or v < 0):
+                raise ValueError(f"{name} must be finite and non-negative if set")
 
     @property
     def current_density_mA_cm2(self) -> float:
@@ -226,7 +262,57 @@ class OperatingTwin:
                if quality.lower() not in {"ok", "good", "valid"}]
         if bad:
             reasons.append("bad_sensor_quality:" + ",".join(sorted(bad)))
+
+        # ── Whole-system twin: environmental safe-state limits (storm mode) ──
+        if c.max_wind_gust_m_s is not None and snapshot.wind_gust_m_s is not None:
+            if snapshot.wind_gust_m_s > c.max_wind_gust_m_s:
+                reasons.append("high_wind")
+        if c.max_flood_depth_m is not None and snapshot.flood_depth_m is not None:
+            if snapshot.flood_depth_m > c.max_flood_depth_m:
+                reasons.append("flood")
+        if c.max_rain_intensity_mm_hr is not None and snapshot.rain_intensity_mm_hr is not None:
+            if snapshot.rain_intensity_mm_hr > c.max_rain_intensity_mm_hr:
+                reasons.append("heavy_rain")
+        if c.max_snow_load_kPa is not None and snapshot.snow_load_kPa is not None:
+            if snapshot.snow_load_kPa > c.max_snow_load_kPa:
+                reasons.append("snow_overload")
+        if snapshot.ingress_detected:
+            reasons.append("ingress")
+        if snapshot.freeze_detected and c.freeze_protection_required:
+            reasons.append("freeze")
+
         return reasons
+
+    def environmental_safe_state(self, snapshot: SensorSnapshot) -> str:
+        """Return a human-readable safe-state action for the environment.
+
+        This maps the safety reasons into the system-twin's environmental
+        action vocabulary: normal_operation vs storm_mode_hold*.
+
+        The method does NOT latch a trip; it is a pure assessment helper for
+        the system twin driver and for operator displays.
+        """
+        reasons = self._safety_reasons(snapshot, now_s=snapshot.timestamp_s)
+        # Filter to environmental reasons only
+        env_reasons = [r for r in reasons if r in {
+            "high_wind", "flood", "heavy_rain", "snow_overload", "ingress", "freeze"
+        }]
+        if not env_reasons:
+            return "normal_operation"
+        # Priority: flood > wind > ingress > rain/snow/freeze
+        if "flood" in env_reasons:
+            return "flood_hold_elevate_and_shutdown"
+        if "high_wind" in env_reasons:
+            return "storm_mode_hold_high_wind"
+        if "ingress" in env_reasons:
+            return "storm_mode_hold_ingress"
+        if "heavy_rain" in env_reasons:
+            return "storm_mode_hold_heavy_rain"
+        if "snow_overload" in env_reasons:
+            return "storm_mode_hold_snow"
+        if "freeze" in env_reasons:
+            return "storm_mode_hold_freeze"
+        return "storm_mode_hold_" + "_".join(env_reasons)
 
     def update(self, snapshot: SensorSnapshot, now_s: float | None = None) -> TwinState:
         """Ingest a snapshot, update charge/iron ledgers and evaluate safety."""

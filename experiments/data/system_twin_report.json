@@ -1,0 +1,560 @@
+{
+  "credibility_note": "All numbers screening-grade per-layer L0 until validated",
+  "legacy_three": [
+    "pickle_liquor_us_midwest",
+    "red_mud_alumina_refinery",
+    "wind_farm_ore"
+  ],
+  "sites": {
+    "pickle_liquor_us_midwest": {
+      "site_key": "pickle_liquor_us_midwest",
+      "site_name": "US Midwest \u2014 Pickle Liquor at Steel Mill",
+      "credibility_vector": {
+        "process": 0,
+        "crate": 0,
+        "site": 0
+      },
+      "credibility_label": "process L0 / crate L0 / site L0",
+      "combined_stable": true,
+      "overall_go": false,
+      "required_ballast_kg": 0.0,
+      "mounting_spec": "no ballast required, medium-grade sealing + drainage",
+      "environmental_safe_state": "normal_operation",
+      "environmental_snapshot": {
+        "wind_gust_m_s": 35.0,
+        "flood_depth_m": 0.0,
+        "rain_mm_hr": 60.0,
+        "snow_kPa": 0.5,
+        "ingress_detected": false
+      },
+      "crate_verdict": {
+        "dynamic_pressure_Pa": 637.8,
+        "wind_force_N": 4836.5,
+        "fs_overturn": 57.43,
+        "net_bearing_kPa": 1.98,
+        "fs_bearing": 75.6,
+        "fs_slide": 6.1,
+        "ingress_risk": "medium",
+        "min_ballast_kg": 0.0,
+        "stable": true,
+        "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+      },
+      "crate_verdict_end_on": {
+        "dynamic_pressure_Pa": 637.8,
+        "wind_force_N": 24162.7,
+        "fs_overturn": 2.3,
+        "net_bearing_kPa": 1.98,
+        "fs_bearing": 75.6,
+        "fs_slide": 1.22,
+        "ingress_risk": "medium",
+        "min_ballast_kg": 0.0,
+        "stable": false,
+        "mounting_spec": "no ballast required, tie-down anchors, medium-grade sealing + drainage"
+      },
+      "stack": {
+        "n_stacks": 25,
+        "cells_per_stack": 20,
+        "power_kW": 1168.7,
+        "production_t_yr": 2004.4,
+        "FE": 0.995,
+        "V_cell": 4.836,
+        "j_mA_cm2": 96.7
+      },
+      "LCOFe": 1016.0,
+      "LCOFe_adjusted": 600.0,
+      "go_no_go": {
+        "Grid capacity": {
+          "pass": true,
+          "detail": "1.2 MW needed, 5.0 MW available"
+        },
+        "LCOFe vs DRI-H2": {
+          "pass": false,
+          "detail": "$600/t vs DRI-H2 $600/t"
+        },
+        "Site footprint": {
+          "pass": false,
+          "detail": "1200 m\u00b2 needed, 300 m\u00b2 available"
+        },
+        "Operating temperature": {
+          "pass": true,
+          "detail": "Steady-state 13 \u00b0C (limit 90 \u00b0C)"
+        },
+        "Feedstock supply": {
+          "pass": true,
+          "detail": "16704 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
+        },
+        "Water supply": {
+          "pass": true,
+          "detail": "8018 m\u00b3/yr, availability: municipal"
+        },
+        "Energy kill criterion": {
+          "pass": false,
+          "detail": "5057 kWh/t Fe (limit 4,000)"
+        },
+        "Crate overturning": {
+          "pass": true,
+          "detail": "FS_over=57.43 (target 1.5), min ballast 0 kg, mounting: no ballast required, medium-grade sealing + drainage"
+        },
+        "Crate bearing": {
+          "pass": true,
+          "detail": "FS_bearing=75.60, p_net 2.0 kPa vs 150 kPa allowable"
+        },
+        "Crate sliding": {
+          "pass": true,
+          "detail": "FS_slide=6.10 (target 1.5), wind 4837 N"
+        },
+        "Crate ingress": {
+          "pass": true,
+          "detail": "ingress medium, flood 0.00 m, rain 60 mm/hr, sealing industrial"
+        }
+      },
+      "notes": {
+        "process_layer": "L0 screening \u2014 FE/V from cell_physics, not measured",
+        "crate_layer": "L0 screening \u2014 overturn/bearing/sliding/ingress screening, no load test",
+        "site_layer": "L0 screening \u2014 soil/wind/flood from ClimateSpec/SiteDefinition, no survey",
+        "wind_broadside": "35.0 m/s gust, suburban (category B)",
+        "wind_end_on": "35.0 m/s gust, suburban (category B)"
+      }
+    },
+    "acid_mine_drainage_appalachia": {
+      "site_key": "acid_mine_drainage_appalachia",
+      "site_name": "Appalachia \u2014 Acid Mine Drainage Remediation",
+      "credibility_vector": {
+        "process": 0,
+        "crate": 0,
+        "site": 0
+      },
+      "credibility_label": "process L0 / crate L0 / site L0",
+      "combined_stable": false,
+      "overall_go": false,
+      "required_ballast_kg": 1526.0,
+      "mounting_spec": "1526 kg ballast, tie-down anchors, high-grade sealing + drainage, elevate above flood level",
+      "environmental_safe_state": "storm_mode_hold_ingress",
+      "environmental_snapshot": {
+        "wind_gust_m_s": 40.0,
+        "flood_depth_m": 0.1,
+        "rain_mm_hr": 80.0,
+        "snow_kPa": 0.8,
+        "ingress_detected": true
+      },
+      "crate_verdict": {
+        "dynamic_pressure_Pa": 980.0,
+        "wind_force_N": 7431.8,
+        "fs_overturn": 43.03,
+        "net_bearing_kPa": 2.28,
+        "fs_bearing": 35.02,
+        "fs_slide": 3.66,
+        "ingress_risk": "high",
+        "min_ballast_kg": 0.0,
+        "stable": true,
+        "mounting_spec": "no ballast required, high-grade sealing + drainage, elevate above flood level"
+      },
+      "crate_verdict_end_on": {
+        "dynamic_pressure_Pa": 980.0,
+        "wind_force_N": 37128.8,
+        "fs_overturn": 1.72,
+        "net_bearing_kPa": 2.28,
+        "fs_bearing": 35.02,
+        "fs_slide": 0.73,
+        "ingress_risk": "high",
+        "min_ballast_kg": 1526.0,
+        "stable": false,
+        "mounting_spec": "1526 kg ballast, tie-down anchors, high-grade sealing + drainage, elevate above flood level"
+      },
+      "stack": {
+        "n_stacks": 7,
+        "cells_per_stack": 20,
+        "power_kW": 327.2,
+        "production_t_yr": 561.2,
+        "FE": 0.995,
+        "V_cell": 4.836,
+        "j_mA_cm2": 96.7
+      },
+      "LCOFe": 3014.0,
+      "LCOFe_adjusted": null,
+      "go_no_go": {
+        "Grid capacity": {
+          "pass": true,
+          "detail": "0.3 MW needed, 2.0 MW available"
+        },
+        "LCOFe vs DRI-H2": {
+          "pass": false,
+          "detail": "$3014/t vs DRI-H2 $600/t"
+        },
+        "Site footprint": {
+          "pass": false,
+          "detail": "480 m\u00b2 needed, 200 m\u00b2 available"
+        },
+        "Operating temperature": {
+          "pass": true,
+          "detail": "Steady-state 14 \u00b0C (limit 90 \u00b0C)"
+        },
+        "Feedstock supply": {
+          "pass": true,
+          "detail": "28062 t/yr consumed (Acid mine drainage (2% Fe))"
+        },
+        "Water supply": {
+          "pass": true,
+          "detail": "2245 m\u00b3/yr, availability: municipal"
+        },
+        "Energy kill criterion": {
+          "pass": false,
+          "detail": "5057 kWh/t Fe (limit 4,000)"
+        },
+        "Crate overturning": {
+          "pass": true,
+          "detail": "FS_over=43.03 (target 1.5), min ballast 0 kg, mounting: no ballast required, high-grade sealing + drainage, elevate above flood level"
+        },
+        "Crate bearing": {
+          "pass": true,
+          "detail": "FS_bearing=35.02, p_net 2.3 kPa vs 80 kPa allowable"
+        },
+        "Crate sliding": {
+          "pass": true,
+          "detail": "FS_slide=3.66 (target 1.5), wind 7432 N"
+        },
+        "Crate ingress": {
+          "pass": false,
+          "detail": "ingress high, flood 0.10 m, rain 80 mm/hr, sealing industrial"
+        }
+      },
+      "notes": {
+        "process_layer": "L0 screening \u2014 FE/V from cell_physics, not measured",
+        "crate_layer": "L0 screening \u2014 overturn/bearing/sliding/ingress screening, no load test",
+        "site_layer": "L0 screening \u2014 soil/wind/flood from ClimateSpec/SiteDefinition, no survey",
+        "wind_broadside": "40.0 m/s gust, open (category C)",
+        "wind_end_on": "40.0 m/s gust, open (category C)"
+      }
+    },
+    "red_mud_alumina_refinery": {
+      "site_key": "red_mud_alumina_refinery",
+      "site_name": "Red Mud \u2014 Alumina Refinery Co-Location",
+      "credibility_vector": {
+        "process": 0,
+        "crate": 0,
+        "site": 0
+      },
+      "credibility_label": "process L0 / crate L0 / site L0",
+      "combined_stable": false,
+      "overall_go": false,
+      "required_ballast_kg": 3127.0,
+      "mounting_spec": "3127 kg ballast, tie-down anchors, lowered CG or fixed anchorage, high-grade sealing + drainage, elevate above flood level",
+      "environmental_safe_state": "flood_hold_elevate_and_shutdown",
+      "environmental_snapshot": {
+        "wind_gust_m_s": 45.0,
+        "flood_depth_m": 0.2,
+        "rain_mm_hr": 100.0,
+        "snow_kPa": 0.0,
+        "ingress_detected": true
+      },
+      "crate_verdict": {
+        "dynamic_pressure_Pa": 1240.3,
+        "wind_force_N": 9405.9,
+        "fs_overturn": 22.09,
+        "net_bearing_kPa": 1.48,
+        "fs_bearing": 67.38,
+        "fs_slide": 2.11,
+        "ingress_risk": "high",
+        "min_ballast_kg": 0.0,
+        "stable": false,
+        "mounting_spec": "no ballast required, high-grade sealing + drainage, elevate above flood level"
+      },
+      "crate_verdict_end_on": {
+        "dynamic_pressure_Pa": 1240.3,
+        "wind_force_N": 46991.1,
+        "fs_overturn": 0.89,
+        "net_bearing_kPa": 1.48,
+        "fs_bearing": 67.38,
+        "fs_slide": 0.42,
+        "ingress_risk": "high",
+        "min_ballast_kg": 3127.0,
+        "stable": false,
+        "mounting_spec": "3127 kg ballast, tie-down anchors, lowered CG or fixed anchorage, high-grade sealing + drainage, elevate above flood level"
+      },
+      "stack": {
+        "n_stacks": 63,
+        "cells_per_stack": 20,
+        "power_kW": 2649.6,
+        "production_t_yr": 5053.1,
+        "FE": 0.996,
+        "V_cell": 4.351,
+        "j_mA_cm2": 96.7
+      },
+      "LCOFe": 522.0,
+      "LCOFe_adjusted": 422.0,
+      "go_no_go": {
+        "Grid capacity": {
+          "pass": true,
+          "detail": "2.6 MW needed, 10.0 MW available"
+        },
+        "LCOFe vs DRI-H2": {
+          "pass": true,
+          "detail": "$422/t vs DRI-H2 $600/t"
+        },
+        "Site footprint": {
+          "pass": false,
+          "detail": "2720 m\u00b2 needed, 1000 m\u00b2 available"
+        },
+        "Operating temperature": {
+          "pass": true,
+          "detail": "Steady-state 28 \u00b0C (limit 90 \u00b0C)"
+        },
+        "Feedstock supply": {
+          "pass": true,
+          "detail": "16844 t/yr consumed (Red mud / bauxite residue (30% Fe))"
+        },
+        "Water supply": {
+          "pass": true,
+          "detail": "20212 m\u00b3/yr, availability: municipal"
+        },
+        "Energy kill criterion": {
+          "pass": false,
+          "detail": "4611 kWh/t Fe (limit 4,000)"
+        },
+        "Crate overturning": {
+          "pass": true,
+          "detail": "FS_over=22.09 (target 1.5), min ballast 0 kg, mounting: no ballast required, high-grade sealing + drainage, elevate above flood level"
+        },
+        "Crate bearing": {
+          "pass": true,
+          "detail": "FS_bearing=67.38, p_net 1.5 kPa vs 100 kPa allowable"
+        },
+        "Crate sliding": {
+          "pass": true,
+          "detail": "FS_slide=2.11 (target 1.5), wind 9406 N"
+        },
+        "Crate ingress": {
+          "pass": false,
+          "detail": "ingress high, flood 0.20 m, rain 100 mm/hr, sealing industrial"
+        }
+      },
+      "notes": {
+        "process_layer": "L0 screening \u2014 FE/V from cell_physics, not measured",
+        "crate_layer": "L0 screening \u2014 overturn/bearing/sliding/ingress screening, no load test",
+        "site_layer": "L0 screening \u2014 soil/wind/flood from ClimateSpec/SiteDefinition, no survey",
+        "wind_broadside": "45.0 m/s gust, open (category C)",
+        "wind_end_on": "45.0 m/s gust, open (category C)"
+      }
+    },
+    "wind_farm_ore": {
+      "site_key": "wind_farm_ore",
+      "site_name": "Wind Farm \u2014 High-Grade Ore",
+      "credibility_vector": {
+        "process": 0,
+        "crate": 0,
+        "site": 0
+      },
+      "credibility_label": "process L0 / crate L0 / site L0",
+      "combined_stable": true,
+      "overall_go": false,
+      "required_ballast_kg": 6893.0,
+      "mounting_spec": "6893 kg ballast, tie-down anchors, lowered CG or fixed anchorage",
+      "environmental_safe_state": "storm_mode_hold_high_wind",
+      "environmental_snapshot": {
+        "wind_gust_m_s": 55.0,
+        "flood_depth_m": 0.0,
+        "rain_mm_hr": 30.0,
+        "snow_kPa": 0.2,
+        "ingress_detected": false
+      },
+      "crate_verdict": {
+        "dynamic_pressure_Pa": 1852.8,
+        "wind_force_N": 14050.8,
+        "fs_overturn": 16.78,
+        "net_bearing_kPa": 1.68,
+        "fs_bearing": 71.25,
+        "fs_slide": 1.78,
+        "ingress_risk": "low",
+        "min_ballast_kg": 0.0,
+        "stable": false,
+        "mounting_spec": "no ballast required"
+      },
+      "crate_verdict_end_on": {
+        "dynamic_pressure_Pa": 1852.8,
+        "wind_force_N": 70196.6,
+        "fs_overturn": 0.67,
+        "net_bearing_kPa": 1.68,
+        "fs_bearing": 71.25,
+        "fs_slide": 0.36,
+        "ingress_risk": "low",
+        "min_ballast_kg": 6893.0,
+        "stable": false,
+        "mounting_spec": "6893 kg ballast, tie-down anchors, lowered CG or fixed anchorage"
+      },
+      "stack": {
+        "n_stacks": 125,
+        "cells_per_stack": 20,
+        "power_kW": 5677.2,
+        "production_t_yr": 10023.0,
+        "FE": 0.995,
+        "V_cell": 4.698,
+        "j_mA_cm2": 96.7
+      },
+      "LCOFe": 545.0,
+      "LCOFe_adjusted": null,
+      "go_no_go": {
+        "Grid capacity": {
+          "pass": true,
+          "detail": "5.7 MW needed, 20.0 MW available"
+        },
+        "LCOFe vs DRI-H2": {
+          "pass": true,
+          "detail": "$545/t vs DRI-H2 $600/t"
+        },
+        "Site footprint": {
+          "pass": false,
+          "detail": "5200 m\u00b2 needed, 2000 m\u00b2 available"
+        },
+        "Operating temperature": {
+          "pass": true,
+          "detail": "Steady-state 18 \u00b0C (limit 90 \u00b0C)"
+        },
+        "Feedstock supply": {
+          "pass": true,
+          "detail": "16166 t/yr consumed (High-grade hematite ore (62% Fe))"
+        },
+        "Water supply": {
+          "pass": false,
+          "detail": "30069 m\u00b3/yr, availability: scarce"
+        },
+        "Energy kill criterion": {
+          "pass": false,
+          "detail": "4975 kWh/t Fe (limit 4,000)"
+        },
+        "Crate overturning": {
+          "pass": true,
+          "detail": "FS_over=16.78 (target 1.5), min ballast 0 kg, mounting: no ballast required"
+        },
+        "Crate bearing": {
+          "pass": true,
+          "detail": "FS_bearing=71.25, p_net 1.7 kPa vs 120 kPa allowable"
+        },
+        "Crate sliding": {
+          "pass": true,
+          "detail": "FS_slide=1.78 (target 1.5), wind 14051 N"
+        },
+        "Crate ingress": {
+          "pass": true,
+          "detail": "ingress low, flood 0.00 m, rain 30 mm/hr, sealing sealed"
+        }
+      },
+      "notes": {
+        "process_layer": "L0 screening \u2014 FE/V from cell_physics, not measured",
+        "crate_layer": "L0 screening \u2014 overturn/bearing/sliding/ingress screening, no load test",
+        "site_layer": "L0 screening \u2014 soil/wind/flood from ClimateSpec/SiteDefinition, no survey",
+        "wind_broadside": "55.0 m/s gust, open (category C)",
+        "wind_end_on": "55.0 m/s gust, open (category C)"
+      }
+    },
+    "copperas_tio2_plant": {
+      "site_key": "copperas_tio2_plant",
+      "site_name": "TiO2 Plant \u2014 Copperas Byproduct",
+      "credibility_vector": {
+        "process": 0,
+        "crate": 0,
+        "site": 0
+      },
+      "credibility_label": "process L0 / crate L0 / site L0",
+      "combined_stable": true,
+      "overall_go": false,
+      "required_ballast_kg": 123.0,
+      "mounting_spec": "123 kg ballast, tie-down anchors, medium-grade sealing + drainage",
+      "environmental_safe_state": "normal_operation",
+      "environmental_snapshot": {
+        "wind_gust_m_s": 38.0,
+        "flood_depth_m": 0.0,
+        "rain_mm_hr": 50.0,
+        "snow_kPa": 0.3,
+        "ingress_detected": false
+      },
+      "crate_verdict": {
+        "dynamic_pressure_Pa": 751.8,
+        "wind_force_N": 5701.2,
+        "fs_overturn": 43.81,
+        "net_bearing_kPa": 1.78,
+        "fs_bearing": 56.05,
+        "fs_slide": 4.65,
+        "ingress_risk": "medium",
+        "min_ballast_kg": 0.0,
+        "stable": true,
+        "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+      },
+      "crate_verdict_end_on": {
+        "dynamic_pressure_Pa": 751.8,
+        "wind_force_N": 28482.4,
+        "fs_overturn": 1.76,
+        "net_bearing_kPa": 1.78,
+        "fs_bearing": 56.05,
+        "fs_slide": 0.93,
+        "ingress_risk": "medium",
+        "min_ballast_kg": 123.0,
+        "stable": false,
+        "mounting_spec": "123 kg ballast, tie-down anchors, medium-grade sealing + drainage"
+      },
+      "stack": {
+        "n_stacks": 19,
+        "cells_per_stack": 20,
+        "power_kW": 847.9,
+        "production_t_yr": 1523.6,
+        "FE": 0.995,
+        "V_cell": 4.616,
+        "j_mA_cm2": 96.7
+      },
+      "LCOFe": 1368.0,
+      "LCOFe_adjusted": 1268.0,
+      "go_no_go": {
+        "Grid capacity": {
+          "pass": true,
+          "detail": "0.8 MW needed, 3.0 MW available"
+        },
+        "LCOFe vs DRI-H2": {
+          "pass": false,
+          "detail": "$1268/t vs DRI-H2 $600/t"
+        },
+        "Site footprint": {
+          "pass": false,
+          "detail": "960 m\u00b2 needed, 400 m\u00b2 available"
+        },
+        "Operating temperature": {
+          "pass": true,
+          "detail": "Steady-state 21 \u00b0C (limit 90 \u00b0C)"
+        },
+        "Feedstock supply": {
+          "pass": true,
+          "detail": "7618 t/yr consumed (Copperas (FeSO4.7H2O) from TiO2 production)"
+        },
+        "Water supply": {
+          "pass": true,
+          "detail": "6094 m\u00b3/yr, availability: municipal"
+        },
+        "Energy kill criterion": {
+          "pass": false,
+          "detail": "4829 kWh/t Fe (limit 4,000)"
+        },
+        "Crate overturning": {
+          "pass": true,
+          "detail": "FS_over=43.81 (target 1.5), min ballast 0 kg, mounting: no ballast required, medium-grade sealing + drainage"
+        },
+        "Crate bearing": {
+          "pass": true,
+          "detail": "FS_bearing=56.05, p_net 1.8 kPa vs 100 kPa allowable"
+        },
+        "Crate sliding": {
+          "pass": true,
+          "detail": "FS_slide=4.65 (target 1.5), wind 5701 N"
+        },
+        "Crate ingress": {
+          "pass": true,
+          "detail": "ingress medium, flood 0.00 m, rain 50 mm/hr, sealing industrial"
+        }
+      },
+      "notes": {
+        "process_layer": "L0 screening \u2014 FE/V from cell_physics, not measured",
+        "crate_layer": "L0 screening \u2014 overturn/bearing/sliding/ingress screening, no load test",
+        "site_layer": "L0 screening \u2014 soil/wind/flood from ClimateSpec/SiteDefinition, no survey",
+        "wind_broadside": "38.0 m/s gust, suburban (category B)",
+        "wind_end_on": "38.0 m/s gust, suburban (category B)"
+      }
+    }
+  }
+}
