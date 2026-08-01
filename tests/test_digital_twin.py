@@ -9,6 +9,7 @@ from models.digital_twin import (
     N_STATES,
     SENSOR_SPECS,
     OBSERVABLE_TAGS,
+    get_default_process_model,
     generate_synthetic_readings,
     _f_state_transition,
     _H_observation,
@@ -39,8 +40,13 @@ class TestEKFTracksTrueState:
         assert abs(mean["catholyte_temperature"] - 60.0) < two_sigma["catholyte_temperature"] + 2.0
         # pH near 3.5
         assert abs(mean["bulk_pH"] - 3.5) < two_sigma["bulk_pH"] + 0.5
-        # Cell voltage near 2.5V
-        assert abs(mean["cell_voltage"] - 2.5) < two_sigma["cell_voltage"] + 0.2
+        # Cell voltage tracks the physics v_cell at the operating point: both
+        # the VT-201 reading and the measurement model h_obs report v_cell (not
+        # an arbitrary design value), so the twin converges V to v_cell(j,T,fe2).
+        v_nom = get_default_process_model().predict(
+            nominal["j_avg_mA_cm2"], nominal["temperature_C"], nominal["fe2_M"]
+        ).v_cell_V
+        assert abs(mean["cell_voltage"] - v_nom) < two_sigma["cell_voltage"] + 0.2
 
     def test_residual_small_and_converges_to_physics(self):
         """Test that the residual is small when physics is right and the state converges to physics-consistent values."""

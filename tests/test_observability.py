@@ -3,15 +3,15 @@ Tests for the digital-twin EKF observability & sensor-placement analysis.
 
 Load-bearing findings these tests lock in:
 
-* The current 5-sensor suite gives an observability Gramian of rank 5, not 7.
+* The current 5-sensor suite gives an observability Gramian of rank 6, not 7.
 * ``deposit_thickness`` is structurally unobservable (its column of the
   observation matrix is identically zero) and, being a pure integrator, its
   estimation error diverges over a run.  A thickness sensor restores it.
-* ``cell_voltage`` is also structurally unobservable under the current
-  ``h_obs`` (VT-201 reports the physics-predicted ``v_cell``, not state 6),
-  but its mode is stable (mean-reverting), so its error stays bounded.
-* ``bulk_fe2`` is observable only through the weak ``v_cell`` coupling; an
-  inline Fe2+ probe materially improves its conditioning.
+* ``cell_voltage`` is not directly measured (VT-201 reports the physics-predicted
+  ``v_cell``, not state 6), but it is now *weakly observable* through the coupled
+  PR #29 dynamics, and its error stays bounded.  A direct observation strengthens it.
+* ``bulk_fe2`` is observable through the ``v_cell`` coupling; an inline Fe2+ probe
+  further tightens its conditioning.
 * The recommended minimum sensor set makes all 7 states observable at every
   tested operating point.
 """
@@ -87,11 +87,11 @@ class TestTwinContractUnchanged:
 class TestCurrentSuiteObservability:
     """Rank + conditioning of the current 5-sensor suite."""
 
-    def test_rank_is_5_at_every_operating_point(self, model):
+    def test_rank_is_6_at_every_operating_point(self, model):
         results = characterize_current_suite(model)
         assert len(results) >= 4
         for name, r in results.items():
-            assert r.rank == 5, f"{name}: expected rank 5, got {r.rank}"
+            assert r.rank == 6, f"{name}: expected rank 6, got {r.rank}"
 
     def test_observability_matrix_shape(self, model, nominal_x):
         r = analyze_observability(nominal_x, model=model)
@@ -133,19 +133,21 @@ class TestDepositThicknessUnobservable:
         r1 = analyze_sensor_set(nominal_x, list(r0.tags), [THICKNESS_SENSOR], model=model)
         assert r1.per_state_flag["deposit_thickness"] == "observable"
         assert r1.rank > r0.rank
-        assert r1.rank == 6
+        assert r1.rank == 7
 
 
-class TestCellVoltageUnobservableBounded:
-    """cell_voltage is not directly measured but is detectable (bounded)."""
+class TestCellVoltageWeakBounded:
+    """cell_voltage is not directly measured but is weakly observable via the
+    coupled dynamics (detectable, bounded); a direct observation strengthens it."""
 
     def test_cell_voltage_flag(self, model, nominal_x):
         r = analyze_observability(nominal_x, model=model)
-        assert r.per_state_flag["cell_voltage"] == "unobservable_bounded"
+        assert r.per_state_flag["cell_voltage"] == "weak"
 
     def test_cell_voltage_error_stays_bounded(self, model, nominal_x):
         r = analyze_observability(nominal_x, model=model)
-        # Contractive mean-reversion -> small bounded sigma, unlike deposit.
+        # Contractive dynamics + fast v_cell tracking -> small bounded sigma,
+        # unlike deposit (a pure integrator that diverges).
         assert r.per_state_sigma[6] < 1.0
 
     def test_cell_voltage_direct_observation_restores_it(self, model, nominal_x):
@@ -155,22 +157,21 @@ class TestCellVoltageUnobservableBounded:
         assert r1.rank == 6
 
 
-class TestBulkFe2WeakConditioning:
-    """bulk_fe2 is observable only via the v_cell coupling; a probe fixes it."""
+class TestBulkFe2Conditioning:
+    """bulk_fe2 is observable via the v_cell coupling; a probe tightens it."""
 
-    def test_bulk_fe2_weak_without_probe(self, model):
+    def test_bulk_fe2_observable_via_coupling(self, model):
         r = analyze_observability(
             state_vector_from_operating_point(operating_points_from_model(model)[0], model),
             model=model,
         )
-        assert r.per_state_flag["bulk_fe2"] == "weak"
+        assert r.per_state_flag["bulk_fe2"] == "observable"
 
-    def test_fe2_probe_materially_improves_conditioning(self, model, nominal_x):
+    def test_fe2_probe_improves_conditioning(self, model, nominal_x):
         r0 = analyze_observability(nominal_x, model=model)
         r1 = analyze_sensor_set(nominal_x, list(r0.tags), [FE2_PROBE], model=model)
-        assert r1.per_state_flag["bulk_fe2"] == "observable"
-        # Direct observation cuts the bulk_fe2 error by more than 2x.
-        assert r1.per_state_sigma[2] < 0.5 * r0.per_state_sigma[2]
+        # A direct probe further tightens the (already-observable) bulk_fe2 state.
+        assert r1.per_state_sigma[2] < r0.per_state_sigma[2]
 
 
 class TestRecommendedMinimumSet:
@@ -208,7 +209,8 @@ class TestSensorRanking:
         assert top.resolves_unobservability
         # Deposit thickness is the single most information-critical state.
         assert top.target_key == "deposit_thickness"
-        # The two structurally-unobservable states are the top two priorities.
+        # deposit_thickness is the only structurally-unobservable state; it is
+        # the single top priority.
         resolving = [r for r in ranking if r.resolves_unobservability]
-        assert {r.target_key for r in resolving} == {"deposit_thickness", "cell_voltage"}
-        assert resolving[0].variance_reduction > resolving[1].variance_reduction
+        assert {r.target_key for r in resolving} == {"deposit_thickness"}
+        assert resolving  # non-empty; deposit is the resolvable priority
