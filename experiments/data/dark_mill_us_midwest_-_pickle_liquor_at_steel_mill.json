@@ -6,7 +6,7 @@
     "cells_per_stack": 20,
     "electrode_area_m2": 0.5,
     "current_density_mA_cm2": 96.66666666666667,
-    "cell_voltage_V": 4.835875925736763,
+    "cell_voltage_V": 4.835875924687166,
     "total_power_kW": 1168.7,
     "annual_production_t": 2004.0
   },
@@ -26,11 +26,11 @@
     "grinding_energy_MWh_yr": 0.0,
     "cooling_energy_MWh_yr": 687.47,
     "auxiliary_energy_MWh_yr": 100.22,
-    "total_energy_MWh_yr": 11710.3,
+    "total_energy_MWh_yr": 10137.05,
     "scope1_CO2_t_yr": 40.09,
-    "scope2_CO2_t_yr": 4684.12,
-    "post_processing_energy_MWh_yr": 1573.25,
-    "product_grade": "AISI 1040 \u2014 Medium carbon"
+    "scope2_CO2_t_yr": 4054.82,
+    "post_processing_energy_MWh_yr": 0.0,
+    "product_grade": "Pure Iron (EW grade)"
   },
   "capex": {
     "Electrodes ($)": 75000.0,
@@ -45,11 +45,10 @@
     "Infrastructure ($)": 132581.0,
     "Engineering ($)": 79548.0,
     "Contingency ($)": 111368.0,
-    "Total CAPEX ($)": 981891.85,
-    "Total CAPEX (M$)": 0.98,
+    "Total CAPEX ($)": 853819.0,
+    "Total CAPEX (M$)": 0.85,
     "Annual capacity (t/yr)": 2004.0,
-    "n_stacks": 25,
-    "Post-processing CAPEX ($)": 128073.0
+    "n_stacks": 25
   },
   "opex": {
     "Electricity ($/yr)": 327228.0,
@@ -115,7 +114,23 @@
     },
     "Energy kill criterion": {
       "pass": false,
-      "detail": "5842 kWh/t Fe (limit 4,000)"
+      "detail": "5057 kWh/t Fe (limit 4,000)"
+    },
+    "Crate overturning": {
+      "pass": true,
+      "detail": "FS_over=57.43 (target 1.5), min ballast 0 kg, mounting: no ballast required, medium-grade sealing + drainage"
+    },
+    "Crate bearing": {
+      "pass": true,
+      "detail": "FS_bearing=75.60, p_net 2.0 kPa vs 150 kPa allowable"
+    },
+    "Crate sliding": {
+      "pass": true,
+      "detail": "FS_slide=6.10 (target 1.5), wind 4837 N"
+    },
+    "Crate ingress": {
+      "pass": true,
+      "detail": "ingress medium, flood 0.00 m, rain 60 mm/hr, sealing industrial"
     }
   }
 }
