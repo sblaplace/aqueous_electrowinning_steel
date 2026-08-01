@@ -64,6 +64,7 @@ class TestInterpolation:
         m = _small_model(tmp_path)
         # exactly on a grid node
         on_node = m.predict(100.0, 50.0, 0.8)
+        assert math.isfinite(on_node.v_cell_V)
         # between nodes
         between = m.predict(115.0, 55.0, 0.9)
         assert math.isfinite(between.v_cell_V)
@@ -102,3 +103,50 @@ class TestNominal:
         n = m.nominal
         assert "temperature_C" in n and "j_avg_mA_cm2" in n and "cell_voltage_V" in n
         assert 0 < n["cell_voltage_V"] < 20.0
+
+
+class TestValidityGuard:
+    """The surrogate must not silently extrapolate nonsense outside its grid.
+
+    The interpolators extrapolate linearly (bounds_error=False, fill_value=None),
+    which once returned physically impossible values (negative deposit rate,
+    ~30 V cell) during transients.  predict() flags out-of-grid queries and
+    clamps the physical outputs to the calibrated envelope.
+    """
+
+    def test_in_bounds_is_flagged_false(self, tmp_path):
+        m = _small_model(tmp_path)
+        assert m.in_bounds(125.0, 60.0, 1.0)
+        assert m.predict(125.0, 60.0, 1.0).extrapolated is False
+        assert not m.in_bounds(800.0, 60.0, 1.0)
+        assert not m.in_bounds(125.0, 5.0, 1.0)
+        assert not m.in_bounds(125.0, 60.0, 5.0)
+
+    def test_oob_query_is_flagged_and_clamped(self, tmp_path):
+        m = _small_model(tmp_path)
+        p = m.predict(800.0, 5.0, 0.01)  # far outside every axis
+        assert p.extrapolated is True
+        # Physical impossibility clamps: no negative growth, no absurd cell V.
+        assert p.deposit_rate_um_hr >= 0.0
+        assert m.dep_map.min() <= p.deposit_rate_um_hr <= m.dep_map.max()
+        assert m.vcell_map.min() <= p.v_cell_V <= m.vcell_map.max()
+
+    def test_deposit_rate_never_negative(self, tmp_path):
+        m = _small_model(tmp_path)
+        # Sweep a wide OOB neighbourhood; no query may return negative growth.
+        for j, T, fe2 in ((800.0, 60.0, 1.0), (0.0, 60.0, 1.0),
+                          (125.0, 5.0, 1.0), (125.0, 100.0, 1.0),
+                          (125.0, 60.0, 0.0), (300.0, 100.0, 3.0)):
+            assert m.predict(j, T, fe2).deposit_rate_um_hr >= 0.0, (j, T, fe2)
+
+    def test_in_bounds_predict_preserved(self, tmp_path):
+        # Guard is a pure no-op for in-grid queries (backward compatible).
+        m = _small_model(tmp_path)
+        assert m.predict(125.0, 60.0, 1.0).extrapolated is False
+
+    def test_grid_bounds_reports_validity_envelope(self, tmp_path):
+        m = _small_model(tmp_path)
+        b = m.grid_bounds
+        assert b["j_mA_cm2"] == (100.0, 150.0)
+        assert b["temperature_C"] == (50.0, 70.0)
+        assert b["fe2_M"] == (0.8, 1.2)

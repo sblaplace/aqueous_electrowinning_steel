@@ -176,6 +176,29 @@ d(deposit)/dt = deposit_rate_um_hr
 
 from physics model prediction. Clamped to ≥ 0.
 
+## Surrogate validity guard (physics model)
+
+Every on-grid quantity above (`FE`, `v_cell`, `deposit_rate`, `surface_pH`)
+comes from the fast interpolated surrogate in `models/twin_physics.py`. Its
+interpolators extrapolate linearly outside the calibrated grid
+(`bounds_error=False, fill_value=None`), which can yield physically impossible
+values — negative deposit rate and absurd cell voltage — during transients
+(startup, faults, or env-coupling storm cases) that leave the grid.
+
+`CellProcessModel.predict()` therefore:
+- detects out-of-grid queries (`CellProcessModel.in_bounds` / `grid_bounds`
+  report the validity envelope; `ProcessPrediction.extrapolated` flags the
+  result);
+- clamps physical outputs to the calibrated range (`deposit_rate ≥ 0`, `v_cell`
+  and `deposit_rate` within the grid extremes) so the surrogate never feeds
+  nonsense into the energy/mass integrators;
+- leaves in-grid interpolation byte-identical (the guard is a no-op inside the
+  envelope).
+
+Out-of-grid queries are a signal, not an error: the flag lets callers (and the
+future uncertainty layer) downgrade confidence in the twin's prediction rather
+than trust chemistry the surrogate was never calibrated for.
+
 ## Design-Point Parameters
 
 All parameters have explicit defaults in `BATH_DYNAMICS_DEFAULTS` (see `models/bath_dynamics.py`).

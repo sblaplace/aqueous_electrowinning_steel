@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -53,6 +53,7 @@ class ProcessPrediction:
     deposit_rate_um_hr: float
     fe_current_A_m2: float
     transport_margin: float  # transport_limit / applied (>=1 = not limit-bound)
+    extrapolated: bool = False  # True if the query fell outside the calibrated grid
 
     def to_dict(self) -> Dict[str, float]:
         return {
@@ -67,6 +68,7 @@ class ProcessPrediction:
             "deposit_rate_um_hr": self.deposit_rate_um_hr,
             "fe_current_A_m2": self.fe_current_A_m2,
             "transport_margin": self.transport_margin,
+            "extrapolated": self.extrapolated,
         }
 
 
@@ -208,18 +210,63 @@ class CellProcessModel:
             bounds_error=False, fill_value=None)
 
     # -- query ----------------------------------------------------------------
+    def in_bounds(
+        self, j_mA_cm2: float, temperature_C: float, fe2_M: float, tol: float = 1e-3
+    ) -> bool:
+        """True when the operating point lies inside the calibrated surrogate grid.
+
+        ``tol`` is a small dead-zone around the envelope (in query units).  The
+        EKF's numerical Jacobian perturbs boundary points by ~1e-5, which would
+        otherwise trip the extrapolation clamp and break the derivative at the
+        grid edge; sub-tolerance excursions are therefore treated as in-bounds so
+        the guard is C¹-continuous at the boundary and only engages for genuinely
+        out-of-grid queries.
+        """
+        return bool(
+            self.j_grid[0] - tol <= j_mA_cm2 <= self.j_grid[-1] + tol
+            and self.T_grid[0] - tol <= temperature_C <= self.T_grid[-1] + tol
+            and self.fe2_grid[0] - tol <= fe2_M <= self.fe2_grid[-1] + tol
+        )
+
+    @property
+    def grid_bounds(self) -> Dict[str, Tuple[float, float]]:
+        """Calibrated validity envelope (min, max) per input axis, in query units."""
+        return {
+            "j_mA_cm2": (float(self.j_grid[0]), float(self.j_grid[-1])),
+            "temperature_C": (float(self.T_grid[0]), float(self.T_grid[-1])),
+            "fe2_M": (float(self.fe2_grid[0]), float(self.fe2_grid[-1])),
+        }
+
     def predict(
         self,
         j_mA_cm2: float,
         temperature_C: float,
         fe2_M: float,
     ) -> ProcessPrediction:
-        """Physics-predicted observables at one operating point (fast)."""
+        """Physics-predicted observables at one operating point (fast).
+
+        The interpolators extrapolate linearly outside the calibrated grid
+        (``bounds_error=False, fill_value=None``), which can yield physically
+        impossible values (e.g. negative deposit rate, absurd cell voltage)
+        during transients.  This method therefore flags out-of-grid queries via
+        ``ProcessPrediction.extrapolated`` and clamps the offending physical
+        outputs to the calibrated grid range so the surrogate can never feed
+        nonsense (negative growth / 30 V cell) into the twin's integrators.
+        """
+        extrapolated = not self.in_bounds(j_mA_cm2, temperature_C, fe2_M)
+
         pts = np.array([[j_mA_cm2, temperature_C, fe2_M]])
         fe = float(np.clip(self._fe_itp(pts)[0], 0.0, 1.0))
         vcell = float(self._vcell_itp(pts)[0])
         surf_ph = float(self._ph_itp(pts)[0])
         dep = float(self._dep_itp(pts)[0])
+
+        if extrapolated:
+            # Clamp to the calibrated envelope; interpolation stays exact.
+            vcell = float(np.clip(vcell, self.vcell_map.min(), self.vcell_map.max()))
+            dep = float(np.clip(dep, 0.0, self.dep_map.max()))
+        # Deposit growth can never be negative under any path.
+        dep = max(0.0, dep)
 
         j_A_m2 = j_mA_cm2 * 10.0
         return ProcessPrediction(
@@ -234,6 +281,7 @@ class CellProcessModel:
             deposit_rate_um_hr=dep,
             fe_current_A_m2=j_A_m2 * fe,
             transport_margin=float("nan"),
+            extrapolated=extrapolated,
         )
 
     def predict_grid(self, j_mA_cm2: float, temperature_C: float, fe2_M: float) -> Dict[str, np.ndarray]:

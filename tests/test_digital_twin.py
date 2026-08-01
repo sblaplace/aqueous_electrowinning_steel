@@ -14,6 +14,9 @@ from models.digital_twin import (
     _f_state_transition,
     _H_observation,
     _normal_cdf,
+    _OBS_MAP,
+    L1_SENSOR_OBS_MAP,
+    H_jacobian,
 )
 from models.twin_physics import CellProcessModel, generate_physics_readings
 
@@ -261,3 +264,66 @@ class TestMathUtils:
         x = np.array([60.0, 61.5, 1.0, 3.5, 150.0, 0.0, 2.5])
         x2 = _f_state_transition(x, 0.0)
         np.testing.assert_allclose(x, x2, atol=1e-12)
+
+
+class TestL1SensorSuite:
+    """Optional L1 sensors (THK-101 / CVT-201 / FE2P-101) are opt-in, wired into
+    the EKF measurement model, and restore direct observation of the states the
+    base 5-sensor suite observes weakly or not at all (docs/TWIN_OBSERVABILITY.md
+    sm 3/4)."""
+
+    L1_EXPECT = {"THK-101": 5, "CVT-201": 6, "FE2P-101": 2}
+
+    def test_l1_tags_have_sensor_specs(self):
+        for tag in L1_SENSOR_OBS_MAP:
+            assert tag in SENSOR_SPECS, f"L1 tag {tag} missing from SENSOR_SPECS"
+
+    def test_base_suite_unchanged(self):
+        # The current 5-sensor suite is untouched; L1 tags are a separate map.
+        assert "THK-101" not in _OBS_MAP
+        assert "CVT-201" not in _OBS_MAP
+        assert "FE2P-101" not in _OBS_MAP
+
+    def test_l1_sensors_directly_observe_their_states(self):
+        """Each L1 tag's measurement row has a nonzero gain on its target state
+        (direct observation), and it exposes no cross-coupling that would muddy
+        the direct reading."""
+        import numpy as _np
+
+        model = get_default_process_model()
+        x = _np.array([60.0, 61.5, 1.0, 3.5, 150.0, 12.0, 2.5])
+        tags = list(self.L1_EXPECT)
+        H = H_jacobian(x, tags, model)
+        for i, tag in enumerate(tags):
+            state_idx = self.L1_EXPECT[tag]
+            col = _np.abs(H[i])
+            assert col[state_idx] > 1e-2, f"{tag} does not directly observe state {state_idx}"
+            assert col.sum() <= 1.0 + 1e-6, f"{tag} has unexpected cross-coupling"
+
+    def test_synthetic_stream_opt_in(self):
+        """Base stream excludes L1 tags; include_l1_sensors=True adds them."""
+        rng = np.random.default_rng(7)
+        dp = {"temperature_C": 60.0, "pH": 3.5, "cell_voltage_V": 2.5,
+              "j_avg_mA_cm2": 150.0, "fe2_M": 1.0, "deposit_thickness_um": 12.0}
+        base = generate_synthetic_readings(dp, 0.0, rng)
+        assert not (set(self.L1_EXPECT) & set(base)), "L1 tags must not appear in base stream"
+        l1 = generate_synthetic_readings(dp, 0.0, rng, include_l1_sensors=True)
+        assert set(self.L1_EXPECT) <= set(l1), "L1 tags missing with include_l1_sensors=True"
+        # Values align with the design point (self-consistent with h_obs).
+        assert abs(l1["THK-101"] - dp["deposit_thickness_um"]) < 5 * 0.5
+        assert abs(l1["FE2P-101"] - dp["fe2_M"]) < 5 * 0.02
+
+    def test_deposit_thickness_observability_with_thk101(self):
+        """Feeding THK-101 to the twin keeps the deposit-thickness estimate
+        bounded (it is a divergent pure-integrator under the base suite)."""
+        twin = DigitalTwin(seed=3)
+        rng = np.random.default_rng(5)
+        for i in range(20):
+            readings = generate_synthetic_readings(
+                twin.design_point, i * 0.1, rng, include_l1_sensors=True)
+            twin.update(readings, dt_hr=0.1)
+        last = twin.history[-1]
+        two_sigma = last.uncertainty_2sigma["deposit_thickness"]
+        # Observable (not the unbounded ~5um/day growth of open-loop integration).
+        assert two_sigma < 3.0, f"deposit_thickness 2-sigma too large: {two_sigma:.2f}"
+

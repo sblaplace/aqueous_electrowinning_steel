@@ -202,6 +202,32 @@ while retaining the physics coupling used for bulk-Fe²⁺ inference.
 
 ---
 
+## 4.1 The L1 set is now an opt-in twin capability (wired)
+
+The recommended L1 set above is no longer analysis-only — it is wired into the
+twin as an **opt-in** capability in `models/digital_twin.py`:
+
+- **THK-101**, **CVT-201**, **FE2P-101** are registered `SensorSpec`s (noise
+  floors matching §3) and added to a separate `L1_SENSOR_OBS_MAP`
+  (`THK-101→5`, `CVT-201→6`, `FE2P-101→2`). The base 5-sensor `_OBS_MAP` is
+  untouched.
+- A tag is observed **only when it appears in the readings dict** passed to
+  `DigitalTwin.update`. `h_obs` returns the direct state for each (THK-101 →
+  `deposit_thickness` x5, CVT-201 → `cell_voltage` x6, FE2P-101 → `bulk_fe2`
+  x2), so the EKF consumes them the moment the caller supplies them. VT-201
+  keeps reporting the physics `v_cell(j,T,Fe²⁺)`, preserving the bulk-Fe²⁺
+  coupling — CVT-201 adds the direct x6 observation the base suite omitted.
+- `generate_synthetic_readings(..., include_l1_sensors=True)` emits a
+  self-consistent stream for the three tags so the L1 instrument record can be
+  **dry-run in-silico** before the hardware is bought.
+- Supplying none of the L1 tags reproduces the base 5-sensor twin byte-for-byte
+  (same OFF-by-default contract as the env-coupling adapter).
+
+`tests/test_digital_twin.py::TestL1SensorSuite` locks this in: the base suite is
+unchanged, each L1 tag directly observes its target state (unit gain, no cross
+coupling), the synthetic stream is opt-in, and feeding THK-101 keeps the
+deposit-thickness estimate bounded (no divergent open-loop integration).
+
 ## 5. Out of scope / deferred
 
 - No real-data L1 calibration, no EKF retuning, no storm/shutdown behaviour, no

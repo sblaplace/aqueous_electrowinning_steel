@@ -58,6 +58,15 @@ SENSOR_SPECS: Dict[str, SensorSpec] = {
     "AIT-502": SensorSpec("AIT-502", "dew_point", "C", -40.0, 60.0, 0.3),
     "VT-201": SensorSpec("VT-201", "cell_voltage", "V", 0.0, 10.0, 0.01),
     "CT-201": SensorSpec("CT-201", "rectifier_current", "A", 0.0, 5000.0, 5.0),
+    # Optional L1 sensor suite recommended by docs/TWIN_OBSERVABILITY.md (sm §3/§4).
+    # These are OFF by default: nothing observes them unless a caller supplies the
+    # tag in a readings dict.  Noise floors match the observability analysis
+    # (`models/observability.py`).  THK-101 restores full observability (deposit
+    # thickness is divergent-unobservable with the base 5-sensor suite); CVT-201 and
+    # FE2P-101 fix residual conditioning (cell_voltage, bulk_fe2).
+    "THK-101":  SensorSpec("THK-101",  "deposit_thickness", "um", 0.0, 500.0, 0.5),
+    "CVT-201":  SensorSpec("CVT-201",  "cell_voltage", "V", 0.0, 10.0, 0.01),
+    "FE2P-101": SensorSpec("FE2P-101", "bulk_fe2", "M", 0.0, 2.0, 0.02),
 }
 
 # Physical state vector bounded to what the physics predicts and the cell tracks:
@@ -89,8 +98,25 @@ _OBS_MAP: Dict[str, int] = {
     "VT-201": 6,
 }
 
-# Sensor tags that can be used as observations
+# Sensor tags that can be used as observations (the current 5-sensor suite)
 OBSERVABLE_TAGS: List[str] = list(_OBS_MAP.keys())
+
+# Optional L1 sensor suite (recommended by docs/TWIN_OBSERVABILITY.md §3/§4).
+# Each directly observes a state the base suite observes weakly or not at all:
+#   THK-101  -> 5 deposit_thickness  (divergent-unobservable with the base suite)
+#   CVT-201  -> 6 cell_voltage       (base VT-201 observes physics v_cell, not x[6])
+#   FE2P-101 -> 2 bulk_fe2           (base suite only sees it via the v_cell coupling)
+# OFF by default: a tag is only observed when it appears in a readings dict passed
+# to `DigitalTwin.update`.  Supplying none of them keeps the twin byte-identical to
+# the base 5-sensor twin, so this is a pure, opt-in capability.
+L1_SENSOR_OBS_MAP: Dict[str, int] = {
+    "THK-101": 5,
+    "CVT-201": 6,
+    "FE2P-101": 2,
+}
+
+# All observation tags the EKF can consume when present in a readings dict.
+_ALL_OBS_MAP: Dict[str, int] = {**_OBS_MAP, **L1_SENSOR_OBS_MAP}
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +212,7 @@ def generate_synthetic_readings(
     t_hr: float,
     rng: np.random.Generator,
     fault: Optional[Dict[str, Any]] = None,
+    include_l1_sensors: bool = False,
 ) -> Dict[str, float]:
     """Generate plausible sensor readings for a given time.
 
@@ -200,6 +227,10 @@ def generate_synthetic_readings(
     fault : dict, optional
         If set, inject a fault: {"tag": sensor, "kind": "bias"|"stuck"|"spike",
         "magnitude": float}.
+    include_l1_sensors : bool, default False
+        If True, also emit the optional L1 sensor suite (THK-101, CVT-201,
+        FE2P-101) that directly observe deposit thickness, cell voltage and bulk
+        Fe2+.  OFF by default so the base stream is unchanged.
     """
     dp = design_point
     readings: Dict[str, float] = {}
@@ -228,6 +259,15 @@ def generate_synthetic_readings(
         dp.get("fe2_M", 1.0))
     readings["VT-201"] = _p.v_cell_V + 0.05 * math.sin(2 * math.pi * t_hr / 4.0) + rng.normal(0, 0.01)
     readings["CT-201"] = dp.get("j_avg_mA_cm2", 150.0) * dp.get("electrode_area_m2", 1.0) * 10.0 + rng.normal(0, 5.0)
+
+    # Optional L1 sensor suite (opt-in, disabled by default).  Emitted values are
+    # self-consistent with `h_obs` so the EKF sees a coherent stream: THK-101 reads
+    # the deposit-thickness design point (state 5), CVT-201 the cell_voltage design
+    # point (state 6), FE2P-101 the bulk Fe2+ design point (state 2).
+    if include_l1_sensors:
+        readings["THK-101"] = dp.get("deposit_thickness_um", 0.0) + rng.normal(0, 0.5)
+        readings["CVT-201"] = dp.get("cell_voltage_V", _p.v_cell_V) + rng.normal(0, 0.01)
+        readings["FE2P-101"] = dp.get("fe2_M", 1.0) + rng.normal(0, 0.02)
 
     # Inject fault
     if fault is not None:
@@ -353,19 +393,22 @@ def h_obs(
 
     preds = []
     for tag in obs_tags:
-        if tag == "TT-101":
-            preds.append(x[0])
-        elif tag == "TT-201":
-            preds.append(x[1])
-        elif tag == "pHAT-101":
-            preds.append(x[3])
+        if tag == "VT-201":
+            # Physics-predicted cell voltage (basis for the bulk-Fe2+ coupling)
+            preds.append(pred.v_cell_V)
         elif tag == "CT-201":
             # CT-201 measures total current in Amperes: j_mA_cm2 * area * 10
             preds.append(x[4] * area * 10.0)
-        elif tag == "VT-201":
-            preds.append(pred.v_cell_V)
         else:
-            preds.append(0.0)
+            i = _ALL_OBS_MAP.get(tag)
+            if i is None:
+                preds.append(0.0)
+            elif tag in ("THK-101", "FE2P-101"):
+                # physically non-negative direct readings (thickness, Fe2+)
+                preds.append(max(0.0, x[i]))
+            else:
+                # direct observation of the tagged state
+                preds.append(x[i])
     return np.array(preds)
 
 
@@ -703,8 +746,11 @@ class DigitalTwin:
         # Predict state forward
         self.ekf.predict(dt_hr, self.model, self.design_point)
 
-        # Build observation from available tags (keeping the order defined in _OBS_MAP)
-        obs_tags = [t for t in _OBS_MAP if t in sensor_readings]
+        # Build observation from available tags (keeping the order defined in
+        # _ALL_OBS_MAP, i.e. base suite then optional L1 sensors).  Only tags
+        # actually present in the readings are observed — the L1 sensors engage
+        # solely when supplied, leaving the base 5-sensor twin unchanged.
+        obs_tags = [t for t in _ALL_OBS_MAP if t in sensor_readings]
         if obs_tags:
             R = _R_observation(obs_tags)
             z = np.array([sensor_readings[t] for t in obs_tags])
