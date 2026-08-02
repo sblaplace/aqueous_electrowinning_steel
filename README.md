@@ -28,6 +28,25 @@ This repository hosts the technical exposition, literature synthesis, and propos
 
 ---
 
+## The program in one page — what we're doing
+
+**The thing that hasn't been done yet:** low-temperature aqueous electrowinning of iron that is cost-competitive with hydrogen-DRI. No one has yet made it work at useful economics. This repository is the *build-out toward it* — a physical, falsifiable hypothesis, **not** an established cost or energy advantage.
+
+**What we're doing to get there (all physical, all specific):**
+
+- **Cell architecture is the capital lever, not electricity.** Screening five reactor types shows productivity decides cost: only a continuously-scraped **rotating cylinder** clears the program's ~5× benchmark (39 t/(m²·yr), ~$5/t Fe of cell capital) — but it yields *powder* only. The **drum-and-strip** route is the only path to continuous coherent *foil*, and it hinges on one open question: whether iron peels from a titanium drum.
+- **Hydrogen is the lever, not the substrate.** Deposit adhesion/stress analysis shows hydrogen — not drum-surface selection — controls peelability (373 of 414 MPa of residual stress at a real operating point), the same HER that governs Faradaic efficiency. Pulse-reverse (PRE) and additive relief mitigate it.
+- **A deployable product, not a frozen flowsheet.** The target is a reconfigurable, redeployable production platform (cell → crate → site), with a fixed instrumented proving-ground at the home site and only a conservative, versioned subset field-approved.
+- **Feedstock-first economics.** On-site modular deployment wins in the supply-chain model for 8 of 9 illustrative waste feedstocks; the quantified beachhead is spent pickle liquor + copperas.
+
+**Where the evidence stands (honest):** all of the above is **screening simulation and design — no wet-lab data exists in this repository.** The program is at the build/no-build decision, and the physics argues for building.
+
+**The next gate is physical, not conceptual:** a controlled dataset in the intended divided sulfate cell — iron deposition, Faradaic efficiency, V_cell decomposition, deposit quality, electrolyte balance — at useful current density. **Decision-grade kill criterion:** at j ≥ 300 mA/cm², kill or redesign if replicated divided-cell runs cannot sustain FE ≥ 70% and net DC ≤ 4,000 kWh/t Fe. The primary artifact is a weighed, characterized iron deposit with a closed charge/mass/electrolyte balance — not a photograph.
+
+Full position: **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)** · roadmap: **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)** · twin vision: **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)**
+
+---
+
 ## Quickstart
 
 The repository contains a working Python modeling suite (thermodynamics, kinetics, techno-economics) alongside the technical report. No wet-lab data yet.
