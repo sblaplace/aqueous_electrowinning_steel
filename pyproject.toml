@@ -73,6 +73,8 @@ aq-steel-twin-replay = "models.run_twin_replay:main"
 aq-steel-deposit-metrology = "models.run_deposit_metrology:main"
 aq-steel-observability = "models.run_observability:main"
 aq-steel-observability-g0 = "models.run_observability_g0:main"
+aq-steel-reference-cell-design = "models.run_reference_cell_design:main"
+aq-steel-reference-cell-deployment = "models.run_reference_cell_deployment:main"
 aq-steel-run-record = "models.run_record:main"
 
 [project.urls]

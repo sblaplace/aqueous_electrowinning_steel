@@ -96,6 +96,8 @@ aq-steel-adhesion                              # Adhesion/peel screen (the drum-
 aq-steel-stress                                # Internal stress and coupon-curvature protocol
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
+aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
+aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
 # Validate a mapped physical run and write a charge/iron/energy QA report
 python -m models.run_record path/to/run-directory --output path/to/qa_report.json
@@ -413,7 +415,9 @@ For the decision-grade program position, model scope, experimental gates, and pr
 The roadmap from screening suite to a predictive physical twin is **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)**; the whole-system twin vision (cell → crate → site, including structural/environmental behavior) is **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)**.
 
 The versioned experimental data contract, run-directory layout, ledger semantics,
-and QA/gate-evidence workflow are **[docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md)**.
+and QA/gate-evidence workflow are **[docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md)**. The
+pre-procurement reference-cell configuration, design boundaries, safety/measurement
+requirements, and CFD credibility limits are **[docs/REFERENCE_CELL_DESIGN_BASIS.md](docs/REFERENCE_CELL_DESIGN_BASIS.md)**.
 
 Pre-lab desk work (July 2026): **[docs/TIER0_ARCHAEOLOGY.md](docs/TIER0_ARCHAEOLOGY.md)** (prior-art anchors and prior corrections), **[docs/CLAIM_CHARTS_PRELIMINARY.md](docs/CLAIM_CHARTS_PRELIMINARY.md)** (Electra claim charts, desk level), and **[docs/FIRST_LAB_DAY.md](docs/FIRST_LAB_DAY.md)** (bath recipe + Hull/FE run protocol).
 
