@@ -1,0 +1,633 @@
+{
+  "campaign": "deposit-metrology-dual-sensor-dry-run",
+  "all_passed": true,
+  "error_models": {
+    "opt-101": {
+      "noise_std_um": 1.5,
+      "bias_budget_um": 4.0,
+      "total_unc_um": 4.27
+    },
+    "thk-101": {
+      "noise_std_um": 4.0,
+      "bias_budget_um": 3.0,
+      "total_unc_um": 5.0
+    },
+    "gates": {
+      "degrade_z": 3.0,
+      "fault_z": 6.0
+    }
+  },
+  "credibility_note": "Synthetic dry run; error models are L0 assumptions to be characterized on the reference cell, not calibrated hardware.",
+  "scenarios": [
+    {
+      "scenario": "agree",
+      "passed": true,
+      "expected_trip": false,
+      "final_verdict": {
+        "level": "agree",
+        "z": 0.24,
+        "suspect": "none",
+        "sensor_quality": {
+          "opt-101": "ok",
+          "thk-101": "ok"
+        }
+      },
+      "operating_twin": {
+        "mode": "actuation",
+        "trip_reasons": [],
+        "command_current_A": 3.0
+      },
+      "shutdown_action": "normal_operation",
+      "timeline": [
+        {
+          "t_hr": 0.0,
+          "truth_um": 0.0,
+          "opt_um": 0.46,
+          "us_um": 0.0,
+          "fused_um": 0.4,
+          "z": 0.07,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.1,
+          "truth_um": 12.0,
+          "opt_um": 13.32,
+          "us_um": 11.8,
+          "fused_um": 13.13,
+          "z": 0.23,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.2,
+          "truth_um": 24.0,
+          "opt_um": 23.83,
+          "us_um": 20.64,
+          "fused_um": 23.44,
+          "z": 0.49,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.3,
+          "truth_um": 36.0,
+          "opt_um": 35.29,
+          "us_um": 33.44,
+          "fused_um": 35.07,
+          "z": 0.28,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.4,
+          "truth_um": 48.0,
+          "opt_um": 46.62,
+          "us_um": 49.99,
+          "fused_um": 47.04,
+          "z": 0.51,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.5,
+          "truth_um": 60.0,
+          "opt_um": 61.0,
+          "us_um": 59.61,
+          "fused_um": 60.83,
+          "z": 0.21,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.6,
+          "truth_um": 72.0,
+          "opt_um": 73.26,
+          "us_um": 65.09,
+          "fused_um": 72.25,
+          "z": 1.24,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.7,
+          "truth_um": 84.0,
+          "opt_um": 86.19,
+          "us_um": 79.24,
+          "fused_um": 85.34,
+          "z": 1.06,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.8,
+          "truth_um": 96.0,
+          "opt_um": 94.78,
+          "us_um": 94.34,
+          "fused_um": 94.73,
+          "z": 0.07,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.9,
+          "truth_um": 108.0,
+          "opt_um": 111.19,
+          "us_um": 104.71,
+          "fused_um": 110.39,
+          "z": 0.99,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.0,
+          "truth_um": 120.0,
+          "opt_um": 121.96,
+          "us_um": 120.88,
+          "fused_um": 121.83,
+          "z": 0.16,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.1,
+          "truth_um": 132.0,
+          "opt_um": 131.99,
+          "us_um": 131.35,
+          "fused_um": 131.91,
+          "z": 0.1,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.2,
+          "truth_um": 144.0,
+          "opt_um": 144.81,
+          "us_um": 149.35,
+          "fused_um": 145.37,
+          "z": 0.69,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.3,
+          "truth_um": 156.0,
+          "opt_um": 154.91,
+          "us_um": 153.38,
+          "fused_um": 154.72,
+          "z": 0.23,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.4,
+          "truth_um": 168.0,
+          "opt_um": 170.59,
+          "us_um": 164.05,
+          "fused_um": 169.79,
+          "z": 0.99,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.5,
+          "truth_um": 180.0,
+          "opt_um": 178.92,
+          "us_um": 181.27,
+          "fused_um": 179.21,
+          "z": 0.36,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.6,
+          "truth_um": 192.0,
+          "opt_um": 191.56,
+          "us_um": 191.59,
+          "fused_um": 191.56,
+          "z": 0.0,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.7,
+          "truth_um": 204.0,
+          "opt_um": 203.5,
+          "us_um": 209.2,
+          "fused_um": 204.2,
+          "z": 0.87,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.8,
+          "truth_um": 216.0,
+          "opt_um": 218.73,
+          "us_um": 218.92,
+          "fused_um": 218.75,
+          "z": 0.03,
+          "level": "agree"
+        },
+        {
+          "t_hr": 1.9,
+          "truth_um": 228.0,
+          "opt_um": 228.11,
+          "us_um": 229.66,
+          "fused_um": 228.3,
+          "z": 0.24,
+          "level": "agree"
+        }
+      ]
+    },
+    {
+      "scenario": "optical_foul",
+      "passed": true,
+      "expected_trip": true,
+      "final_verdict": {
+        "level": "faulted",
+        "z": 8.92,
+        "suspect": "both",
+        "sensor_quality": {
+          "opt-101": "faulted",
+          "thk-101": "faulted"
+        }
+      },
+      "operating_twin": {
+        "mode": "tripped",
+        "trip_reasons": [
+          "bad_sensor_quality:opt-101,thk-101"
+        ],
+        "command_current_A": 0.0
+      },
+      "shutdown_action": "sensor_fault_hold",
+      "timeline": [
+        {
+          "t_hr": 0.0,
+          "truth_um": 0.0,
+          "opt_um": 0.0,
+          "us_um": 1.53,
+          "fused_um": 0.19,
+          "z": 0.23,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.1,
+          "truth_um": 12.0,
+          "opt_um": 26.41,
+          "us_um": 10.17,
+          "fused_um": 24.4,
+          "z": 2.47,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.2,
+          "truth_um": 24.0,
+          "opt_um": 49.14,
+          "us_um": 24.92,
+          "fused_um": 46.15,
+          "z": 3.68,
+          "level": "degraded"
+        },
+        {
+          "t_hr": 0.3,
+          "truth_um": 36.0,
+          "opt_um": 71.57,
+          "us_um": 36.79,
+          "fused_um": 67.28,
+          "z": 5.29,
+          "level": "degraded"
+        },
+        {
+          "t_hr": 0.4,
+          "truth_um": 48.0,
+          "opt_um": 95.8,
+          "us_um": 40.68,
+          "fused_um": 89.01,
+          "z": 8.38,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.5,
+          "truth_um": 60.0,
+          "opt_um": 119.8,
+          "us_um": 61.4,
+          "fused_um": 112.6,
+          "z": 8.88,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.6,
+          "truth_um": 72.0,
+          "opt_um": 133.66,
+          "us_um": 68.15,
+          "fused_um": 125.58,
+          "z": 9.96,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.7,
+          "truth_um": 84.0,
+          "opt_um": 142.83,
+          "us_um": 85.72,
+          "fused_um": 135.79,
+          "z": 8.68,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.8,
+          "truth_um": 96.0,
+          "opt_um": 151.55,
+          "us_um": 93.83,
+          "fused_um": 144.44,
+          "z": 8.78,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.9,
+          "truth_um": 108.0,
+          "opt_um": 170.0,
+          "us_um": 107.23,
+          "fused_um": 162.27,
+          "z": 9.54,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.0,
+          "truth_um": 120.0,
+          "opt_um": 177.47,
+          "us_um": 116.7,
+          "fused_um": 169.98,
+          "z": 9.24,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.1,
+          "truth_um": 132.0,
+          "opt_um": 190.13,
+          "us_um": 128.44,
+          "fused_um": 182.53,
+          "z": 9.38,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.2,
+          "truth_um": 144.0,
+          "opt_um": 206.0,
+          "us_um": 148.99,
+          "fused_um": 198.98,
+          "z": 8.67,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.3,
+          "truth_um": 156.0,
+          "opt_um": 214.08,
+          "us_um": 154.31,
+          "fused_um": 206.71,
+          "z": 9.09,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.4,
+          "truth_um": 168.0,
+          "opt_um": 225.86,
+          "us_um": 169.79,
+          "fused_um": 218.95,
+          "z": 8.53,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.5,
+          "truth_um": 180.0,
+          "opt_um": 242.42,
+          "us_um": 190.2,
+          "fused_um": 235.98,
+          "z": 7.94,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.6,
+          "truth_um": 192.0,
+          "opt_um": 252.25,
+          "us_um": 190.44,
+          "fused_um": 244.63,
+          "z": 9.4,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.7,
+          "truth_um": 204.0,
+          "opt_um": 261.58,
+          "us_um": 205.93,
+          "fused_um": 254.72,
+          "z": 8.46,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.8,
+          "truth_um": 216.0,
+          "opt_um": 275.35,
+          "us_um": 214.08,
+          "fused_um": 267.79,
+          "z": 9.32,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.9,
+          "truth_um": 228.0,
+          "opt_um": 286.45,
+          "us_um": 227.77,
+          "fused_um": 279.22,
+          "z": 8.92,
+          "level": "faulted"
+        }
+      ]
+    },
+    {
+      "scenario": "ultrasound_interface",
+      "passed": true,
+      "expected_trip": true,
+      "final_verdict": {
+        "level": "faulted",
+        "z": 6.81,
+        "suspect": "both",
+        "sensor_quality": {
+          "opt-101": "faulted",
+          "thk-101": "faulted"
+        }
+      },
+      "operating_twin": {
+        "mode": "tripped",
+        "trip_reasons": [
+          "bad_sensor_quality:opt-101,thk-101"
+        ],
+        "command_current_A": 0.0
+      },
+      "shutdown_action": "sensor_fault_hold",
+      "timeline": [
+        {
+          "t_hr": 0.0,
+          "truth_um": 0.0,
+          "opt_um": 0.0,
+          "us_um": 4.51,
+          "fused_um": 0.56,
+          "z": 0.69,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.1,
+          "truth_um": 12.0,
+          "opt_um": 9.57,
+          "us_um": 0.0,
+          "fused_um": 8.39,
+          "z": 1.46,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.2,
+          "truth_um": 24.0,
+          "opt_um": 22.62,
+          "us_um": 7.42,
+          "fused_um": 20.74,
+          "z": 2.31,
+          "level": "agree"
+        },
+        {
+          "t_hr": 0.3,
+          "truth_um": 36.0,
+          "opt_um": 36.02,
+          "us_um": 6.81,
+          "fused_um": 32.42,
+          "z": 4.44,
+          "level": "degraded"
+        },
+        {
+          "t_hr": 0.4,
+          "truth_um": 48.0,
+          "opt_um": 48.77,
+          "us_um": 9.57,
+          "fused_um": 43.93,
+          "z": 5.96,
+          "level": "degraded"
+        },
+        {
+          "t_hr": 0.5,
+          "truth_um": 60.0,
+          "opt_um": 59.7,
+          "us_um": 7.69,
+          "fused_um": 53.28,
+          "z": 7.91,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.6,
+          "truth_um": 72.0,
+          "opt_um": 73.82,
+          "us_um": 11.31,
+          "fused_um": 66.11,
+          "z": 9.51,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.7,
+          "truth_um": 84.0,
+          "opt_um": 88.77,
+          "us_um": 37.41,
+          "fused_um": 82.44,
+          "z": 7.81,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.8,
+          "truth_um": 96.0,
+          "opt_um": 94.96,
+          "us_um": 49.32,
+          "fused_um": 89.33,
+          "z": 6.94,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 0.9,
+          "truth_um": 108.0,
+          "opt_um": 106.33,
+          "us_um": 53.31,
+          "fused_um": 99.8,
+          "z": 8.06,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.0,
+          "truth_um": 120.0,
+          "opt_um": 120.58,
+          "us_um": 70.41,
+          "fused_um": 114.4,
+          "z": 7.63,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.1,
+          "truth_um": 132.0,
+          "opt_um": 134.05,
+          "us_um": 74.48,
+          "fused_um": 126.7,
+          "z": 9.06,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.2,
+          "truth_um": 144.0,
+          "opt_um": 142.27,
+          "us_um": 93.65,
+          "fused_um": 136.28,
+          "z": 7.39,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.3,
+          "truth_um": 156.0,
+          "opt_um": 154.93,
+          "us_um": 111.48,
+          "fused_um": 149.58,
+          "z": 6.61,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.4,
+          "truth_um": 168.0,
+          "opt_um": 168.33,
+          "us_um": 120.47,
+          "fused_um": 162.43,
+          "z": 7.28,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.5,
+          "truth_um": 180.0,
+          "opt_um": 181.31,
+          "us_um": 135.92,
+          "fused_um": 175.71,
+          "z": 6.9,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.6,
+          "truth_um": 192.0,
+          "opt_um": 193.13,
+          "us_um": 143.52,
+          "fused_um": 187.02,
+          "z": 7.54,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.7,
+          "truth_um": 204.0,
+          "opt_um": 200.73,
+          "us_um": 154.14,
+          "fused_um": 194.99,
+          "z": 7.08,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.8,
+          "truth_um": 216.0,
+          "opt_um": 214.86,
+          "us_um": 162.56,
+          "fused_um": 208.41,
+          "z": 7.95,
+          "level": "faulted"
+        },
+        {
+          "t_hr": 1.9,
+          "truth_um": 228.0,
+          "opt_um": 227.32,
+          "us_um": 182.53,
+          "fused_um": 221.79,
+          "z": 6.81,
+          "level": "faulted"
+        }
+      ]
+    }
+  ]
+}
