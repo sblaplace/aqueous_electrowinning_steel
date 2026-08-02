@@ -10,6 +10,8 @@ RC-1 is a research apparatus.  It is designed to answer the chemistry and cell-p
 
 Machine-readable nominal values are in [`processes/reference_cell_rc1.yaml`](../processes/reference_cell_rc1.yaml).  A physical build must record all as-built deviations in the run metadata.
 
+The executable design synthesis is `python -m models.run_reference_cell_design`.  It uses the controlled YAML as its input, evaluates the declared area/channel/flow candidate space at the 300 mA/cm² design duty, and writes `outputs/reference_cell_rc1_design_report.json`.  It is the source for selecting a procurement configuration; it is not a replacement for the physical qualification tests in §5.
+
 ## 1. Design requirements
 
 | ID | Requirement | RC-1 design response | Verification before energized operation |
@@ -61,9 +63,9 @@ These calculations are requirements for sizing and safety, **not** predictions o
 
 ### 3.1 Electrical and thermal envelope
 
-Use 3.0 A and a conservative 5.0 V hard ceiling for procurement and fault planning:
+Use 3.0 A and an **8.0 V RC-1 screening ceiling** for procurement and fault planning.  The present L0 voltage model returns roughly 6 V at the 300 mA/cm² decision duty with its conservative membrane/contact assumptions, so a 5 V ceiling would preclude the very characterization run RC-1 is built to make.  The 30 V supply is not an operating limit.
 
-- maximum stack electrical power: **15 W**;
+- maximum stack electrical power: **24 W**;
 - the existing thermal model's 2 L case can be used to size heating/cooling and the thermal-abort test; actual heat generation is measured as `I × V` and must not be inferred from an assumed voltage;
 - all clips, leads, fuse/contactor, current meter, and emergency disable path must be rated above the supply fault capability, not merely the nominal 3 A setpoint.
 

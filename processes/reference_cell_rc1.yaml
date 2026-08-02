@@ -5,6 +5,23 @@ schema_version: "0.1"
 configuration_id: "RC-1"
 status: "pre-procurement"
 
+# Initial chemistry and operating setpoint used by the design-synthesis runner.
+# These are screening inputs to be replaced by fitted values after RC-1 data exists.
+chemistry:
+  bath:
+    fe_so4_M: 1.0
+    na2_so4_M: 0.0
+    h2_so4_M: 0.01
+    h3_bo3_M: 0.4
+    bulk_pH: 2.0
+  transport:
+    nominal_boundary_layer_um: 50.0
+  kinetics:
+    fe_i0_A_m2: 0.01
+    her_i0_A_m2: 1.0e-6
+    fe_tafel_V_dec: 0.12
+    her_tafel_V_dec: 0.14
+
 cell_stack:
   cathode:
     material: "316L stainless-steel coupon"
@@ -55,8 +72,17 @@ balance_of_plant:
     power_supply: "30 V / 10 A CC/CV bench supply"
     normal_current_ceiling_A: 3.0
     current_density_ceiling_mA_cm2: 300.0
-    conservative_voltage_hard_ceiling_V: 5.0
+    # Qualify to this screening limit; the 30 V supply is not the operating limit.
+    # Current L0 voltage model is ~6 V at 300 mA/cm², so a 5 V ceiling would
+    # prevent the RC-1 decision-current test rather than protect it.
+    conservative_voltage_hard_ceiling_V: 8.0
     independent_measurements: ["DMM cell voltage", "series coulomb counter"]
+  design_constraints:
+    maximum_channel_pressure_drop_kPa: 50.0
+    target_temperature_C: 60.0
+    candidate_active_areas_cm2: [5.0, 10.0, 25.0]
+    candidate_channel_depths_mm: [2.0, 3.0, 5.0]
+    candidate_flow_rates_L_min: [0.1, 0.25, 0.5, 1.0]
   thermal:
     qualified_temperature_range_C: [50.0, 70.0]
     required_probes: ["catholyte reservoir", "anolyte reservoir", "cathode outlet", "anode outlet"]
@@ -64,7 +90,8 @@ balance_of_plant:
     cathode_and_anode_vents_separate: true
     external_safe_exhaust_required: true
     optional_cathode_gas_measurement_takeoff: true
-    maximum_hydrogen_design_rate_L_h_at_25C_1atm: 1.25
+    # 3 A all-HER electrical upper bound at 25 °C / 1 atm.
+    maximum_hydrogen_design_rate_L_h_at_25C_1atm: 1.37
   safety:
     secondary_containment_required: true
     hydrogen_detector_required: true
