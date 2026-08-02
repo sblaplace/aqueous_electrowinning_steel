@@ -1,0 +1,87 @@
+# RC-1 nominal geometry and balance-of-plant design inputs.
+# Status: pre-procurement basis, not as-built configuration or experimental evidence.
+# Human-readable rationale and required verification: docs/REFERENCE_CELL_DESIGN_BASIS.md
+schema_version: "0.1"
+configuration_id: "RC-1"
+status: "pre-procurement"
+
+cell_stack:
+  cathode:
+    material: "316L stainless-steel coupon"
+    thickness_mm: 1.0
+    active_length_mm: 50.0
+    active_width_mm: 20.0
+    active_area_cm2: 10.0
+    surface_preparation: "controlled and recorded per run; not yet frozen"
+  anode:
+    material: "specified OER-capable or experimental anode; controlled per campaign"
+    minimum_exposed_area_cm2: 10.0
+  membrane:
+    initial_comparator: "Nafion N117"
+    nominal_wetted_length_mm: 50.0
+    nominal_wetted_width_mm: 50.0
+    cassette: "removable clamped cassette with replaceable compatible gasket"
+  channels:
+    orientation: "vertical"
+    inlet_location: "bottom"
+    outlet_location: "top"
+    cathode:
+      length_mm: 50.0
+      width_mm: 20.0
+      depth_mm: 3.0
+    anode:
+      length_mm: 50.0
+      width_mm: 20.0
+      depth_mm: 3.0
+  wetted_materials_allowed:
+    - "borosilicate"
+    - "polypropylene"
+    - "PVDF"
+    - "PTFE"
+    - "FEP"
+    - "EPDM or Viton only after compatibility review"
+  construction_constraints:
+    - "No unqualified metal, adhesive, or 3-D-print resin in contact with hot acidic electrolyte."
+    - "Gasket compression stops must preserve channel depth and exposed area."
+
+balance_of_plant:
+  catholyte_volume_L: 1.0
+  anolyte_volume_L: 1.0
+  recirculation:
+    independent_loops: true
+    installed_flow_range_L_min: [0.1, 1.0]
+    required_measurements: ["flow rate", "pressure drop", "inlet temperature", "outlet temperature"]
+  electrical:
+    power_supply: "30 V / 10 A CC/CV bench supply"
+    normal_current_ceiling_A: 3.0
+    current_density_ceiling_mA_cm2: 300.0
+    conservative_voltage_hard_ceiling_V: 5.0
+    independent_measurements: ["DMM cell voltage", "series coulomb counter"]
+  thermal:
+    qualified_temperature_range_C: [50.0, 70.0]
+    required_probes: ["catholyte reservoir", "anolyte reservoir", "cathode outlet", "anode outlet"]
+  gas:
+    cathode_and_anode_vents_separate: true
+    external_safe_exhaust_required: true
+    optional_cathode_gas_measurement_takeoff: true
+    maximum_hydrogen_design_rate_L_h_at_25C_1atm: 1.25
+  safety:
+    secondary_containment_required: true
+    hydrogen_detector_required: true
+    hardwired_independent_rectifier_disable_required: true
+    gfci_or_rcd_required: true
+
+required_pre_energization_tests:
+  - "Dry assembly, dimensional inspection, and membrane-cassette repeatability check"
+  - "Water leak and pressure test"
+  - "Water flow test at three or more measured flow setpoints"
+  - "Dye or conductivity step-response flow-distribution observation"
+  - "Electrical dummy-load current/voltage and timestamp synchronization test"
+  - "Independent shutdown proof test"
+  - "Mass, pH, temperature, flow, current, and voltage MSA acceptance"
+
+provenance:
+  design_basis: "docs/REFERENCE_CELL_DESIGN_BASIS.md"
+  data_contract: "docs/DATA_CONTRACT.md"
+  safety_contract: "docs/INDEPENDENT_SHUTDOWN.md"
+  program_gate: "docs/PROGRAM_SUMMARY.md"
