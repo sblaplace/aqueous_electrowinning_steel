@@ -1,0 +1,240 @@
+{
+  "configuration_id": "RC-1",
+  "status": "pre-procurement_deployment_package",
+  "selected_design": {
+    "candidate": {
+      "active_area_cm2": 10.0,
+      "channel_depth_mm": 3.0,
+      "flow_L_min": 0.5
+    },
+    "operating": {
+      "current_A": 3.0,
+      "current_density_mA_cm2": 300.0,
+      "cell_voltage_V": 5.845352689519192,
+      "faradaic_efficiency": 0.9928902796897269,
+      "specific_energy_kWh_t": 5650.852310656684,
+      "deposit_rate_um_hr": 394.11467623645285
+    },
+    "hydraulics": {
+      "superficial_velocity_m_s": 0.1388888888888889,
+      "reynolds_number": 1642.9798125855425,
+      "pressure_drop_Pa": 4.735499283879849,
+      "channel_residence_time_s": 0.36
+    },
+    "utilities_and_gas": {
+      "heat_generation_W": 13.696058068557576,
+      "h2_rate_L_h": 0.009735030896078276,
+      "h2_design_rate_L_h": 1.3692565208242764
+    },
+    "feasible": true,
+    "failures": [],
+    "score": 1.3677107024349708
+  },
+  "instruments": [
+    {
+      "tag": "TT-101",
+      "service": "catholyte reservoir temperature",
+      "range": "0\u2013100 \u00b0C",
+      "accuracy": "\u00b10.5 \u00b0C",
+      "location": "TK-101 well",
+      "purpose": "thermal balance / high-temperature trip"
+    },
+    {
+      "tag": "TT-201",
+      "service": "anolyte reservoir temperature",
+      "range": "0\u2013100 \u00b0C",
+      "accuracy": "\u00b10.5 \u00b0C",
+      "location": "TK-201 well",
+      "purpose": "thermal balance / high-temperature trip"
+    },
+    {
+      "tag": "TT-102",
+      "service": "catholyte cell-outlet temperature",
+      "range": "0\u2013100 \u00b0C",
+      "accuracy": "\u00b10.5 \u00b0C",
+      "location": "EC-101 cathode outlet",
+      "purpose": "cell heat-rise measurement"
+    },
+    {
+      "tag": "TT-202",
+      "service": "anolyte cell-outlet temperature",
+      "range": "0\u2013100 \u00b0C",
+      "accuracy": "\u00b10.5 \u00b0C",
+      "location": "EC-101 anode outlet",
+      "purpose": "cell heat-rise measurement"
+    },
+    {
+      "tag": "FT-201",
+      "service": "catholyte recirculation flow",
+      "range": "0\u20131.5 L/min",
+      "accuracy": "\u00b15% reading",
+      "location": "P-101 discharge",
+      "purpose": "flow / transport state"
+    },
+    {
+      "tag": "FT-202",
+      "service": "anolyte recirculation flow",
+      "range": "0\u20131.5 L/min",
+      "accuracy": "\u00b15% reading",
+      "location": "P-201 discharge",
+      "purpose": "flow / transport state"
+    },
+    {
+      "tag": "PT-101",
+      "service": "catholyte cell differential pressure",
+      "range": "0\u201310 kPa",
+      "accuracy": "\u00b11% full scale",
+      "location": "EC-101 cathode inlet/outlet",
+      "purpose": "channel fouling / flow verification"
+    },
+    {
+      "tag": "PT-201",
+      "service": "anolyte cell differential pressure",
+      "range": "0\u201310 kPa",
+      "accuracy": "\u00b11% full scale",
+      "location": "EC-101 anode inlet/outlet",
+      "purpose": "channel fouling / flow verification"
+    },
+    {
+      "tag": "pHAT-101",
+      "service": "catholyte pH",
+      "range": "pH 0\u20137",
+      "accuracy": "\u00b10.05 pH",
+      "location": "TK-101 sample loop",
+      "purpose": "bath control / twin observation"
+    },
+    {
+      "tag": "AT-202",
+      "service": "anolyte pH",
+      "range": "pH 0\u20137",
+      "accuracy": "\u00b10.05 pH",
+      "location": "TK-201 sample loop",
+      "purpose": "anolyte drift"
+    },
+    {
+      "tag": "FE2P-101",
+      "service": "catholyte Fe(II) sample analysis",
+      "range": "0\u20132 M",
+      "accuracy": "\u00b10.02 M target",
+      "location": "SP-101",
+      "purpose": "iron balance / EKF observability"
+    },
+    {
+      "tag": "CT-201",
+      "service": "rectifier cathodic current",
+      "range": "0\u201310 A",
+      "accuracy": "\u00b11% reading",
+      "location": "PS-101 output",
+      "purpose": "charge ledger / current-density state"
+    },
+    {
+      "tag": "VT-201",
+      "service": "cell voltage",
+      "range": "0\u201310 V",
+      "accuracy": "\u00b10.01 V",
+      "location": "EC-101 terminals",
+      "purpose": "energy ledger / voltage model"
+    },
+    {
+      "tag": "GT-101",
+      "service": "cathode hydrogen monitor",
+      "range": "0\u20134% H\u2082 in air minimum",
+      "accuracy": "alarm before LEL",
+      "location": "high point near exhaust",
+      "purpose": "independent gas safety alarm"
+    }
+  ],
+  "bom": [
+    {
+      "id": "EC-101",
+      "item": "Divided recirculating cell body",
+      "qty": "1",
+      "specification": "Vertical 50 \u00d7 20 mm channels; selected 3.0 mm gap; clamped removable membrane cassette; borosilicate/PP/PVDF/PTFE/FEP wetted path only",
+      "acceptance": "dimensional inspection, dry assembly, water leak test"
+    },
+    {
+      "id": "MEM-101",
+      "item": "Cation-exchange membrane",
+      "qty": "3 coupons",
+      "specification": "Nafion N117 initial comparator; 50 \u00d7 50 mm nominal wetted cassette; retain lot and hydration history",
+      "acceptance": "visual integrity, wetted area recorded, area-resistance baseline"
+    },
+    {
+      "id": "CA-101",
+      "item": "Cathode coupon set",
+      "qty": "10+",
+      "specification": "316L, 1 mm, masked to 10.0 cm\u00b2; controlled surface-preparation record",
+      "acceptance": "mass/area traceability and mask verification"
+    },
+    {
+      "id": "AN-101",
+      "item": "Anode assembly",
+      "qty": "1 + spare",
+      "specification": "Controlled OER-capable experimental anode, exposed area \u2265 cathode area; material/lot fixed per campaign",
+      "acceptance": "area and material recorded; post-run inspection plan"
+    },
+    {
+      "id": "TK-101/TK-201",
+      "item": "Covered catholyte/anolyte reservoirs",
+      "qty": "2",
+      "specification": "1.0 L working volume each; compatible sample, drain, vent, and temperature ports; total nominal inventory 2.0 L",
+      "acceptance": "level marks, leak test, compatible labels"
+    },
+    {
+      "id": "P-101/P-201",
+      "item": "Recirculation pump loops",
+      "qty": "2",
+      "specification": "Independently adjustable; compatible wetted materials; verified 0.10\u20131.00 L/min installed-loop range",
+      "acceptance": "three-point installed flow curve and pressure test"
+    },
+    {
+      "id": "HT-101/HT-201",
+      "item": "Thermal control",
+      "qty": "2 zones",
+      "specification": "50\u201370 \u00b0C qualified range; target 60 \u00b0C; independent temperature measurement",
+      "acceptance": "heat-up/hold test and over-temperature trip test"
+    },
+    {
+      "id": "PS-101",
+      "item": "DC rectifier",
+      "qty": "1",
+      "specification": "30 V / 10 A CC/CV bench supply; normal RC-1 duty 3.00 A, qualified ceiling 3.00 A",
+      "acceptance": "dummy-load CC verification and output-off behavior"
+    },
+    {
+      "id": "K-101/ESD-101",
+      "item": "Independent DC shutdown chain",
+      "qty": "1",
+      "specification": "hardwired latching emergency stop and contactor/enable interruption; separate from software twin",
+      "acceptance": "documented proof test removes rectifier enable"
+    },
+    {
+      "id": "DAQ-101",
+      "item": "Synchronized data acquisition",
+      "qty": "1",
+      "specification": "logs current, voltage, temperature, flow, pressure, pH, and event timestamps; immutable raw export retained",
+      "acceptance": "timestamp and channel-calibration check"
+    },
+    {
+      "id": "GX-101",
+      "item": "Vent/exhaust and hydrogen monitoring",
+      "qty": "1",
+      "specification": "separate anode/cathode vents to site-approved exhaust; H\u2082 monitor/alarm; no sealed gas path",
+      "acceptance": "site ventilation review and alarm functional test"
+    },
+    {
+      "id": "CT-101",
+      "item": "Secondary containment",
+      "qty": "1",
+      "specification": "compatible tray sized for complete 2 L inventory plus margin; segregated from electrical equipment",
+      "acceptance": "capacity and drain-path inspection"
+    }
+  ],
+  "required_pre_energization_tests": [
+    "dimensional and membrane-cassette inspection",
+    "water leak and pressure test",
+    "flow verification at 0.10, 0.50, and 1.00 L/min per loop",
+    "electrical dummy-load and independent-shutdown proof test",
+    "instrument calibration and synchronized-timestamp check"
+  ]
+}

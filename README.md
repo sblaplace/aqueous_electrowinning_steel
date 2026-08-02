@@ -97,6 +97,7 @@ aq-steel-stress                                # Internal stress and coupon-curv
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
+aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
 # Validate a mapped physical run and write a charge/iron/energy QA report
 python -m models.run_record path/to/run-directory --output path/to/qa_report.json
