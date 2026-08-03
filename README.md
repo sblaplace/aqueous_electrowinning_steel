@@ -81,7 +81,8 @@ python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> rank
 python -m models.run_adhesion_peel          # Does iron peel from a drum? Peel window + coupon test
 python -m models.run_internal_stress        # Residual stress (Stoney / bent-strip) + coupon curvature protocol
 python -m models.run_rde_levich             # RDE kinetics/transport separation (Levich + Koutecky-Levich) → D, δ, Fe/HER Tafel
-python -m models.run_all                    # Full suite (20 steps) + master_report.json + dashboard
+python -m models.run_gas_holdup             # Two-phase cathode channel: void fraction, current redistribution, H2 safety
+python -m models.run_all                    # Full suite (21 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -95,6 +96,7 @@ aq-steel-sensitivity                           # Sobol GSA of the FE engine (whi
 aq-steel-adhesion                              # Adhesion/peel screen (the drum-and-strip gating unknown)
 aq-steel-stress                                # Internal stress and coupon-curvature protocol
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
+aq-steel-gas-holdup                            # Gas hold-up: void fraction, current redistribution, hydrogen safety
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
@@ -151,6 +153,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/scenarios.py` | Literature-anchored operating scenarios |
 | `models/adhesion_peel.py` | Deposit release mechanics: residual stress (Hoffman + hydrogen effusion + thermal mismatch), energy release rate, work of adhesion with thickness-confined plastic amplification, peel force, web-tear and cohesive-failure criteria → the continuous-foil peel window and its coupon test |
 | `models/internal_stress.py` | Deposit internal stress (Stoney / bent-strip): forward/inverse cantilever deflection, exact two-layer laminate finite-thickness correction, GUM uncertainty budget, mechanism decomposition (intrinsic, H, thermal), additive relief (saccharin/chloride), stress evolution σ(h), and the coupon-curvature protocol |
+| `models/gas_holdup.py` | Two-phase cathode channel: Faradaic H₂/O₂ generation as wet gas, drift-flux void-fraction profile up the electrode, Bruggeman effective conductivity, bubble surface coverage, Stephan-Vogt microconvection → effective boundary layer, equipotential current redistribution, self-consistent gas↔current↔FE fixed point, headspace LFL/dilution sizing, and the electrode-height scale-up limit |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
 
 ### Selected Model Results
@@ -330,6 +333,59 @@ ends by specifying the experiment that replaces it — a $1,750, 3-day peel and
 coupon-curvature set with explicit kill, confirm, and redirect-to-flake rules,
 run alongside the Day-1 Hull cell. Every number above is screening fracture
 mechanics; **no iron peel data exists in this repository.**
+
+### Gas Hold-Up: The Bench Cell Can't See the Problem It Has
+
+`models/gas_holdup.py` supplies the last unmodelled field in the cell. Before
+it, the suite's entire bubble physics was an empirical O₂ surface coverage
+applied to the **anode only** — there was no cathodic gas source anywhere,
+despite HER being the program's central loss term, no axial void-fraction
+profile, and no feedback from bubbles into FE or current distribution.
+
+The module generates H₂ from `1 − FE` as *wet* gas at cell temperature, carries
+it up the vertical channel with a Zuber–Findlay drift-flux closure, converts
+void fraction to conductivity via Bruggeman, and then redistributes current —
+the electrodes are equipotential, so current abandons the gassy top of the
+channel for the clear bottom. Bubbles also stir: a Stephan–Vogt microconvection
+term thins the diffusion layer, which feeds back into the 1-D FE engine, and
+the whole loop is closed as a fixed point.
+
+Three results, in the order they matter:
+
+| Electrode height | Outlet void fraction | Ohmic penalty | Current uniformity |
+|---|---:|---:|---:|
+| 50 mm (RC-1) | 1.2% | 0.9% | 0.99 |
+| 250 mm | 5.7% | 4.7% | 0.95 |
+| **500 mm** | **10.6%** | **9.2%** | **0.90 — floor** |
+| 1000 mm | 18.9% | 18.0% | 0.81 |
+
+**Hold-up is not an RC-1 risk — it is a scale-up risk.** At the 300 mA/cm²
+kill-criterion point the bench cell shows ~1% of everything, which is a
+falsifiable prediction that the reference cell should look boring. The same
+physics puts the uniformity floor near half a metre of electrode height, a
+regime RC-1 physically cannot observe, so this has to be caught by a
+geometry-transfer experiment rather than by running the bench cell harder.
+
+**Bubbles help FE and hurt voltage.** The coupled solve returns *higher*
+area-average FE than the bubble-free baseline (+1.4 pp at 300 mA/cm²): the
+self-stirring gain beats the blanketing and redistribution losses. So ignoring
+bubbles is conservative for FE but **not** conservative for `V_cell` — and
+`V_cell` is what the energy number 959.9 × V/FE is most sensitive to.
+
+**Hydrogen has a number now.** A 3 A all-HER cell makes 1.91 L/h of wet gas at
+60 °C — 1.39× the 1.37 L/h dry-at-25 °C scalar in `reference_cell_rc1.yaml`,
+from thermal expansion and water saturation — and needs ~189 L/h of dilution
+air to hold 25% of the 4 vol% LFL. An unventilated 0.5 L headspace reaches the
+LFL in **38 seconds**, which is the quantitative reason the design basis
+forbids a closed gas path.
+
+As everywhere else here, these are transferred correlations from water
+electrolysis and air-water column practice; **no gas hold-up, bubble size or
+void-fraction data exists in this repository.** The dominant uncertainty is
+bubble departure diameter — it enters rise velocity quadratically, so a 2×
+sizing error moves void fraction ~4× — and `measurement_protocol()` specifies
+the ~$450, 3-day replacement: level-swell void fraction, backlit bubble video,
+AC resistance in situ, and a segmented cathode to test the coupling itself.
 
 ### From Deposit to Structural Sheet: Thermomechanical Processing
 

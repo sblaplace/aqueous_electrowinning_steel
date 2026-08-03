@@ -107,6 +107,43 @@ principles. The suite therefore specifies the replacement measurements: a
 $1,750 peel test (`adhesion_peel.coupon_test_protocol`) paired with a $200 Stoney bent-strip coupon-curvature protocol (`internal_stress.coupon_curvature_protocol`) with explicit kill, confirm, and redirect-to-flake decision rules. This is screening fracture mechanics and mechanics; no
 iron peel or internal-stress data exists in this repository.
 
+## Gas hold-up and the scale-up constraint
+
+`models/gas_holdup.py` closes the last unmodelled field in the cell: cathodic
+hydrogen. Before it, the suite had no cathodic gas source at all — only an
+empirical anode-side O₂ surface coverage — despite HER being the loss term the
+whole program is organised around.
+
+The module generates H₂ from `1 − FE` as wet gas at cell temperature, carries it
+up the vertical channel with a drift-flux closure, converts void fraction to
+conductivity via Bruggeman, redistributes current between equipotential
+electrodes, and feeds bubble microconvection back into the 1-D diffusion-layer
+FE engine as a fixed point.
+
+The program-relevant result is a separation of scales. At the 300 mA/cm² kill
+criterion the RC-1 channel reaches only ~1.2 % outlet void fraction, <1 % ohmic
+penalty and ~1 % axial current spread — **gas hold-up does not threaten the
+build/no-build decision run, and the reference cell should look boring**. Hold
+current density fixed and grow the electrode, though, and axial uniformity
+crosses a 0.90 floor near 0.5 m of height and reaches 0.81 at 1 m. That is a
+pilot-geometry constraint RC-1 physically cannot observe, so it belongs to the
+geometry-transfer experiment, not to running the bench cell harder.
+
+Two secondary findings carry decision weight. Bubbles are net-*favourable* for
+FE at bench scale (+1.4 pp at 300 mA/cm², self-stirring beating blanketing), so
+ignoring them is conservative for FE but not for `V_cell` — the term the energy
+number is most sensitive to. And hydrogen now has physics behind its design
+scalar: a 3 A all-HER cell makes 1.91 L/h of wet gas, needs ~189 L/h of dilution
+air to hold 25 % of the LFL, and would reach the LFL in an unventilated 0.5 L
+headspace in under a minute.
+
+This is screening two-phase modelling with correlations transferred from water
+electrolysis and air-water columns; no hold-up data exists in this repository.
+The dominant uncertainty is bubble departure diameter, and
+`gas_holdup.measurement_protocol()` specifies the ~$450, 3-day measurement set —
+including a segmented cathode, the one measurement that tests the coupling
+rather than a single correlation.
+
 ## Deployment hypothesis
 
 The supply-chain model favors on-site modular deployment for 8 of the 9 illustrative feedstocks at its stated default assumptions. At 500 km feedstock distance, it returns $145.67/t Fe centralized versus −$96.42/t Fe decentralized for pickle liquor, and $540.53/t versus $423.45/t for 30% Fe low-grade ore.

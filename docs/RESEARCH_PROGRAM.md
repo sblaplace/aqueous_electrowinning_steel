@@ -226,7 +226,18 @@ retained with their resolution so the record shows what changed and where.*
    exists; `run_mechanical_properties.py` explicitly disclaims texture and
    residual stress.~~ **Addressed** in `models/internal_stress.py` (forward/inverse Stoney, exact two-layer finite-thickness correction, GUM uncertainty budget, mechanism decomposition from plating conditions, additive relief, and the Tier 0 coupon curvature protocol).
 
-8. **Deposit adhesion / release.** Newly surfaced by the architecture screen.
+8. ~~**Two-phase gas hold-up.** The only bubble physics in the suite was
+   `anode.py`'s empirical O₂ surface coverage, applied to the anode alone.
+   There was no cathodic gas source at all — despite HER being the program's
+   central loss term — no axial void-fraction profile, and no feedback from
+   bubbles into FE or current distribution.~~ **Addressed** in
+   `models/gas_holdup.py` (Faradaic wet-gas generation, drift-flux void
+   fraction, Bruggeman conductivity, equipotential current redistribution,
+   Stephan-Vogt microconvection coupled to the 1-D FE engine, headspace LFL
+   and dilution sizing, electrode-height scaling limit, and the ~$450
+   measurement protocol that replaces the transferred correlations).
+
+9. **Deposit adhesion / release.** Newly surfaced by the architecture screen.
    Continuous harvesting requires the deposit to come off the cathode on
    purpose — and only on purpose. Adhesion is the hinge for drum-and-strip
    and the doctor-blade routes, and nothing in the model set predicts it.

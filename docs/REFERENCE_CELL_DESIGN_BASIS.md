@@ -39,7 +39,7 @@ The executable design synthesis is `python -m models.run_reference_cell_design`.
 | Electrode-to-membrane gap | **3.0 mm nominal per side**, measured after compression | The value is a geometry input, not an assumed 2 cm beaker spacing.  Record spacer thickness and as-built gap. |
 | Wetted construction materials | Borosilicate, PP, PVDF, PTFE, FEP, EPDM/Viton only after compatibility check | Do not use unqualified metals, adhesives, or 3-D-print resin in hot acidic electrolyte. |
 | Seals | Replaceable chemically compatible gasket; compression stops | Gasket compression must not change active area or collapse the flow channel. |
-| Cell orientation | Vertical channels, bottom inlet / top outlet | Deliberately gives generated gas a buoyant escape path; this is a design choice to be observed, not a validated bubble model. |
+| Cell orientation | Vertical channels, bottom inlet / top outlet | Deliberately gives generated gas a buoyant escape path.  `models/gas_holdup.py` now screens that path quantitatively (drift-flux void fraction, Bruggeman conductivity, current redistribution) and predicts <2 % outlet void fraction at 300 mA/cm² in this geometry — but it remains a **screening (L0) bubble model**, not a validated one, until `gas_holdup.measurement_protocol()` is run. |
 
 The membrane cassette must define the exposed membrane area independently of the coupon mask.  Measure and log both areas.  No performance result may be compared across runs if either changes without a new configuration version.
 
@@ -106,6 +106,8 @@ It must report a **family of cases**, not a single predicted operating point:
 The model may claim geometry-dependent flow, pressure-drop, and thermal *bounds*.  Until calibrated, it may not claim a particular FE, bubble coverage, local pH, deposition rate, deposit morphology, membrane lifetime, or production-cell performance.  Those require the measurements listed in §6.
 
 A reduced-order hydraulic/thermal model is sufficient for RC-1 if it passes conservation checks and shows no problematic dead zone.  Escalate to two-phase CFD only if the transparent/observable reference cell shows gas hold-up or maldistribution that the reduced model cannot represent.
+
+That reduced-order two-phase model now exists: `models/gas_holdup.py` (`aq-steel-gas-holdup`).  It predicts, for the RC-1 geometry at the 300 mA/cm² kill-criterion point and 85 % FE, an outlet void fraction near 1.2 %, an ohmic penalty under 1 %, and axial current spread near 1 % — i.e. **hold-up should not be observable at bench scale**, which is itself the falsifiable prediction.  Its `measurement_protocol()` (~$450, 3 days, level-swell + segmented cathode + backlit bubble video + AC resistance) defines the escalation trigger concretely: recalibrate on a systematic offset with the right trend, and go to CFD only on observed maldistribution, dead zones, slugging or channelling that a 1-D axial model cannot represent.
 
 ## 5. Measurement and safety design package required before purchase
 

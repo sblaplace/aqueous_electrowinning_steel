@@ -27,7 +27,8 @@ What it does
 14. Process-flow diagrams + pilot P&ID (process_flow, pid)
 15. Internal stress & coupon curvature (Stoney/bent-strip) + adhesion/peel (adhesion_peel, internal_stress)
 16. RDE kinetics/transport separation — Levich + Koutecky-Levich (rde_levich)
-17. Dashboard summary figure + master JSON
+17. Cathode-channel gas hold-up: void fraction, current redistribution, H2 safety (gas_holdup)
+18. Dashboard summary figure + master JSON
 
 Outputs
 -------
@@ -80,6 +81,7 @@ from models.run_experimental_matrix import main as run_experimental_matrix_main
 from models.run_cell_architecture import main as run_cell_architecture_main
 from models.run_adhesion_peel import main as run_adhesion_peel_main
 from models.run_internal_stress import main as run_internal_stress_main
+from models.run_gas_holdup import main as run_gas_holdup_main
 from models.run_rde_levich import main as run_rde_levich_main
 
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
@@ -619,7 +621,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["pre_lab_suite"] = {"error": str(e)}
 
     # Cell architecture screen (areal productivity, $/m², kill criterion #3)
-    print("\n[17/20] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
+    print("\n[17/21] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
     try:
         run_cell_architecture_main()
         master["steps"]["cell_architecture"] = _load_json(
@@ -632,7 +634,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["cell_architecture"] = {"error": str(e)}
 
     # Deposit adhesion / peel screen (the drum-and-strip gating unknown)
-    print("\n[18/20] Adhesion & peel screen (does iron peel from a drum?)...")
+    print("\n[18/21] Adhesion & peel screen (does iron peel from a drum?)...")
     try:
         run_adhesion_peel_main()
         master["steps"]["adhesion_peel"] = _load_json(
@@ -645,7 +647,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["adhesion_peel"] = {"error": str(e)}
 
     # Deposit internal stress and coupon curvature (Stoney / bent-strip)
-    print("\n[19/20] Internal stress & coupon curvature (Stoney / bent-strip)...")
+    print("\n[19/21] Internal stress & coupon curvature (Stoney / bent-strip)...")
     try:
         run_internal_stress_main()
         master["steps"]["internal_stress"] = _load_json(
@@ -659,7 +661,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
 
     # RDE kinetics/transport separation (Levich + Koutecky-Levich) — calibrates
     # diffusion_layer_1d's boundary-layer parameter from a measurement method
-    print("\n[20/20] RDE kinetics/transport separation (Levich + Koutecky-Levich)...")
+    print("\n[20/21] RDE kinetics/transport separation (Levich + Koutecky-Levich)...")
     try:
         run_rde_levich_main()
         master["steps"]["rde_levich"] = _load_json(
@@ -670,6 +672,19 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ rde & levich: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["rde_levich"] = {"error": str(e)}
+
+    # Cathode-channel gas hold-up — the two-phase field left open by NEXT_STEPS 3.3
+    print("\n[21/21] Cathode-channel gas hold-up (void fraction, redistribution, H2 safety)...")
+    try:
+        run_gas_holdup_main(quick=quick)
+        master["steps"]["gas_holdup"] = _load_json(
+            DATA_DIR / "gas_holdup_report.json"
+        )
+        print("  ✅ gas hold-up")
+    except Exception as e:
+        print(f"  ❌ gas hold-up: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["gas_holdup"] = {"error": str(e)}
 
     # Dashboard
     print("\n[Dashboard] Generating master dashboard...")
