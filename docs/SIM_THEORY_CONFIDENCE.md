@@ -110,11 +110,26 @@ it is never silently zero-filled.
 | # | Claim | Substantiated by | Predicted (L0) | Acceptance | Verdict |
 |---|---|---|---|---|---|
 | 1 | feed/electrolyte are what we think they are | reference recipe + speciation | free [Fe²⁺]=0.018 M, σ=13.5 S/m, pH 2.0 @50 °C | recipe reproduces intended bath | **PASS** (L0; real feed identity is L1) |
-| 2 | cell produces predicted fields | `CellPhysics` + thermal transient | V_cell=4.44 V, T_ss=21 °C, transport limit=371 mA/cm² | V in window, T ≤ 60 °C | **PASS** (L0; gas/flow partially modeled) |
+| 2 | cell produces predicted fields | `CellPhysics` + thermal transient + `gas_holdup` | V_cell=4.44 V, T_ss=21 °C, transport limit=371 mA/cm²; outlet void fraction ~1.2 % and axial current spread ~1 % at 300 mA/cm² | V in window, T ≤ 60 °C, uniformity ≥ 0.90 | **PASS** (L0; the gas field is now modeled rather than deferred — see note below) |
 | 3 | electrochemistry produces Fe/HER split & rate | `CellPhysics.solve_at_j` | FE=0.995, HER≈0.5 %, 127 µm/hr | FE≥0.80, rate in window | **PASS** (L0) |
 | 4 | deposit harvestable, predicted composition/quality | deposit rate + pure-Fe composition fixture | 100 wt% Fe fixture, 127 µm/hr | composition + rate | **PARTIAL** (L0; harvestability deferred to peel-coupon branch) |
 | 5 | quantities hold over time (membrane ageing, anode wear) | — (no run day-1+ data) | — | accelerated-life data | **NOT COVERED / deferred** (Level 3) |
 | 6 | balance of plant closes on mass/charge/heat/energy | `compute_ledgers` | residual 0.5% / 0.0% / none missing | ≤2% / ≤5% / none | **PASS** (L0) |
+
+Claim 2's former "gas/flow partially modeled" caveat is now discharged at
+Level 0 by `models/gas_holdup.py`, which supplies the missing cathodic gas
+field: Faradaic H₂ generation from `1 − FE`, a drift-flux void-fraction
+profile up the channel, Bruggeman effective conductivity, equipotential
+current redistribution, bubble microconvection feeding back into the FE
+engine, and a headspace LFL/dilution calculation. Two results matter for this
+table. First, hold-up is **not** an RC-1 risk: at the 300 mA/cm² kill
+criterion the predicted outlet void fraction is ~1.2 %, the ohmic penalty
+<1 %, and axial current spread ~1 %. Second, it **is** a scale-up risk: the
+same model puts the uniformity floor at roughly 0.5 m of electrode height, a
+regime RC-1 physically cannot observe. The caveat that remains is provenance,
+not coverage — every correlation is transferred from water electrolysis and
+air-water column practice, so this is L0 until
+`gas_holdup.measurement_protocol()` runs.
 
 Claim 5 is **explicitly NOT COVERED / deferred** — the repository has no
 run day-1+ durability data, so membrane ageing, anode wear, and impurity-driven

@@ -87,7 +87,35 @@ Validate against segmented cathodes, reference electrodes, voltage taps and gas 
 
 #### 3.3 Hydrodynamics, bubbles and thermal balance
 
-The present correlations are suitable for screening. For the reference cell, measure flow and gas hold-up and calibrate a reduced-order model for:
+**Update (2026-08-02):** the reduced-order two-phase model this section asked
+for now exists — `models/gas_holdup.py` (`aq-steel-gas-holdup`). It closes the
+last unmodelled field in the cell: cathodic H₂ generation from `1 − FE`, a
+drift-flux void-fraction profile up the vertical channel, Bruggeman effective
+conductivity, equipotential current redistribution over electrode height,
+Stephan-Vogt bubble microconvection feeding a thinner `δ_eff` back into the
+1-D diffusion-layer FE engine, and a headspace LFL/dilution calculation.
+
+Three screening results, all L0:
+
+1. **Hold-up is not an RC-1 problem.** At the 300 mA/cm² kill criterion the
+   50 mm channel reaches ~1.2 % outlet void fraction, <1 % ohmic penalty and
+   ~1 % axial current spread.
+2. **It is a scale-up problem.** Holding current density fixed and growing the
+   electrode, axial uniformity crosses the 0.90 floor near 0.5 m of height and
+   reaches 0.81 at 1 m. RC-1 cannot observe this; the geometry-transfer
+   experiment in §4 must.
+3. **Bubbles are net-favourable for FE and net-unfavourable for voltage.**
+   Self-stirring thins the diffusion layer faster than blanketing and
+   redistribution remove FE, so at bench scale the coupled solve returns
+   *higher* FE than the bubble-free baseline (+1.4 pp at 300 mA/cm²). Ignoring
+   bubbles is therefore conservative for FE but **not** conservative for
+   `V_cell` — which is the term the energy number is most sensitive to.
+
+The dominant uncertainty is bubble departure diameter (it enters rise velocity
+quadratically) and the surface-coverage ceiling. Both are cheap to measure;
+`gas_holdup.measurement_protocol()` specifies the ~$450, 3-day experiment.
+
+For the reference cell, measure flow and gas hold-up and calibrate the model for:
 
 - local boundary-layer thickness;
 - bubble coverage and detachment;
