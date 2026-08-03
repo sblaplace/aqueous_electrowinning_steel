@@ -24,6 +24,16 @@ REFERENCE_J_MA_CM2 = 300.0
 HARD_CODED_BASELINE_FE = 0.90
 FE_UNCERTAINTY_ABS = 0.05  # NEXT_STEPS acceptance/measurement tolerance: +/-5 pp.
 VOLTAGE_UNCERTAINTY_V = 0.10  # Transparent L0 voltage sensitivity span.
+# Production-scale cell area for the cost stack. RC-1's 10 cm² is the bench
+# coupon that tests the physics; feeding it into the CAPEX/OPEX/LCOFe stack
+# yields a meaningless tiny-plant cost. Use a production cell area and enough
+# stacks to reach the program's stated production scale.
+PRODUCTION_CELL_AREA_M2 = 1.0
+# Program production-scale target: RESEARCH_PROGRAM.md Q7 + FEEDSTOCK_SOURCING_MEMO.md
+# frame the deployment question at "100 kt/yr Fe". 40 stacks x 100 cells of
+# 1 m² at 300 mA/cm² / FE 98.5% reaches ~98.5 kt/yr, i.e. the ~100 kt/yr target.
+PRODUCTION_N_CELLS = 100
+PRODUCTION_N_STACKS = 40
 SCREENING_FLAG = "unvalidated (L0)"
 
 
@@ -50,11 +60,18 @@ class ReferenceCell:
 
 
 def reference_cell() -> ReferenceCell:
-    """Build the explicit RC-1-like divided-cell configuration (L0 only)."""
+    """Build the explicit RC-1 reference divided-cell configuration (L0 only).
+
+    Geometry/electrolyte mirror the published RC-1 design basis
+    (docs/REFERENCE_CELL_DESIGN_BASIS.md): 10 cm² cathode, 3 mm
+    electrode-to-membrane gap, acidic sulfate bath. This is the cell the
+    program will actually build, so the derived economics screen the real
+    reference geometry rather than an invented one.
+    """
     return ReferenceCell(
-        name="physics-economics-reference-divided-cell-v1",
-        cathode_area_cm2=200.0,
-        interelectrode_gap_m=0.02,
+        name="RC-1-reference-divided-cell",
+        cathode_area_cm2=10.0,
+        interelectrode_gap_m=0.003,
         bath=BathRecipe(
             c_FeSO4_M=1.0,
             c_Na2SO4_M=0.5,
@@ -63,7 +80,7 @@ def reference_cell() -> ReferenceCell:
             pH=2.0,
         ),
         geometry=CellGeometry(
-            interelectrode_gap_m=0.02,
+            interelectrode_gap_m=0.003,
             membrane=True,
             membrane_area_resistance_ohm_m2=3.0e-4,
             contact_resistance_ohm_m2=5.0e-4,
@@ -137,11 +154,11 @@ def _cost_stack(
         current_efficiency=fe,
         cell_voltage=voltage,
         temperature_C=cell.conditions.temperature_C,
-        electrode_area_m2=cell.cathode_area_cm2 / 10_000.0,
-        n_cells=100,
+        electrode_area_m2=PRODUCTION_CELL_AREA_M2,
+        n_cells=PRODUCTION_N_CELLS,
         electrolyte_type="acidic",
     )
-    n_stacks = 10
+    n_stacks = PRODUCTION_N_STACKS
     capex = CAPEXModel().estimate(params, n_stacks=n_stacks)
     opex = OPEXModel(electricity_price_kWh=electricity_price_kWh).estimate(
         params, capex["Total CAPEX ($)"], n_stacks=n_stacks
