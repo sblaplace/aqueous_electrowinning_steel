@@ -59,6 +59,11 @@ cd aqueous_electrowinning_steel
 # Install Python dependencies
 pip install -r requirements.txt
 
+> **Arena sandbox / fresh clone? Run the setup one-liner first** — it
+> (re)creates the venv, installs pinned deps, and smoke-checks, surviving
+> workspace resets (OS packages don't persist; this committed script does):
+> `bash scripts/arena_setup.sh` (or `make arena-setup`).
+
 # Run the models (each writes figures to docs/figures/ and a JSON report to experiments/data/)
 python -m models.run_electrochemistry       # Pourbaix diagram + HER-competition kinetics
 python -m models.run_technoeconomic         # Base-case CAPEX/OPEX/LCOFe

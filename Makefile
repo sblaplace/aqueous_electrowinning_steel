@@ -4,11 +4,16 @@
 # so it is split into a fast feedback tier and a full-fidelity slow tier.
 # See docs/TESTING.md for the rationale and the `slow` marker.
 
-.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon
+.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon arena-setup
 
 ## Fast feedback tier — parallel; fits easily under runtime caps
 test:
 	pytest -n auto -m "not slow" -q
+
+# Arena AI sandbox / fresh-clone one-liner: re-establishes the venv + deps +
+# build tool after a workspace reset (OS packages don't persist; this does).
+arena-setup:
+	bash scripts/arena_setup.sh
 
 ## Full-fidelity tier — heavy tests (FE engine, hull-cell FE, bath dynamics, Monte Carlo, Sobol, Bayesian/EIS, optimization, benchmarks)
 test-slow:
