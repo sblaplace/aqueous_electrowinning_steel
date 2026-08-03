@@ -123,7 +123,16 @@ For the reference cell, measure flow and gas hold-up and calibrate the model for
 - heat generation, evaporation and cooling;
 - transient startup and shutdown.
 
-A calibrated compartment/strip model is preferable to an unvalidated full CFD model. Move to CFD only for a geometry change that the reduced model cannot represent.
+Higher-fidelity simulation is a pursued, resourced track — not something to
+avoid. The reduced-order two-phase model above is the fast, screening layer and
+stays valuable; but CFD / FEM for the flow field, two-phase gas-liquid
+transport, and current/thermal distribution in the target geometry are things
+we intend to build out, dedicating GPU/accelerator time to them. The physics
+thesis should be backed by the best simulation we can afford *before* the
+physical build, not after. Use the reduced-order model to scope where
+fidelity matters most, then resolve those regions with resolved simulation;
+validate any resolved-simulation claim against the physical cell once it
+produces data, exactly as the reduced-order models are validated.
 
 #### 3.4 Deposit and harvesting
 
@@ -190,7 +199,18 @@ These are acceptance targets for a model against a defined apparatus, not univer
 
 ## Explicitly defer
 
-Do not spend the next cycle on DFT, phase-field, plant-wide digital-twin infrastructure, broad supply-chain modeling, or autonomous PID optimization. They can be valuable later, but none resolves the present dominant uncertainty: whether a divided physical cell can sustain the required FE, voltage, deposit quality and balance closure with real feed and real gas/membrane behavior.
+Do not spend the next cycle on DFT, plant-wide digital-twin infrastructure,
+broad supply-chain modeling, or autonomous PID optimization. They can be
+valuable later, but none resolves the present dominant uncertainty: whether a
+divided physical cell can sustain the required FE, voltage, deposit quality
+and balance closure with real feed and real gas/membrane behavior.
+
+Resolved flow / transport simulation (CFD, FEM) is **not** deferred — it is a
+pursued track (§3.3): we intend to build it out and dedicate GPU/accelerator
+time to it, using the reduced-order models to scope where fidelity matters and
+validating resolved-simulation claims against the physical cell once it
+produces data. What *is* deferred is jumping straight to plant-wide or
+autonomous-control infrastructure before a measured cell exists to support it.
 
 ## Decision gates
 
