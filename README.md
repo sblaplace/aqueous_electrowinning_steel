@@ -87,7 +87,9 @@ python -m models.run_adhesion_peel          # Does iron peel from a drum? Peel w
 python -m models.run_internal_stress        # Residual stress (Stoney / bent-strip) + coupon curvature protocol
 python -m models.run_rde_levich             # RDE kinetics/transport separation (Levich + Koutecky-Levich) → D, δ, Fe/HER Tafel
 python -m models.run_gas_holdup             # Two-phase cathode channel: void fraction, current redistribution, H2 safety
-python -m models.run_all                    # Full suite (21 steps) + master_report.json + dashboard
+python -m models.reference_cell_pipeline    # Unified RC-1 state: physics + gas + thermal + ledgers + advisory safety
+python -m models.reference_cell_pipeline --run-dir path/to/run-directory  # Replay a measured run through the same state
+python -m models.run_all                    # Full suite (22 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 
 # Or use CLI entry points after pip install -e .
@@ -159,6 +161,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/adhesion_peel.py` | Deposit release mechanics: residual stress (Hoffman + hydrogen effusion + thermal mismatch), energy release rate, work of adhesion with thickness-confined plastic amplification, peel force, web-tear and cohesive-failure criteria → the continuous-foil peel window and its coupon test |
 | `models/internal_stress.py` | Deposit internal stress (Stoney / bent-strip): forward/inverse cantilever deflection, exact two-layer laminate finite-thickness correction, GUM uncertainty budget, mechanism decomposition (intrinsic, H, thermal), additive relief (saccharin/chloride), stress evolution σ(h), and the coupon-curvature protocol |
 | `models/gas_holdup.py` | Two-phase cathode channel: Faradaic H₂/O₂ generation as wet gas, drift-flux void-fraction profile up the electrode, Bruggeman effective conductivity, bubble surface coverage, Stephan-Vogt microconvection → effective boundary layer, equipotential current redistribution, self-consistent gas↔current↔FE fixed point, headspace LFL/dilution sizing, and the electrode-height scale-up limit |
+| `models/reference_cell_pipeline.py` | Canonical RC-1 integration boundary: CellPhysics → coupled gas hold-up → thermal balance → charge/iron/energy screening ledgers → OperatingTwin advisory replay; measured run records and process-gate evidence remain separate from predictions |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
 
 ### Selected Model Results
@@ -478,7 +481,8 @@ The roadmap from screening suite to a predictive physical twin is **[docs/NEXT_S
 The versioned experimental data contract, run-directory layout, ledger semantics,
 and QA/gate-evidence workflow are **[docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md)**. The
 pre-procurement reference-cell configuration, design boundaries, safety/measurement
-requirements, and CFD credibility limits are **[docs/REFERENCE_CELL_DESIGN_BASIS.md](docs/REFERENCE_CELL_DESIGN_BASIS.md)**.
+requirements, and CFD credibility limits are **[docs/REFERENCE_CELL_DESIGN_BASIS.md](docs/REFERENCE_CELL_DESIGN_BASIS.md)**. The
+canonical RC-1 model/data/safety integration boundary is **[docs/REFERENCE_CELL_PIPELINE.md](docs/REFERENCE_CELL_PIPELINE.md)**.
 
 Pre-lab desk work (July 2026): **[docs/TIER0_ARCHAEOLOGY.md](docs/TIER0_ARCHAEOLOGY.md)** (prior-art anchors and prior corrections), **[docs/CLAIM_CHARTS_PRELIMINARY.md](docs/CLAIM_CHARTS_PRELIMINARY.md)** (Electra claim charts, desk level), and **[docs/FIRST_LAB_DAY.md](docs/FIRST_LAB_DAY.md)** (bath recipe + Hull/FE run protocol).
 
