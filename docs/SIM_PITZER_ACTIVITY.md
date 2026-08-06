@@ -97,10 +97,14 @@ mechanistic decomposition; plan temperature sweeps accordingly.
 
 ## Limitations (unchanged honesty)
 
-- Pitzer binary parameters are 25 °C values; only Aφ responds to T.
+- Pitzer binary parameters are 25 °C values; Aφ responds to T exactly,
+  and as of 2026-08-06 the binaries route through a per-parameter T-form
+  framework (`PitzerPair.at_T`, EQ3/6-Sandia-style polynomials).  The
+  shipped tables carry all-zero coefficients (frozen 25 °C set), so
+  current numbers are byte-identical to frozen-parameter behavior;
   Reardon & Beckie (1987) publish fitted T-dependence over 10–60 °C —
-  flagged in code as a follow-up.  Treat >60 °C activity numbers as
-  extrapolated.
+  wiring verified coefficients in is the remaining follow-up.  Treat
+  >60 °C activity numbers as extrapolated.
 - Density estimate is apparent-volume screening level (±2 %); a measured
   bath density should be supplied when available.
 - Conductivity retains an empirical DHO-style attenuation calibrated to
@@ -113,12 +117,22 @@ mechanistic decomposition; plan temperature sweeps accordingly.
 
 ## Next physics steps (from the same audit)
 
-1. Wiring `scripts/dft_h_adsorption_fe.py` ΔG(H_ads) into a
-   Volmer–Heyrovsky–Tafel microkinetic HER model — makes HER a predicted
-   quantity rather than a suppressed-HER assumption.
-2. Full Butler–Volmer reverse branches (mixed-potential corrosion,
-   honest PRE dissolution) — replaces the Tafel-only clipping and the
-   pulse-module heuristic split.
-3. Fe³⁺ redox shuttle consumption at the cathode + O₂-based bath aging
-   (a `bath_dynamics`/`closed_loop` source term).
-4. Temperature-dependent Pitzer parameter fits (R&B 1987 functions).
+1. ~~Wiring ΔG(H_ads) into a Volmer–Heyrovsky–Tafel microkinetic HER
+   model~~ — **shipped 2026-08-06** as `models/her_microkinetics.py`
+   (ΔG_H* ≈ −0.40 eV screening anchor; reproduces the empirical slope
+   within ~20 %, θ_H ≈ 1; empirical branch stays operational default —
+   see `docs/SIM_BUTLER_VOLMER.md`).
+2. ~~Full Butler–Volmer reverse branches~~ — **shipped 2026-08-06**
+   (`ButlerVolmerBranch`, default-on; `i(E_eq)=0` exact, dissolution
+   branch anodic of E_eq, reverse term 10⁻³–10⁻⁸ at operating η so all
+   FE/V results are unchanged at screening precision — same doc).  The
+   `pulse.py` heuristic PRE split was deliberately left as-is.
+3. ~~Fe³⁺ redox shuttle + O₂-based bath aging~~ — **shipped 2026-08-06**
+   as `models/fe3_shuttle.py` (sealed/open/crossover scenarios; the
+   honest L0 finding is iron-inventory sludge bleed, not CE loss — see
+   `docs/SIM_BATH_REDOX.md`).  Remaining: wiring it as a CSTR source
+   term in `bath_dynamics`/`closed_loop`.
+4. Temperature-dependent Pitzer parameter fits — **framework shipped
+   2026-08-06** (`PitzerPair.t_coeffs` / `at_T`, all-zero by default);
+   the verified coefficient tables themselves (R&B 1987 functions) are
+   still to be sourced and are the open part.

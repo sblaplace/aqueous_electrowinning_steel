@@ -211,6 +211,11 @@ END tests/test_butler_volmer.py
 
 ================================================================================
 STILL OPEN (planned in the lost turn, not written; carry into a follow-up)
+
+*** UPDATE 2026-08-06 (Arena follow-up turn): all three items below are now ***
+*** DONE on PR #43 — T-form framework in commit 001fa7e, registry entries in  ***
+*** commit 20f2db2, docs/README in the docs commit closing this brief.        ***
+*** Original plan text retained underneath for the record.                    ***
 ================================================================================
 
 ### Pitzer T-form framework (models/pitzer.py) — planned, not implemented
