@@ -3,9 +3,14 @@
 
 Full Nernst-Planck transport in a stagnant cathode film with:
 
-* **Two Faradaic reactions** at the cathode:
+* **Faradaic reactions** at the cathode:
     Fe²⁺ + 2 e⁻ → Fe(s)        (iron deposition)
-    2 H⁺ + 2 e⁻ → H₂(g)        (hydrogen evolution)
+    2 H⁺ + 2 e⁻ → H₂(g)        (proton-reduction HER; dominates in acid)
+    2 H₂O + 2 e⁻ → H₂ + 2 OH⁻  (water-reduction HER; dominates at
+                               high pH — see ``water_reduction_her``)
+  The two HER branches share the same Nernst equilibrium (RHE) but have
+  separate exchange currents and Tafel slopes, so alkaline/near-neutral
+  baths are represented inside the model rather than outside its envelope.
 * **Migration + diffusion** for six species:
     Fe²⁺ (z=+2), H⁺ (z=+1), OH⁻ (z=−1),
     HSO₄⁻ (z=−1), SO₄²⁻ (z=−2), H₃BO₃ (z=0), H₂BO₃⁻ (z=−1)
@@ -242,6 +247,14 @@ class DiffusionLayer1D:
     her_i0: float = 0.010
     fe_tafel_V: float = 0.120
     her_tafel_V: float = 0.140
+    # Water-reduction HER branch (2 H₂O + 2e⁻ → H₂ + 2 OH⁻).  Disabled
+    # by default for back-compat; set water_reduction_her=True for
+    # alkaline/near-neutral baths.  Its exchange current is per unit
+    # water activity (≈1) and its cathodic Tafel slope is typically
+    # ~120 mV/dec on Fe.
+    water_reduction_her: bool = False
+    her_water_i0: float = 1.0e-5
+    her_water_tafel_V: float = 0.120
     E_anode_eq: float = 1.229
     eta_anode_V: float = 0.40
     ir_drop_V: float = 0.20
@@ -640,6 +653,29 @@ class DiffusionLayer1D:
         return float(i0 * (10.0 ** ((E_eq - E) / slope_c)
                            - 10.0 ** ((E - E_eq) / slope_a)))
 
+    def _her_water_equilibrium_potential(self, surface_pH: float) -> float:
+        """E_eq for 2 H₂O + 2e⁻ → H₂ + 2 OH⁻ (V vs SHE).
+
+        Same RHE potential as proton HER (the two reactions are linked by
+        water autoionization), so E_eq = −(RT/F) ln10 · pH.  Its kinetics
+        are separate (i0, Tafel slope) and it dominates at high pH where
+        proton concentration is negligible.
+        """
+        return self._her_equilibrium_potential(surface_pH)
+
+    def _her_water_current(
+        self, E: float, surface_pH: float
+    ) -> float:
+        """Cathodic current of the water-reduction HER branch (A/m²)."""
+        if not self.water_reduction_her:
+            return 0.0
+        eq = self._her_water_equilibrium_potential(surface_pH)
+        i0_T = arrhenius_i0(
+            self.her_water_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K
+        )
+        # Tafel cathodic branch only (no meaningful reverse at cathodic E).
+        return float(max(i0_T * 10.0 ** ((eq - E) / self.her_water_tafel_V), 0.0))
+
     # ─── Transport limit ───────────────────────────────────────────
 
     def transport_limit_A_m2(self, i_her_A_m2: float = 0.0) -> float:
@@ -724,12 +760,15 @@ class DiffusionLayer1D:
                                             self.fe_anodic_slope_V, fe_eq), 0.0)
             i_her_kin = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
                                              self.her_anodic_slope_V, her_eq), 0.0)
+            # Water-reduction branch (high pH); its OH⁻ production enters
+            # the proton-invariant balance just like proton consumption.
+            i_her_water = self._her_water_current(E, surf_pH)
 
             # Koutecky-Levich: Fe cannot outrun transport
             i_fe_new = 1.0 / (
                 1.0 / max(i_fe_kin, 1e-30) + 1.0 / max(i_lim, 1e-30)
             )
-            i_her_new = i_her_kin
+            i_her_new = i_her_kin + i_her_water
 
             # Convergence (relative)
             tol = picard_tol
