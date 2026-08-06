@@ -15,13 +15,14 @@ from models.scenarios import (
     CONSERVATIVE_ALKALINE,
     FUTURE_TARGET,
     OPTIMIZED_ALKALINE,
+    SOLUBLE_FE_ACIDIC,
     Scenario,
 )
 
 
 class TestScenarioSet:
-    def test_four_scenarios_defined(self):
-        assert len(ALL_SCENARIOS) == 4
+    def test_five_scenarios_defined(self):
+        assert len(ALL_SCENARIOS) == 5
 
     def test_names_are_unique(self):
         names = [s.name for s in ALL_SCENARIOS]
@@ -47,7 +48,9 @@ class TestScenarioSet:
 class TestCellVoltage:
     def test_all_voltages_positive_and_plausible(self):
         for s in ALL_SCENARIOS:
-            assert 0.5 < s.V_cell < 5.0
+            # Soluble-anode electrorefining cells run ~0.3–0.5 V; OER
+            # routes run ~1.2–2.5 V.
+            assert 0.2 < s.V_cell < 5.0
 
     def test_decomposition_sums_correctly(self):
         """V_cell = |E_anode − E_cathode| + η_c + η_a + IR."""
@@ -131,7 +134,7 @@ class TestScenarioOrdering:
 
     def test_optimized_alkaline_has_the_lowest_voltage(self):
         """Alkaline's thermodynamic advantage is the reason to consider it."""
-        assert OPTIMIZED_ALKALINE.V_cell == min(s.V_cell for s in ALL_SCENARIOS)
+        assert SOLUBLE_FE_ACIDIC.V_cell == min(s.V_cell for s in ALL_SCENARIOS)
 
     def test_future_target_is_more_aggressive_than_conservative(self):
         assert (

@@ -94,6 +94,7 @@ D_HSO4 = 1.33e-9
 D_SO4 = 1.07e-9
 D_H3BO3 = 0.92e-9
 D_H2BO3 = 1.00e-9
+D_NA = 1.33e-9         # Na⁺ (matches transport.py)
 
 # Default activation energy for diffusion (J/mol)
 DIFF_EA_J_MOL = 18.0e3
@@ -130,6 +131,7 @@ class FilmProfile:
     h2bo3_mol_m3: np.ndarray
     potential_V: np.ndarray
     depleted: bool
+    na_mol_m3: np.ndarray = None  # only populated when transport_na=True
     Ksp_FeOH2: float = KSP_FEOH2  # (mol/L)³ at the film temperature
 
     # ── convenience views (mol/L) ───────────────────────────────────
@@ -255,6 +257,12 @@ class DiffusionLayer1D:
     water_reduction_her: bool = False
     her_water_i0: float = 1.0e-5
     her_water_tafel_V: float = 0.120
+    # Transport Na+ as a zero-flux species (N_Na = 0 at the electrode).
+    # When False Na+ is held at its bulk concentration (the prior
+    # approximation); when True a concentration gradient develops across
+    # the film and Na+ migration contributes to the potential — the
+    # correct treatment for a supporting electrolyte in a stagnant film.
+    transport_na: bool = False
     E_anode_eq: float = 1.229
     eta_anode_V: float = 0.40
     ir_drop_V: float = 0.20
@@ -301,6 +309,9 @@ class DiffusionLayer1D:
         # Cache the composition-dependent Pitzer γ so the per-iteration
         # Nernst correction does not re-solve Pitzer dozens of times.
         self._gamma_fe_cache: float | None = None
+        # Bulk Na+ concentration (mol/m3), used as the boundary value and
+        # (when transport_na is False) held constant across the film.
+        self._c_na_bulk: float = 2.0 * self.support_conc_M * 1000.0
 
     # ─── Temperature-dependent properties ───────────────────────────
 
@@ -350,6 +361,10 @@ class DiffusionLayer1D:
     @property
     def D_h2bo3(self) -> float:
         return _diffusivity_T(D_H2BO3, self.T)
+
+    @property
+    def D_na(self) -> float:
+        return _diffusivity_T(D_NA, self.T)
 
     @property
     def Ksp(self) -> float:
@@ -445,7 +460,8 @@ class DiffusionLayer1D:
 
     # ─── Equilibrium fractions ─────────────────────────────────────
 
-    def _fractions(self, c_h: float, c_s: float, c_b: float) -> dict:
+    def _fractions(self, c_h: float, c_s: float, c_b: float,
+                   c_na: float | None = None) -> dict:
         """Individual species concentrations and equilibrium derivatives."""
         ka2 = self.Ka2
         kab = self.Ka_b
@@ -462,13 +478,15 @@ class DiffusionLayer1D:
         # d(f_h3bo3)/d(c_h) = −d(f_h2bo3)/d(c_h) = kab / (kab + c_h)²
         g2 = kab / (denom_b * denom_b)
 
+        if c_na is None:
+            c_na = self._c_na_bulk
         return {
             "c_hso4": f_hso4 * c_s,
             "c_so4": f_so4 * c_s,
             "c_h3bo3": f_h3bo3 * c_b,
             "c_h2bo3": f_h2bo3 * c_b,
             "c_oh": KW_SI / c_h,
-            "c_na": 2.0 * self.support_conc_M * 1000.0,
+            "c_na": c_na,
             "f_hso4": f_hso4,
             "f_so4": f_so4,
             "f_h3bo3": f_h3bo3,
@@ -559,6 +577,77 @@ class DiffusionLayer1D:
 
     # ─── Film integration ──────────────────────────────────────────
 
+    def _rhs_na(self, _x: float, y: np.ndarray, n_fe: float, n_prot: float):
+        """6-variable RHS with Na+ as a transported zero-flux species.
+
+        State ``[c_fe, c_h, c_s, c_b, c_na, phi]``.  Na+ obeys
+        N_Na = 0 at the electrode (it is not consumed there), so a
+        diffusion-migration gradient develops across the film.
+        """
+        c_fe = max(y[0], 1e-10)
+        c_h = max(y[1], 1e-20)
+        c_s = max(y[2], 1e-10)
+        c_b = max(y[3], 0.0)
+        c_na = max(y[4], 0.0)
+
+        fr = self._fractions(c_h, c_s, c_b, c_na)
+        d_fe, d_h, d_oh = self.D_fe, self.D_h, self.D_oh
+        d_hso4, d_so4 = self.D_hso4, self.D_so4
+        d_h3bo3, d_h2bo3, d_na = self.D_h3bo3, self.D_h2bo3, self.D_na
+        f = self.f_RT
+        g1, g2 = fr["g1"], fr["g2"]
+        kw_c2 = KW_SI / (c_h * c_h)
+
+        # 6×6 system, u = [dc_fe, dc_h, dc_s, dc_b, dc_na, dphi]
+        A = np.zeros((6, 6))
+        b = np.zeros(6)
+
+        # 1. N_Fe = n_fe
+        A[0, 0] = -d_fe
+        A[0, 5] = -2.0 * d_fe * f * c_fe
+        b[0] = n_fe
+
+        # 2. N_S = 0 (total sulfate)
+        A[1, 1] = (d_so4 - d_hso4) * c_s * g1
+        A[1, 2] = -(d_hso4 * fr["f_hso4"] + d_so4 * fr["f_so4"])
+        A[1, 5] = f * (d_hso4 * fr["c_hso4"] + 2.0 * d_so4 * fr["c_so4"])
+        b[1] = 0.0
+
+        # 3. N_B = 0 (total borate)
+        A[2, 1] = (d_h2bo3 - d_h3bo3) * c_b * g2
+        A[2, 3] = -(d_h3bo3 * fr["f_h3bo3"] + d_h2bo3 * fr["f_h2bo3"])
+        A[2, 5] = f * d_h2bo3 * fr["c_h2bo3"]
+        b[2] = 0.0
+
+        # 4. proton invariant flux = n_prot
+        A[3, 1] = -d_h - d_hso4*c_s*g1 - d_h3bo3*c_b*g2 - d_oh*kw_c2
+        A[3, 2] = -d_hso4 * fr["f_hso4"]
+        A[3, 3] = -d_h3bo3 * fr["f_h3bo3"]
+        A[3, 5] = f * (-d_h*c_h + d_hso4*fr["c_hso4"] - d_oh*KW_SI/c_h)
+        b[3] = n_prot
+
+        # 5. N_Na = 0 (supporting cation, no electrode reaction)
+        A[4, 4] = -d_na
+        A[4, 5] = -1.0 * d_na * f * c_na
+        b[4] = 0.0
+
+        # 6. differentiated electroneutrality (c_na now variable)
+        #    2 c_fe + c_h + c_na = c_hso4 + 2 c_so4 + c_h2bo3 + c_oh
+        A[5, 0] = 2.0
+        A[5, 1] = 1.0 + c_s*g1 + c_b*g2 + kw_c2
+        A[5, 2] = fr["f_hso4"] - 2.0
+        A[5, 3] = -fr["f_h2bo3"]
+        A[5, 4] = 1.0
+        A[5, 5] = 0.0
+        b[5] = 0.0
+
+        try:
+            u = np.linalg.solve(A, b)
+        except np.linalg.LinAlgError:
+            return np.zeros(6)
+        return u
+
+
     def integrate(self, i_fe_A_m2: float, i_her_A_m2: float,
                   grid_points: int | None = None,
                   rtol: float = 1e-8, atol: float = 1e-10,
@@ -587,11 +676,16 @@ class DiffusionLayer1D:
         c_s_0 = self.bulk_c_s
         c_b_0 = self.buffer_conc_M * 1000.0
 
-        y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, 0.0])
+        if self.transport_na:
+            y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, self._c_na_bulk, 0.0])
+            rhs = self._rhs_na
+        else:
+            y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, 0.0])
+            rhs = self._rhs
         x_eval = np.linspace(self.delta_m, 0.0, gp)
 
         sol = solve_ivp(
-            self._rhs,
+            rhs,
             (self.delta_m, 0.0),
             y0,
             t_eval=x_eval,
@@ -608,7 +702,12 @@ class DiffusionLayer1D:
         c_h = sol.y[1][::-1]
         c_s = sol.y[2][::-1]
         c_b = sol.y[3][::-1]
-        phi = sol.y[4][::-1]
+        if self.transport_na:
+            c_na = sol.y[4][::-1]
+            phi = sol.y[5][::-1]
+        else:
+            c_na = np.full_like(c_fe, self._c_na_bulk)
+            phi = sol.y[4][::-1]
 
         floor_fe = 1e-8 * c_fe_0
         depleted = bool(np.min(c_fe) <= floor_fe * 1.01)
@@ -635,6 +734,7 @@ class DiffusionLayer1D:
             potential_V=phi,
             depleted=depleted,
             Ksp_FeOH2=self.Ksp,
+            na_mol_m3=c_na,
         )
 
     # ─── Electrode kinetics ────────────────────────────────────────

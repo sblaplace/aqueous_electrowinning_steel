@@ -398,3 +398,47 @@ def test_water_reduction_her_current_zero_when_disabled():
     from models.diffusion_layer_1d import DiffusionLayer1D
     m = DiffusionLayer1D(water_reduction_her=False)
     assert m._her_water_current(-1.0, 10.0) == 0.0
+
+
+# ── Na+ as a transported species (2026-08) ─────────────────────────────────
+
+
+def test_na_constant_by_default():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(support_conc_M=0.5)
+    assert m.transport_na is False
+    r = m.solve(100.0)
+    # Na is held at the bulk value throughout the film.
+    assert np.allclose(r.profile.na_mol_m3 / 1000.0, 1.0)
+
+
+def test_na_transport_accumulates_at_cathode():
+    """With N_Na=0, Na+ migrates to and accumulates at the cathode surface."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(
+        fe_conc_M=0.1, support_conc_M=1.0, transport_na=True,
+        grid_points=101, fast_mode=False,
+    )
+    r = m.solve(50.0)
+    na = r.profile.na_mol_m3 / 1000.0
+    # surface (index 0) enrichment over bulk (index -1)
+    assert na[0] > na[-1]
+    assert r.converged
+
+
+def test_na_zero_flux_conservation():
+    """N_Na = -D_na(dc/dx + c f dphi/dx) must be ~0 across the film."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    from scipy.interpolate import CubicSpline
+    m = DiffusionLayer1D(
+        fe_conc_M=0.1, support_conc_M=1.0, transport_na=True,
+        grid_points=101, fast_mode=False,
+    )
+    r = m.solve(50.0)
+    x = r.profile.x_m
+    cs_na = CubicSpline(x, r.profile.na_mol_m3)
+    cs_phi = CubicSpline(x, r.profile.potential_V)
+    f = m.f_RT
+    Nna = -m.D_na * (cs_na(x, 1) + r.profile.na_mol_m3 * f * cs_phi(x, 1))
+    # Zero flux to within numerical tolerance.
+    assert np.max(np.abs(Nna)) < 1e-6

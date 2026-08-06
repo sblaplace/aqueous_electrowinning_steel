@@ -65,8 +65,14 @@ class Scenario:
 
     @property
     def _effective_anode_eq(self) -> float:
-        """OER equilibrium potential (V vs. SHE): model or legacy value."""
+        """Anode equilibrium potential (V vs. SHE): model or legacy value.
+
+        For a soluble Fe anode this is the Fe²⁺/Fe potential; for an inert
+        DSA it is the OER equilibrium.
+        """
         if self.anode is not None:
+            if getattr(self.anode, "is_soluble", False):
+                return self.anode.fe_dissolution_equilibrium()
             return self.anode.oer_equilibrium()
         return self.E_anode_eq
 
@@ -184,6 +190,44 @@ def _build_aware_acidic(
     )
 
 
+def _build_soluble_fe(
+    temperature_C: float,
+    pH: float,
+    j_mA_cm2: float,
+    fe2_conc_M: float = 1.0,
+) -> "AnodeKinetics":
+    """Soluble Fe anode (Fe → Fe²⁺ + 2e⁻): classical iron electrorefining.
+
+    No gas evolution, near Fe²⁺/Fe equilibrium, so the cell runs at a
+    small inter-electrode voltage (~0.2–0.4 V) rather than the ~2 V of
+    an oxygen-evolving DSA.
+    """
+    from .anode import AnodeKinetics, DSA_IRO2_TA2O5
+    # Material only supplies the temperature carrier; the chemistry flag
+    # switches all kinetics to Fe dissolution.
+    mat = DSA_IRO2_TA2O5.__class__(
+        name="Soluble Fe anode",
+        oer_i0=DSA_IRO2_TA2O5.oer_i0,
+        oer_tafel_V=DSA_IRO2_TA2O5.oer_tafel_V,
+        cer_i0=DSA_IRO2_TA2O5.cer_i0,
+        cer_tafel_V=DSA_IRO2_TA2O5.cer_tafel_V,
+        cer_n=DSA_IRO2_TA2O5.cer_n,
+        oer_n=DSA_IRO2_TA2O5.oer_n,
+        max_bubble_fraction=0.0,
+        temperature_C=temperature_C,
+        oer_ea_kj_mol=DSA_IRO2_TA2O5.oer_ea_kj_mol,
+        references="Classical Fe electrorefining; soluble iron anode",
+    )
+    return AnodeKinetics(
+        material=mat,
+        electrolyte_type="acidic",
+        pH=pH,
+        electrolyte_resistivity_ohm_m2=0.0005,
+        anode_chemistry="soluble",
+        fe2_conc_M=fe2_conc_M,
+    )
+
+
 # ─── Scenario Definitions ────────────────────────────────────────────────
 
 CONSERVATIVE_ALKALINE = Scenario(
@@ -294,9 +338,39 @@ FUTURE_TARGET = Scenario(
     references="Projected; based on extrapolation of current trends",
 )
 
+SOLUBLE_FE_ACIDIC = Scenario(
+    name="Soluble Fe anode (acidic sulfate)",
+    description=(
+        "Classical iron electrorefining configuration: a soluble Fe anode "
+        "dissolves (Fe → Fe²⁺ + 2e⁻) at near the Fe²⁺/Fe potential while Fe "
+        "plates at the cathode. No oxygen/chlorine gas, no bubble penalty, "
+        "and a cell voltage an order of magnitude below an oxygen-evolving "
+        "DSA — the lowest-energy route, contingent on a supply of scrap or "
+        "high-purity iron anodes (it refines rather than wins iron from ore)."
+    ),
+    electrolyte_type="acidic",
+    electrolyte_composition="1 M FeSO₄ / 0.5 M Na₂SO₄, pH 2–3",
+    current_density_mA_cm2=200.0,
+    current_efficiency=0.95,
+    temperature_C=60.0,
+    E_cathode_eq=-0.440,
+    E_anode_eq=-0.440,          # symmetric Fe/Fe²⁺ cell
+    eta_cathode=0.15,
+    eta_anode=0.10,            # legacy fallback (overridden by model)
+    ir_drop=0.10,
+    anode_type="soluble_Fe",
+    anode=_build_soluble_fe(temperature_C=60.0, pH=2.5, j_mA_cm2=200.0),
+    capex_modifier=0.90,
+    electricity_price_kWh=0.04,
+    electrolyte_makeup_per_t_Fe=5.0,
+    ore_cost_per_t_Fe=120.0,   # scrap/Fe anode feedstock, not ore
+    references="Classical Fe electrorefining; soluble anode electrochemistry",
+)
+
 ALL_SCENARIOS = [
     CONSERVATIVE_ALKALINE,
     OPTIMIZED_ALKALINE,
     AWARE_ACIDIC,
     FUTURE_TARGET,
+    SOLUBLE_FE_ACIDIC,
 ]
