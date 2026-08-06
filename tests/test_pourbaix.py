@@ -145,3 +145,35 @@ class TestFePourbaix:
         cold = FePourbaix(activity=1.0, temperature_C=25.0).her_margin(2.0)
         hot = FePourbaix(activity=1.0, temperature_C=80.0).her_margin(2.0)
         assert cold != hot
+
+
+# ── Fe(OH)₂ solubility product temperature dependence ──────────────────────
+
+
+def test_ksp_feoh2_recovers_25c_anchor():
+    """At 25 °C the van 't Hoff form must return the tabulated Ksp."""
+    from models.pourbaix import ksp_feoh2, LOGKSP_FEOH2
+    ksp25 = ksp_feoh2(298.15)
+    assert np.log10(ksp25) == pytest.approx(LOGKSP_FEOH2, abs=1e-9)
+
+
+def test_ksp_feoh2_rises_with_temperature():
+    """Fe(OH)₂ dissolution is endothermic: Ksp increases with T."""
+    from models.pourbaix import ksp_feoh2
+    cold = ksp_feoh2(298.15)
+    hot = ksp_feoh2(333.15)   # 60 °C
+    assert hot > cold
+    # ~2.5× between 25 and 60 °C with ΔH ≈ 22 kJ/mol (screening value).
+    assert 2.0 < hot / cold < 3.0
+
+
+def test_diffusion_layer_uses_temperature_corrected_ksp():
+    """The FE engine's film profile must carry the T-corrected Ksp."""
+    from models.diffusion_layer_1d import DiffusionLayer1D, KSP_FEOH2
+
+    cold = DiffusionLayer1D(temperature_C=25.0)
+    hot = DiffusionLayer1D(temperature_C=60.0)
+    assert cold.Ksp == pytest.approx(KSP_FEOH2, rel=1e-6)
+    assert hot.Ksp > cold.Ksp
+    r = hot.solve(50.0)
+    assert r.profile.Ksp_FeOH2 == pytest.approx(hot.Ksp, rel=1e-9)

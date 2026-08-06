@@ -1,6 +1,7 @@
 """Tests for hydrogen embrittlement screening model."""
 
 import numpy as np
+import pytest
 from models.hydrogen_embrittlement import (
     HydrogenEmbrittlementModel,
     TrapSiteParams,
@@ -14,6 +15,9 @@ from models.hydrogen_embrittlement import (
     trap_density_m3,
     build_he_model_from_mechanical,
     synthetic_h_uptake_data,
+    ipz_hydrogen_entry,
+    ipz_parameters_from_permeation,
+    IPZ_K_ABS_DEFAULT,
 )
 
 
@@ -229,19 +233,102 @@ def test_full_model_predict():
 
 
 def test_h_uptake_from_electrolysis():
-    """Faraday-based H uptake should scale with current density."""
+    """H uptake: HER current rises with j and H entry is positive.
+
+    At a fixed HER *fraction* the H-in-Fe concentration (ppm) falls as j
+    rises, because Fe mass grows linearly with j while the IPZ entry flux
+    grows only as √θ ∝ √j_HER — the physically correct 'higher current
+    density → less diffusible H per kg iron' trend.  Assert the absolute
+    H uptake (mol/m²) and HER current scale with j, and use the empirical
+    model for the ppm-monotonic-in-j check the original test encoded.
+    """
     up_low = hydrogen_uptake_from_electrolysis(50.0)
     up_high = hydrogen_uptake_from_electrolysis(200.0)
-    assert up_high["C_H_diffusible_ppm"] > up_low["C_H_diffusible_ppm"]
     assert up_high["her_current_A_m2"] > up_low["her_current_A_m2"]
+    assert up_high["H_absorbed_mol_m2"] > up_low["H_absorbed_mol_m2"]
     assert up_low["absorption_fraction"] > 0
+    # Empirical model retains the positive ppm-vs-j trend at fixed her_eff.
+    emp_low = hydrogen_uptake_from_electrolysis(50.0, model="empirical")
+    emp_high = hydrogen_uptake_from_electrolysis(200.0, model="empirical")
+    assert emp_high["C_H_diffusible_ppm"] > emp_low["C_H_diffusible_ppm"]
 
 
 def test_h_uptake_pH_effect():
-    """Lower pH → higher H uptake (more H⁺ available)."""
-    up_low_pH = hydrogen_uptake_from_electrolysis(100.0, bath_pH=2.0)
-    up_high_pH = hydrogen_uptake_from_electrolysis(100.0, bath_pH=5.0)
+    """Empirical model: lower pH → higher H uptake (more H⁺ available).
+
+    The default IPZ model sets θ from the HER gas rate alone (at fixed
+    j_HER), so pH shifts the required overpotential rather than the entry
+    flux; the pH sensitivity the original test encoded belongs to the
+    empirical correlation, which is exercised explicitly here.
+    """
+    up_low_pH = hydrogen_uptake_from_electrolysis(
+        100.0, bath_pH=2.0, model="empirical"
+    )
+    up_high_pH = hydrogen_uptake_from_electrolysis(
+        100.0, bath_pH=5.0, model="empirical"
+    )
     assert up_low_pH["C_H_diffusible_ppm"] > up_high_pH["C_H_diffusible_ppm"]
+
+
+# ── IPZ (Iyer–Pickering–Zamanzadeh) H-entry model ──────────────────────────
+
+
+def test_ipz_theta_in_0_to_1():
+    """Surface H coverage must remain a physical sub-monolayer fraction."""
+    for j_her in [10.0, 100.0, 1000.0, 5000.0]:
+        r = ipz_hydrogen_entry(j_her, bath_pH=3.0, temperature_C=60.0)
+        assert 0.0 < r["theta_H"] <= 1.0
+        assert r["eta_V"] > 0.0
+        assert r["entry_flux_mol_m2_s"] > 0.0
+
+
+def test_ipz_entry_efficiency_falls_with_her():
+    """More HER gas → more recombination → a smaller fraction enters metal."""
+    low = ipz_hydrogen_entry(100.0, bath_pH=3.0)
+    high = ipz_hydrogen_entry(5000.0, bath_pH=3.0)
+    assert high["entry_efficiency"] < low["entry_efficiency"]
+    # But the absolute entry flux still rises with HER (more H around).
+    assert high["entry_flux_mol_m2_s"] > low["entry_flux_mol_m2_s"]
+
+
+def test_ipz_default_uptake_is_physically_scaled():
+    """Default IPZ uptake should give a physically reasonable H level."""
+    r = hydrogen_uptake_from_electrolysis(
+        100.0, deposition_time_s=900, her_efficiency=0.15, bath_pH=3.0
+    )
+    assert r["model"] == "ipz"
+    assert 0.0 < r["absorption_fraction"] < 0.15
+    assert 0.1 < r["C_H_diffusible_ppm"] < 500.0
+    assert "ipz" in r and 0.0 < r["ipz"]["theta_H"] <= 1.0
+
+
+def test_ipz_zero_her_gives_zero_entry():
+    """No HER means no hydrogen to absorb."""
+    r = hydrogen_uptake_from_electrolysis(
+        100.0, her_efficiency=0.0, bath_pH=3.0
+    )
+    assert r["C_H_diffusible_ppm"] == 0.0
+    assert r["absorption_fraction"] == 0.0
+
+
+def test_ipz_permeation_inversion_round_trips():
+    """Recovering k_abs from a synthetic permeation flux should be exact."""
+    j_her = 1000.0
+    base = ipz_hydrogen_entry(j_her, bath_pH=3.0, k_abs=IPZ_K_ABS_DEFAULT)
+    j_perm = base["entry_flux_mol_m2_s"] * 96485.3
+    inv = ipz_parameters_from_permeation(j_perm, j_her, bath_pH=3.0)
+    assert inv["k_abs"] == pytest.approx(IPZ_K_ABS_DEFAULT, rel=1e-6)
+    assert 0.0 < inv["theta_H"] <= 1.0
+
+
+def test_empirical_model_retained():
+    """The empirical correlation must remain available and marked."""
+    r = hydrogen_uptake_from_electrolysis(
+        100.0, bath_pH=3.5, model="empirical"
+    )
+    assert r["model"] == "empirical"
+    assert r["C_H_diffusible_ppm"] > 0
+
 
 
 def test_synthetic_h_uptake_data():

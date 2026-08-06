@@ -318,3 +318,127 @@ def test_no_nan_in_results():
             s.film_potential_drop_V,
         ):
             assert math.isfinite(val), f"Non-finite value at j={j}: {val}"
+
+
+# ── Pitzer activity-coefficient correction (2026-08) ───────────────────────
+
+
+def test_ideal_activity_model_is_default():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D()
+    assert m.activity_model == "ideal"
+    assert m.gamma_fe == 1.0
+
+
+def test_pitzer_activity_model_gives_strong_nonideality():
+    """γ_Fe²⁺ in concentrated sulfate is well below 1 (Pitzer 2–2 salt)."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(activity_model="pitzer", fe_conc_M=1.0, temperature_C=60.0)
+    assert 0.0 < m.gamma_fe < 0.25
+
+
+def test_pitzer_shifts_fe_equilibrium_potential_negative():
+    """a_Fe = γ·[Fe] < [Fe] for concentrated sulfate → E_eq(Fe) shifts negative."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    ideal = DiffusionLayer1D(activity_model="ideal")._fe_equilibrium_potential(0.5)
+    pitzer = DiffusionLayer1D(activity_model="pitzer")._fe_equilibrium_potential(0.5)
+    # Tens of mV negative shift — comparable to the HER margin.
+    assert pitzer < ideal - 0.020
+
+
+def test_invalid_activity_model_rejected():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    import pytest
+    with pytest.raises(ValueError):
+        DiffusionLayer1D(activity_model="davies")
+
+
+# ── Water-reduction HER branch (2026-08) ────────────────────────────────────
+
+
+def test_water_reduction_branch_disabled_by_default():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D()
+    assert m.water_reduction_her is False
+
+
+def test_water_reduction_branch_adds_her_current_at_neutral_pH():
+    """With water reduction enabled, a water branch contributes to HER.
+
+    At neutral/high pH the proton-only HER is starved of H+; the water
+    branch supplies an additional cathodic pathway, so the direct
+    water-reduction current is positive and Fe efficiency is not improved.
+    """
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    kw = dict(pH_bulk=7.0, fe_conc_M=0.05, support_conc_M=1.0,
+              buffer_conc_M=0.0, fast_mode=True)
+    m = DiffusionLayer1D(water_reduction_her=True, **kw)
+    r = m.solve(50.0)
+    # The water branch itself carries positive current at the surface.
+    i_water = m._her_water_current(r.V_cathode_V, r.surface_pH)
+    assert i_water > 0.0
+    proton_only = DiffusionLayer1D(water_reduction_her=False, **kw).solve(50.0)
+    # Adding a cathodic side reaction cannot raise Fe efficiency.
+    # A side reaction cannot make FE higher within solver tolerance.
+    assert r.current_efficiency <= proton_only.current_efficiency + 0.02
+
+
+def test_water_reduction_branch_unchanged_at_acid_pH():
+    """In strongly acidic baths the water branch is negligible vs proton HER."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    kw = dict(pH_bulk=2.0, fe_conc_M=1.0, support_conc_M=0.5,
+              buffer_conc_M=0.1, fast_mode=True)
+    a = DiffusionLayer1D(water_reduction_her=False, **kw).solve(100.0)
+    b = DiffusionLayer1D(water_reduction_her=True, **kw).solve(100.0)
+    # Water branch adds <2% of total HER at pH 2 (proton reduction dominates).
+    assert abs(b.her_current_A_m2 - a.her_current_A_m2) < 0.02 * max(b.her_current_A_m2, 1e-9)
+
+
+def test_water_reduction_her_current_zero_when_disabled():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(water_reduction_her=False)
+    assert m._her_water_current(-1.0, 10.0) == 0.0
+
+
+# ── Na+ as a transported species (2026-08) ─────────────────────────────────
+
+
+def test_na_constant_by_default():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(support_conc_M=0.5)
+    assert m.transport_na is False
+    r = m.solve(100.0)
+    # Na is held at the bulk value throughout the film.
+    assert np.allclose(r.profile.na_mol_m3 / 1000.0, 1.0)
+
+
+def test_na_transport_accumulates_at_cathode():
+    """With N_Na=0, Na+ migrates to and accumulates at the cathode surface."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(
+        fe_conc_M=0.1, support_conc_M=1.0, transport_na=True,
+        grid_points=101, fast_mode=False,
+    )
+    r = m.solve(50.0)
+    na = r.profile.na_mol_m3 / 1000.0
+    # surface (index 0) enrichment over bulk (index -1)
+    assert na[0] > na[-1]
+    assert r.converged
+
+
+def test_na_zero_flux_conservation():
+    """N_Na = -D_na(dc/dx + c f dphi/dx) must be ~0 across the film."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    from scipy.interpolate import CubicSpline
+    m = DiffusionLayer1D(
+        fe_conc_M=0.1, support_conc_M=1.0, transport_na=True,
+        grid_points=101, fast_mode=False,
+    )
+    r = m.solve(50.0)
+    x = r.profile.x_m
+    cs_na = CubicSpline(x, r.profile.na_mol_m3)
+    cs_phi = CubicSpline(x, r.profile.potential_V)
+    f = m.f_RT
+    Nna = -m.D_na * (cs_na(x, 1) + r.profile.na_mol_m3 * f * cs_phi(x, 1))
+    # Zero flux to within numerical tolerance.
+    assert np.max(np.abs(Nna)) < 1e-6

@@ -187,42 +187,63 @@ def test_concentration_eta_is_nonnegative():
     assert eta >= 0.0
 
 
+def test_concentration_eta_deprecated_o2_args_warn():
+    """The old dissolved-O₂ keyword arguments must emit a DeprecationWarning."""
+    with pytest.warns(DeprecationWarning):
+        concentration_overpotential_oer(
+            100.0, diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=0.25
+        )
+
+
 def test_concentration_eta_increases_with_current():
     """η_conc should increase as current density rises (unsaturated regime)."""
-    # Use elevated O₂ concentration so i_lim >> j → unsaturated regime
-    bulk_O2 = 10.0   # mol/m³  (artificially high but keeps model below transport limit)
-    eta_low = concentration_overpotential_oer(
-        10.0, temperature_C=60.0, bulk_O2_mol_m3=bulk_O2
-    )
-    eta_high = concentration_overpotential_oer(
-        100.0, temperature_C=60.0, bulk_O2_mol_m3=bulk_O2
-    )
+    eta_low = concentration_overpotential_oer(10.0, temperature_C=60.0)
+    eta_high = concentration_overpotential_oer(100.0, temperature_C=60.0)
     assert eta_high > eta_low
 
 
+def test_concentration_eta_is_salt_polarization_not_o2_depletion():
+    """η_conc is supporting-salt concentration polarization (Nernst/Hittorf).
+
+    Regression guard for the 2026-08 physics correction: a previous version
+    modelled dissolved O₂ as a reactant that *depletes* at the OER anode
+    (i_lim = 4F D_O2 C_O2/δ), which has the sign/mechanism backwards — OER
+    produces O₂.  The corrected model depletes the supporting anion, so
+    the result must be a small, finite Nernst film overpotential that
+    vanishes with no anion transport (t₊ → 1).
+    """
+    eta = concentration_overpotential_oer(100.0, temperature_C=60.0)
+    # At 100 mA/cm² the salt film gives a few tens of mV, not 0.3–0.5 V.
+    assert 0.0 < eta < 0.2
+    # No anion transport → no concentration overpotential.
+    assert concentration_overpotential_oer(
+        100.0, cation_transport_number=1.0
+    ) == pytest.approx(0.0)
+
+
 def test_concentration_eta_rises_near_diffusion_limit():
-    """η_conc increases with current density; near i_lim it grows sharply."""
-    # With elevated O₂ (20 mol/m³) and δ = 50 µm, i_lim ≈ 3,850 A/m² (385 mA/cm²),
-    # so both 5 and 15 mA/cm² are unsaturated but the rate of increase accelerates.
-    # At such high i_lim, η_conc ≈ (RT/4F)·(j/i_lim), so η ∝ j.
-    bulk_O2 = 20.0
-    eta_low = concentration_overpotential_oer(
-        5.0, temperature_C=60.0, boundary_layer_m=5e-5,
-        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
+    """η_conc grows as the surface salt is depleted toward i_lim.
+
+    Use a dilute supporting salt (0.05 M) and a thick film so the
+    salt-transport limit sits near the tested currents and the
+    logarithmic Nernst curvature is visible.
+    """
+    kw = dict(
+        temperature_C=60.0,
+        boundary_layer_m=1e-4,
+        bulk_salt_M=0.05,
+        salt_diffusivity_m2_s=1.0e-9,
+        cation_transport_number=0.6,
+        n_valence=2,
     )
-    eta_mid = concentration_overpotential_oer(
-        10.0, temperature_C=60.0, boundary_layer_m=5e-5,
-        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
-    )
-    eta_high = concentration_overpotential_oer(
-        50.0, temperature_C=60.0, boundary_layer_m=5e-5,
-        diffusivity_O2_m2_s=2e-9, bulk_O2_mol_m3=bulk_O2
-    )
+    eta_low = concentration_overpotential_oer(5.0, **kw)
+    eta_mid = concentration_overpotential_oer(10.0, **kw)
+    eta_high = concentration_overpotential_oer(30.0, **kw)
     # Monotonic increase with j
     assert eta_mid > eta_low
     assert eta_high > eta_mid
-    # The incremental η per unit j increases as j → i_lim (convex scaling)
-    assert (eta_mid - eta_low) / 5.0 < (eta_high - eta_mid) / 40.0
+    # η = (RT/nF)·ln(1/(1−j/j_lim)) is convex in j.
+    assert (eta_mid - eta_low) / 5.0 < (eta_high - eta_mid) / 20.0
 
 
 def test_NiCo_spinel_lower_eta_than_IrO2():
@@ -489,3 +510,50 @@ def test_cell_voltage_model_thermo_matches_anode_eq():
     )
     # Expected: |1.097 − (−0.440)| ≈ 1.537 V
     assert cell.E_thermodynamic == pytest.approx(1.537, abs=0.01)
+
+
+# ── Soluble vs inert anode chemistry (2026-08) ─────────────────────────────
+
+
+def test_soluble_fe_anode_has_no_gas_or_bubble_penalty():
+    """A soluble Fe anode (Fe→Fe²⁺+2e⁻) produces no O₂/Cl₂ or bubbles."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0,
+        anode_chemistry="soluble", fe2_conc_M=1.0,
+    )
+    r = anode.overpotential_at_current(200.0)
+    assert r["anode_chemistry"] == "soluble"
+    assert r["bubble_fraction"] == 0.0
+    assert r["eta_bubble_V"] == 0.0
+    assert r["eta_concentration_V"] == 0.0
+    assert r["i_oer_A_m2"] == 0.0
+    assert r["i_cer_A_m2"] == 0.0
+    assert r["i_fe_dissolution_A_m2"] == pytest.approx(2000.0, rel=1e-6)
+
+
+def test_soluble_anode_runs_near_fe2_fe_potential():
+    """Soluble anode E is set by Fe²⁺/Fe (~−0.44 V), not OER (~1.2 V)."""
+    anode = AnodeKinetics(
+        material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0,
+        anode_chemistry="soluble",
+    )
+    r = anode.overpotential_at_current(100.0)
+    assert r["E_eq_V"] == pytest.approx(-0.440, abs=0.01)
+    assert r["E_anode_V"] < 0.0  # far below OER potentials
+
+
+def test_soluble_anode_much_lower_overpotential_than_inert():
+    """Soluble Fe dissolution is fast; the cell saves ~0.4 V vs DSA."""
+    kw = dict(material=DSA_IRO2_TA2O5, electrolyte_type="acidic", pH=2.0)
+    soluble = AnodeKinetics(anode_chemistry="soluble", **kw).eta_anode(200.0)
+    inert = AnodeKinetics(anode_chemistry="inert", **kw).eta_anode(200.0)
+    assert soluble < inert - 0.3
+
+
+def test_invalid_anode_chemistry_rejected():
+    import pytest
+    with pytest.raises(ValueError):
+        AnodeKinetics(
+            material=DSA_IRO2_TA2O5, electrolyte_type="acidic",
+            anode_chemistry="mystery",
+        )

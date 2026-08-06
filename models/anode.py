@@ -10,8 +10,21 @@ Implements the anode half of the full cell, covering:
   AWARE-type acidic electrolytes where it competes with OER and may be the
   thermodynamically favoured anodic process.
 * Ohmic drop from bubble-induced electrolyte resistance.
-* Concentration (gas-diffusion) overpotential from O₂ transport away from
-  the anode surface.
+* Concentration overpotential from **supporting-electrolyte (salt)
+  concentration polarization** in the anode diffusion layer.
+
+  NOTE (2026-08): a previous version of this module attributed η_conc to
+  dissolved-O₂ diffusion *away* from the anode, treating bulk O₂ as a
+  reactant that depletes at the surface (i_lim = 4F D_O2 C_O2/δ). That
+  sign/mechanism is wrong: OER *produces* O₂, so the surface oxygen
+  activity is *higher* than bulk and the product leaves primarily as
+  gas bubbles, not dissolved species. The genuine mass-transport penalty
+  at a gas-evolving metal anode is enrichment (or depletion) of the
+  supporting salt in the migration-coupled Nernst diffusion layer — the
+  classic Hittorf/Nernst concentration overpotential. The gas-side
+  penalty (bubble masking, reduced active area) is already carried by the
+  bubble-resistance term; dissolved-O₂ back-diffusion contributes only a
+  few mV and is not the named η_conc. See ``concentration_overpotential_oer``.
 
 The anode overpotential is decomposed as:
 
@@ -62,6 +75,11 @@ E0_OER_ALKALINE = 0.401   # vs. SHE at pH 14, 25 °C; use Nernst shift
 
 # CER:         2Cl⁻ → Cl₂ + 2e⁻
 E0_CER = 1.360            # vs. SHE at a_Cl- = 1 M, 25 °C (AWARE bath)
+
+# Soluble iron anode: Fe → Fe²⁺ + 2e⁻ (reverse of cathode deposition).
+# E° = −0.440 V vs SHE for Fe²⁺ + 2e⁻ → Fe; soluble anode operates near
+# this potential with only a small dissolution overpotential (no gas).
+E0_FE2_FE_SOLUBLE = -0.440
 
 
 # ─── Physical constants ─────────────────────────────────────────────────
@@ -268,65 +286,126 @@ def bubble_resistance_multiplier(theta: float) -> float:
 
 # ─── Concentration overpotential ───────────────────────────────────────
 
+# Typical transport numbers in the concentrated sulfate / sulfate-chloride
+# baths used here.  In a well-supported Na₂SO₄ / FeSO₄ bath the current is
+# carried roughly 40 % by the anion (SO₄²⁻ / HSO₄⁻ / Cl⁻) and 60 % by the
+# cations (Na⁺, H⁺, Fe²⁺); these are screening central values (±0.1).
+DEFAULT_CATION_TRANSPORT_NUMBER = 0.60
+
+# Supporting-salt diffusivity (m²/s) and concentration defaults for the
+# anode Nernst film.  D_salt ≈ 1e-9 m²/s for a sulfate salt at 60 °C;
+# bulk_salt_M = 1.0 is representative of the FeSO₄/Na₂SO₄ reference bath.
+DEFAULT_SALT_DIFFUSIVITY_M2_S = 1.0e-9
+DEFAULT_BULK_SALT_M = 1.0
+
+
 def concentration_overpotential_oer(
     j_mA_cm2: float,
     temperature_C: float = 60.0,
     boundary_layer_m: float = 5e-5,
-    diffusivity_O2_m2_s: float = 2.0e-9,
-    bulk_O2_mol_m3: float = 0.25,   # ≈ 8 mg/L dissolved O₂ in aerated water
+    diffusivity_O2_m2_s: float | None = None,
+    bulk_O2_mol_m3: float | None = None,
+    *,
+    bulk_salt_M: float = DEFAULT_BULK_SALT_M,
+    salt_diffusivity_m2_s: float = DEFAULT_SALT_DIFFUSIVITY_M2_S,
+    cation_transport_number: float = DEFAULT_CATION_TRANSPORT_NUMBER,
+    n_valence: int = 2,
 ) -> float:
     """
-    Concentration overpotential at the OER anode (V).
+    Concentration overpotential at a gas-evolving anode (V).
 
-    At high current densities the O₂ bubbles generated at the surface
-    create a diffusion barrier, effectively lowering the local O₂ activity
-    and requiring a more-positive anode potential to sustain the same
-    current density.
+    This is the **supporting-electrolyte (salt) concentration polarization**
+    in the anode Nernst diffusion film — the classical Hittorf/Nernst
+    concentration overpotential — not dissolved-O₂ transport.
 
-    Model: linear stagnant film, O₂ diffusion away from surface.
-    η_conc = (RT / nF) · ln(a_O2,bulk / a_O2,surface)
+    Physical picture
+    ----------------
+    In a stagnant film of thickness δ the ionic current is carried by both
+    diffusion and migration.  For a binary z:z supporting salt the anion
+    (the sulfate/chloride that must be present to balance the H⁺ produced
+    by OER) is *depleted* at the anode relative to bulk.  Its surface
+    concentration falls linearly with current,
 
-    The surface O₂ activity approaches zero at the limiting current,
-    giving η_conc,max = (RT / nF) · ln(a_O2,bulk / 1e-9) ≈ 0.05–0.09 V.
+        C_s / C_b = 1 − (1 − t₊) · j / j_lim,
+
+    and the thermodynamic penalty for operating against that concentration
+    gradient is the Nernst concentration overpotential
+
+        η_conc = (RT / nF) · ln[ C_b / C_s ]
+               = (RT / nF) · ln[ 1 / (1 − (1 − t₊) j / j_lim) ],
+
+    with the salt-transport limiting current
+
+        j_lim = n F D C_b / [ (1 − t₊) δ ].
+
+    At the gas-evolving anode the product (O₂/Cl₂) leaves as bubbles; the
+    associated masking/active-area loss is already in ``η_bubble``, so it
+    is not double-counted here.
 
     Parameters
     ----------
     j_mA_cm2 : float
         Anodic current density (mA/cm²).
     temperature_C : float
-        Temperature (°C) for RT/nF correction.
+        Temperature (°C) for the RT/nF prefactor.
     boundary_layer_m : float
-        Anode diffusion layer thickness (m).
-    diffusivity_O2_m2_s : float
-        O₂ diffusion coefficient in the electrolyte.
-    bulk_O2_mol_m3 : float
-        Bulk dissolved O₂ concentration (mol/m³).
+        Anode Nernst diffusion-layer thickness (m).
+    diffusivity_O2_m2_s, bulk_O2_mol_m3 : float, optional
+        DEPRECATED.  Accepted (with a warning) for backwards compatibility
+        with the previous dissolved-O₂ implementation; they no longer
+        influence the result.
+    bulk_salt_M : float
+        Bulk concentration of the supporting salt (mol/L) that is depleted
+        at the anode — FeSO₄/Na₂SO₄ for the sulfate route, LiCl for the
+        AWARE chloride route.
+    salt_diffusivity_m2_s : float
+        Effective salt diffusivity in the film (m²/s).
+    cation_transport_number : float
+        Transport number of the cation (0–1); the anion carries 1 − t₊.
+    n_valence : int
+        Charge number of the depleted ion (2 for SO₄²⁻, 1 for Cl⁻).
 
     Returns
     -------
     float
-        Concentration overpotential (V), positive.
+        Concentration overpotential (V), non-negative.
     """
+    if diffusivity_O2_m2_s is not None or bulk_O2_mol_m3 is not None:
+        import warnings
+
+        warnings.warn(
+            "concentration_overpotential_oer: the dissolved-O₂ parameters "
+            "(diffusivity_O2_m2_s, bulk_O2_mol_m3) are deprecated and "
+            "ignored — η_conc is now supporting-salt concentration "
+            "polarization, not O₂ diffusion. Pass bulk_salt_M / "
+            "salt_diffusivity_m2_s instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     if j_mA_cm2 <= 0.0:
         return 0.0
 
-    n = 4  # OER electrons
-    T = temperature_C + 273.15
-    RT_nF = R_GAS * T / (n * FARADAY)
+    t_plus = min(max(cation_transport_number, 0.0), 1.0)
+    t_minus = 1.0 - t_plus
+    if t_minus <= 1e-9:
+        # All current carried by the cation — no anion depletion.
+        return 0.0
 
-    # OER limiting current (O₂ diffusion away from surface)
-    # Flux of O₂ leaving = j_anode / (4F)  (mol/(m²·s))
-    # i_lim = 4 F D C_bulk / δ
-    i_lim = n * FARADAY * diffusivity_O2_m2_s * bulk_O2_mol_m3 / boundary_layer_m
+    T = temperature_C + 273.15
+    RT_nF = R_GAS * T / (n_valence * FARADAY)
+    C_bulk = max(bulk_salt_M * 1000.0, 1e-12)  # mol/L → mol/m³
+
+    # Salt-transport limiting current (A/m²) for the depleted anion.
+    j_lim = n_valence * FARADAY * salt_diffusivity_m2_s * C_bulk / (t_minus * boundary_layer_m)
     j_A_m2 = j_mA_cm2 * 10.0
 
-    if j_A_m2 >= i_lim:
-        # Mass-transport limited; cap η_conc
-        return float(RT_nF * np.log(bulk_O2_mol_m3 / 1e-9))
-
-    # a_O2,surface / a_O2,bulk = 1 − j / i_lim  (linear profile approximation)
-    ratio = max(1e-9 / bulk_O2_mol_m3, 1.0 - j_A_m2 / i_lim)
-    return float(RT_nF * np.abs(np.log(ratio)))
+    # Surface-to-bulk concentration ratio (linear film).
+    ratio = 1.0 - t_minus * j_A_m2 / j_lim
+    # Cap before the transport limit (the Nernst film model diverges there);
+    # leave a 1 % floor so η_conc stays finite and monotonic.
+    ratio = max(ratio, 0.01)
+    return float(RT_nF * np.log(1.0 / ratio))
 
 
 # ─── Core anode kinetics class ─────────────────────────────────────────
@@ -373,6 +452,22 @@ class AnodeKinetics:
     electrolyte_conductivity_S_m: float = 10.0
     electrolyte_resistivity_ohm_m2: float = 0.001  # Ω·m² (0.01 Ω·cm², anode half-cell)
 
+    # Anode chemistry:
+    #   "inert"   — dimensionally stable anode (DSA/NiCo/Pt): OER and/or
+    #               CER, gas evolution, bubbles; the η_bubble term applies.
+    #   "soluble" — soluble Fe anode: Fe → Fe²⁺ + 2e⁻, no gas, near-zero
+    #               overpotential; the bubble/concentration terms are
+    #               suppressed and the equilibrium potential is that of
+    #               Fe²⁺/Fe (not OER).  This is the classical iron
+    #               electrorefining / electrowinning anode and removes the
+    #               entire gas-handling and high-voltage penalty.
+    anode_chemistry: str = "inert"
+    # Fe²⁺ concentration at the anode (mol/L) and kinetic constants for
+    # the soluble-Fe dissolution branch.
+    fe2_conc_M: float = 1.0
+    fe_dissolution_i0: float = 10.0       # A/m² (fast, active dissolution)
+    fe_dissolution_tafel_V: float = 0.040  # V/decade
+
     # ─── Derived properties ─────────────────────────────────────────
 
     @property
@@ -389,6 +484,34 @@ class AnodeKinetics:
         if self.electrolyte_type == "acidic_chloride":
             return self.a_Cl_molar > 0.05
         return False
+
+    def __post_init__(self) -> None:
+        if self.anode_chemistry not in ("inert", "soluble"):
+            raise ValueError(
+                f"anode_chemistry must be 'inert' or 'soluble', got "
+                f"{self.anode_chemistry!r}"
+            )
+
+    @property
+    def is_soluble(self) -> bool:
+        """True for a soluble Fe anode (Fe → Fe²⁺ + 2e⁻, no gas)."""
+        return self.anode_chemistry == "soluble"
+
+    def fe_dissolution_equilibrium(self) -> float:
+        """E_eq for Fe²⁺ + 2e⁻ ⇌ Fe at the anode surface (V vs SHE)."""
+        T = self.T
+        return E0_FE2_FE_SOLUBLE + (R_GAS * T / (2.0 * FARADAY)) * np.log(
+            max(self.fe2_conc_M, 1e-15)
+        )
+
+    def _fe_dissolution_current(self, E: float) -> float:
+        """Anodic Fe dissolution current (A/m²) on a soluble anode."""
+        i0 = self.fe_dissolution_i0
+        E_eq = self.fe_dissolution_equilibrium()
+        eta = E - E_eq
+        if eta <= 0.0:
+            return 0.0
+        return float(i0 * 10.0 ** (eta / self.fe_dissolution_tafel_V))
 
     # ─── Equilibrium potentials ──────────────────────────────────────
 
@@ -451,7 +574,13 @@ class AnodeKinetics:
         return float(i0 * 10.0 ** (eta / self.material.cer_tafel_V))
 
     def total_anodic_current(self, E: float) -> float:
-        """Sum of OER and CER currents at potential E."""
+        """Sum of all anodic currents at potential E.
+
+        For a soluble Fe anode this is just the Fe dissolution current
+        (no gas); for an inert anode it is OER + CER.
+        """
+        if self.is_soluble:
+            return self._fe_dissolution_current(E)
         return self._oer_current(E) + self._cer_current(E)
 
     # ─── Overpotential decomposition ─────────────────────────────────
@@ -478,8 +607,14 @@ class AnodeKinetics:
                 "eta_activation_V": 0.0,
                 "eta_concentration_V": 0.0,
                 "eta_bubble_V": 0.0,
-                "E_anode_V": self.oer_equilibrium(),
-                "E_eq_V": self.oer_equilibrium(),
+                "E_anode_V": (
+                    self.fe_dissolution_equilibrium()
+                    if self.is_soluble else self.oer_equilibrium()
+                ),
+                "E_eq_V": (
+                    self.fe_dissolution_equilibrium()
+                    if self.is_soluble else self.oer_equilibrium()
+                ),
                 "i_oer_A_m2": 0.0,
                 "i_cer_A_m2": 0.0,
                 "cer_fraction": 0.0,
@@ -488,8 +623,14 @@ class AnodeKinetics:
 
         target = j_mA_cm2 * 10.0   # A/m²
 
-        # Find anode potential that satisfies i_total = target
-        E_eq = self.oer_equilibrium()
+        # Find anode potential that satisfies i_total = target.  The
+        # reference equilibrium is OER for an inert anode and Fe²⁺/Fe for
+        # a soluble anode.
+        E_eq = (
+            self.fe_dissolution_equilibrium()
+            if self.is_soluble
+            else self.oer_equilibrium()
+        )
         # Bracket: anode must be above E_eq by at least 0.05 V
         lo, hi = E_eq + 0.05, E_eq + 5.0
 
@@ -506,11 +647,17 @@ class AnodeKinetics:
 
         # Component overpotentials
         eta_act = max(E_anode - E_eq, 0.0)
-        eta_conc = concentration_overpotential_oer(
-            j_mA_cm2,
-            self.material.temperature_C,
-            self.boundary_layer_m,
-        )
+        if self.is_soluble:
+            # No gas evolution on a dissolving Fe anode: no bubble
+            # resistance, and the product (Fe²⁺) is the charge-carrying
+            # ion rather than a depleted supporting salt, so η_conc ≈ 0.
+            eta_conc = 0.0
+        else:
+            eta_conc = concentration_overpotential_oer(
+                j_mA_cm2,
+                self.material.temperature_C,
+                self.boundary_layer_m,
+            )
 
         # Bubble resistance
         anode_key = "IrO2"
@@ -521,14 +668,26 @@ class AnodeKinetics:
         elif "Pt" in self.material.name:
             anode_key = "Pt"
 
-        theta = bubble_fraction(j_mA_cm2, self.material.temperature_C, anode_key)
-        R_mult = bubble_resistance_multiplier(theta)
-        eta_bubble = self.electrolyte_resistivity_ohm_m2 * (R_mult - 1.0) * target
+        if self.is_soluble:
+            theta = 0.0
+            eta_bubble = 0.0
+        else:
+            theta = bubble_fraction(j_mA_cm2, self.material.temperature_C, anode_key)
+            R_mult = bubble_resistance_multiplier(theta)
+            eta_bubble = self.electrolyte_resistivity_ohm_m2 * (R_mult - 1.0) * target
 
-        # CER contribution
-        i_cer = self._cer_current(E_anode)
-        i_oer = self._oer_current(E_anode)
-        cer_frac = i_cer / max(target, 1e-30)
+        # Current split between reactions.
+        if self.is_soluble:
+            i_fe = self._fe_dissolution_current(E_anode)
+            i_oer = 0.0
+            i_cer = 0.0
+            cer_frac = 0.0
+            fe_frac = i_fe / max(target, 1e-30)
+        else:
+            i_cer = self._cer_current(E_anode)
+            i_oer = self._oer_current(E_anode)
+            cer_frac = i_cer / max(target, 1e-30)
+            fe_frac = 0.0
 
         return {
             "total_V": float(eta_act + eta_conc + max(eta_bubble, 0.0)),
@@ -539,8 +698,11 @@ class AnodeKinetics:
             "E_eq_V": float(E_eq),
             "i_oer_A_m2": float(i_oer),
             "i_cer_A_m2": float(i_cer),
+            "i_fe_dissolution_A_m2": float(i_fe) if self.is_soluble else 0.0,
+            "fe_dissolution_fraction": float(fe_frac),
             "cer_fraction": float(cer_frac),
             "bubble_fraction": float(theta),
+            "anode_chemistry": self.anode_chemistry,
         }
 
     # ─── Full anode polarization curve ──────────────────────────────

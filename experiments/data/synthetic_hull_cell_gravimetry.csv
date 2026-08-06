@@ -1,2 +1,2 @@
 run_id,coupon_id,mass_before_g,mass_after_g,blank_mass_change_g,mass_uncertainty_g,blank_mass_uncertainty_g,electrode_area_cm2,drying_protocol,notes
-SYNTHETIC-HULL-001,HULL-PANEL-01,25.0,26.42329351395867,0.0012,0.0001,0.0001,50.0,Synthetic example only; actual coupons require validated rinse/dry protocol,Synthetic masses constructed for 91% apparent gravimetric FE
+SYNTHETIC-HULL-001,HULL-PANEL-01,25.0,26.423293514253448,0.0012,0.0001,0.0001,50.0,Synthetic example only; actual coupons require validated rinse/dry protocol,Synthetic masses constructed for 91% apparent gravimetric FE

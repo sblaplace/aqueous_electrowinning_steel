@@ -33,15 +33,15 @@
   "reference_case": {
     "components": {
       "intrinsic_MPa": 8.490945674044266,
-      "hydrogen_MPa": 372.56772174371054,
+      "hydrogen_MPa": 371.3090502849632,
       "thermal_MPa": 33.28450704225352,
-      "total_MPa": 414.3431744600083
+      "total_MPa": 413.08450300126094
     },
     "dominant_mechanism": "hydrogen",
     "sign": "tensile",
     "derived": {
       "grain_size_um": 3.5,
-      "C_H_diffusible_ppm": 240.73403778125632,
+      "C_H_diffusible_ppm": 239.92074923042284,
       "thickness_um": 28.116355658290008,
       "deposition_rate_um_hr": 112.46542263316003
     },
@@ -79,15 +79,15 @@
       "stress": {
         "components": {
           "intrinsic_MPa": 8.490945674044266,
-          "hydrogen_MPa": 372.56772174371054,
+          "hydrogen_MPa": 371.3090502849632,
           "thermal_MPa": 33.28450704225352,
-          "total_MPa": 414.3431744600083
+          "total_MPa": 413.08450300126094
         },
         "dominant_mechanism": "hydrogen",
         "sign": "tensile",
         "derived": {
           "grain_size_um": 3.5,
-          "C_H_diffusible_ppm": 240.73403778125632,
+          "C_H_diffusible_ppm": 239.92074923042284,
           "thickness_um": 28.116355658290008,
           "deposition_rate_um_hr": 112.46542263316003
         },
@@ -111,7 +111,7 @@
       },
       "equivalent_inputs_to_peel_model": {
         "grain_size_um": 3.5,
-        "C_H_diffusible_ppm": 240.7340377812563,
+        "C_H_diffusible_ppm": 239.9207492304228,
         "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
       },
       "peel": {
@@ -119,14 +119,14 @@
         "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
         "evidence_level": "commercial",
         "electrically_conductive": true,
-        "residual_stress_MPa": 414.3,
+        "residual_stress_MPa": 413.1,
         "stress_breakdown_MPa": {
           "intrinsic_MPa": 8.5,
-          "hydrogen_MPa": 372.6,
+          "hydrogen_MPa": 371.3,
           "thermal_MPa": 33.3,
-          "total_MPa": 414.3
+          "total_MPa": 413.1
         },
-        "driving_force_G_J_m2": 16.2426,
+        "driving_force_G_J_m2": 16.1441,
         "work_of_adhesion_J_m2": 0.3,
         "interfacial_toughness_J_m2": 1.24,
         "film_tearing_energy_J_m2": 976.08,
@@ -134,15 +134,15 @@
         "peel_force_N_per_m": 0.0,
         "web_stress_MPa": 0.0,
         "allowable_web_stress_MPa": 173.6,
-        "critical_thickness_um": 2.1,
-        "self_release_ratio": 13.1053,
+        "critical_thickness_um": 2.2,
+        "self_release_ratio": 13.0258,
         "cohesive_ratio": 0.0013,
         "tear_margin": null,
         "outcome": "spontaneous_delamination",
         "peelable": false,
         "good_for_flake_harvest": true,
         "reasons": [
-          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.11): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.03): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
         ]
       },
       "verdict": "spontaneous_delamination",
@@ -164,15 +164,15 @@
       "stress": {
         "components": {
           "intrinsic_MPa": 21.41001065469103,
-          "hydrogen_MPa": 124.18924058123692,
+          "hydrogen_MPa": 191.80955064671863,
           "thermal_MPa": 33.28450704225352,
-          "total_MPa": 178.88375827818146
+          "total_MPa": 246.5040683436632
         },
         "dominant_mechanism": "hydrogen",
         "sign": "tensile",
         "derived": {
           "grain_size_um": 1.3880567524446104,
-          "C_H_diffusible_ppm": 80.24467926041882,
+          "C_H_diffusible_ppm": 123.93743450474437,
           "thickness_um": 31.424162206324134,
           "deposition_rate_um_hr": 125.69664882529653
         },
@@ -196,7 +196,7 @@
       },
       "equivalent_inputs_to_peel_model": {
         "grain_size_um": 1.3880567524446101,
-        "C_H_diffusible_ppm": 80.24467926041882,
+        "C_H_diffusible_ppm": 123.93743450474439,
         "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
       },
       "peel": {
@@ -204,14 +204,14 @@
         "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
         "evidence_level": "commercial",
         "electrically_conductive": true,
-        "residual_stress_MPa": 178.9,
+        "residual_stress_MPa": 246.5,
         "stress_breakdown_MPa": {
           "intrinsic_MPa": 21.4,
-          "hydrogen_MPa": 124.2,
+          "hydrogen_MPa": 191.8,
           "thermal_MPa": 33.3,
-          "total_MPa": 178.9
+          "total_MPa": 246.5
         },
-        "driving_force_G_J_m2": 3.3836,
+        "driving_force_G_J_m2": 6.4252,
         "work_of_adhesion_J_m2": 0.3,
         "interfacial_toughness_J_m2": 1.38,
         "film_tearing_energy_J_m2": 1623.5,
@@ -219,15 +219,15 @@
         "peel_force_N_per_m": 0.0,
         "web_stress_MPa": 0.0,
         "allowable_web_stress_MPa": 258.3,
-        "critical_thickness_um": 12.8,
-        "self_release_ratio": 2.4605,
+        "critical_thickness_um": 6.7,
+        "self_release_ratio": 4.6724,
         "cohesive_ratio": 0.0008,
         "tear_margin": null,
         "outcome": "spontaneous_delamination",
         "peelable": false,
         "good_for_flake_harvest": true,
         "reasons": [
-          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 2.46): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 4.67): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
         ]
       },
       "verdict": "spontaneous_delamination",
@@ -249,15 +249,15 @@
       "stress": {
         "components": {
           "intrinsic_MPa": 4.197104614476437,
-          "hydrogen_MPa": 372.56772174371054,
+          "hydrogen_MPa": 371.3090502849632,
           "thermal_MPa": 33.28450704225352,
-          "total_MPa": 410.04933340044045
+          "total_MPa": 408.7906619416931
         },
         "dominant_mechanism": "hydrogen",
         "sign": "tensile",
         "derived": {
           "grain_size_um": 3.5,
-          "C_H_diffusible_ppm": 240.73403778125632,
+          "C_H_diffusible_ppm": 239.92074923042284,
           "thickness_um": 28.116355658290008,
           "deposition_rate_um_hr": 112.46542263316003
         },
@@ -281,7 +281,7 @@
       },
       "equivalent_inputs_to_peel_model": {
         "grain_size_um": 7.080669315854569,
-        "C_H_diffusible_ppm": 240.7340377812563,
+        "C_H_diffusible_ppm": 239.9207492304228,
         "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
       },
       "peel": {
@@ -289,14 +289,14 @@
         "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
         "evidence_level": "commercial",
         "electrically_conductive": true,
-        "residual_stress_MPa": 410.0,
+        "residual_stress_MPa": 408.8,
         "stress_breakdown_MPa": {
           "intrinsic_MPa": 4.2,
-          "hydrogen_MPa": 372.6,
+          "hydrogen_MPa": 371.3,
           "thermal_MPa": 33.3,
-          "total_MPa": 410.0
+          "total_MPa": 408.8
         },
-        "driving_force_G_J_m2": 15.9077,
+        "driving_force_G_J_m2": 15.8102,
         "work_of_adhesion_J_m2": 0.3,
         "interfacial_toughness_J_m2": 1.24,
         "film_tearing_energy_J_m2": 976.08,
@@ -305,14 +305,14 @@
         "web_stress_MPa": 0.0,
         "allowable_web_stress_MPa": 173.6,
         "critical_thickness_um": 2.2,
-        "self_release_ratio": 12.835,
+        "self_release_ratio": 12.7564,
         "cohesive_ratio": 0.0013,
         "tear_margin": null,
         "outcome": "spontaneous_delamination",
         "peelable": false,
         "good_for_flake_harvest": true,
         "reasons": [
-          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 12.84): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+          "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 12.76): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
         ]
       },
       "verdict": "spontaneous_delamination",
@@ -397,11 +397,11 @@
       }
     ],
     "uncertainty_budget": {
-      "reference_stress_MPa": 414.3431744600083,
+      "reference_stress_MPa": 413.08450300126094,
       "reference_thickness_um": 56.232711316580016,
-      "deflection_at_reference_um": 5785.674883579191,
+      "deflection_at_reference_um": 5768.0994429917055,
       "small_deflection_valid": true,
-      "u_sigma_dial_gauge_MPa": 16.39951867445482,
+      "u_sigma_dial_gauge_MPa": 16.349796164188632,
       "stress_resolution_dial_gauge_MPa": 0.7161535737792495,
       "stress_resolution_profilometer_MPa": 0.07161535737792496,
       "dominant_uncertainty": "substrate_modulus",
@@ -439,9 +439,9 @@
     ]
   },
   "findings": [
-    "Baseline DC electrowinning (100 mA/cm\u00b2, 85% FE, 60 \u00b0C) produces a total tensile residual stress of 414.3 MPa on reference TiO\u2082 drum cathodes, with hydrogen effusion contributing 372.6 MPa (90% of the total stress).",
-    "Because hydrogen dominance (372.6 MPa) overwhelms the interfacial fracture toughness of passive oxides, the drum-and-strip verdict for DC baseline electrowinning is 'spontaneous_delamination'.",
-    "Pulse Reverse Electrowinning (PRE) at 95% efficiency reduces hydrogen effusion stress to 124.2 MPa, lowering total deposit stress to 178.9 MPa \u2014 demonstrating that pulse waveforms can mitigate hydrogen embrittlement and internal stress.",
+    "Baseline DC electrowinning (100 mA/cm\u00b2, 85% FE, 60 \u00b0C) produces a total tensile residual stress of 413.1 MPa on reference TiO\u2082 drum cathodes, with hydrogen effusion contributing 371.3 MPa (90% of the total stress).",
+    "Because hydrogen dominance (371.3 MPa) overwhelms the interfacial fracture toughness of passive oxides, the drum-and-strip verdict for DC baseline electrowinning is 'spontaneous_delamination'.",
+    "Pulse Reverse Electrowinning (PRE) at 95% efficiency reduces hydrogen effusion stress to 191.8 MPa, lowering total deposit stress to 246.5 MPa \u2014 demonstrating that pulse waveforms can mitigate hydrogen embrittlement and internal stress.",
     "Saccharin additive (1.5 g/L) relieves intrinsic grain-boundary stress, reducing the intrinsic contribution from 8.5 MPa to 4.2 MPa, while chloride baths introduce a \u221230 MPa compressive shift.",
     "On a standard 0.4 mm 316L coupon (L = 60 mm), a 25 \u00b5m deposit at 250 MPa induces a free-end cantilever deflection of 1552.0 \u00b5m, well above the 10 \u00b5m dial-gauge resolution floor and yielding a relative standard uncertainty of 5.4%.",
     "The coupon curvature protocol (Bent-strip / Stoney coupon-curvature set (Tier 0 item 6)) specifies a $200 experiment across 3 coupons with explicit kill/confirm rules to replace screening estimates with measured \u03c3(h) data."

@@ -12,7 +12,17 @@ Components
    * γ-Fe (fcc, austenite): D0 ~ 5.7e-7 m²/s, Q ~ 40 kJ/mol
 2. **Trap-site model**: Dislocations, grain boundaries, carbon particles.
    D_eff = D_lattice / (1 + N_t * K_t / N_L)
-3. **HE susceptibility index**: Troiano-type combining yield strength,
+3. **H uptake from electrolysis** — two models:
+
+   * ``model="ipz"`` (default, 2026-08) — the Iyer–Pickering–Zamanzadeh
+     surface-kinetic balance.  The fraction of HER hydrogen entering the
+     metal is *derived* from Volmer/Tafel/absorption elementary steps
+     (``ipz_hydrogen_entry``) rather than assumed, with constants
+     recoverable from a Devanathan–Stachurski permeation cell via
+     ``ipz_parameters_from_permeation``.
+   * ``model="empirical"`` — the pre-2026-08 5 % nominal absorption
+     correlation, retained for A/B comparison.
+4. **HE susceptibility index**: Troiano-type combining yield strength,
    diffusible H content, and temperature.
 4. **Bake-out protocol optimizer**: Fickian desorption to reduce
    diffusible H below critical threshold.
@@ -73,6 +83,34 @@ E_TRAP_CARBIDE_KJ_MOL = 11.0
 
 # Faraday constant
 FARADAY_C_MOL = 96485.3   # C/mol
+
+# ── IPZ (Iyer–Pickering–Zamanzadeh) hydrogen-entry constants ────────────────
+#
+# The absorbed-H flux is set at the charging surface by the Volmer step and
+# partitioned between gas evolution (Tafel recombination) and entry into the
+# metal.  At steady state the HER gas rate fixes the surface coverage
+# directly, θ = sqrt(r_gas/k_rec), so the recombination constant k_rec is
+# the one number that sets θ for a measured HER current; k_abs then sets the
+# entry flux.  These are literature-order screening values for iron in
+# mildly acidic sulfate (Iyer, Pickering & Zamanzadeh 1989/1990; Zhang et al.
+# Fe/steel permeation).  A Devanathan–Stachurski permeation cell replaces
+# both; ``ipz_parameters_from_permeation`` inverts a measured steady-state
+# flux to recover them.
+#
+#   k_rec = 5.0e-2 mol/(m²·s):  with j_HER = 1000 A/m² (100 mA/cm² at 10% HER)
+#   r_gas = j/(2F) ≈ 5.2e-3 mol/(m²·s) → θ ≈ 0.32 (sub-monolayer, physical);
+#   at a heavy 3000 A/m² HER, θ ≈ 0.56.
+#   k_abs = 2.1e-3 is calibrated so the reference operating point
+#   (100 mA/cm², 85% FE, 15 min deposit) carries ~240 ppm diffusible H —
+#   reproducing the "hydrogen dominates residual stress" screening story in
+#   adhesion_peel/internal_stress while deriving that level from elementary
+#   Volmer/Tafel/absorption steps.  It is a screening constant, not a
+#   measurement; replace via ipz_parameters_from_permeation() once a
+#   Devanathan–Stachurski cell exists.
+IPZ_K_V_DEFAULT = 1.0e-2       # A/m²  (Volmer forward prefactor; diagnostics only)
+IPZ_K_REC_DEFAULT = 5.0e-2     # mol/(m²·s)  (Tafel recombination)
+IPZ_K_ABS_DEFAULT = 2.1e-3     # subsurface/surface H partition (dimensionless)
+IPZ_ALPHA = 0.5                # Volmer charge-transfer symmetry
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
 
@@ -292,12 +330,30 @@ def hydrogen_uptake_from_electrolysis(
     bath_pH: float = 3.5,
     temperature_C: float = 60.0,
     deposit_density_kg_m3: float = RHO_FE,
+    model: Literal["ipz", "empirical"] = "ipz",
+    k_v: float = IPZ_K_V_DEFAULT,
+    k_rec: float = IPZ_K_REC_DEFAULT,
+    k_abs: float = IPZ_K_ABS_DEFAULT,
 ) -> Dict[str, float]:
     """
     Estimate diffusible H content (ppm) from electrolytic deposition.
 
+    Two models are available:
+
+    * ``model="ipz"`` (default) — the Iyer–Pickering–Zamanzadeh surface
+      kinetic balance.  The fraction of HER hydrogen that enters the metal
+      is *derived* from Volmer/Tafel/absorption elementary steps rather than
+      assumed; it falls as HER rises (more recombination to gas) and rises
+      with overpotential.  This couples to ``her_microkinetics.py`` and is
+      the value consumed by the peel/stress predictions.  The three IPZ
+      constants are screening values, recoverable from a
+      Devanathan–Stachurski cell via :func:`ipz_parameters_from_permeation`.
+    * ``model="empirical"`` — the pre-2026-08 screening correlation
+      (5 % nominal absorption with pH/T/j power-law factors).  Retained for
+      backwards compatibility and A/B comparison.
+
     Uses Faraday's law: moles H produced per area = j*t / (n*F)
-    where n=2 for H2, then fraction absorbed gives diffusible H.
+    where n=2 for H₂, then the absorbed fraction gives diffusible H.
 
     Parameters
     ----------
@@ -307,12 +363,24 @@ def hydrogen_uptake_from_electrolysis(
     bath_pH : lower pH → more H⁺ → higher H uptake
     temperature_C : bath temperature
     deposit_density_kg_m3 : density of the deposit
+    model : ``"ipz"`` (default, physics-based) or ``"empirical"``.
+    k_v, k_rec, k_abs : IPZ rate constants (see module constants).
 
     Returns
     -------
     dict with C_H_diffusible_ppm, H_flux_mol_m2, her_current_A_m2, etc.
     """
     j_A_m2 = current_density_mA_cm2 * 10.0  # mA/cm² → A/m²
+
+    if model == "ipz":
+        return _uptake_ipz(
+            j_A_m2, her_efficiency, bath_pH, temperature_C,
+            deposition_time_s, deposit_density_kg_m3,
+            k_v, k_rec, k_abs,
+        )
+    if model != "empirical":
+        raise ValueError("model must be 'ipz' or 'empirical'")
+
 
     # HER current
     j_HER = j_A_m2 * her_efficiency
@@ -364,6 +432,203 @@ def hydrogen_uptake_from_electrolysis(
         "pH_factor": float(pH_factor),
         "T_factor": float(T_factor),
         "j_factor": float(j_factor),
+        "model": "empirical",
+    }
+
+
+# ── 3b. Iyer–Pickering–Zamanzadeh (IPZ) H-entry model ───────────────────────
+
+
+def ipz_hydrogen_entry(
+    j_HER_A_m2: float,
+    bath_pH: float,
+    temperature_C: float = 60.0,
+    k_v: float = IPZ_K_V_DEFAULT,
+    k_rec: float = IPZ_K_REC_DEFAULT,
+    k_abs: float = IPZ_K_ABS_DEFAULT,
+    alpha: float = IPZ_ALPHA,
+) -> Dict[str, float]:
+    """Steady-state hydrogen entry from the IPZ surface-kinetic model.
+
+    The empirical uptake model (``hydrogen_uptake_from_electrolysis``) folds
+    everything into an assumed 5 % absorption fraction.  This function
+    instead derives the absorbed-vs-evolved split from the same three
+    elementary steps that ``her_microkinetics.py`` uses for the HER rate:
+
+    * **Volmer**         H⁺ + e⁻ + * → H*       (atomic H onto the surface)
+    * **Tafel recomb.**  2 H* → H₂ + 2*         (gas evolution)
+    * **absorption**     H* ⇌ H(sub-surface)    (entry into the metal)
+
+    At steady state the atomic-H supply from Volmer is partitioned between
+    recombination (gas) and absorption.  The measured/modelled HER partial
+    current ``j_HER`` fixes the recombination flux
+    ``r_rec = j_HER/(2F)``, and the Tafel rate law ``r_rec = k_rec θ²``
+    then fixes the surface coverage directly: ``θ = √(r_rec/k_rec)``.
+    The entry flux is ``J_in = k'θ`` (IPZ absorption isotherm), and the
+    cathodic overpotential needed to supply the total atomic-H rate follows
+    from the Volmer Tafel law, so pH enters explicitly through a_H:
+
+        η = (RT/αF) ln[ (2 r_rec + J_in) F / (k_v a_H) ].
+
+    The entry/recombination constants are screening values recoverable from a
+    Devanathan–Stachurski permeation cell via
+    :func:`ipz_parameters_from_permeation`.
+
+    Parameters
+    ----------
+    j_HER_A_m2 : float
+        HER partial current density (A/m², positive cathodic magnitude).
+    bath_pH, temperature_C : float
+        Bath state; sets proton activity and the Tafel temperature.
+    k_v, k_rec, k_abs, alpha : float
+        IPZ rate constants (module defaults are screening values).
+
+    Returns
+    -------
+    dict
+        ``theta_H`` (surface coverage, 0–1), ``eta_V`` (cathodic
+        overpotential V), ``entry_flux_mol_m2_s`` (atomic H into the metal),
+        ``recombination_flux_mol_m2_s`` (H to H₂ gas),
+        ``entry_efficiency`` (J_in / total atomic-H rate), and the input
+        constants for traceability.
+    """
+    if j_HER_A_m2 <= 0.0:
+        return {
+            "theta_H": 0.0,
+            "eta_V": 0.0,
+            "entry_flux_mol_m2_s": 0.0,
+            "recombination_flux_mol_m2_s": 0.0,
+            "entry_efficiency": 0.0,
+            "k_v": k_v, "k_rec": k_rec, "k_abs": k_abs,
+        }
+
+    T_K = temperature_C + 273.15
+    a_h = 10.0 ** (-bath_pH)
+
+    # Recombination (gas) flux fixes the surface coverage (Tafel RDS).
+    r_rec = j_HER_A_m2 / (2.0 * FARADAY_C_MOL)   # mol H/(m²·s) → H₂
+    theta = math.sqrt(min(r_rec / max(k_rec, 1e-30), 1.0))
+
+    # Entry flux, IPZ absorption isotherm: J_in = k' θ.  In the standard
+    # IPZ notation k' = k_abs·√k_rec is fitted directly; we carry the two
+    # factors separately so k_rec may be calibrated against θ alone.
+    j_entry = k_abs * math.sqrt(max(k_rec, 0.0)) * theta  # mol/(m²·s)
+
+    # Total atomic-H production rate the Volmer step must supply.
+    r_v = r_rec + j_entry
+
+    # Cathodic overpotential from the Volmer Tafel law; pH enters via a_H.
+    denom = (k_v / FARADAY_C_MOL) * a_h
+    eta_V = (R_GAS * T_K / (alpha * FARADAY_C_MOL)) * math.log(
+        max(r_v / max(denom, 1e-30), 1e-30)
+    )
+    entry_eff = j_entry / max(r_v, 1e-30)
+
+    return {
+        "theta_H": float(theta),
+        "eta_V": float(eta_V),
+        "entry_flux_mol_m2_s": float(j_entry),
+        "recombination_flux_mol_m2_s": float(r_rec),
+        "entry_efficiency": float(entry_eff),
+        "k_v": float(k_v),
+        "k_rec": float(k_rec),
+        "k_abs": float(k_abs),
+    }
+
+
+def ipz_parameters_from_permeation(
+    j_perm_A_m2: float,
+    j_HER_A_m2: float,
+    bath_pH: float,
+    temperature_C: float = 60.0,
+    alpha: float = IPZ_ALPHA,
+    k_rec: float = IPZ_K_REC_DEFAULT,
+) -> Dict[str, float]:
+    """Recover the IPZ entry constant k_abs from a measured permeation flux.
+
+    A Devanathan–Stachurski cell measures the steady-state anodic oxidation
+    current of hydrogen crossing the membrane, which equals the entry flux
+    ``J_in = j_perm/F``.  The HER partial current fixes θ via
+    ``θ = √(j_HER/(2F k_rec))``, so
+    ``k_abs = J_in/(√k_rec θ)`` is recovered directly — this is what
+    replaces the screening ``IPZ_K_ABS_DEFAULT`` once permeation data exist.
+
+    Returns ``k_abs``, the inferred ``theta_H`` and ``eta_V``, and the
+    resulting entry efficiency.
+    """
+    if j_perm_A_m2 <= 0.0 or j_HER_A_m2 <= 0.0:
+        return {"k_abs": IPZ_K_ABS_DEFAULT, "theta_H": 0.0, "eta_V": 0.0,
+                "entry_efficiency": 0.0}
+
+    T_K = temperature_C + 273.15
+    a_h = 10.0 ** (-bath_pH)
+    r_rec = j_HER_A_m2 / (2.0 * FARADAY_C_MOL)
+    theta = math.sqrt(min(r_rec / max(k_rec, 1e-30), 1.0))
+    j_entry = j_perm_A_m2 / FARADAY_C_MOL
+    k_abs = j_entry / max(math.sqrt(max(k_rec, 0.0)) * theta, 1e-30)
+
+    # Overpotential from Volmer supplying recombination + the measured entry.
+    r_v = r_rec + j_entry
+    denom = (IPZ_K_V_DEFAULT / FARADAY_C_MOL) * a_h
+    eta_V = (R_GAS * T_K / (alpha * FARADAY_C_MOL)) * math.log(
+        max(r_v / max(denom, 1e-30), 1e-30)
+    )
+    return {
+        "k_abs": float(k_abs),
+        "theta_H": float(theta),
+        "eta_V": float(eta_V),
+        "entry_efficiency": float(j_entry / max(r_v, 1e-30)),
+    }
+
+
+def _uptake_ipz(
+    j_A_m2: float,
+    her_efficiency: float,
+    bath_pH: float,
+    temperature_C: float,
+    deposition_time_s: float,
+    deposit_density_kg_m3: float,
+    k_v: float,
+    k_rec: float,
+    k_abs: float,
+) -> Dict[str, float]:
+    """IPZ-based diffusible-H uptake; same return schema as the empirical path."""
+    j_HER = j_A_m2 * her_efficiency
+    ipz = ipz_hydrogen_entry(
+        j_HER, bath_pH, temperature_C,
+        k_v=k_v, k_rec=k_rec, k_abs=k_abs,
+    )
+    # Atomic H absorbed per unit area over the run (mol/m²).
+    H_absorbed_mol_m2 = ipz["entry_flux_mol_m2_s"] * deposition_time_s
+    H_mol_m2 = j_HER * deposition_time_s / (2.0 * FARADAY_C_MOL)
+
+    # Deposit mass per unit area (Fe²⁺ + 2e⁻ → Fe), using the Fe partial
+    # current (total minus HER) so ppm is H per mass of deposited iron.
+    j_fe = max(j_A_m2 - j_HER, 0.0)
+    deposit_mass_kg_m2 = max(
+        j_fe * deposition_time_s * M_FE / (2.0 * FARADAY_C_MOL), 1e-12
+    )
+    M_H = 1.008e-3  # kg/mol
+    H_mass_kg_m2 = H_absorbed_mol_m2 * M_H
+    C_H_ppm = (H_mass_kg_m2 / deposit_mass_kg_m2) * 1e6
+
+    return {
+        "C_H_diffusible_ppm": float(C_H_ppm),
+        "H_flux_mol_m2": float(H_mol_m2),
+        "H_absorbed_mol_m2": float(H_absorbed_mol_m2),
+        "her_current_A_m2": float(j_HER),
+        "absorption_fraction": float(ipz["entry_efficiency"]),
+        "deposit_mass_kg_m2": float(deposit_mass_kg_m2),
+        "pH_factor": 1.0,
+        "T_factor": 1.0,
+        "j_factor": 1.0,
+        "model": "ipz",
+        "ipz": {
+            "theta_H": ipz["theta_H"],
+            "eta_V": ipz["eta_V"],
+            "entry_flux_mol_m2_s": ipz["entry_flux_mol_m2_s"],
+            "entry_efficiency": ipz["entry_efficiency"],
+        },
     }
 
 

@@ -294,7 +294,7 @@
     "derived": {
       "thickness_um": 28.116355658290008,
       "grain_size_um": 3.5,
-      "C_H_diffusible_ppm": 240.73403778125632,
+      "C_H_diffusible_ppm": 239.92074923042284,
       "foil_yield_strength_MPa": 347.1571295295718,
       "deposition_rate_um_hr": 112.46542263316003
     },
@@ -309,14 +309,14 @@
       "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
       "evidence_level": "commercial",
       "electrically_conductive": true,
-      "residual_stress_MPa": 414.3,
+      "residual_stress_MPa": 413.1,
       "stress_breakdown_MPa": {
         "intrinsic_MPa": 8.5,
-        "hydrogen_MPa": 372.6,
+        "hydrogen_MPa": 371.3,
         "thermal_MPa": 33.3,
-        "total_MPa": 414.3
+        "total_MPa": 413.1
       },
-      "driving_force_G_J_m2": 16.2426,
+      "driving_force_G_J_m2": 16.1441,
       "work_of_adhesion_J_m2": 0.3,
       "interfacial_toughness_J_m2": 1.24,
       "film_tearing_energy_J_m2": 976.08,
@@ -324,15 +324,15 @@
       "peel_force_N_per_m": 0.0,
       "web_stress_MPa": 0.0,
       "allowable_web_stress_MPa": 173.6,
-      "critical_thickness_um": 2.1,
-      "self_release_ratio": 13.1053,
+      "critical_thickness_um": 2.2,
+      "self_release_ratio": 13.0258,
       "cohesive_ratio": 0.0013,
       "tear_margin": null,
       "outcome": "spontaneous_delamination",
       "peelable": false,
       "good_for_flake_harvest": true,
       "reasons": [
-        "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.11): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+        "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.03): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
       ]
     }
   },
@@ -425,7 +425,7 @@
     "Rejected as too strongly bonded to strip: copper_substrate, ti_bare_etched \u2014 including the deliberate metallic negative controls, which is the check that the screen discriminates at all.",
     "Rejected on physics rather than omission: ptfe_release_coating release beautifully and cannot pass current, so they cannot be a cathode.",
     "Verdict for the drum-and-strip branch: proceed_with_coupon_test (robust to the plastic-amplification uncertainty: False).",
-    "Propagating a real operating point (100 mA/cm\u00b2, 85% FE, 15 min) through the existing models gives 28 \u00b5m of deposit carrying 241 ppm diffusible hydrogen, and the deposit then returns 'spontaneous_delamination' \u2014 hydrogen, not the substrate, dominates the stress state at 373 MPa.",
+    "Propagating a real operating point (100 mA/cm\u00b2, 85% FE, 15 min) through the existing models gives 28 \u00b5m of deposit carrying 240 ppm diffusible hydrogen, and the deposit then returns 'spontaneous_delamination' \u2014 hydrogen, not the substrate, dominates the stress state at 371 MPa.",
     "Critical self-delamination thickness on the reference surface is 187 \u00b5m at the screen's baseline conditions, which bounds foil thickness from above independently of any winder capability.",
     "The screen does not settle the question and is not meant to: it converts an unpriced unknown into a $1,750, 3-day coupon test with explicit kill and confirm rules (coupon_test_protocol)."
   ],

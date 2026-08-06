@@ -3,9 +3,14 @@
 
 Full Nernst-Planck transport in a stagnant cathode film with:
 
-* **Two Faradaic reactions** at the cathode:
+* **Faradaic reactions** at the cathode:
     Fe²⁺ + 2 e⁻ → Fe(s)        (iron deposition)
-    2 H⁺ + 2 e⁻ → H₂(g)        (hydrogen evolution)
+    2 H⁺ + 2 e⁻ → H₂(g)        (proton-reduction HER; dominates in acid)
+    2 H₂O + 2 e⁻ → H₂ + 2 OH⁻  (water-reduction HER; dominates at
+                               high pH — see ``water_reduction_her``)
+  The two HER branches share the same Nernst equilibrium (RHE) but have
+  separate exchange currents and Tafel slopes, so alkaline/near-neutral
+  baths are represented inside the model rather than outside its envelope.
 * **Migration + diffusion** for six species:
     Fe²⁺ (z=+2), H⁺ (z=+1), OH⁻ (z=−1),
     HSO₄⁻ (z=−1), SO₄²⁻ (z=−2), H₃BO₃ (z=0), H₂BO₃⁻ (z=−1)
@@ -16,7 +21,13 @@ Full Nernst-Planck transport in a stagnant cathode film with:
 * **Arrhenius temperature correction** for all diffusivities
 * **Butler-Volmer (Tafel) kinetics** at the electrode surface
 * **Surface pH** from proton flux balance
-* **Fe(OH)₂ precipitation** criterion ([Fe²⁺][OH⁻]² / Ksp)
+* **Fe(OH)₂ precipitation** criterion ([Fe²⁺][OH⁻]² / Ksp(T));
+  Ksp is van 't Hoff corrected to the operating temperature (Fe(OH)₂ is
+  more soluble at elevated T) via :func:`pourbaix.ksp_feoh2`.
+* **Optional Pitzer activity correction** (``activity_model="pitzer"``):
+  the Fe²⁺/Fe Nernst potential uses the multicomponent Pitzer
+  activity coefficient γ_Fe²⁺(m, T) (valid at the multi-molal ionic
+  strengths of real FeSO₄/Na₂SO₄ baths) instead of the ideal a = [Fe²⁺].
 * **Outputs**:  FE(j, T, C_Fe²⁺, δ, pH, buffer), V_cell, surface_pH
 
 Conserved transported variables
@@ -25,7 +36,10 @@ The ODE state is ``[c_fe, c_h, c_s, c_b, phi]`` where
 ``c_s = C_HSO4 + C_SO4`` (total sulfate) and
 ``c_b = C_H3BO3 + C_H2BO3`` (total borate).
 The proton invariant whose flux equals the HER consumption rate is
-``Φ = C_H + C_HSO4 + C_H3BO3 − C_OH``.
+``Φ = C_H + C_HSO4 + C_H3BO3 − C_OH``.  When ``transport_na=True`` the
+state gains a sixth variable ``c_na`` obeying a zero-flux boundary
+(N_Na = 0 at the electrode); Na+ then develops a diffusion-migration
+gradient across the film rather than being held at its bulk value.
 
 Electroneutrality closes the system for ``dφ/dx``.
 
@@ -54,7 +68,8 @@ from .kinetics import (
     I0_REF_K,
     arrhenius_i0,
 )
-from .pourbaix import LOGKSP_FEOH2
+from .pourbaix import LOGKSP_FEOH2, ksp_feoh2
+from . import pitzer as _pitzer
 
 # ─── Reference temperature ────────────────────────────────────────────
 T_REF = 298.15  # K
@@ -72,7 +87,7 @@ KAB_25C = 5.8e-10       # mol/L at 25 °C  (pKa ≈ 9.24)
 KAB_EA_J_MOL = 14.0e3   # J/mol (endothermic; Ka_b increases with T)
 
 # ─── Fe(OH)₂ solubility product ──────────────────────────────────────
-KSP_FEOH2 = 10.0 ** LOGKSP_FEOH2  # (mol/L)³
+KSP_FEOH2 = 10.0 ** LOGKSP_FEOH2  # (mol/L)³ at 25 °C; see Ksp property for T
 
 # ─── Limiting ionic diffusivities at 25 °C (m²/s) ────────────────────
 D_FE2 = 7.2e-10
@@ -82,6 +97,7 @@ D_HSO4 = 1.33e-9
 D_SO4 = 1.07e-9
 D_H3BO3 = 0.92e-9
 D_H2BO3 = 1.00e-9
+D_NA = 1.33e-9         # Na⁺ (matches transport.py)
 
 # Default activation energy for diffusion (J/mol)
 DIFF_EA_J_MOL = 18.0e3
@@ -118,6 +134,8 @@ class FilmProfile:
     h2bo3_mol_m3: np.ndarray
     potential_V: np.ndarray
     depleted: bool
+    na_mol_m3: np.ndarray = None  # only populated when transport_na=True
+    Ksp_FeOH2: float = KSP_FEOH2  # (mol/L)³ at the film temperature
 
     # ── convenience views (mol/L) ───────────────────────────────────
     @property
@@ -139,7 +157,7 @@ class FilmProfile:
     @property
     def feoh2_supersaturation(self) -> np.ndarray:
         """[Fe²⁺][OH⁻]² / Ksp along the film; >1 means Fe(OH)₂ unstable."""
-        return self.fe_M * self.oh_M ** 2 / KSP_FEOH2
+        return self.fe_M * self.oh_M ** 2 / self.Ksp_FeOH2
 
     @property
     def film_potential_drop_V(self) -> float:
@@ -234,6 +252,20 @@ class DiffusionLayer1D:
     her_i0: float = 0.010
     fe_tafel_V: float = 0.120
     her_tafel_V: float = 0.140
+    # Water-reduction HER branch (2 H₂O + 2e⁻ → H₂ + 2 OH⁻).  Disabled
+    # by default for back-compat; set water_reduction_her=True for
+    # alkaline/near-neutral baths.  Its exchange current is per unit
+    # water activity (≈1) and its cathodic Tafel slope is typically
+    # ~120 mV/dec on Fe.
+    water_reduction_her: bool = False
+    her_water_i0: float = 1.0e-5
+    her_water_tafel_V: float = 0.120
+    # Transport Na+ as a zero-flux species (N_Na = 0 at the electrode).
+    # When False Na+ is held at its bulk concentration (the prior
+    # approximation); when True a concentration gradient develops across
+    # the film and Na+ migration contributes to the potential — the
+    # correct treatment for a supporting electrolyte in a stagnant film.
+    transport_na: bool = False
     E_anode_eq: float = 1.229
     eta_anode_V: float = 0.40
     ir_drop_V: float = 0.20
@@ -249,6 +281,21 @@ class DiffusionLayer1D:
     # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
     fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
     her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
+    # Activity-coefficient model for the Fe²⁺/Fe Nernst potential:
+    #   "ideal"  — a = [Fe²⁺] (mol/L), the pre-2026-08 default;
+    #   "pitzer" — a_Fe²⁺ = γ_Fe²⁺(m, T) · [Fe²⁺], with γ from the
+    #              multicomponent Pitzer model (valid to the multi-molal
+    #              ionic strengths of real FeSO₄/Na₂SO₄ baths).  At the
+    #              reference bath γ_Fe²⁺ ≈ 0.05–0.15, shifting E_eq(Fe) by
+    #              −20 to −40 mV — directly comparable to the HER margin
+    #              the whole program hinges on.  The coefficient is
+    #              evaluated at the *bulk* composition once (the film spans
+    #              only tens of micrometres, so composition variation across
+    #              it is small relative to bulk non-ideality) and applied
+    #              consistently in the surface Nernst correction.  This is
+    #              the first, safe step toward full non-ideal transport; a
+    #              per-node Pitzer activity remains future work.
+    activity_model: str = "ideal"
 
     def __post_init__(self) -> None:
         if self.fe_conc_M <= 0.0:
@@ -257,6 +304,17 @@ class DiffusionLayer1D:
             raise ValueError("delta_m must be positive")
         if self.grid_points < 3:
             raise ValueError("grid_points must be at least 3")
+        if self.activity_model not in ("ideal", "pitzer"):
+            raise ValueError(
+                f"activity_model must be 'ideal' or 'pitzer', got "
+                f"{self.activity_model!r}"
+            )
+        # Cache the composition-dependent Pitzer γ so the per-iteration
+        # Nernst correction does not re-solve Pitzer dozens of times.
+        self._gamma_fe_cache: float | None = None
+        # Bulk Na+ concentration (mol/m3), used as the boundary value and
+        # (when transport_na is False) held constant across the film.
+        self._c_na_bulk: float = 2.0 * self.support_conc_M * 1000.0
 
     # ─── Temperature-dependent properties ───────────────────────────
 
@@ -307,6 +365,59 @@ class DiffusionLayer1D:
     def D_h2bo3(self) -> float:
         return _diffusivity_T(D_H2BO3, self.T)
 
+    @property
+    def D_na(self) -> float:
+        return _diffusivity_T(D_NA, self.T)
+
+    @property
+    def Ksp(self) -> float:
+        """Fe(OH)₂ solubility product (mol/L)³ at the operating temperature.
+
+        Fe(OH)₂ is more soluble at elevated T (endothermic dissolution), so
+        the precipitation boundary shifts to higher pH as the bath warms.
+        See :func:`pourbaix.ksp_feoh2`.
+        """
+        return float(ksp_feoh2(self.T))
+
+    @property
+    def gamma_fe(self) -> float:
+        """Bulk Fe²⁺ activity coefficient (Pitzer) at the operating T.
+
+        Returns 1.0 for ``activity_model="ideal"``.  For ``"pitzer"`` the
+        multicomponent Pitzer model is evaluated once at the bulk bath
+        composition (FeSO₄ + Na₂SO₄ support + H₂SO₄ at pH_bulk), giving the
+        strong 2–2-salt non-ideality (γ_Fe²⁺ ≈ 0.05–0.15 at 1 M) that the
+        ideal model ignores.  Used in the Fe²⁺/Fe Nernst potential.
+        """
+        if self.activity_model == "ideal":
+            return 1.0
+        if self._gamma_fe_cache is not None:
+            return self._gamma_fe_cache
+
+        # Build molalities from the molar bulk recipe.  Use the Pitzer
+        # module's own density estimate (same convention as speciation.py)
+        # for the molar→molal conversion.
+        rho = _pitzer.water_density_kg_L(self.temperature_C)
+        # Solute mass per litre (FeSO4 151.9 + Na2SO4 142.0 g/mol)
+        solute_kg_L = (
+            self.fe_conc_M * 151.908e-3
+            + self.support_conc_M * 142.04e-3
+        )
+        kg_water_per_L = max(rho - solute_kg_L, 0.3)
+        m_fe = self.fe_conc_M / kg_water_per_L
+        m_na = 2.0 * self.support_conc_M / kg_water_per_L
+        m_so4 = (self.fe_conc_M + self.support_conc_M) / kg_water_per_L
+        # H+ at the bulk pH (trace relative to sulfate); include for charge.
+        m_h = max(self._bulk_c_h / 1000.0 / kg_water_per_L, 1e-10)
+
+        composition = {
+            "Fe2+": m_fe, "Na+": m_na, "H+": m_h,
+            "SO4-2": m_so4 + 0.5 * m_h,  # approximate sulfate/bisulfate
+        }
+        sol = _pitzer.solve_pitzer(composition, T_C=self.temperature_C)
+        self._gamma_fe_cache = float(sol.gamma.get("Fe2+", 1.0))
+        return self._gamma_fe_cache
+
     # ─── Bulk composition ──────────────────────────────────────────
 
     @property
@@ -352,7 +463,8 @@ class DiffusionLayer1D:
 
     # ─── Equilibrium fractions ─────────────────────────────────────
 
-    def _fractions(self, c_h: float, c_s: float, c_b: float) -> dict:
+    def _fractions(self, c_h: float, c_s: float, c_b: float,
+                   c_na: float | None = None) -> dict:
         """Individual species concentrations and equilibrium derivatives."""
         ka2 = self.Ka2
         kab = self.Ka_b
@@ -369,13 +481,15 @@ class DiffusionLayer1D:
         # d(f_h3bo3)/d(c_h) = −d(f_h2bo3)/d(c_h) = kab / (kab + c_h)²
         g2 = kab / (denom_b * denom_b)
 
+        if c_na is None:
+            c_na = self._c_na_bulk
         return {
             "c_hso4": f_hso4 * c_s,
             "c_so4": f_so4 * c_s,
             "c_h3bo3": f_h3bo3 * c_b,
             "c_h2bo3": f_h2bo3 * c_b,
             "c_oh": KW_SI / c_h,
-            "c_na": 2.0 * self.support_conc_M * 1000.0,
+            "c_na": c_na,
             "f_hso4": f_hso4,
             "f_so4": f_so4,
             "f_h3bo3": f_h3bo3,
@@ -466,6 +580,77 @@ class DiffusionLayer1D:
 
     # ─── Film integration ──────────────────────────────────────────
 
+    def _rhs_na(self, _x: float, y: np.ndarray, n_fe: float, n_prot: float):
+        """6-variable RHS with Na+ as a transported zero-flux species.
+
+        State ``[c_fe, c_h, c_s, c_b, c_na, phi]``.  Na+ obeys
+        N_Na = 0 at the electrode (it is not consumed there), so a
+        diffusion-migration gradient develops across the film.
+        """
+        c_fe = max(y[0], 1e-10)
+        c_h = max(y[1], 1e-20)
+        c_s = max(y[2], 1e-10)
+        c_b = max(y[3], 0.0)
+        c_na = max(y[4], 0.0)
+
+        fr = self._fractions(c_h, c_s, c_b, c_na)
+        d_fe, d_h, d_oh = self.D_fe, self.D_h, self.D_oh
+        d_hso4, d_so4 = self.D_hso4, self.D_so4
+        d_h3bo3, d_h2bo3, d_na = self.D_h3bo3, self.D_h2bo3, self.D_na
+        f = self.f_RT
+        g1, g2 = fr["g1"], fr["g2"]
+        kw_c2 = KW_SI / (c_h * c_h)
+
+        # 6×6 system, u = [dc_fe, dc_h, dc_s, dc_b, dc_na, dphi]
+        A = np.zeros((6, 6))
+        b = np.zeros(6)
+
+        # 1. N_Fe = n_fe
+        A[0, 0] = -d_fe
+        A[0, 5] = -2.0 * d_fe * f * c_fe
+        b[0] = n_fe
+
+        # 2. N_S = 0 (total sulfate)
+        A[1, 1] = (d_so4 - d_hso4) * c_s * g1
+        A[1, 2] = -(d_hso4 * fr["f_hso4"] + d_so4 * fr["f_so4"])
+        A[1, 5] = f * (d_hso4 * fr["c_hso4"] + 2.0 * d_so4 * fr["c_so4"])
+        b[1] = 0.0
+
+        # 3. N_B = 0 (total borate)
+        A[2, 1] = (d_h2bo3 - d_h3bo3) * c_b * g2
+        A[2, 3] = -(d_h3bo3 * fr["f_h3bo3"] + d_h2bo3 * fr["f_h2bo3"])
+        A[2, 5] = f * d_h2bo3 * fr["c_h2bo3"]
+        b[2] = 0.0
+
+        # 4. proton invariant flux = n_prot
+        A[3, 1] = -d_h - d_hso4*c_s*g1 - d_h3bo3*c_b*g2 - d_oh*kw_c2
+        A[3, 2] = -d_hso4 * fr["f_hso4"]
+        A[3, 3] = -d_h3bo3 * fr["f_h3bo3"]
+        A[3, 5] = f * (-d_h*c_h + d_hso4*fr["c_hso4"] - d_oh*KW_SI/c_h)
+        b[3] = n_prot
+
+        # 5. N_Na = 0 (supporting cation, no electrode reaction)
+        A[4, 4] = -d_na
+        A[4, 5] = -1.0 * d_na * f * c_na
+        b[4] = 0.0
+
+        # 6. differentiated electroneutrality (c_na now variable)
+        #    2 c_fe + c_h + c_na = c_hso4 + 2 c_so4 + c_h2bo3 + c_oh
+        A[5, 0] = 2.0
+        A[5, 1] = 1.0 + c_s*g1 + c_b*g2 + kw_c2
+        A[5, 2] = fr["f_hso4"] - 2.0
+        A[5, 3] = -fr["f_h2bo3"]
+        A[5, 4] = 1.0
+        A[5, 5] = 0.0
+        b[5] = 0.0
+
+        try:
+            u = np.linalg.solve(A, b)
+        except np.linalg.LinAlgError:
+            return np.zeros(6)
+        return u
+
+
     def integrate(self, i_fe_A_m2: float, i_her_A_m2: float,
                   grid_points: int | None = None,
                   rtol: float = 1e-8, atol: float = 1e-10,
@@ -494,11 +679,16 @@ class DiffusionLayer1D:
         c_s_0 = self.bulk_c_s
         c_b_0 = self.buffer_conc_M * 1000.0
 
-        y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, 0.0])
+        if self.transport_na:
+            y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, self._c_na_bulk, 0.0])
+            rhs = self._rhs_na
+        else:
+            y0 = np.array([c_fe_0, c_h_0, c_s_0, c_b_0, 0.0])
+            rhs = self._rhs
         x_eval = np.linspace(self.delta_m, 0.0, gp)
 
         sol = solve_ivp(
-            self._rhs,
+            rhs,
             (self.delta_m, 0.0),
             y0,
             t_eval=x_eval,
@@ -515,7 +705,12 @@ class DiffusionLayer1D:
         c_h = sol.y[1][::-1]
         c_s = sol.y[2][::-1]
         c_b = sol.y[3][::-1]
-        phi = sol.y[4][::-1]
+        if self.transport_na:
+            c_na = sol.y[4][::-1]
+            phi = sol.y[5][::-1]
+        else:
+            c_na = np.full_like(c_fe, self._c_na_bulk)
+            phi = sol.y[4][::-1]
 
         floor_fe = 1e-8 * c_fe_0
         depleted = bool(np.min(c_fe) <= floor_fe * 1.01)
@@ -541,12 +736,15 @@ class DiffusionLayer1D:
             h2bo3_mol_m3=f_h2bo3 * c_b,
             potential_V=phi,
             depleted=depleted,
+            Ksp_FeOH2=self.Ksp,
+            na_mol_m3=c_na,
         )
 
     # ─── Electrode kinetics ────────────────────────────────────────
 
     def _fe_equilibrium_potential(self, fe_surface_M: float) -> float:
-        a = max(fe_surface_M, 1e-15)
+        # a_Fe²⁺ = γ_Fe²⁺ · [Fe²⁺]; the ideal model uses γ = 1.
+        a = max(self.gamma_fe * fe_surface_M, 1e-15)
         return E0_FE + (R_GAS * self.T / (Z_FE * FARADAY)) * np.log(a)
 
     def _her_equilibrium_potential(self, surface_pH: float) -> float:
@@ -557,6 +755,29 @@ class DiffusionLayer1D:
         """Full Butler–Volmer branch current (cathodic positive; signed)."""
         return float(i0 * (10.0 ** ((E_eq - E) / slope_c)
                            - 10.0 ** ((E - E_eq) / slope_a)))
+
+    def _her_water_equilibrium_potential(self, surface_pH: float) -> float:
+        """E_eq for 2 H₂O + 2e⁻ → H₂ + 2 OH⁻ (V vs SHE).
+
+        Same RHE potential as proton HER (the two reactions are linked by
+        water autoionization), so E_eq = −(RT/F) ln10 · pH.  Its kinetics
+        are separate (i0, Tafel slope) and it dominates at high pH where
+        proton concentration is negligible.
+        """
+        return self._her_equilibrium_potential(surface_pH)
+
+    def _her_water_current(
+        self, E: float, surface_pH: float
+    ) -> float:
+        """Cathodic current of the water-reduction HER branch (A/m²)."""
+        if not self.water_reduction_her:
+            return 0.0
+        eq = self._her_water_equilibrium_potential(surface_pH)
+        i0_T = arrhenius_i0(
+            self.her_water_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K
+        )
+        # Tafel cathodic branch only (no meaningful reverse at cathodic E).
+        return float(max(i0_T * 10.0 ** ((eq - E) / self.her_water_tafel_V), 0.0))
 
     # ─── Transport limit ───────────────────────────────────────────
 
@@ -642,12 +863,15 @@ class DiffusionLayer1D:
                                             self.fe_anodic_slope_V, fe_eq), 0.0)
             i_her_kin = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
                                              self.her_anodic_slope_V, her_eq), 0.0)
+            # Water-reduction branch (high pH); its OH⁻ production enters
+            # the proton-invariant balance just like proton consumption.
+            i_her_water = self._her_water_current(E, surf_pH)
 
             # Koutecky-Levich: Fe cannot outrun transport
             i_fe_new = 1.0 / (
                 1.0 / max(i_fe_kin, 1e-30) + 1.0 / max(i_lim, 1e-30)
             )
-            i_her_new = i_her_kin
+            i_her_new = i_her_kin + i_her_water
 
             # Convergence (relative)
             tol = picard_tol
