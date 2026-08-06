@@ -45,6 +45,12 @@ d(fe2)/dt = -consumption + recirculation + makeup
 d(fe2_res)/dt = (flow / V_res) × (fe2 - fe2_res) + makeup × (V_cath / V_res)
 ```
 
+**Redox transfer (Fe³⁺ shuttle extension, off by default):** with
+`fe3_shuttle_enabled` on, the Fe²⁺ balance additionally receives
+`shuttle_return − r_prod` (Section 7): autoxidation drains it, the cathodic
+Fe³⁺ shuttle returns it, so dissolved iron inventory leaves only through the
+Fe(OH)₃ sludge ledger.
+
 ### 2. pH / Buffer Dynamics (State Index 3)
 
 **Equation:**
@@ -171,10 +177,55 @@ where `α = 1 - exp(-dt / τ_j)` and `τ_j = tau_j_hr` (default 0.5 hr).
 
 **Equation:**
 ```
-d(deposit)/dt = deposit_rate_um_hr
+d(deposit)/dt = deposit_rate_um_hr × (j − i_shuttle·10)/j_applied
 ```
 
-from physics model prediction. Clamped to ≥ 0.
+from physics model prediction, scaled by the galvanostatic shuttle slip
+(identity factor 1.0 when the Fe³⁺ extension is off). Clamped to ≥ 0.
+
+### 7. Fe³⁺ Redox Shuttle (Auxiliary CSTR Extension; off by default)
+
+Enable with `fe3_shuttle_enabled: true` (see `apply_fe3_scenario`).
+Static steady-state counterpart: `models/fe3_shuttle.py`; shipped note and
+unit errata: `docs/SIM_BATH_REDOX.md`.
+
+**States** (auxiliary, NOT in the 7-state EKF vector):
+`fe3_catholyte_M`, `fe3_reservoir_M`, `fe3_sludge_cumulative_mol`.
+
+**Catholyte balance:**
+```
+fe3*  = (r_prod + (flow/V_cath)·fe3_res) / (k_shuttle + flow/V_cath)
+fe3⁻  = fe3* + (fe3 − fe3*)·exp(−(k_shuttle + flow/V_cath)·dt)   (exact exponential)
+fe3⁺  = fe3⁻ − max(0, fe3⁻ − cap(pH))                            (instant Fe(OH)₃ cap)
+```
+with
+- `r_prod [M/hr]` = homogeneous autoxidation (`bath_startup.fe2_oxidation_rate`,
+  at current T/pH/Fe²⁺, O₂ pinned at `fe3_o2_fraction_of_sat` of Weiss air
+  saturation) + `4·fe3_crossover_o2_flux·A/V_L` (anolyte crossover fault);
+- `k_shuttle [1/hr] = (D_Fe3/δ)·(A/V_cath)·3600` — mass-transfer-limited
+  cathodic Fe³⁺ → Fe²⁺ reduction;
+- `cap(pH) = Ksp(Fe(OH)₃)/[OH⁻]³` (`fe3_shuttle.fe3_solubility_cap_M`);
+- precipitated excess joins `fe3_sludge_cumulative_mol` (×V_cath).
+
+**Back-couplings:**
+- **Fe²⁺ balance**: `−r_prod + ∫k_shuttle·fe3 dt/dt` (exact step-integral of
+  the shuttle return) — net inventory loss only via sludge;
+- **galvanostatic split**: the Fe/HER pair shares `j − i_sh` with
+  `i_sh [A/m²] = F·k_m·[Fe³⁺]`; scales Fe consumption, HER/OH⁻ production and
+  the deposit rate (`fe3_shuttle.ce_penalty_at_j` semantics);
+- **pH balance**: `−r_prod + 3·precip_rate` added to `net_proton` (−1 H⁺ per
+  Fe²⁺ oxidised, +3 H⁺ per Fe(OH)₃ precipitated; net +2 H⁺ per sludge mol).
+
+**Reservoir Fe³⁺:** passive mixing plus the same hydrolysis cap at
+`pH_reservoir`; its precipitation joins the same sludge ledger. Reservoir
+autoxidation is NOT modelled (documented limitation — scenario O₂ pinning
+describes the catholyte).
+
+**Steady state:** held at fixed (T, pH, Fe²⁺) with precipitation inactive,
+the dynamic states relax to the static closed form
+`[Fe³⁺]_ss = r_prod/(k_m·A/V)` — the recirculation terms cancel identically
+at mutual steady state (fe3_res = fe3). Cross-validated in
+`tests/test_bath_fe3_cstr.py`.
 
 ## Surrogate validity guard (physics model)
 
@@ -248,17 +299,31 @@ All parameters have explicit defaults in `BATH_DYNAMICS_DEFAULTS` (see `models/b
 |-----------|------|---------|-------------|
 | `tau_j_hr` | hr | 0.5 | Current density setpoint tracking time constant |
 
+### Fe³⁺ Redox Shuttle (CSTR extension)
+| Parameter | Unit | Default | Description |
+|-----------|------|---------|-------------|
+| `fe3_shuttle_enabled` | bool | false | Master switch (off → byte-identical dynamics) |
+| `fe3_o2_fraction_of_sat` | - | 0.005 | Dissolved O₂ as fraction of air saturation (sealed cell) |
+| `fe3_crossover_o2_flux_mol_m2_s` | mol/m²/s | 0.0 | Anolyte O₂ crossover fault flux |
+| `fe3_d_m2_s` | m²/s | 5.5e-10 | Fe³⁺ diffusivity (screening family) |
+| `fe3_boundary_layer_m` | m | 50e-6 | Cathode diffusion-layer thickness for Fe³⁺ |
+| `fe3_k_ox_ref` | M⁻¹ s⁻¹ | 1.0e-4 | Autoxidation k_ref (bath_startup screening value) |
+| `fe3_Ea_ox_J_mol` | J/mol | 50000 | Autoxidation apparent activation energy |
+| `fe3_catholyte_M`, `fe3_reservoir_M`, `fe3_sludge_cumulative_mol` | M, M, mol | 0.0 | Optional initial values for the auxiliary Fe³⁺ states |
+
 ## Auxiliary State (BathAux)
 
 The reservoir state (T_reservoir, fe2_reservoir, pH_reservoir) is tracked as auxiliary state in `design_point["_bath_aux"]`. It is **not** part of the 7-state EKF vector but is integrated alongside the EKF state by the same dynamics.
+
+As of 2026-08 the auxiliary state optionally additionally carries the Fe³⁺ redox-shuttle states (`fe3_catholyte_M`, `fe3_reservoir_M`, `fe3_sludge_cumulative_mol`; zero and untouched while `fe3_shuttle_enabled` is off).
 
 ## Conservation Checks
 
 The dynamics satisfy the following conservation laws:
 
-1. **Fe²⁺ mass balance:** Total Fe²⁺ in (catholyte + reservoir) changes only due to Faraday consumption and makeup addition.
+1. **Fe²⁺ mass balance:** Total Fe²⁺ in (catholyte + reservoir) changes only due to Faraday consumption and makeup addition. With the Fe³⁺ extension on, total **iron** (dissolved Fe²⁺/Fe³⁺ in both compartments + cumulative Fe(OH)₃ sludge + Faraday-plated Fe) is the closing ledger — pinned in `tests/test_bath_fe3_cstr.py`.
 2. **Energy balance:** Total thermal energy changes only due to Joule heating, cooling, and ambient losses.
-3. **Proton balance:** Total protons change only due to acid/base dose and HER hydroxide production.
+3. **Proton balance:** Total protons change only due to acid/base dose and HER hydroxide production (plus autoxidation/precipitation terms with the Fe³⁺ extension on).
 
 See `tests/test_bath_dynamics.py` for automated conservation checks.
 

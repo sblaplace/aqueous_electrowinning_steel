@@ -34,12 +34,37 @@ def test_open_headspace_sits_at_the_hydrolysis_cap():
     # Even cap-pinned, the shuttle current is a small CE leak at j=300.
     assert ce_penalty_at_j(ss["i_shuttle_A_m2"], 300.0) < 1e-3
 def test_scenario_production_rate_ordering():
-    """sealed ≪ open headspace ≪ membrane-fault (production side)."""
+    """sealed ≪ open headspace ≲ membrane-fault (production side).
+
+    2026-08-06 erratum repinning: the 1000× m³↔L crossover bug used to make
+    the RC-1 fault row ≫ open headspace; with correct units a 1 % anode
+    leak is a modest adder at RC-1's tiny A/V (1e-3 m² per 0.5 L) — it
+    dominates only at large area/volume ratios (pinned below).
+    """
     sealed = steady_state(RC1, sealed_divided_cell())["fe3_production_M_s"]
     open_ = steady_state(RC1, open_headspace())["fe3_production_M_s"]
     fault = steady_state(RC1, anolyte_crossover_fault(300.0, 0.01))["fe3_production_M_s"]
     assert sealed < open_ < fault
     assert open_ / sealed > 10.0
+    # Post-erratum honest magnitude: fault = open + crossover adder (×2–3 here).
+    assert 1.0 < fault / open_ < 5.0
+
+def test_crossover_production_uses_litres_not_cubic_metres():
+    """Unit pin: 4·flux·A/V_L mol/L/s (the pin that catches the ×1000 erratum)."""
+    from models.fe3_shuttle import ShuttleScenario, _production_rate_M_s
+    p = ShuttleParams(cathode_area_m2=1e-3, catholyte_volume_L=0.5, k_ox_ref=0.0)
+    flux = 7.8e-6  # mol O₂ /m²/s
+    s = ShuttleScenario("iso", o2_fraction_of_sat=0.0, crossover_o2_flux_mol_m2_s=flux)
+    assert _production_rate_M_s(p, s) == pytest.approx(
+        4.0 * flux * 1e-3 / 0.5, rel=1e-12
+    )
+
+def test_crossover_dominates_at_large_area_to_volume():
+    """At pilot-scale A/V the same 1 % anode leak outruns open-air autoxidation."""
+    big_av = ShuttleParams(pH=2.35, temperature_C=50.0,
+                           cathode_area_m2=1.0, catholyte_volume_L=10.0)
+    open_ = steady_state(big_av, open_headspace())["fe3_production_M_s"]
+    fault = steady_state(big_av, anolyte_crossover_fault(300.0, 0.01))["fe3_production_M_s"]
     assert fault / open_ > 3.0
 def test_shuttle_current_is_mass_transfer_limited_reduction():
     """i_shuttle = F·k_m·[Fe³⁺] (1 e⁻ per Fe³⁺)."""

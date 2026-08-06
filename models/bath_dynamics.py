@@ -27,6 +27,16 @@ See docs/TWIN_BATH_DYNAMICS.md for the full derivation.  The short version:
   ohmic + double-layer physics.
 * **Current density (index 4)** — operator setpoint; drifts to ``j_avg_mA_cm2``.
 * **Deposit thickness (index 5)** — integrates the physics-predicted growth.
+* **Fe³⁺ redox shuttle (optional CSTR extension, 2026-08)** — with
+  ``fe3_shuttle_enabled`` on, three extra auxiliary states carry the
+  production → shuttle | sludge triangle of ``models/fe3_shuttle.py`` in
+  time-integrated form: dissolved Fe³⁺ in catholyte and reservoir, plus a
+  cumulative Fe(OH)₃ sludge ledger.  Back-couplings: autoxidation drains the
+  Fe²⁺ balance, the cathodic shuttle returns it (and steals
+  ``i_sh = F·k_m·[Fe³⁺]`` of applied current from deposit growth and the
+  HER/OH⁻ split), and the net +2 H⁺ per mol of sludge loads the pH balance.
+  Off by default; when off every added term is exactly 0.0/identity and all
+  pre-existing results are byte-identical.
 
 All new control inputs and auxiliary parameters have explicit defaults in the
 ``design_point`` dict so existing callers keep working.
@@ -40,7 +50,9 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
+from .bath_startup import dissolved_o2_saturation_mol_L, fe2_oxidation_rate
 from .electrochemistry import FARADAY, Z_FE
+from .fe3_shuttle import D_FE3_REF_M2_S, fe3_solubility_cap_M
 from .twin_physics import CellProcessModel
 from .env_coupling import DisturbanceInputs
 
@@ -54,7 +66,7 @@ RHO_ELECTROLYTE_KG_M3 = 1200.0   # kg/m³ — typical for 1 M FeSO4
 CP_ELECTROLYTE_J_KG_K = 3800.0   # J/(kg·K) — heat capacity of aqueous electrolyte
 RHO_IRON_KG_M3 = 7874.0          # kg/m³ — dense bcc iron deposit
 # All keys here are merged into design_point if absent.
-BATH_DYNAMICS_DEFAULTS: Dict[str, float] = {
+BATH_DYNAMICS_DEFAULTS: Dict[str, Any] = {
     # --- Recirculation loop ---
     "recirculation_flow_L_hr": 6000.0,    # L/hr total recirculation flow
     "reservoir_volume_L": 50000.0,         # L, external reservoir/balance tank (large = quasi-infinite source)
@@ -84,6 +96,18 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, float] = {
     "heat_exchange_area_m2": 10.0,         # m² — exposed surface for convective/rain cooling
     "T_reservoir_C": 55.0,                 # °C — initial reservoir temperature
 
+    # --- Fe3+ redox shuttle (CSTR extension; OFF by default → byte-identical) ---
+    # Chemistry, steady-state closed form and scenario helpers live in
+    # models/fe3_shuttle.py; these knobs wire the same terms into the
+    # time-integrated bath dynamics.  Enable via ``apply_fe3_scenario``.
+    "fe3_shuttle_enabled": False,          # master switch (byte-identical when off)
+    "fe3_o2_fraction_of_sat": 0.005,       # dissolved O2 as fraction of air saturation (sealed cell)
+    "fe3_crossover_o2_flux_mol_m2_s": 0.0, # anolyte O2 crossover fault flux (mol/m²/s)
+    "fe3_d_m2_s": D_FE3_REF_M2_S,          # Fe3+ diffusivity (screening family)
+    "fe3_boundary_layer_m": 50e-6,         # cathode diffusion-layer thickness for Fe3+
+    "fe3_k_ox_ref": 1.0e-4,                # autoxidation k_ref, M⁻¹ s⁻¹ (bath_startup screening value)
+    "fe3_Ea_ox_J_mol": 50_000.0,           # autoxidation apparent activation energy
+
     # --- Electrical relaxation ---
     "electrolyte_conductivity_S_m": 10.0,  # S/m — electrolyte conductivity
     "electrode_gap_m": 0.02,              # m — inter-electrode gap
@@ -101,21 +125,36 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, float] = {
 
 @dataclass
 class BathAux:
-    """Auxiliary (non-estimated) reservoir state tracked alongside the EKF.
+    """Auxiliary (non-estimated) bath state tracked alongside the EKF.
 
     These are integrated by the same dynamics but are not part of the
     7-state EKF vector.  They live in the ``design_point`` dict under the
     key ``"_bath_aux"`` so the EKF interface is unchanged.
+
+    Reservoir fields hold the external balance-tank state; the Fe³⁺ fields
+    hold the redox-shuttle CSTR extension (2026-08; zero and untouched
+    while ``fe3_shuttle_enabled`` is off):
+
+    * ``fe3_catholyte_M`` — dissolved Fe³⁺ in the catholyte compartment (M);
+    * ``fe3_reservoir_M`` — dissolved Fe³⁺ in the reservoir (M);
+    * ``fe3_sludge_cumulative_mol`` — total Fe lost to Fe(OH)₃ sludge since
+      start (mol), so the iron ledger closes when precipitation is active.
     """
     T_reservoir_C: float = 55.0
     fe2_reservoir_M: float = 1.0
     pH_reservoir: float = 3.5
+    fe3_catholyte_M: float = 0.0
+    fe3_reservoir_M: float = 0.0
+    fe3_sludge_cumulative_mol: float = 0.0
 
     def to_dict(self) -> Dict[str, float]:
         return {
             "T_reservoir_C": self.T_reservoir_C,
             "fe2_reservoir_M": self.fe2_reservoir_M,
             "pH_reservoir": self.pH_reservoir,
+            "fe3_catholyte_M": self.fe3_catholyte_M,
+            "fe3_reservoir_M": self.fe3_reservoir_M,
+            "fe3_sludge_cumulative_mol": self.fe3_sludge_cumulative_mol,
         }
 
     @classmethod
@@ -124,6 +163,9 @@ class BathAux:
             T_reservoir_C=d.get("T_reservoir_C", 55.0),
             fe2_reservoir_M=d.get("fe2_reservoir_M", 1.0),
             pH_reservoir=d.get("pH_reservoir", 3.5),
+            fe3_catholyte_M=d.get("fe3_catholyte_M", 0.0),
+            fe3_reservoir_M=d.get("fe3_reservoir_M", 0.0),
+            fe3_sludge_cumulative_mol=d.get("fe3_sludge_cumulative_mol", 0.0),
         )
 
 
@@ -142,6 +184,9 @@ def get_aux(design_point: Dict[str, Any]) -> BathAux:
                       BATH_DYNAMICS_DEFAULTS["fe2_reservoir_M"]),
         pH_reservoir=design_point.get("pH_reservoir",
                    BATH_DYNAMICS_DEFAULTS["pH_reservoir"]),
+        fe3_catholyte_M=design_point.get("fe3_catholyte_M", 0.0),
+        fe3_reservoir_M=design_point.get("fe3_reservoir_M", 0.0),
+        fe3_sludge_cumulative_mol=design_point.get("fe3_sludge_cumulative_mol", 0.0),
     )
 
 
@@ -209,6 +254,9 @@ def step(
             T_reservoir_C=aux.T_reservoir_C,
             fe2_reservoir_M=aux.fe2_reservoir_M,
             pH_reservoir=aux.pH_reservoir,
+            fe3_catholyte_M=aux.fe3_catholyte_M,
+            fe3_reservoir_M=aux.fe3_reservoir_M,
+            fe3_sludge_cumulative_mol=aux.fe3_sludge_cumulative_mol,
         )
 
     dp = design_point
@@ -245,11 +293,91 @@ def step(
     j_A_m2 = j * 10.0
 
     # =====================================================================
+    # 0. Fe3+ REDOX SHUTTLE TERMS (optional CSTR extension — OFF by default;
+    #    every term below is exactly 0.0/identity when disabled, so default
+    #    runs stay byte-identical).  Static steady-state counterpart and
+    #    chemistry notes: models/fe3_shuttle.py (production → shuttle | sludge).
+    # =====================================================================
+    fe3 = max(0.0, aux.fe3_catholyte_M)
+    fe3_next = fe3
+    fe3_res_next = max(0.0, aux.fe3_reservoir_M)
+    sludge_cum_next = max(0.0, aux.fe3_sludge_cumulative_mol)
+    i_shuttle_A_m2 = 0.0        # parasitic shuttle current (A/m²), start-of-step
+    r_prod_M_hr = 0.0           # Fe3+ production rate (M/hr)
+    shuttle_return_M_hr = 0.0   # shuttle flux Fe3+→Fe2+ returned to fe2 (M/hr)
+    precip_rate_M_hr = 0.0      # Fe(OH)3 precipitation in catholyte (M/hr)
+
+    fe3_enabled = bool(_dp(dp, "fe3_shuttle_enabled"))
+    if fe3_enabled:
+        # Shuttle sink mass-transfer coefficient (m/s) and area/volume (1/m),
+        # same screened quantities as fe3_shuttle.ShuttleParams.
+        km_fe3_m_s = _dp(dp, "fe3_d_m2_s") / max(_dp(dp, "fe3_boundary_layer_m"), 1e-12)
+        area_per_vol_1_m = area_m2 / (V_cath_L / 1000.0)
+        k_shuttle_1_hr = km_fe3_m_s * area_per_vol_1_m * 3600.0
+
+        # Production: homogeneous autoxidation at the pinned O2 level plus
+        # the optional anolyte-crossover flux (4 Fe3+ per O2; flux·A/V_L is
+        # already mol/L/s — fe3_shuttle 2026-08-06 erratum).
+        T_for_o2 = max(T_cath, 0.0)
+        o2_M = (_dp(dp, "fe3_o2_fraction_of_sat")
+                * dissolved_o2_saturation_mol_L(T_for_o2))
+        r_prod_M_s = fe2_oxidation_rate(
+            fe2, o2_M, pH, T_for_o2,
+            _dp(dp, "fe3_k_ox_ref"), _dp(dp, "fe3_Ea_ox_J_mol"),
+        )
+        r_prod_M_s += (4.0 * _dp(dp, "fe3_crossover_o2_flux_mol_m2_s")
+                       * area_m2 / V_cath_L)
+        r_prod_M_hr = r_prod_M_s * 3600.0
+
+        # Parasitic shuttle current at the start-of-step Fe3+ level
+        # (fe3 is M = mol/L; ×1000 → mol/m³ for the A/m² flux).
+        i_shuttle_A_m2 = FARADAY * km_fe3_m_s * fe3 * 1000.0
+
+        # Catholyte Fe3+ CSTR step.  Sources: production + recirculation
+        # inflow; sinks: cathodic shuttle return + recirculation outflow.
+        # Relaxed EXACTLY by exponential toward the step's quasi-steady
+        # (frozen-rate) point — unconditionally stable even when fast
+        # recirculation or a large A/V makes the compartment stiff (same
+        # treatment as the cell-voltage relaxation below).
+        fe3_res = fe3_res_next
+        recirc_in_1_hr = flow_L_hr / V_cath_L
+        k_tot_1_hr = k_shuttle_1_hr + recirc_in_1_hr
+        fe3_star = (r_prod_M_hr + recirc_in_1_hr * fe3_res) / k_tot_1_hr
+        decay = math.exp(-k_tot_1_hr * dt_hr)
+        fe3_tent = fe3_star + (fe3 - fe3_star) * decay
+        # Exact step-integral of the shuttle return for the Fe2+ ledger:
+        #   ∫ k_shuttle · fe3(t) dt  over the step.
+        integral_fe3_M_hr = (fe3_star * dt_hr
+                             + (fe3 - fe3_star) * (1.0 - decay) / k_tot_1_hr)
+        shuttle_return_M_hr = k_shuttle_1_hr * integral_fe3_M_hr / dt_hr
+
+        # Fe(OH)3 hydrolysis cap, operator-split (instant precipitation of the
+        # above-cap excess — the dynamic analogue of fe3_shuttle's min(cap, ·)).
+        precip_M = max(0.0, fe3_tent - fe3_solubility_cap_M(pH))
+        fe3_next = fe3_tent - precip_M
+        sludge_cum_next += precip_M * V_cath_L
+        precip_rate_M_hr = precip_M / dt_hr
+
+        # Reservoir Fe3+: passive mixer fed by the catholyte return; the same
+        # hydrolysis cap applies at the reservoir pH (a pH ~3.5 balance tank
+        # holds almost no Fe3+) and its precipitation joins the same sludge
+        # ledger.  The reservoir's own autoxidation is NOT modelled (documented
+        # limitation — the scenario O2 pinning describes the catholyte).
+        fe3_res_tent = fe3_res + (flow_L_hr / V_res_L) * (fe3 - fe3_res) * dt_hr
+        precip_res_M = max(0.0, fe3_res_tent - fe3_solubility_cap_M(aux.pH_reservoir))
+        fe3_res_next = max(0.0, fe3_res_tent - precip_res_M)
+        sludge_cum_next += precip_res_M * V_res_L
+
+    # Galvanostatic split: the shuttle rides on top of the intentional
+    # current, so the Fe/HER pair shares j − i_sh (fe3_shuttle.ce_penalty_at_j).
+    j_fe_her_A_m2 = max(j_A_m2 - i_shuttle_A_m2, 0.0)
+
+    # =====================================================================
     # 1. Fe2+ MASS BALANCE (index 2)
     # =====================================================================
     # Consumption by Faraday deposition: d(fe2)/dt = -j_A_m2*FE*area / (z*F*V_cath)
     # in mol/m³/s → convert to M/hr
-    consumption_M_hr = (j_A_m2 * FE / (Z_FE * FARADAY)) * area_m2 * 3600.0 / V_cath_L
+    consumption_M_hr = (j_fe_her_A_m2 * FE / (Z_FE * FARADAY)) * area_m2 * 3600.0 / V_cath_L
 
     # Recirculation exchange: (flow/V_cath) * (fe2_res - fe2)
     recirc_fe2_M_hr = (flow_L_hr / V_cath_L) * (aux.fe2_reservoir_M - fe2)
@@ -258,6 +386,10 @@ def step(
     makeup_M_hr = _dp(dp, "fe2_makeup_rate_M_hr")
 
     dfe2_dt = -consumption_M_hr + recirc_fe2_M_hr + makeup_M_hr
+    # Redox transfer: autoxidation removes Fe2+ (r_prod); the cathodic shuttle
+    # returns it as Fe2+.  Net inventory leaves only via Fe(OH)3 precipitation,
+    # which is charged to the sludge ledger instead (both zero when disabled).
+    dfe2_dt += shuttle_return_M_hr - r_prod_M_hr
     # Ingress dilution (coupling-on): dilute with Fe2+-free water toward 0.
     if env is not None:
         dfe2_dt -= env.ingress_dilution_rate_1_hr * fe2
@@ -276,8 +408,8 @@ def step(
     # =====================================================================
     # HER at cathode: 2H2O + 2e- → H2 + 2OH-
     # OH- production rate (mol/s) = j_A_m2 * (1-FE) / (1 * F) * area
-    # (1 mol OH- per mol e- for HER)
-    OH_production_mol_s = j_A_m2 * (1.0 - FE) / FARADAY * area_m2
+    # (1 mol OH- per mol e- for HER; the Fe3+ shuttle makes no OH-)
+    OH_production_mol_s = j_fe_her_A_m2 * (1.0 - FE) / FARADAY * area_m2
     OH_production_M_hr = OH_production_mol_s * 3600.0 / V_cath_L
 
     # Acid dose: explicit rate + pH feedback holding the pH setpoint (a real
@@ -290,9 +422,15 @@ def step(
 
     # Buffer capacity: d(pH)/dt = -(net_proton_rate_M_hr) / beta
     # Net proton rate = acid_dose - OH_production (OH- consumes protons equivalently)
-    # Adding acid (positive net_proton) lowers pH, so negative sign
+    # Adding acid (positive net_proton) lowers pH, so negative sign.
+    # Redox proton terms (zero when the shuttle is disabled):
+    #   autoxidation  4 Fe²⁺ + O₂ + 4H⁺ → 4 Fe³⁺ + 2H₂O   consumes 1 H⁺/Fe
+    #   precipitation Fe³⁺ + 3H₂O → Fe(OH)₃(s) + 3H⁺        releases 3 H⁺/Fe
+    # together a net +2 H⁺ per mol of sludge formed (the shuttle itself is
+    # proton-neutral); reservoir precipitation protons are not tracked.
     beta = _dp(dp, "buffer_capacity_beta")
-    net_proton_M_hr = acid_dose_M_hr - OH_production_M_hr
+    net_proton_M_hr = (acid_dose_M_hr - OH_production_M_hr
+                       - r_prod_M_hr + 3.0 * precip_rate_M_hr)
 
     # Recirculation mixing for pH
     recirc_pH_hr = (flow_L_hr / V_cath_L) * (aux.pH_reservoir - pH)
@@ -437,13 +575,19 @@ def step(
     # =====================================================================
     # 6. DEPOSIT THICKNESS (index 5) — physics-predicted growth
     # =====================================================================
-    x_next[5] = max(0.0, deposit + deposit_rate_um_hr * dt_hr)
+    # The physics model's rate assumes the full applied j reaches the Fe/HER
+    # pair; scale down by the shuttle slip (identity factor 1.0 when disabled).
+    deposit_rate_shuttle = deposit_rate_um_hr * (j_fe_her_A_m2 / j_A_m2)
+    x_next[5] = max(0.0, deposit + deposit_rate_shuttle * dt_hr)
 
     # --- Assemble next aux ---
     aux_next = BathAux(
         T_reservoir_C=T_res_next,
         fe2_reservoir_M=fe2_res_next,
         pH_reservoir=pH_res_next,
+        fe3_catholyte_M=fe3_next,
+        fe3_reservoir_M=fe3_res_next,
+        fe3_sludge_cumulative_mol=sludge_cum_next,
     )
 
     return x_next, aux_next
@@ -510,3 +654,110 @@ def steady_state_acid_dose_M_hr(
 
     acid_dose = OH_M_hr - beta * (flow / V_cath) * (pH_res - pH_set)
     return acid_dose
+
+
+# ---------------------------------------------------------------------------
+# Fe3+ shuttle helpers (static counterpart: models/fe3_shuttle.py)
+# ---------------------------------------------------------------------------
+
+def apply_fe3_scenario(design_point: Dict[str, Any], scenario: "Any") -> Dict[str, Any]:
+    """Enable the Fe³⁺ CSTR terms and map an fe3_shuttle scenario onto the
+    design point (mutates and returns the dict).
+
+    ``scenario`` is an ``fe3_shuttle.ShuttleScenario`` (e.g.
+    ``sealed_divided_cell()``); its O₂ pinning and crossover flux become the
+    ``fe3_*`` knobs.  Remaining knobs (boundary layer, D, k_ox, Ea) take the
+    ``ShuttleParams`` screening defaults unless already present.
+    """
+    design_point["fe3_shuttle_enabled"] = True
+    design_point["fe3_o2_fraction_of_sat"] = scenario.o2_fraction_of_sat
+    design_point["fe3_crossover_o2_flux_mol_m2_s"] = scenario.crossover_o2_flux_mol_m2_s
+    return design_point
+
+
+def fe3_shuttle_terms(
+    x: "np.ndarray",
+    aux: BathAux,
+    design_point: Dict[str, Any],
+) -> Dict[str, float]:
+    """Instantaneous Fe³⁺ CSTR terms at the current state (diagnostics/logging).
+
+    Returns production rate, shuttle current, sink rate, hydrolysis cap and
+    the CE penalty at the state's current density — the same quantities the
+    static module reports, evaluated on the *dynamic* state.  All zeros when
+    the extension is disabled.
+    """
+    out = {
+        "fe3_M": max(0.0, aux.fe3_catholyte_M),
+        "fe3_reservoir_M": max(0.0, aux.fe3_reservoir_M),
+        "fe3_sludge_cumulative_mol": max(0.0, aux.fe3_sludge_cumulative_mol),
+        "r_prod_M_s": 0.0,
+        "k_shuttle_1_s": 0.0,
+        "shuttle_sink_M_s": 0.0,
+        "i_shuttle_A_m2": 0.0,
+        "fe3_solubility_cap_M": math.inf,
+        "ce_loss_fraction": 0.0,
+        "enabled": False,
+    }
+    if not bool(_dp(design_point, "fe3_shuttle_enabled")):
+        return out
+    dp = design_point
+    area_m2 = dp.get("electrode_area_m2", 1.0)
+    V_cath_L = _dp(dp, "catholyte_volume_L")
+    T_cath = max(0.0, float(x[0]))
+    fe2 = max(1e-6, float(x[2]))
+    pH = float(x[3])
+    j_A_m2 = max(1e-3, float(x[4])) * 10.0
+
+    km = _dp(dp, "fe3_d_m2_s") / max(_dp(dp, "fe3_boundary_layer_m"), 1e-12)
+    k_shuttle = km * (area_m2 / (V_cath_L / 1000.0))
+    o2_M = _dp(dp, "fe3_o2_fraction_of_sat") * dissolved_o2_saturation_mol_L(T_cath)
+    r_prod = fe2_oxidation_rate(fe2, o2_M, pH, T_cath,
+                                _dp(dp, "fe3_k_ox_ref"), _dp(dp, "fe3_Ea_ox_J_mol"))
+    r_prod += 4.0 * _dp(dp, "fe3_crossover_o2_flux_mol_m2_s") * area_m2 / V_cath_L
+    i_sh = FARADAY * km * out["fe3_M"] * 1000.0
+    out.update({
+        "r_prod_M_s": r_prod,
+        "k_shuttle_1_s": k_shuttle,
+        "shuttle_sink_M_s": k_shuttle * out["fe3_M"],
+        "i_shuttle_A_m2": i_sh,
+        "fe3_solubility_cap_M": fe3_solubility_cap_M(pH),
+        "ce_loss_fraction": min(i_sh / j_A_m2, 1.0),
+        "enabled": True,
+    })
+    return out
+
+
+def steady_state_fe3_M(design_point: Dict[str, Any]) -> float:
+    """Static steady-state [Fe³⁺] prediction for cross-checking the CSTR.
+
+    Maps the design point onto ``fe3_shuttle.ShuttleParams``/scenario and
+    returns that module's closed-form ``fe3_ss_M``.  The dynamic bath, held at
+    fixed (T, pH, fe2) with precipitation inactive everywhere, must relax to
+    the same value: the recirculation terms cancel identically at mutual
+    steady state, leaving ``[Fe³⁺]_ss = r_prod / (k_m·A/V)``.
+
+    Note the static module's ``ShuttleParams.cathode_area_m2`` scales the
+    crossover term by the *cathode* area, so it is mapped from
+    ``electrode_area_m2`` here.
+    """
+    from .fe3_shuttle import ShuttleParams, ShuttleScenario, steady_state
+
+    dp = design_point
+    p = ShuttleParams(
+        temperature_C=dp.get("temperature_C", 60.0),
+        pH=dp.get("pH", 3.5),
+        fe2_M=dp.get("fe2_M", 1.0),
+        cathode_area_m2=dp.get("electrode_area_m2", 1.0),
+        catholyte_volume_L=_dp(dp, "catholyte_volume_L"),
+        boundary_layer_m=_dp(dp, "fe3_boundary_layer_m"),
+        d_fe3_m2_s=_dp(dp, "fe3_d_m2_s"),
+        k_ox_ref=_dp(dp, "fe3_k_ox_ref"),
+        Ea_ox_J_mol=_dp(dp, "fe3_Ea_ox_J_mol"),
+    )
+    s = ShuttleScenario(
+        "design_point",
+        o2_fraction_of_sat=_dp(dp, "fe3_o2_fraction_of_sat"),
+        crossover_o2_flux_mol_m2_s=_dp(dp, "fe3_crossover_o2_flux_mol_m2_s"),
+    )
+    return float(steady_state(p, s)["fe3_ss_M"])
