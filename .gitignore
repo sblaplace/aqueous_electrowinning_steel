@@ -61,6 +61,10 @@ Thumbs.db
 # is lost every session.  We redirect it here via NUMBA_CACHE_DIR.
 .numba_cache/
 
+# Step cache manifest — content-addressable bookkeeping for run_all.
+# Safe to delete; the next run rebuilds it from scratch.
+experiments/data/.step_cache/
+
 # Test artifacts
 .pytest_cache/
 .worktrees/

@@ -9,8 +9,9 @@
 
 export NUMBA_CACHE_DIR := $(CURDIR)/.numba_cache
 export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
+VENV_PY := $(CURDIR)/.venv/bin/python
 
-.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon arena-setup warmup compileall
+.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon arena-setup warmup compileall run-all run-all-fresh run-all-quick run-all-force cache-status
 
 ## Fast feedback tier — parallel; fits easily under runtime caps
 test:
@@ -65,3 +66,23 @@ test-inc:
 ## Install pytest-testmon (change-driven test selection with coverage)
 install-testmon:
 	pip install pytest-testmon
+
+## Full model suite (incremental — skips unchanged steps via content-addressed cache)
+run-all:
+	$(VENV_PY) -m models.run_all
+
+## Full model suite — force recompute of everything (ignore step cache)
+run-all-fresh:
+	$(VENV_PY) -m models.run_all --no-cache
+
+## Full model suite — quick mode (skip heavy pulse grids)
+run-all-quick:
+	$(VENV_PY) -m models.run_all --quick
+
+## Force recompute of one step (e.g. make run-all-force STEP=electrochemistry)
+run-all-force:
+	$(VENV_PY) -m models.run_all --force-step $(STEP)
+
+## Show step cache status
+cache-status:
+	@cat experiments/data/.step_cache/manifest.json 2>/dev/null | $(VENV_PY) -m json.tool || echo "No cache manifest found"

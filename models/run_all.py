@@ -4,9 +4,18 @@ consolidated report and dashboard.
 
 Usage
 -----
-python -m models.run_all               # runs all modules
+python -m models.run_all               # runs all modules (cached where possible)
 python -m models.run_all --quick       # skips heavy pulse/transport heavy grids
+python -m models.run_all --no-cache    # force full recompute (ignore step cache)
+python -m models.run_all --force-step electrochemistry  # recompute one step
 python -m models.run_all --out experiments/data/master_report.json
+
+Incremental caching
+-------------------
+Each step is content-addressed by its source code + transitive deps + params.
+If nothing changed, the step is skipped (⏩) and its cached outputs are reused.
+Changing one model file only invalidates steps that transitively depend on it.
+The cache manifest lives at ``experiments/data/.step_cache/manifest.json``.
 
 What it does
 ------------
@@ -48,6 +57,7 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+from typing import Optional, Set
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -87,6 +97,9 @@ from models.run_rde_levich import main as run_rde_levich_main
 
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
 from models.process_flow import generate_process_flow_diagram, generate_detailed_flow_with_composition
+
+# Incremental step cache — content-addressed by source + deps + params
+from models.step_cache import StepCache
 
 
 def _load_json(p: Path) -> dict:
@@ -345,12 +358,31 @@ def _make_dashboard(quick: bool = False) -> Path:
     return out
 
 
-def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"):
-    print("="*72)
+def _step_outputs(report_name: str, fig_names: list[str] | None = None) -> list[Path]:
+    """Build the list of output paths for a step (report JSON + figures)."""
+    paths = [DATA_DIR / report_name]
+    if fig_names:
+        paths.extend(FIG_DIR / f for f in fig_names)
+    return paths
+
+
+def main(
+    quick: bool = False,
+    master_out: Path = DATA_DIR / "master_report.json",
+    cache_enabled: bool = True,
+    force_steps: Optional[Set[str]] = None,
+):
+    print("=" * 72)
     print("RUN_ALL — Aqueous Electrowinning Full Suite")
-    print("="*72)
+    print("=" * 72)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     FIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    cache = StepCache(enabled=cache_enabled, force_steps=force_steps or set())
+    if cache_enabled:
+        print(f"  Step cache: enabled (manifest: experiments/data/.step_cache/manifest.json)")
+    else:
+        print(f"  Step cache: disabled (--no-cache)")
 
     master = {
         "title": "Aqueous Electrowinning — Master Report",
@@ -360,353 +392,493 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
     }
 
     # 1 Electrochemistry
-    print("\n[1/19] Electrochemistry (Pourbaix + kinetics)...")
-    try:
-        run_electrochem_main()
-        master["steps"]["electrochemistry"] = _load_json(DATA_DIR / "electrochemistry_report.json")
-        print("  ✅ electrochemistry")
-    except Exception as e:
-        print(f"  ❌ electrochemistry: {e}")
-        master["steps"]["electrochemistry"] = {"error": str(e)}
+    print("\n[1/22] Electrochemistry (Pourbaix + kinetics)...")
+    with cache.step("electrochemistry", "models.run_electrochemistry",
+                    _step_outputs("electrochemistry_report.json",
+                                  ["pourbaix_fe_h2o.png", "polarization_curves.png",
+                                   "current_efficiency_map.png"])) as hit:
+        if not hit:
+            try:
+                run_electrochem_main()
+                print("  ✅ electrochemistry")
+            except Exception as e:
+                print(f"  ❌ electrochemistry: {e}")
+    master["steps"]["electrochemistry"] = _load_json(DATA_DIR / "electrochemistry_report.json")
 
     # 2 Transport
-    print("\n[2/19] Transport (Nernst-Planck)...")
-    try:
-        run_transport_main()
-        master["steps"]["transport"] = _load_json(DATA_DIR / "transport_report.json")
-        print("  ✅ transport")
-    except Exception as e:
-        print(f"  ❌ transport: {e}")
-        master["steps"]["transport"] = {"error": str(e)}
+    print("\n[2/22] Transport (Nernst-Planck)...")
+    with cache.step("transport", "models.run_transport",
+                    _step_outputs("transport_report.json",
+                                  ["nernst_planck_profiles.png",
+                                   "migration_enhancement.png",
+                                   "transport_model_comparison.png"])) as hit:
+        if not hit:
+            try:
+                run_transport_main()
+                print("  ✅ transport")
+            except Exception as e:
+                print(f"  ❌ transport: {e}")
+    master["steps"]["transport"] = _load_json(DATA_DIR / "transport_report.json")
 
     # 3 Pulse
-    print("\n[3/19] Pulse-reverse dynamics...")
-    try:
-        if not quick:
-            run_pulse_main()
-        master["steps"]["pulse"] = _load_json(DATA_DIR / "pulse_reverse_report.json")
-        print("  ✅ pulse")
-    except Exception as e:
-        print(f"  ❌ pulse: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["pulse"] = {"error": str(e)}
+    print("\n[3/22] Pulse-reverse dynamics...")
+    with cache.step("pulse", "models.run_pulse",
+                    _step_outputs("pulse_reverse_report.json",
+                                  ["pulse_reverse_transient.png",
+                                   "dc_vs_pulse_comparison.png"]),
+                    params={"quick": quick}) as hit:
+        if not hit:
+            try:
+                if not quick:
+                    run_pulse_main()
+                print("  ✅ pulse")
+            except Exception as e:
+                print(f"  ❌ pulse: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["pulse"] = _load_json(DATA_DIR / "pulse_reverse_report.json")
 
     # 4 Voltammetry
-    print("\n[4/19] Voltammetry / Tafel...")
-    try:
-        run_volt_main()
-        master["steps"]["voltammetry"] = _load_json(DATA_DIR / "voltammetry_report.json")
-        print("  ✅ voltammetry")
-    except Exception as e:
-        print(f"  ❌ voltammetry: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["voltammetry"] = {"error": str(e)}
+    print("\n[4/22] Voltammetry / Tafel...")
+    with cache.step("voltammetry", "models.run_voltammetry",
+                    _step_outputs("voltammetry_report.json",
+                                  ["voltammetry_analysis.png",
+                                   "tafel_analysis.png"])) as hit:
+        if not hit:
+            try:
+                run_volt_main()
+                print("  ✅ voltammetry")
+            except Exception as e:
+                print(f"  ❌ voltammetry: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["voltammetry"] = _load_json(DATA_DIR / "voltammetry_report.json")
 
     # 5 EIS
-    print("\n[5/19] EIS...")
-    try:
-        run_eis_main()
-        master["steps"]["eis"] = _load_json(DATA_DIR / "eis_report.json")
-        print("  ✅ eis")
-    except Exception as e:
-        print(f"  ❌ eis: {e}")
-        master["steps"]["eis"] = {"error": str(e)}
+    print("\n[5/22] EIS...")
+    with cache.step("eis", "models.run_eis",
+                    _step_outputs("eis_report.json",
+                                  ["eis_nyquist.png", "eis_bode.png"])) as hit:
+        if not hit:
+            try:
+                run_eis_main()
+                print("  ✅ eis")
+            except Exception as e:
+                print(f"  ❌ eis: {e}")
+    master["steps"]["eis"] = _load_json(DATA_DIR / "eis_report.json")
 
     # 6 Hull cell
-    print("\n[6/19] Hull cell + gravimetric FE...")
-    try:
-        run_hull_main()
-        master["steps"]["hull_cell"] = _load_json(DATA_DIR / "hull_cell_report.json")
-        print("  ✅ hull_cell")
-    except Exception as e:
-        print(f"  ❌ hull_cell: {e}")
-        master["steps"]["hull_cell"] = {"error": str(e)}
+    print("\n[6/22] Hull cell + gravimetric FE...")
+    with cache.step("hull_cell", "models.run_hull_cell",
+                    _step_outputs("hull_cell_report.json",
+                                  ["hull_cell_current_distribution.png",
+                                   "gravimetric_faradaic_efficiency.png"])) as hit:
+        if not hit:
+            try:
+                run_hull_main()
+                print("  ✅ hull_cell")
+            except Exception as e:
+                print(f"  ❌ hull_cell: {e}")
+    master["steps"]["hull_cell"] = _load_json(DATA_DIR / "hull_cell_report.json")
 
     # 7 Co-deposition (Phase III)
-    print("\n[7/19] Co-deposition (Fe-Ni + C)...")
-    try:
-        co_summary = _run_co_deposition_full()
-        master["steps"]["co_deposition"] = co_summary
-        print("  ✅ co_deposition")
-    except Exception as e:
-        print(f"  ❌ co_deposition: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["co_deposition"] = {"error": str(e)}
-        co_summary = {}
+    print("\n[7/22] Co-deposition (Fe-Ni + C)...")
+    with cache.step("co_deposition", "models.run_co_deposition",
+                    _step_outputs("co_deposition_report.json")) as hit:
+        if not hit:
+            try:
+                co_summary = _run_co_deposition_full()
+                print("  ✅ co_deposition")
+            except Exception as e:
+                print(f"  ❌ co_deposition: {e}")
+                import traceback; traceback.print_exc()
+                co_summary = {}
+        else:
+            # Load cached co-deposition summary from existing report
+            co_summary = _load_json(DATA_DIR / "co_deposition_report.json")
+    master["steps"]["co_deposition"] = co_summary if isinstance(co_summary, dict) and "error" not in co_summary else _load_json(DATA_DIR / "co_deposition_report.json")
 
     # 8 Mechanical properties
-    print("\n[8/19] Mechanical properties (Hall-Petch + ss + dispersion)...")
-    try:
-        mech_report = _run_mechanical_properties(co_summary) if co_summary else _run_mechanical_properties(
-            {"hydroxide_suppression": {"at_100_mA_cm2": {"alloy_kinetics": {"ni_wt_percent": 2.0},
-                                                        "carbon_incorporation": {"predicted_carbon_wt_percent": 0.5,
-                                                                                "adjusted_ce_percent": 93}}}}
-        )
-        master["steps"]["mechanical_properties"] = mech_report
-        print("  ✅ mechanical_properties")
-    except Exception as e:
-        print(f"  ❌ mechanical_properties: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["mechanical_properties"] = {"error": str(e)}
+    print("\n[8/22] Mechanical properties (Hall-Petch + ss + dispersion)...")
+    with cache.step("mechanical_properties", "models.run_mechanical_properties",
+                    _step_outputs("mechanical_properties_report.json",
+                                  ["mechanical_properties_sweep.png",
+                                   "alloy_vs_mechanical.png"])) as hit:
+        if not hit:
+            try:
+                mech_report = _run_mechanical_properties(co_summary) if co_summary else _run_mechanical_properties(
+                    {"hydroxide_suppression": {"at_100_mA_cm2": {"alloy_kinetics": {"ni_wt_percent": 2.0},
+                                                                "carbon_incorporation": {"predicted_carbon_wt_percent": 0.5,
+                                                                                        "adjusted_ce_percent": 93}}}}
+                )
+                print("  ✅ mechanical_properties")
+            except Exception as e:
+                print(f"  ❌ mechanical_properties: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["mechanical_properties"] = _load_json(DATA_DIR / "mechanical_properties_report.json")
 
     # 8b Carburization post-processing
-    print("\n[9/19] Carburization (Fickian case hardening)...")
-    try:
-        # Call with explicit kwargs to avoid argparse clash with --quick
-        run_carburization_main(temperature=900.0, surface_c=1.10, initial_c=0.02, thickness=1000.0, duration=4.0, dt=0.2)
-        master["steps"]["carburization"] = _load_json(DATA_DIR / "carburization_report.json")
-        print("  ✅ carburization")
-    except Exception as e:
-        print(f"  ❌ carburization: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["carburization"] = {"error": str(e)}
+    print("\n[9/22] Carburization (Fickian case hardening)...")
+    with cache.step("carburization", "models.run_carburization",
+                    _step_outputs("carburization_report.json",
+                                  ["carburization_profiles.png",
+                                   "carburization_case_depth.png",
+                                   "carburization_hardness.png",
+                                   "carburization_energy.png"]),
+                    params={"temperature": 900.0, "surface_c": 1.10, "initial_c": 0.02,
+                            "thickness": 1000.0, "duration": 4.0, "dt": 0.2}) as hit:
+        if not hit:
+            try:
+                run_carburization_main(temperature=900.0, surface_c=1.10, initial_c=0.02,
+                                       thickness=1000.0, duration=4.0, dt=0.2)
+                print("  ✅ carburization")
+            except Exception as e:
+                print(f"  ❌ carburization: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["carburization"] = _load_json(DATA_DIR / "carburization_report.json")
 
     # 9 Carbon potential
-    print("\n[10/19] Carbon potential (gas atmosphere)...")
-    try:
-        run_carbon_potential_main()
-        master["steps"]["carbon_potential"] = _load_json(DATA_DIR / "carbon_potential_report.json")
-        print("  ✅ carbon_potential")
-    except Exception as e:
-        print(f"  ❌ carbon_potential: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["carbon_potential"] = {"error": str(e)}
+    print("\n[10/22] Carbon potential (gas atmosphere)...")
+    with cache.step("carbon_potential", "models.run_carbon_potential",
+                    _step_outputs("carbon_potential_report.json",
+                                  ["carbon_potential_map.png",
+                                   "carbon_potential_dewpoint.png",
+                                   "carbon_potential_Acm.png"])) as hit:
+        if not hit:
+            try:
+                run_carbon_potential_main()
+                print("  ✅ carbon_potential")
+            except Exception as e:
+                print(f"  ❌ carbon_potential: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["carbon_potential"] = _load_json(DATA_DIR / "carbon_potential_report.json")
 
     # 10 Tempering + RA
-    print("\n[11/19] Tempering + retained austenite...")
-    try:
-        run_tempering_main()
-        master["steps"]["tempering"] = _load_json(DATA_DIR / "tempering_report.json")
-        print("  ✅ tempering")
-    except Exception as e:
-        print(f"  ❌ tempering: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["tempering"] = {"error": str(e)}
+    print("\n[11/22] Tempering + retained austenite...")
+    with cache.step("tempering", "models.run_tempering",
+                    _step_outputs("tempering_report.json",
+                                  ["tempering_curve.png",
+                                   "tempering_energy.png",
+                                   "retained_austenite.png",
+                                   "case_tempered_hardness.png"])) as hit:
+        if not hit:
+            try:
+                run_tempering_main()
+                print("  ✅ tempering")
+            except Exception as e:
+                print(f"  ❌ tempering: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["tempering"] = _load_json(DATA_DIR / "tempering_report.json")
 
     # 10b Thermomechanical (cold roll + recrystallization anneal)
-    print("\n[11b/19] Thermomechanical (roll + recrystallize foil to sheet)...")
-    try:
-        run_thermomechanical_main(reduction=0.5, passes=2, anneal_temp=700.0,
-                                  anneal_time=60.0, grain=1.0, ni=0.0,
-                                  carbon=0.0, ce=95.0)
-        master["steps"]["thermomechanical"] = _load_json(
-            DATA_DIR / "thermomechanical_report.json")
-        print("  ✅ thermomechanical")
-    except Exception as e:
-        print(f"  ❌ thermomechanical: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["thermomechanical"] = {"error": str(e)}
+    print("\n[11b/22] Thermomechanical (roll + recrystallize foil to sheet)...")
+    with cache.step("thermomechanical", "models.run_thermomechanical",
+                    _step_outputs("thermomechanical_report.json",
+                                  ["thermomech_recrystallization.png",
+                                   "thermomech_temperature_sweep.png",
+                                   "thermomech_reduction_sweep.png",
+                                   "thermomech_deposit_vs_annealed.png"]),
+                    params={"reduction": 0.5, "passes": 2, "anneal_temp": 700.0,
+                            "anneal_time": 60.0, "grain": 1.0, "ni": 0.0,
+                            "carbon": 0.0, "ce": 95.0}) as hit:
+        if not hit:
+            try:
+                run_thermomechanical_main(reduction=0.5, passes=2, anneal_temp=700.0,
+                                          anneal_time=60.0, grain=1.0, ni=0.0,
+                                          carbon=0.0, ce=95.0)
+                print("  ✅ thermomechanical")
+            except Exception as e:
+                print(f"  ❌ thermomechanical: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["thermomechanical"] = _load_json(DATA_DIR / "thermomechanical_report.json")
 
     # 11 Foil calibration (synthetic example)
-    print("\n[12/19] Foil + O2 probe calibration (synthetic)...")
-    try:
-        # Synthetic foil measurements: use foil_calibration module to fit D from its own synthetic data
-        from models.foil_calibration import FoilMeasurement, fit_diffusivity_from_foil_data, fit_carbon_potential_offset
-        # generate synthetic measurements mimicking 930C, pCO=0.2, pCO2=0.001
-        synthetic_foils = [
-            FoilMeasurement(time_hr=0.5, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.35, o2_probe_mV=1150),
-            FoilMeasurement(time_hr=1.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.65, o2_probe_mV=1120),
-            FoilMeasurement(time_hr=2.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.95, o2_probe_mV=1100),
-            FoilMeasurement(time_hr=4.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=1.05, o2_probe_mV=1090),
-        ]
-        fit_D = fit_diffusivity_from_foil_data(synthetic_foils, initial_C_wt=0.02)
-        fit_O2 = fit_carbon_potential_offset(synthetic_foils)
-        master["steps"]["foil_calibration"] = {"D_fit": fit_D, "O2_offset": fit_O2}
-        print(f"  ✅ foil calibration: D_fit={fit_D['D_fit_m2_s']:.2e} vs theory {fit_D['D_theory_m2_s']:.2e}, O2 offset={fit_O2.get('offset_factor_aC_probe_over_theory_mean',1):.3f}")
-    except Exception as e:
-        print(f"  ❌ foil calibration: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["foil_calibration"] = {"error": str(e)}
+    print("\n[12/22] Foil + O2 probe calibration (synthetic)...")
+    with cache.step("foil_calibration", "models.foil_calibration",
+                    []) as hit:
+        if not hit:
+            try:
+                from models.foil_calibration import FoilMeasurement, fit_diffusivity_from_foil_data, fit_carbon_potential_offset
+                synthetic_foils = [
+                    FoilMeasurement(time_hr=0.5, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.35, o2_probe_mV=1150),
+                    FoilMeasurement(time_hr=1.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.65, o2_probe_mV=1120),
+                    FoilMeasurement(time_hr=2.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=0.95, o2_probe_mV=1100),
+                    FoilMeasurement(time_hr=4.0, temperature_C=930, pCO_atm=0.2, pCO2_atm=0.001, foil_thickness_um=75, measured_avg_C_wt_percent=1.05, o2_probe_mV=1090),
+                ]
+                fit_D = fit_diffusivity_from_foil_data(synthetic_foils, initial_C_wt=0.02)
+                fit_O2 = fit_carbon_potential_offset(synthetic_foils)
+                master["steps"]["foil_calibration"] = {"D_fit": fit_D, "O2_offset": fit_O2}
+                print(f"  ✅ foil calibration: D_fit={fit_D['D_fit_m2_s']:.2e} vs theory {fit_D['D_theory_m2_s']:.2e}, O2 offset={fit_O2.get('offset_factor_aC_probe_over_theory_mean',1):.3f}")
+            except Exception as e:
+                print(f"  ❌ foil calibration: {e}")
+                import traceback; traceback.print_exc()
+                master["steps"]["foil_calibration"] = {"error": str(e)}
+        else:
+            master["steps"]["foil_calibration"] = _load_json(DATA_DIR / "foil_calibration_report.json")
 
     # 12 Techno + Scenarios
-    print("\n[13/19] Technoeconomics + scenarios...")
-    try:
-        run_techno_main()
-        run_scenarios_main()
-        master["steps"]["technoeconomic"] = _load_json(DATA_DIR / "technoeconomic_report.json")
-        master["steps"]["scenarios"] = _load_json(DATA_DIR / "scenario_comparison_report.json")
-        print("  ✅ technoeconomic & scenarios")
-    except Exception as e:
-        print(f"  ❌ technoeconomic/scenarios: {e}")
-        master["steps"]["technoeconomic"] = {"error": str(e)}
+    print("\n[13/22] Technoeconomics + scenarios...")
+    with cache.step("technoeconomic", "models.run_technoeconomic",
+                    _step_outputs("technoeconomic_report.json",
+                                  ["voltage_breakdown.png", "opex_breakdown.png",
+                                   "cost_comparison.png", "energy_vs_cost.png"])) as hit:
+        if not hit:
+            try:
+                run_techno_main()
+                print("  ✅ technoeconomic")
+            except Exception as e:
+                print(f"  ❌ technoeconomic: {e}")
+    master["steps"]["technoeconomic"] = _load_json(DATA_DIR / "technoeconomic_report.json")
+
+    with cache.step("scenarios", "models.run_scenarios",
+                    _step_outputs("scenario_comparison_report.json",
+                                  ["scenario_comparison.png",
+                                   "scenario_radar.png"])) as hit:
+        if not hit:
+            try:
+                run_scenarios_main()
+                print("  ✅ scenarios")
+            except Exception as e:
+                print(f"  ❌ scenarios: {e}")
+    master["steps"]["scenarios"] = _load_json(DATA_DIR / "scenario_comparison_report.json")
 
     # 13 Process flow + PID
-    print("\n[14/19] Process flow diagrams + pilot P&ID...")
-    try:
-        pf1 = generate_process_flow_diagram()
-        pf2 = generate_detailed_flow_with_composition()
-        # PID
-        try:
-            run_pid_main()
-            pid_figs = [str(FIG_DIR / "pid_overview.png"), str(FIG_DIR / "pid_detailed.png")]
-            pid_report = _load_json(DATA_DIR / "pid_report.json")
-        except Exception as e_pid:
-            print(f"    PID generation note: {e_pid}")
-            pid_figs = []
-            pid_report = {"error": str(e_pid)}
-        master["steps"]["process_flow"] = {"figures": [str(pf1), str(pf2)]}
-        master["steps"]["pid"] = {"figures": pid_figs, "report": pid_report}
-        print(f"  ✅ process_flow: {pf1}, {pf2}")
-        print(f"  ✅ pid: {pid_figs}")
-    except Exception as e:
-        print(f"  ❌ process_flow/pid: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["process_flow"] = {"error": str(e)}
+    print("\n[14/22] Process flow diagrams + pilot P&ID...")
+    with cache.step("process_flow", "models.process_flow",
+                    [FIG_DIR / "process_flow_diagram.png",
+                     FIG_DIR / "process_flow_detailed.png"]) as hit:
+        if not hit:
+            try:
+                pf1 = generate_process_flow_diagram()
+                pf2 = generate_detailed_flow_with_composition()
+                print(f"  ✅ process_flow: {pf1}, {pf2}")
+            except Exception as e:
+                print(f"  ❌ process_flow: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["process_flow"] = {"figures": [str(FIG_DIR / "process_flow_diagram.png"),
+                                                    str(FIG_DIR / "process_flow_detailed.png")]}
+
+    with cache.step("pid", "models.run_pid",
+                    _step_outputs("pid_report.json",
+                                  ["pid_overview.png", "pid_detailed.png"])) as hit:
+        if not hit:
+            try:
+                run_pid_main()
+                print("  ✅ pid")
+            except Exception as e_pid:
+                print(f"    PID generation note: {e_pid}")
+    pid_report = _load_json(DATA_DIR / "pid_report.json")
+    master["steps"]["pid"] = {"figures": [str(FIG_DIR / "pid_overview.png"),
+                                          str(FIG_DIR / "pid_detailed.png")],
+                              "report": pid_report}
 
     # 15 Pulse-coupled co-deposition analytics extra
-    print("\n[15/19] Pulse-coupled co-deposition analytics...")
-    try:
-        from models.co_deposition import build_phase3_model
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        # Quick comparison DC vs PE vs PRE for hydroxide_suppression
-        model = build_phase3_model(mechanism_fe_ni="hydroxide_suppression")
-        j_avg = 50.0
-        dc_res = model.run_at_current(j_avg)
-        pe_res = model.run_at_current_pulsed(j_avg, j_avg*2, duty_cycle=0.5, waveform="pe")
-        pre_res = model.run_at_current_pulsed(j_avg, j_avg*2, duty_cycle=0.5, waveform="pre")
-        master["steps"]["pulse_coupled_co_deposition"] = {
-            "dc_at_50": dc_res["alloy_kinetics"],
-            "pe_avg50_peak100": pe_res["alloy_kinetics"],
-            "pre_avg50_peak100": pre_res["alloy_kinetics"],
-            "note": "PE/PRE surface pH lower (recovery) → less hydroxide suppression, higher Ni expected (if mechanism is hydroxide-driven)"
-        }
-        # Figure
-        labels = ["DC 50", "PE 50/100", "PRE 50/100"]
-        fe_vals = [dc_res["alloy_kinetics"]["fe_wt_percent"],
-                   pe_res["alloy_kinetics"]["fe_wt_percent"],
-                   pre_res["alloy_kinetics"]["fe_wt_percent"]]
-        ni_vals = [dc_res["alloy_kinetics"]["ni_wt_percent"],
-                   pe_res["alloy_kinetics"]["ni_wt_percent"],
-                   pre_res["alloy_kinetics"]["ni_wt_percent"]]
-        pH_vals = [model.kinetics_model.surface_pH(j_avg),
-                   pe_res["alloy_kinetics"].get("pulsed_surface_pH", 0),
-                   pre_res["alloy_kinetics"].get("pulsed_surface_pH", 0)]
-        fig, axes = plt.subplots(1,2, figsize=(11,4.5))
-        ax = axes[0]
-        x = np.arange(3)
-        ax.bar(x-0.15, fe_vals, width=0.3, label="Fe wt%", color="#1874b4")
-        ax.bar(x+0.15, ni_vals, width=0.3, label="Ni wt%", color="#d95f02")
-        ax.set_xticks(x); ax.set_xticklabels(labels); ax.set_ylabel("wt%"); ax.set_title("Alloy composition DC vs PE vs PRE (screening)"); ax.legend(); ax.grid(alpha=0.25)
-        ax = axes[1]
-        ax.bar(labels, pH_vals, color="#4daf4a")
-        ax.set_title("Surface pH DC vs pulse-coupled (recovery)"); ax.set_ylabel("pH surf"); ax.grid(alpha=0.25)
-        fig.suptitle("Pulse-coupled co-deposition: pH recovery reduces hydroxide suppression", fontweight="bold")
-        fig.tight_layout()
-        fig_path = FIG_DIR / "pulse_coupled_co_deposition.png"
-        fig.savefig(fig_path, dpi=180)
-        plt.close(fig)
-        master["steps"]["pulse_coupled_co_deposition"]["figure"] = str(fig_path)
-        print(f"  ✅ pulse-coupled co-deposition: {fig_path}")
-    except Exception as e:
-        print(f"  ❌ pulse-coupled co-deposition: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["pulse_coupled_co_deposition"] = {"error": str(e)}
+    print("\n[15/22] Pulse-coupled co-deposition analytics...")
+    with cache.step("pulse_coupled_co_deposition", "models.co_deposition",
+                    _step_outputs("pulse_coupled_co_deposition_report.json",
+                                  ["pulse_coupled_co_deposition.png"])) as hit:
+        if not hit:
+            try:
+                from models.co_deposition import build_phase3_model
+                # Quick comparison DC vs PE vs PRE for hydroxide_suppression
+                model = build_phase3_model(mechanism_fe_ni="hydroxide_suppression")
+                j_avg = 50.0
+                dc_res = model.run_at_current(j_avg)
+                pe_res = model.run_at_current_pulsed(j_avg, j_avg*2, duty_cycle=0.5, waveform="pe")
+                pre_res = model.run_at_current_pulsed(j_avg, j_avg*2, duty_cycle=0.5, waveform="pre")
+                pccd_result = {
+                    "dc_at_50": dc_res["alloy_kinetics"],
+                    "pe_avg50_peak100": pe_res["alloy_kinetics"],
+                    "pre_avg50_peak100": pre_res["alloy_kinetics"],
+                    "note": "PE/PRE surface pH lower (recovery) → less hydroxide suppression, higher Ni expected (if mechanism is hydroxide-driven)"
+                }
+                # Figure
+                labels = ["DC 50", "PE 50/100", "PRE 50/100"]
+                fe_vals = [dc_res["alloy_kinetics"]["fe_wt_percent"],
+                           pe_res["alloy_kinetics"]["fe_wt_percent"],
+                           pre_res["alloy_kinetics"]["fe_wt_percent"]]
+                ni_vals = [dc_res["alloy_kinetics"]["ni_wt_percent"],
+                           pe_res["alloy_kinetics"]["ni_wt_percent"],
+                           pre_res["alloy_kinetics"]["ni_wt_percent"]]
+                pH_vals = [model.kinetics_model.surface_pH(j_avg),
+                           pe_res["alloy_kinetics"].get("pulsed_surface_pH", 0),
+                           pre_res["alloy_kinetics"].get("pulsed_surface_pH", 0)]
+                fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+                ax = axes[0]
+                x = np.arange(3)
+                ax.bar(x - 0.15, fe_vals, width=0.3, label="Fe wt%", color="#1874b4")
+                ax.bar(x + 0.15, ni_vals, width=0.3, label="Ni wt%", color="#d95f02")
+                ax.set_xticks(x); ax.set_xticklabels(labels); ax.set_ylabel("wt%")
+                ax.set_title("Alloy composition DC vs PE vs PRE (screening)"); ax.legend(); ax.grid(alpha=0.25)
+                ax = axes[1]
+                ax.bar(labels, pH_vals, color="#4daf4a")
+                ax.set_title("Surface pH DC vs pulse-coupled (recovery)"); ax.set_ylabel("pH surf"); ax.grid(alpha=0.25)
+                fig.suptitle("Pulse-coupled co-deposition: pH recovery reduces hydroxide suppression", fontweight="bold")
+                fig.tight_layout()
+                fig_path = FIG_DIR / "pulse_coupled_co_deposition.png"
+                fig.savefig(fig_path, dpi=180)
+                plt.close(fig)
+                pccd_result["figure"] = str(fig_path)
+                # Write a report so the cache can track it
+                (DATA_DIR / "pulse_coupled_co_deposition_report.json").write_text(
+                    json.dumps(pccd_result, indent=2, default=str))
+                print(f"  ✅ pulse-coupled co-deposition: {fig_path}")
+            except Exception as e:
+                print(f"  ❌ pulse-coupled co-deposition: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["pulse_coupled_co_deposition"] = _load_json(
+        DATA_DIR / "pulse_coupled_co_deposition_report.json")
 
-    # Pre-lab pre-experiment modeling suite (Speciation, Thermal Balance, Operating Window, DOE Matrix)
-    print("\n[16/19] Pre-lab modeling suite (Speciation, Thermal, Operating Window, DOE Matrix)...")
-    try:
-        run_speciation_main()
-        master["steps"]["speciation"] = _load_json(DATA_DIR / "speciation_report.json")
-        run_thermal_balance_main()
-        master["steps"]["thermal_balance"] = _load_json(DATA_DIR / "thermal_balance_report.json")
-        run_operating_window_main()
-        master["steps"]["operating_window"] = _load_json(DATA_DIR / "operating_window_report.json")
-        run_experimental_matrix_main()
-        master["steps"]["experimental_matrix"] = _load_json(DATA_DIR / "experimental_matrix_report.json")
-        print("  ✅ pre-lab modeling suite")
-    except Exception as e:
-        print(f"  ❌ pre-lab modeling suite: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["pre_lab_suite"] = {"error": str(e)}
+    # 16 Pre-lab modeling suite (Speciation, Thermal Balance, Operating Window, DOE Matrix)
+    print("\n[16/22] Pre-lab modeling suite (Speciation, Thermal, Operating Window, DOE Matrix)...")
+    with cache.step("speciation", "models.run_speciation",
+                    _step_outputs("speciation_report.json",
+                                  ["speciation_profiles.png"])) as hit:
+        if not hit:
+            try:
+                run_speciation_main()
+                print("  ✅ speciation")
+            except Exception as e:
+                print(f"  ❌ speciation: {e}")
+    master["steps"]["speciation"] = _load_json(DATA_DIR / "speciation_report.json")
 
-    # Cell architecture screen (areal productivity, $/m², kill criterion #3)
-    print("\n[17/21] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
-    try:
-        run_cell_architecture_main()
-        master["steps"]["cell_architecture"] = _load_json(
-            DATA_DIR / "cell_architecture_report.json"
-        )
-        print("  ✅ cell architecture")
-    except Exception as e:
-        print(f"  ❌ cell architecture: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["cell_architecture"] = {"error": str(e)}
+    with cache.step("thermal_balance", "models.run_thermal_balance",
+                    _step_outputs("thermal_balance_report.json",
+                                  ["thermal_balance_profiles.png"])) as hit:
+        if not hit:
+            try:
+                run_thermal_balance_main()
+                print("  ✅ thermal_balance")
+            except Exception as e:
+                print(f"  ❌ thermal_balance: {e}")
+    master["steps"]["thermal_balance"] = _load_json(DATA_DIR / "thermal_balance_report.json")
 
-    # Deposit adhesion / peel screen (the drum-and-strip gating unknown)
-    print("\n[18/21] Adhesion & peel screen (does iron peel from a drum?)...")
-    try:
-        run_adhesion_peel_main()
-        master["steps"]["adhesion_peel"] = _load_json(
-            DATA_DIR / "adhesion_peel_report.json"
-        )
-        print("  ✅ adhesion & peel")
-    except Exception as e:
-        print(f"  ❌ adhesion & peel: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["adhesion_peel"] = {"error": str(e)}
+    with cache.step("operating_window", "models.run_operating_window",
+                    _step_outputs("operating_window_report.json",
+                                  ["operating_window_map.png"])) as hit:
+        if not hit:
+            try:
+                run_operating_window_main()
+                print("  ✅ operating_window")
+            except Exception as e:
+                print(f"  ❌ operating_window: {e}")
+    master["steps"]["operating_window"] = _load_json(DATA_DIR / "operating_window_report.json")
 
-    # Deposit internal stress and coupon curvature (Stoney / bent-strip)
-    print("\n[19/21] Internal stress & coupon curvature (Stoney / bent-strip)...")
-    try:
-        run_internal_stress_main()
-        master["steps"]["internal_stress"] = _load_json(
-            DATA_DIR / "internal_stress_report.json"
-        )
-        print("  ✅ internal stress")
-    except Exception as e:
-        print(f"  ❌ internal stress: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["internal_stress"] = {"error": str(e)}
+    with cache.step("experimental_matrix", "models.run_experimental_matrix",
+                    _step_outputs("experimental_matrix_report.json",
+                                  ["doe_matrix_summary.png"])) as hit:
+        if not hit:
+            try:
+                run_experimental_matrix_main()
+                print("  ✅ experimental_matrix")
+            except Exception as e:
+                print(f"  ❌ experimental_matrix: {e}")
+    master["steps"]["experimental_matrix"] = _load_json(DATA_DIR / "experimental_matrix_report.json")
 
-    # RDE kinetics/transport separation (Levich + Koutecky-Levich) — calibrates
-    # diffusion_layer_1d's boundary-layer parameter from a measurement method
-    print("\n[20/21] RDE kinetics/transport separation (Levich + Koutecky-Levich)...")
-    try:
-        run_rde_levich_main()
-        master["steps"]["rde_levich"] = _load_json(
-            DATA_DIR / "rde_levich_report.json"
-        )
-        print("  ✅ rde & levich")
-    except Exception as e:
-        print(f"  ❌ rde & levich: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["rde_levich"] = {"error": str(e)}
+    # 17 Cell architecture screen
+    print("\n[17/22] Cell architecture screen (harvesting, $/m², kill criterion #3)...")
+    with cache.step("cell_architecture", "models.run_cell_architecture",
+                    _step_outputs("cell_architecture_report.json",
+                                  ["cell_architecture_comparison.png",
+                                   "cell_architecture_sweeps.png",
+                                   "cell_architecture_tradeoff.png"])) as hit:
+        if not hit:
+            try:
+                run_cell_architecture_main()
+                print("  ✅ cell architecture")
+            except Exception as e:
+                print(f"  ❌ cell architecture: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["cell_architecture"] = _load_json(DATA_DIR / "cell_architecture_report.json")
 
-    # Cathode-channel gas hold-up — the two-phase field left open by NEXT_STEPS 3.3
+    # 18 Adhesion & peel screen
+    print("\n[18/22] Adhesion & peel screen (does iron peel from a drum?)...")
+    with cache.step("adhesion_peel", "models.run_adhesion_peel",
+                    _step_outputs("adhesion_peel_report.json",
+                                  ["adhesion_substrate_screen.png",
+                                   "adhesion_foil_window.png",
+                                   "adhesion_robustness.png"])) as hit:
+        if not hit:
+            try:
+                run_adhesion_peel_main()
+                print("  ✅ adhesion & peel")
+            except Exception as e:
+                print(f"  ❌ adhesion & peel: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["adhesion_peel"] = _load_json(DATA_DIR / "adhesion_peel_report.json")
+
+    # 19 Internal stress & coupon curvature
+    print("\n[19/22] Internal stress & coupon curvature (Stoney / bent-strip)...")
+    with cache.step("internal_stress", "models.run_internal_stress",
+                    _step_outputs("internal_stress_report.json",
+                                  ["internal_stress_mechanism_decomposition.png",
+                                   "internal_stress_coupon_measurability.png",
+                                   "internal_stress_evolution_and_peel.png"])) as hit:
+        if not hit:
+            try:
+                run_internal_stress_main()
+                print("  ✅ internal stress")
+            except Exception as e:
+                print(f"  ❌ internal stress: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["internal_stress"] = _load_json(DATA_DIR / "internal_stress_report.json")
+
+    # 20 RDE kinetics/transport separation
+    print("\n[20/22] RDE kinetics/transport separation (Levich + Koutecky-Levich)...")
+    with cache.step("rde_levich", "models.run_rde_levich",
+                    _step_outputs("rde_levich_report.json",
+                                  ["rde_levich_levich_kl.png",
+                                   "rde_levich_polarization.png",
+                                   "rde_levich_tafel.png"])) as hit:
+        if not hit:
+            try:
+                run_rde_levich_main()
+                print("  ✅ rde & levich")
+            except Exception as e:
+                print(f"  ❌ rde & levich: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["rde_levich"] = _load_json(DATA_DIR / "rde_levich_report.json")
+
+    # 21 Cathode-channel gas hold-up
     print("\n[21/22] Cathode-channel gas hold-up (void fraction, redistribution, H2 safety)...")
-    try:
-        run_gas_holdup_main(quick=quick)
-        master["steps"]["gas_holdup"] = _load_json(
-            DATA_DIR / "gas_holdup_report.json"
-        )
-        print("  ✅ gas hold-up")
-    except Exception as e:
-        print(f"  ❌ gas hold-up: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["gas_holdup"] = {"error": str(e)}
+    with cache.step("gas_holdup", "models.run_gas_holdup",
+                    _step_outputs("gas_holdup_report.json",
+                                  ["gas_holdup_axial_profiles.png",
+                                   "gas_holdup_fe_coupling.png",
+                                   "gas_holdup_scaling_safety.png"]),
+                    params={"quick": quick}) as hit:
+        if not hit:
+            try:
+                run_gas_holdup_main(quick=quick)
+                print("  ✅ gas hold-up")
+            except Exception as e:
+                print(f"  ❌ gas hold-up: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["gas_holdup"] = _load_json(DATA_DIR / "gas_holdup_report.json")
 
-    # Unified RC-1 state — this is the single integration boundary for the
-    # reference-cell models.  It is intentionally a screening prediction; it
-    # does not create experimental gate evidence or arm hardware actuation.
+    # 22 Unified RC-1 reference-cell pipeline
     print("\n[22/22] Unified RC-1 reference-cell pipeline (physics + gas + thermal + safety)...")
-    try:
-        from models.reference_cell_pipeline import ReferenceCellPipeline
+    with cache.step("reference_cell_pipeline", "models.reference_cell_pipeline",
+                    _step_outputs("reference_cell_pipeline_report.json"),
+                    params={"quick": quick, "gas_segments": 4, "gas_iterations": 6}) as hit:
+        if not hit:
+            try:
+                from models.reference_cell_pipeline import ReferenceCellPipeline
 
-        pipeline = ReferenceCellPipeline(gas_segments=4, gas_iterations=6)
-        pipeline_inputs = pipeline.default_inputs(
-            current_density_mA_cm2=100.0 if quick else None,
-        )
-        integrated_state = pipeline.simulate(pipeline_inputs)
-        master["steps"]["reference_cell_pipeline"] = integrated_state.to_dict()
-        print("  ✅ reference_cell_pipeline")
-    except Exception as e:
-        print(f"  ❌ reference_cell_pipeline: {e}")
-        import traceback; traceback.print_exc()
-        master["steps"]["reference_cell_pipeline"] = {"error": str(e)}
+                pipeline = ReferenceCellPipeline(gas_segments=4, gas_iterations=6)
+                pipeline_inputs = pipeline.default_inputs(
+                    current_density_mA_cm2=100.0 if quick else None,
+                )
+                integrated_state = pipeline.simulate(pipeline_inputs)
+                # Write report so the cache can track it
+                (DATA_DIR / "reference_cell_pipeline_report.json").write_text(
+                    json.dumps(integrated_state.to_dict(), indent=2, default=str))
+                print("  ✅ reference_cell_pipeline")
+            except Exception as e:
+                print(f"  ❌ reference_cell_pipeline: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["reference_cell_pipeline"] = _load_json(
+        DATA_DIR / "reference_cell_pipeline_report.json")
 
-    # Dashboard
+    # Dashboard — always regenerate (cheap, depends on everything above)
     print("\n[Dashboard] Generating master dashboard...")
     try:
         dash = _make_dashboard(quick=quick)
@@ -719,10 +891,13 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
     master_out = Path(master_out)
     master_out.parent.mkdir(parents=True, exist_ok=True)
     master_out.write_text(json.dumps(master, indent=2))
-    print("\n" + "="*72)
+
+    # Cache summary
+    print("\n" + "=" * 72)
     print(f"✅ RUN_ALL complete — master report: {master_out}")
     print(f"   Dashboard: {FIG_DIR / 'run_all_dashboard.png'}")
-    print("="*72)
+    print(f"   {cache.summary()}")
+    print("=" * 72)
     return master
 
 
@@ -731,8 +906,16 @@ def cli():
     parser = argparse.ArgumentParser(description="Run all aqueous electrowinning models")
     parser.add_argument("--quick", action="store_true", help="Skip heavy grids (pulse comparisons)")
     parser.add_argument("--out", type=str, default=str(DATA_DIR / "master_report.json"), help="Master report output path")
+    parser.add_argument("--no-cache", action="store_true", help="Disable incremental step cache (force full recompute)")
+    parser.add_argument("--force-step", action="append", default=[], metavar="NAME",
+                        help="Force recompute of a specific step (may be repeated)")
     args = parser.parse_args()
-    main(quick=args.quick, master_out=Path(args.out))
+    main(
+        quick=args.quick,
+        master_out=Path(args.out),
+        cache_enabled=not args.no_cache,
+        force_steps=set(args.force_step),
+    )
 
 
 if __name__ == "__main__":
