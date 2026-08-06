@@ -130,7 +130,10 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 |--------|---------|
 | `models/electrochemistry.py` | Faraday's law, cell-voltage decomposition, specific energy |
 | `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
-| `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
+| `models/speciation.py` + `models/pitzer.py` | **Pitzer** multicomponent activities for the concentrated Fe²⁺–Na⁺–H⁺ ∥ SO₄²⁻–HSO₄⁻ bath (validated against NaCl/Na₂SO₄/MgSO₄/FeSO₄ anchors), bisulfate dissociation, water activity, conductivity, Nernst reversible potentials; per-parameter T-form framework (frozen 25 °C coefficients); legacy Davies path retained for comparison |
+| `models/kinetics.py` | **Full Butler–Volmer** Fe/HER partial currents (i(E_eq)≡0, dissolution branch anodic of E_eq) with **Arrhenius-temperature** exchange currents, mass-transport limits, current efficiency |
+| `models/her_microkinetics.py` | DFT-anchored (ΔG_H* ≈ −0.40 eV, Fe(110)) Volmer–Heyrovský HER check: reproduces the empirical slope within ~20 % at θ_H≈1; guides T/pH direction, empirical branch stays default |
+| `models/fe3_shuttle.py` | Fe³⁺ shuttle & O₂ bath aging: autoxidation + crossover → mt-limited cathodic shuttle, Fe(OH)₃ cap → sludge bleed; CE loss <0.2 pp even open — the iron-inventory story, not a CE story |
 | `models/boundary_layer.py` | Local cathode pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `models/transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, multi-ion profiles, migration-corrected limiting current |
 | `models/pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |
@@ -453,6 +456,8 @@ trials, EBSD orientation mapping and hardness traverses.
 │   ├── electrochemistry.py            # Faraday's law, cell voltage, specific energy
 │   ├── pourbaix.py                    # Fe-H₂O potential-pH equilibria
 │   ├── kinetics.py                    # Butler-Volmer Fe vs. HER competition
+│   ├── her_microkinetics.py           # DFT-anchored Volmer–Heyrovský HER consistency check
+│   ├── fe3_shuttle.py                 # Fe³⁺ shuttle / O₂ bath aging (CE leak + sludge bleed)
 │   ├── boundary_layer.py              # Cathode film composition & Fe(OH)₂ solubility
 │   ├── transport.py                   # Steady 1-D Nernst-Planck film with migration
 │   ├── pulse.py                       # Transient pulse & pulse-reverse electrodeposition

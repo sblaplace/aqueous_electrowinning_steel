@@ -514,7 +514,7 @@ def _claim_rows(
             "substantiated_by": "reference_cell() recipe + speciation "
             "(CellPhysics __init__)",
             "predicted_value": (
-                f"free [Fe²⁺]={solve['free_fe2_activity']:.3f} M, "
+                f"a(Fe²⁺)={solve['free_fe2_activity']:.3f} (dimensionless), "
                 f"conductivity={solve['conductivity_S_m']:.1f} S/m, "
                 f"pH={reference_cell().bath.pH:.1f} @ 50 °C ({SCREENING_FLAG})"
             ),

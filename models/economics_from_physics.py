@@ -216,7 +216,12 @@ def sweep_economics(reference_cell: ReferenceCell) -> list[dict[str, Any]]:
         if point is None or point.transport_limit_mA_cm2 <= point.j_mA_cm2:
             rows.append({"j_mA_cm2": j, "invalid": True, "flag": SCREENING_FLAG})
             continue
-        cost = physics_lcofe(reference_cell, j)
+        # Reuse the swept OperatingPoint directly: the solve is deterministic,
+        # so re-solving via physics_lcofe() would reproduce identical FE/V at
+        # double the compute (2026-08 profiling: one NP solve dominates cost).
+        cost = _cost_stack(
+            reference_cell, j, point.current_efficiency, point.V_cell, 0.04
+        )
         rows.append({
             "j_mA_cm2": j,
             "FE": point.current_efficiency,

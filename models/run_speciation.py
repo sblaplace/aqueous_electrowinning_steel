@@ -13,10 +13,11 @@ def main():
     comp = SolutionComposition(c_FeSO4=1.0, c_Na2SO4=0.5, c_H2SO4=0.01, c_H3BO3=0.4, T_C=50.0)
     single_res = solve_speciation(comp)
 
-    print(f"Single Point (50°C, 1.0M FeSO4, pH {single_res['pH_activity']:.2f}):")
-    print(f"  Ionic Strength: {single_res['ionic_strength_M']:.3f} M")
-    print(f"  Free [Fe²⁺]: {single_res['c_Fe2_free_M']:.3f} M (gamma_Fe2 = {single_res['gamma_Fe2']:.3f})")
-    print(f"  FeSO4(aq) Pair: {single_res['c_FeSO4_pair_M']:.3f} M ({single_res['fe2_pair_percentage']:.1f}% paired)")
+    print(f"Single Point (50°C, 1.0M FeSO4, pH {single_res['pH_activity']:.2f}) [activity model: {single_res['activity_model']}]:")
+    print(f"  Ionic Strength: {single_res['ionic_strength_molal']:.3f} mol/kg")
+    print(f"  Dissolved Fe(II): {single_res['c_Fe2_free_M']:.3f} M (gamma_Fe2 = {single_res['gamma_Fe2']:.3f})")
+    print(f"  FeSO4° contact-pair estimate: {single_res['c_FeSO4_pair_M']:.3f} M ({single_res['fe2_pair_percentage']:.1f}%; secondary)")
+    print(f"  a(Fe2+): {single_res['a_Fe2']:.4f}   Water activity: {single_res['water_activity']:.4f}")
     print(f"  Conductivity: {single_res['conductivity_S_m']:.2f} S/m")
     print(f"  Nernst E_rev(Fe): {single_res['E_rev_Fe_V_SHE']:.3f} V vs SHE")
     print(f"  Fe(OH)2 Precip pH: {single_res['pH_precip_Fe_OH2']:.2f}")
@@ -42,12 +43,12 @@ def main():
 
     temps = sweep_res["temperature_C"]
 
-    # Ax1: Free [Fe2+] and FeSO4 pair vs Temperature
-    ax1.plot(temps, sweep_res["c_Fe2_free_M"], 'b-o', label="Free [Fe²⁺] (M)")
-    ax1.plot(temps, sweep_res["c_FeSO4_pair_M"], 'r--s', label="FeSO₄⁰ Pair (M)")
+    # Ax1: Dissolved Fe(II) and the secondary FeSO4° contact-pair estimate
+    ax1.plot(temps, sweep_res["c_Fe2_free_M"], 'b-o', label="Dissolved Fe(II), total (M)")
+    ax1.plot(temps, sweep_res["c_FeSO4_pair_M"], 'r--s', label="FeSO₄⁰ contact-pair estimate (M)")
     ax1.set_xlabel("Temperature (°C)")
     ax1.set_ylabel("Concentration (M)")
-    ax1.set_title("Iron Speciation vs Temperature")
+    ax1.set_title("Iron Speciation vs Temperature (Pitzer)")
     ax1.grid(True, alpha=0.3)
     ax1.legend()
 

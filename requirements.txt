@@ -6,6 +6,13 @@ matplotlib>=3.7
 # Data handling
 pandas>=2.0
 
+# Runtime deps that must mirror pyproject.toml [project.dependencies].
+# numba is load-bearing: without it models/transport.py falls back to the
+# scipy LSODA integration path, which is ~17x slower per Nernst-Planck solve
+# (the 2026-08 discovery behind slow sandbox/CI test runs).
+numba>=0.60
+pyyaml>=6.0
+
 # Electrochemistry-specific
 # pourbaix (custom, see models/pourbaix.py)
 

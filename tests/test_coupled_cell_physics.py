@@ -39,8 +39,13 @@ from models.gas_holdup import ChannelGeometry
 J_REF = 150.0
 GAP_REF = 1.5e-3
 CONTACT_REF = 1.0e-4
-#: #40's headline uncoupled minimum energy (kWh/t Fe).
-UNCOUPLED_MIN_ENERGY_40 = 3306.3
+#: PR #40's uncoupled minimum-energy headline, kWh/t Fe.  #43's Pitzer
+# activity model shifted V_cell (4.51 → 4.70 V at RC-1, 50 °C, 100 mA/cm²)
+# and with it the energy landscape: the #40 headline moved 3306.3 → 3332.5
+# (the same j/gap/contact optimum, at a higher cell voltage).  The profiles
+# below assert the *new* computed value, so this pin tracks the Pitzer half
+# of #43, not the #40 number it originally recorded.  (2026-08 re-pin.)
+UNCOUPLED_MIN_ENERGY_40 = 3332.5
 
 
 @pytest.fixture(scope="module")

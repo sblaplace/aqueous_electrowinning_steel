@@ -4,6 +4,15 @@
 **Status:** Level-0 *screening* — **NOT gate evidence**
 **Module:** `models/theory_confidence.py` (+ runner `models/run_theory_confidence.py`, tests `tests/test_theory_confidence.py`)
 
+> **Update 2026-08-05** — numbers below refreshed after the Pitzer
+> activity-model + Arrhenius-kinetics physics upgrade
+> ([docs/SIM_PITZER_ACTIVITY.md](SIM_PITZER_ACTIVITY.md)).  The reference
+> bath now carries honest 2–2-salt activities (γ(Fe²⁺) ≈ 0.05, a(Fe²⁺) ≈
+> 0.052, κ ≈ 11.4 S/m at 50 °C) instead of the superseded Davies pairing
+> artefact (~97 % FeSO₄⁰, free [Fe²⁺] = 0.018 M, κ = 13.5 S/m).  Verdicts
+> are unchanged; V_cell moved 4.44 → 4.63 V and specific energy
+> 4281 → 4466 kWh/t Fe.
+
 ## What this is
 
 This is a single, honest, bottom-up simulation that checks the *theory* that
@@ -61,8 +70,8 @@ Fe(OH)₂ precipitation).
 |---|---|---|---|
 | Current density | 96.7 mA/cm² (19.3 A) | — | — |
 | FE | 0.995 (HER ≈ 0.5 %) | ≥ 0.80 | **PASS** |
-| V_cell | 4.44 V | 2.5–6.0 V | **PASS** |
-| Specific energy | 4281 kWh/t Fe | ≤ 6000 kWh/t | **PASS** |
+| V_cell | 4.63 V | 2.5–6.0 V | **PASS** |
+| Specific energy | 4466 kWh/t Fe | ≤ 6000 kWh/t | **PASS** |
 | Transport limit | 371 mA/cm² (margin 3.8×) | ≥ 1.2 | **PASS** |
 | Deposition rate | 127 µm/hr | 20–300 µm/hr | **PASS** |
 | Surface pH | 1.98; Fe(OH)₂ ss ≈ 2e-8 | no precipitation | PASS |
@@ -77,11 +86,11 @@ correct with run data.
 
 | Quantity | Value |
 |---|---|
-| Heat generation | 61.1 W |
-| Joule (IR) heat | 34.2 W (dominates) |
-| Activation heat | 18.4 W |
-| Steady-state T (cooled) | 21.2 °C |
-| Steady-state T (uncooled) | 33.3 °C |
+| Heat generation | 64.8 W |
+| Joule (IR) heat | 37.8 W (dominates) |
+| Activation heat | 18.7 W |
+| Steady-state T (cooled) | 21.5 °C |
+| Steady-state T (uncooled) | 34.1 °C |
 | Cooling duty to hold 50 °C | 0 W |
 | Verdict | **PASS** — steady-state T ≤ 60 °C with active cooling |
 
@@ -109,8 +118,8 @@ it is never silently zero-filled.
 
 | # | Claim | Substantiated by | Predicted (L0) | Acceptance | Verdict |
 |---|---|---|---|---|---|
-| 1 | feed/electrolyte are what we think they are | reference recipe + speciation | free [Fe²⁺]=0.018 M, σ=13.5 S/m, pH 2.0 @50 °C | recipe reproduces intended bath | **PASS** (L0; real feed identity is L1) |
-| 2 | cell produces predicted fields | `CellPhysics` + thermal transient + `gas_holdup` | V_cell=4.44 V, T_ss=21 °C, transport limit=371 mA/cm²; outlet void fraction ~1.2 % and axial current spread ~1 % at 300 mA/cm² | V in window, T ≤ 60 °C, uniformity ≥ 0.90 | **PASS** (L0; the gas field is now modeled rather than deferred — see note below) |
+| 1 | feed/electrolyte are what we think they are | reference recipe + speciation | a(Fe²⁺)=0.052, σ=11.4 S/m, pH 2.0 @50 °C | recipe reproduces intended bath | **PASS** (L0; real feed identity is L1) |
+| 2 | cell produces predicted fields | `CellPhysics` + thermal transient + `gas_holdup` | V_cell=4.63 V, T_ss=21.5 °C, transport limit=371 mA/cm²; outlet void fraction ~1.2 % and axial current spread ~1 % at 300 mA/cm² | V in window, T ≤ 60 °C, uniformity ≥ 0.90 | **PASS** (L0; the gas field is now modeled rather than deferred — see note below) |
 | 3 | electrochemistry produces Fe/HER split & rate | `CellPhysics.solve_at_j` | FE=0.995, HER≈0.5 %, 127 µm/hr | FE≥0.80, rate in window | **PASS** (L0) |
 | 4 | deposit harvestable, predicted composition/quality | deposit rate + pure-Fe composition fixture | 100 wt% Fe fixture, 127 µm/hr | composition + rate | **PARTIAL** (L0; harvestability deferred to peel-coupon branch) |
 | 5 | quantities hold over time (membrane ageing, anode wear) | — (no run day-1+ data) | — | accelerated-life data | **NOT COVERED / deferred** (Level 3) |

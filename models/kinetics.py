@@ -16,16 +16,75 @@ Sign convention
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
 import numpy as np
 from scipy.optimize import brentq
 
-from .electrochemistry import FARADAY, M_FE, Z_FE
+from .electrochemistry import FARADAY, M_FE, R_GAS, Z_FE
 from .pourbaix import her_line
 
 T_REF = 298.15
+
+# ─── Arrhenius temperature corrections for kinetics ──────────────────
+#
+# Exchange current densities in this repository are anchored at the bath
+# reference temperature I0_REF_K = 323.15 K (50 °C) — i.e. the literature
+# i0 values configured in this module represent the kinetics *at the
+# electrolyte reference condition*, not at 25 °C.
+#
+# Apparent activation energies (screening values, ±50 %):
+#   Fe²⁺ + 2e⁻ → Fe on Fe, sulfate media: Ea ≈ 50 kJ/mol
+#     (metal-deposition apparent Ea's are typically 40–60 kJ/mol;
+#      e.g. Axt & Grant-style ferrous sulfate polarization data)
+#   HER on Fe, mildly acidic media: Ea ≈ 60 kJ/mol
+#     (HER apparent Ea's on iron-group metals in acid are typically
+#      50–90 kJ/mol)
+# Consequence: the HER branch (Ea ≈ 60) is more temperature-activated
+# than Fe deposition (Ea ≈ 50), so at galvanostatic, HER-active
+# conditions FE falls modestly with temperature — the CE-peaks-at-
+# moderate-T behaviour long known for ferrous/zinc electrowinning — while
+# transport-limited cases can still improve via D(T).
+EA_FE_DEPOSITION_J_MOL = 50.0e3   # J/mol
+EA_HER_ON_FE_J_MOL = 60.0e3       # J/mol
+I0_REF_K = 323.15                 # K (50 °C)
+EA_DIFFUSION_J_MOL = 18.0e3       # J/mol (aqueous diffusivities)
+D_REF_K = 298.15                  # K — diffusivity literature anchor (25 °C)
+
+# ─── Butler–Volmer anodic-branch slopes ──────────────────────────────
+#
+# The Tafel form i = i0·10^((E_eq−E)/b_c) has two classic artefacts the
+# full Butler–Volmer form removes: it gives i(E_eq) = i0 ≠ 0 (no
+# thermodynamic equilibrium) and it has no dissolution branch anodic of
+# E_eq.  The anodic-branch slope is fixed once at 25 °C from the charge-
+# transfer bookkeeping α_a·n = n − α_c·n, with α_c·n read off the 25 °C
+# cathodic slope via the RT/F relation:
+#     2.303 R T / F  =  b(25 °C)·(α·n)
+#   Fe  (n=2):  b_c=0.120 → α_c·n = b25/0.120 → α_a·n = 2 − α_c·n → b_a
+#   HER (n=1):  b_c=0.140 → α_c   = b25/0.140 → α_a   = 1 − α_c   → b_a
+_FE_B25 = 2.303 * R_GAS * 298.15 / FARADAY
+FE_ANODIC_SLOPE_V = _FE_B25 / (2.0 - _FE_B25 / 0.120)
+HER_ANODIC_SLOPE_V = _FE_B25 / (1.0 - _FE_B25 / 0.140)
+
+
+
+def arrhenius_i0(i0_ref: float, T_K: float, Ea_J_mol: float,
+                 T_ref_K: float = I0_REF_K) -> float:
+    """Exchange current density at temperature T_K.
+
+    i0(T) = i0(T_ref) · exp[ Ea/R · (1/T_ref − 1/T) ]
+    """
+    return float(i0_ref * math.exp((Ea_J_mol / R_GAS) * (1.0 / T_ref_K - 1.0 / T_K)))
+
+
+def arrhenius_diffusivity(D_ref: float, T_K: float,
+                          Ea_J_mol: float = EA_DIFFUSION_J_MOL,
+                          T_ref_K: float = D_REF_K) -> float:
+    """Diffusivity at temperature T_K (Arrhenius; same convention as
+    ``diffusion_layer_1d._diffusivity_T``)."""
+    return float(D_ref * math.exp((Ea_J_mol / R_GAS) * (1.0 / T_ref_K - 1.0 / T_K)))
 
 
 def limiting_current_density(
@@ -77,6 +136,66 @@ class TafelBranch:
 
 
 @dataclass
+class ButlerVolmerBranch:
+    """
+    A full Butler–Volmer branch (cathodic positive, signed).
+
+    Extends ``TafelBranch`` with the anodic (reverse) exponential so that
+    the current is thermodynamically consistent at equilibrium —
+    ``current(E_eq) == 0`` exactly — and so that the branch is *signed*:
+    anodic of ``E_eq`` the net current is negative (dissolution for Fe,
+    H₂ ionisation for HER), which the Tafel form cannot represent.  At
+    operating cathodic overpotentials (|η| ≳ 150 mV) the reverse term is
+    ≲1e-4 of the forward one, so results differ from ``TafelBranch`` only
+    near equilibrium.
+
+    Parameters
+    ----------
+    i0 : float
+        Exchange current density (A/m^2).
+    tafel_slope_V : float
+        Cathodic Tafel slope (V/decade), positive.
+    E_eq : float
+        Equilibrium potential of the couple (V vs. SHE).
+    i_lim : float or None
+        Diffusion-limiting current density (A/m^2); blends the cathodic
+        arm only (dissolution is never transport-capped here).
+    anodic_slope_V : float or None
+        Anodic Tafel slope (V/decade), positive. ``None`` disables the
+        reverse term (fallback to the cathodic slope value) for callers
+        that only need the signed form near equilibrium.
+    """
+
+    i0: float
+    tafel_slope_V: float
+    E_eq: float
+    i_lim: Optional[float] = None
+    anodic_slope_V: Optional[float] = None
+
+    def current(self, E):
+        """Signed current density (A/m^2) at electrode potential E.
+
+        Cathodic positive; negative anodic of ``E_eq`` (net oxidation).
+        """
+        E = np.asarray(E, dtype=float)
+        eta = self.E_eq - E  # cathodic overpotential, positive when E < E_eq
+        b_a = self.anodic_slope_V if self.anodic_slope_V is not None else self.tafel_slope_V
+        i_kin = self.i0 * (10.0 ** (eta / self.tafel_slope_V)
+                           - 10.0 ** (-eta / b_a))
+        if self.i_lim is None:
+            return i_kin
+        # Koutecky-Levich blend caps only the cathodic arm; the anodic
+        # (dissolution) arm is returned unchanged.
+        i_cat = np.where(i_kin > 0.0, i_kin, 0.0)
+        blended = 1.0 / (1.0 / np.maximum(i_cat, 1e-30) + 1.0 / self.i_lim)
+        return np.where(i_kin > 0.0, blended, i_kin)
+
+    def current_magnitude(self, E):
+        """Cathodic magnitude (A/m^2); 0 anodic of E_eq."""
+        return np.where(self.current(E) > 0.0, self.current(E), 0.0)
+
+
+@dataclass
 class DepositionKinetics:
     """
     Competing Fe deposition and HER on a cathode.
@@ -93,13 +212,24 @@ class DepositionKinetics:
     temperature_C : float
         Temperature in degrees Celsius.
     fe_i0, her_i0 : float
-        Exchange current densities (A/m^2).
+        Exchange current densities (A/m^2) **at the kinetics reference
+        temperature** ``kinetics_ref_K`` (default 50 °C).  At any other
+        temperature they are Arrhenius-scaled with
+        ``fe_i0_Ea_J_mol`` / ``her_i0_Ea_J_mol``.
     fe_tafel_V, her_tafel_V : float
         Cathodic Tafel slopes (V/decade).
     fe_conc_M : float
         Bulk Fe2+ concentration (mol/L), used for the limiting current.
     boundary_layer_m : float
         Nernst diffusion layer thickness (m); agitation reduces this.
+    fe_i0_Ea_J_mol, her_i0_Ea_J_mol : float
+        Apparent activation energies of the two branches (J/mol).
+    kinetics_ref_K : float
+        Anchor temperature for the i0 values (K).  Results at 50 °C are
+        identical to the pre-Arrhenius model by construction.
+    diffusivity_Ea_J_mol : float
+        Activation energy for Fe2+ diffusivity (J/mol); default
+        diffusivity is the 25 °C literature value.
     """
 
     pH: float = 2.0
@@ -112,37 +242,94 @@ class DepositionKinetics:
     diffusivity_m2_s: float = 7.2e-10
     boundary_layer_m: float = 5e-5
     fe_E_eq: float = -0.440
+    fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
+    her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL
+    kinetics_ref_K: float = I0_REF_K
+    diffusivity_Ea_J_mol: float = EA_DIFFUSION_J_MOL
+    # Full Butler-Volmer branches (2026-08 default).  The cathodic Tafel
+    # slope is retained for the forward arm; the anodic (reverse) arm is
+    # derived once at 25 °C (FE_ANODIC_SLOPE_V / HER_ANODIC_SLOPE_V).
+    # BV fixes i(E_eq)=0 and represents dissolution anodic of E_eq.
+    use_butler_volmer: bool = True
+    fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
+    her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
 
     @property
     def T(self) -> float:
         return self.temperature_C + 273.15
 
     @property
+    def fe_i0_T(self) -> float:
+        """Fe exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.fe_i0, self.T, self.fe_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def her_i0_T(self) -> float:
+        """HER exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.her_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def D_fe_T(self) -> float:
+        """Fe2+ diffusivity Arrhenius-scaled to T (25 °C anchor)."""
+        return arrhenius_diffusivity(self.diffusivity_m2_s, self.T,
+                                     self.diffusivity_Ea_J_mol)
+
+    @property
     def i_lim(self) -> float:
         """Diffusion-limited Fe deposition current density (A/m^2)."""
         return limiting_current_density(
-            self.fe_conc_M * 1000.0, self.diffusivity_m2_s, self.boundary_layer_m
+            self.fe_conc_M * 1000.0, self.D_fe_T, self.boundary_layer_m
         )
 
     @property
     def fe_branch(self) -> TafelBranch:
-        return TafelBranch(self.fe_i0, self.fe_tafel_V, self.fe_E_eq, self.i_lim)
+        return TafelBranch(self.fe_i0_T, self.fe_tafel_V, self.fe_E_eq, self.i_lim)
 
     @property
     def her_branch(self) -> TafelBranch:
         return TafelBranch(
-            self.her_i0, self.her_tafel_V, float(her_line(self.pH, self.T))
+            self.her_i0_T, self.her_tafel_V, float(her_line(self.pH, self.T))
+        )
+
+    @property
+    def fe_branch_bv(self) -> ButlerVolmerBranch:
+        return ButlerVolmerBranch(
+            self.fe_i0_T, self.fe_tafel_V, self.fe_E_eq,
+            self.i_lim, self.fe_anodic_slope_V,
+        )
+
+    @property
+    def her_branch_bv(self) -> ButlerVolmerBranch:
+        return ButlerVolmerBranch(
+            self.her_i0_T, self.her_tafel_V, float(her_line(self.pH, self.T)),
+            None, self.her_anodic_slope_V,
         )
 
     # ─── Partial currents ─────────────────────────────────────────────
     def partial_currents(self, E):
-        """Return (i_Fe, i_HER, i_total) in A/m^2 at potential E (V vs. SHE)."""
-        i_fe = self.fe_branch.current(E)
-        i_h = self.her_branch.current(E)
+        """Return (i_Fe, i_HER, i_total) in A/m^2 at potential E (V vs. SHE).
+
+        With ``use_butler_volmer`` (default) the individual branches are
+        SIGNED: anodic of a branch's E_eq it is negative (Fe dissolution /
+        H₂ ionisation), so ``i_total`` and ``i_Fe`` can go anodic.  Current
+        efficiency is only a meaningful galvanostatic quantity where both
+        partial currents are cathodic.
+        """
+        if self.use_butler_volmer:
+            i_fe = self.fe_branch_bv.current(E)
+            i_h = self.her_branch_bv.current(E)
+        else:
+            i_fe = self.fe_branch.current(E)
+            i_h = self.her_branch.current(E)
         return i_fe, i_h, i_fe + i_h
 
     def current_efficiency(self, E):
-        """Faradaic current efficiency for Fe at potential E (fraction 0-1)."""
+        """Faradaic current efficiency for Fe at potential E (fraction 0-1).
+
+        Defined where the net current is cathodic (both partial currents
+        cathodic); anodic of E_eq(Fe) this is a signed Fe fraction, not a
+        meaningful current efficiency.
+        """
         i_fe, _, i_tot = self.partial_currents(E)
         return i_fe / np.maximum(i_tot, 1e-30)
 
@@ -169,7 +356,11 @@ class DepositionKinetics:
     def polarization_curve(self, E_range: Optional[Iterable[float]] = None):
         """
         Return (E, i_Fe, i_HER, i_total, CE) arrays over a potential sweep.
-        Currents in A/m^2.
+        Currents in A/m^2 (cathodic positive; with Butler–Volmer branches,
+        i_Fe/i_HER go negative anodic of their E_eq).  CE = i_Fe/i_total is
+        a galvanostatic concept, defined only where both partial currents
+        are cathodic; anodic of E_eq(Fe) it is a signed ratio, not a
+        current efficiency.
         """
         if E_range is None:
             E_range = np.linspace(-1.6, -0.3, 400)

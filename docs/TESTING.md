@@ -31,6 +31,29 @@ FE/sweep tests, and for CI gating. The `slow` files were chosen from measured
 durations (the FE engine, hull-cell FE, bath dynamics, Monte Carlo, Sobol,
 Bayesian/EIS, optimization and benchmark tests dominate serial wall-time).
 
+## numba is load-bearing for wall-time (2026-08 profiling)
+
+Every wall-time number above assumes **numba is importable**:
+`models/transport.py` integrates the Nernst–Planck film through
+`models/_transport_jit.py` when numba is present and silently falls back to
+`scipy.solve_ivp` (LSODA) when it is not. Measured on the RC-1 reference bath
+the fallback is **~17× slower per coupled solve** (10-point `CellPhysics`
+sweep: 35.1 s → 2.1 s; the physics-derived economics suite: >60 s → ~3.4 s;
+full fast tier, `pytest -q -n auto -m "not slow"`: never finished >
+15 CPU-min in one worker → **~3.5 min** with numba; 1,398 tests).
+
+numba is a hard dependency in `pyproject.toml` (`[project.dependencies]`), so
+CI (`pip install -e ".[test]"`) has always been on the fast path. The drift
+was the sandbox/dev path: `requirements.txt` (consumed by
+`scripts/arena_setup.sh`) omitted numba and pyyaml even though
+`models/` imports both at runtime. Both were added on 2026-08; **keep
+`requirements.txt` mirroring `pyproject.toml [project.dependencies]`** —
+a silently missing numba degrades every NP-coupled test without failing
+anything, which is the worst kind of slow.
+
+The JIT functions are compiled with `cache=True`, so the one-time compile
+cost lands on first use per checkout, not per test process.
+
 ## Commands (make)
 
     make test         fast tier, parallel (pytest -n auto -m "not slow")

@@ -68,14 +68,25 @@ def test_fe_increases_with_fe_concentration():
     assert fe_concentrated > fe_dilute
 
 
-# ─── 3. FE increases with temperature ────────────────────────────────
+# ─── 3. Temperature response of FE (competing Arrhenius branches) ────
 
-def test_fe_increases_with_temperature():
-    """Higher T → faster kinetics and higher conductivity → better FE."""
+def test_fe_temperature_response_reflects_branch_competition():
+    """Updated 2026-08 (Arrhenius kinetics): the FE→T trend is no longer
+    monotonic-by-construction (previously only diffusivity responded to T,
+    which trivially raised FE with T).  Now HER i0 (Ea ≈ 60 kJ/mol) is more
+    temperature-sensitive than Fe deposition (Ea ≈ 50 kJ/mol), so at the
+    HER-active default, warming 25→80 °C *reduces* FE modestly
+    (0.918→0.879) — the experimentally known CE-peaks-at-moderate-T
+    behaviour.  With HER fully suppressed the trend vanishes as expected."""
     j = 100.0
     fe_cold = _default(temperature_C=25.0).solve(j).current_efficiency
     fe_hot = _default(temperature_C=80.0).solve(j).current_efficiency
-    assert fe_hot > fe_cold
+    assert fe_hot < fe_cold  # HER branch is more temperature-activated
+    assert fe_cold - fe_hot < 0.10  # …but transport/diffusivity gains
+    #                                  limit the drop — both remain high
+    fe_cold_q = _default(temperature_C=25.0, her_i0=1e-6).solve(j).current_efficiency
+    fe_hot_q = _default(temperature_C=80.0, her_i0=1e-6).solve(j).current_efficiency
+    assert fe_cold_q > 0.99 and fe_hot_q > 0.99
 
 
 # ─── 4. Surface pH rises with j ─────────────────────────────────────

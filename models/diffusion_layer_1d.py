@@ -46,6 +46,14 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
 from .electrochemistry import E0_FE, FARADAY, R_GAS, Z_FE
+from .kinetics import (
+    EA_FE_DEPOSITION_J_MOL,
+    EA_HER_ON_FE_J_MOL,
+    FE_ANODIC_SLOPE_V,
+    HER_ANODIC_SLOPE_V,
+    I0_REF_K,
+    arrhenius_i0,
+)
 from .pourbaix import LOGKSP_FEOH2
 
 # ─── Reference temperature ────────────────────────────────────────────
@@ -233,6 +241,14 @@ class DiffusionLayer1D:
     max_iterations: int = 200
     convergence_tol: float = 1e-9
     fast_mode: bool = False
+    # Exchange-current densities are anchored at kinetics_ref_K and
+    # Arrhenius-scaled to the operating temperature; see models/kinetics.py.
+    fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
+    her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL
+    kinetics_ref_K: float = I0_REF_K
+    # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
+    fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
+    her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
 
     def __post_init__(self) -> None:
         if self.fe_conc_M <= 0.0:
@@ -323,6 +339,16 @@ class DiffusionLayer1D:
     def diffusion_limit_A_m2(self) -> float:
         """Pure-diffusion (Levich) limiting current for Fe²⁺ (A/m²)."""
         return Z_FE * FARADAY * self.D_fe * self.fe_conc_M * 1000.0 / self.delta_m
+
+    @property
+    def fe_i0_T(self) -> float:
+        """Fe exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.fe_i0, self.T, self.fe_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def her_i0_T(self) -> float:
+        """HER exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.her_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K)
 
     # ─── Equilibrium fractions ─────────────────────────────────────
 
@@ -526,8 +552,11 @@ class DiffusionLayer1D:
     def _her_equilibrium_potential(self, surface_pH: float) -> float:
         return -(R_GAS * self.T / FARADAY) * np.log(10.0) * surface_pH
 
-    def _tafel_current(self, E: float, i0: float, slope: float, E_eq: float) -> float:
-        return float(i0 * 10.0 ** ((E_eq - E) / slope))
+    def _bv_current(self, E: float, i0: float, slope_c: float,
+                    slope_a: float, E_eq: float) -> float:
+        """Full Butler–Volmer branch current (cathodic positive; signed)."""
+        return float(i0 * (10.0 ** ((E_eq - E) / slope_c)
+                           - 10.0 ** ((E - E_eq) / slope_a)))
 
     # ─── Transport limit ───────────────────────────────────────────
 
@@ -567,11 +596,13 @@ class DiffusionLayer1D:
         """
         i_lim = self.diffusion_limit_A_m2
 
-        # Seed from bulk Tafel (no transport correction)
+        # Seed from bulk BV (no transport correction)
         fe_eq_bulk = self._fe_equilibrium_potential(self.fe_conc_M)
         her_eq_bulk = self._her_equilibrium_potential(self.pH_bulk)
-        i_fe = self._tafel_current(E, self.fe_i0, self.fe_tafel_V, fe_eq_bulk)
-        i_her = self._tafel_current(E, self.her_i0, self.her_tafel_V, her_eq_bulk)
+        i_fe = max(self._bv_current(E, self.fe_i0_T, self.fe_tafel_V,
+                                    self.fe_anodic_slope_V, fe_eq_bulk), 0.0)
+        i_her = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
+                                     self.her_anodic_slope_V, her_eq_bulk), 0.0)
         i_fe = min(i_fe, i_lim * 0.99)
 
         converged = False
@@ -607,8 +638,10 @@ class DiffusionLayer1D:
             fe_eq = self._fe_equilibrium_potential(surf_fe_M)
             her_eq = self._her_equilibrium_potential(surf_pH)
 
-            i_fe_kin = self._tafel_current(E, self.fe_i0, self.fe_tafel_V, fe_eq)
-            i_her_kin = self._tafel_current(E, self.her_i0, self.her_tafel_V, her_eq)
+            i_fe_kin = max(self._bv_current(E, self.fe_i0_T, self.fe_tafel_V,
+                                            self.fe_anodic_slope_V, fe_eq), 0.0)
+            i_her_kin = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
+                                             self.her_anodic_slope_V, her_eq), 0.0)
 
             # Koutecky-Levich: Fe cannot outrun transport
             i_fe_new = 1.0 / (

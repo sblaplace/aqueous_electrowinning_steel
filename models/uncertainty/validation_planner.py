@@ -6,7 +6,7 @@ below the threshold needed for design qualification.  Experiments are ranked
 by expected information gain per dollar, and a sequential planner updates
 the recommendation after each experiment completes.
 
-Experiment catalog (7 types):
+Experiment catalog (8 types):
   1. foil_test           — constrains D0, Q (diffusivity)
   2. tensile_test        — constrains sigma0, k_HP, k_SS (Hall-Petch + SS)
   3. ebsd_grain_size     — constrains k_HP, grain model params
@@ -14,6 +14,12 @@ Experiment catalog (7 types):
   5. o2_probe_calibration — constrains K_B, K_CH4 (carbon potential)
   6. icp_oes_composition — constrains k_SS_NI, anomalous Ni parameters
   7. tempering_curve     — constrains k_softening, C_HJ
+  8. polarization_temperature_series — constrains the electrochemical
+     kinetics block (i0, Tafel slopes, Arrhenius Ea); added 2026-08 when the
+     Arrhenius exchange-current activation energies entered the registry —
+     before that, no catalog experiment touched any kinetics parameter and
+     the (J/mol-scale) Ea variances swamped the planner's possible
+     reduction.
 
 References:
   * Montgomery, D.C. (2020). Design and Analysis of Experiments, 10th ed.
@@ -161,6 +167,21 @@ def experiment_catalog() -> Dict[str, Experiment]:
                 "calibrates Hollomon-Jaffe and softening parameters."
             ),
             equipment="muffle furnace, Vickers tester, temperature controller",
+        ),
+        "polarization_temperature_series": Experiment(
+            name="polarization_temperature_series",
+            cost_usd=800.0,
+            duration_hours=24.0,
+            constrained_params=["fe_i0", "her_i0", "fe_tafel_V", "her_tafel_V",
+                                "fe_i0_Ea_J_mol", "her_i0_Ea_J_mol"],
+            description=(
+                "Potentiostatic polarization curves (LSV/RDE) on Fe at "
+                "several temperatures (~25-70 °C) — the Arrhenius regression "
+                "of the exchange currents is exactly the experiment that "
+                "pins the apparent activation energies and Tafel slopes of "
+                "the Fe-deposition and HER branches."
+            ),
+            equipment="potentiostat, rotating-disk electrode, thermostated cell jacket",
         ),
     }
     return catalog
