@@ -165,8 +165,15 @@ def test_calibration_round_trip():
         fe_conc_M=fe_conc_M,
     )
 
-    # Generate synthetic cathodic LSV data
-    E_she = np.linspace(-0.30, -0.90, 50)  # cathodic range vs SHE
+    # Generate synthetic cathodic LSV data.  2026-08: with the default full
+    # Butler–Volmer branches (PR #43) the old −0.30 V start runs ANODIC of
+    # E_eq(Fe) (≈ −0.45 V at 60 °C), where Fe dissolution flattens the
+    # sampled curve and the fitter soaks that model-region mismatch into
+    # ~0.6 decades of spurious i0 bias.  Kinetic calibration data starts
+    # cathodic of E_eq in practice (net-current decomposition in the
+    # mixed-potential region is model-dependent), so the round-trip sweeps
+    # the cathodic operating window, where recovery is exact.
+    E_she = np.linspace(-0.50, -0.90, 50)  # cathodic range vs SHE
     _, _, total_current = kin.partial_currents(E_she)
     current_A_m2 = -np.maximum(total_current, 1e-10)
 
