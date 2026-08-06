@@ -36,7 +36,10 @@ The ODE state is ``[c_fe, c_h, c_s, c_b, phi]`` where
 ``c_s = C_HSO4 + C_SO4`` (total sulfate) and
 ``c_b = C_H3BO3 + C_H2BO3`` (total borate).
 The proton invariant whose flux equals the HER consumption rate is
-``Φ = C_H + C_HSO4 + C_H3BO3 − C_OH``.
+``Φ = C_H + C_HSO4 + C_H3BO3 − C_OH``.  When ``transport_na=True`` the
+state gains a sixth variable ``c_na`` obeying a zero-flux boundary
+(N_Na = 0 at the electrode); Na+ then develops a diffusion-migration
+gradient across the film rather than being held at its bulk value.
 
 Electroneutrality closes the system for ``dφ/dx``.
 
