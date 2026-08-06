@@ -85,7 +85,11 @@ for T/pH response; the empirical branch remains the operational default.
 
 * Anodic slopes inherit the symmetric-barrier bookkeeping pinned to
   25 °C screening slopes; Fe dissolution at PRE-relevant overpotentials
-  remains unvalidated (the `pulse.py` heuristic split is untouched).
+  remains unvalidated.  ~~The `pulse.py` heuristic split is untouched.~~
+  → **closed 2026-08-06**: `pulse.py` now solves the surface potential
+  against the signed BV branches (corrosion-couple reverse segments,
+  off-period corrosion, surface-activity closure, proton-limited
+  envelope flag) — see `docs/SIM_PULSE_BV.md`.
 * The BV reverse arm changes nothing at cathodic operating points by
   design; its value is correctness at/near equilibrium and the anodic
   regime representation, not better FE numbers.
