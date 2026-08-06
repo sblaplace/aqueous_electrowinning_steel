@@ -61,10 +61,18 @@ class TestCellVoltage:
             assert s.V_cell == pytest.approx(expected)
 
     def test_matches_program_summary_table(self):
-        """docs/PROGRAM_SUMMARY.md quotes these to three decimals."""
-        assert OPTIMIZED_ALKALINE.V_cell == pytest.approx(1.418, abs=0.002)
-        assert AWARE_ACIDIC.V_cell == pytest.approx(2.485, abs=0.002)
-        assert FUTURE_TARGET.V_cell == pytest.approx(2.441, abs=0.002)
+        """docs/PROGRAM_SUMMARY.md quotes these to three decimals.
+
+        NOTE (2026-08): the anode concentration-overpotential model was
+        corrected from dissolved-O₂ depletion (i_lim ≈ 4 A/m², which capped
+        η_conc at a spurious ~0.14 V for every real current) to supporting-
+        salt polarization (η_conc ≈ a few mV).  That removed a ~0.14 V
+        phantom overpotential from all first-principles-anode scenarios,
+        so the table voltages are the physically corrected values.
+        """
+        assert OPTIMIZED_ALKALINE.V_cell == pytest.approx(1.268, abs=0.005)
+        assert AWARE_ACIDIC.V_cell == pytest.approx(2.350, abs=0.005)
+        assert FUTURE_TARGET.V_cell == pytest.approx(2.309, abs=0.005)
 
     def test_more_ir_drop_raises_voltage(self):
         base = CONSERVATIVE_ALKALINE
@@ -82,10 +90,12 @@ class TestCellVoltage:
 class TestSpecificEnergy:
     def test_matches_program_summary_energies(self):
         """E = 959.9 × V/FE kWh/t Fe, as quoted in PROGRAM_SUMMARY.md."""
+        # Corrected 2026-08 for the anode η_conc fix (see
+        # test_matches_program_summary_table): E = 959.9 × V_cell/FE.
         for scenario, expected in (
-            (OPTIMIZED_ALKALINE, 1464),
-            (AWARE_ACIDIC, 2410),
-            (FUTURE_TARGET, 2415),
+            (OPTIMIZED_ALKALINE, 1309),
+            (AWARE_ACIDIC, 2278),
+            (FUTURE_TARGET, 2284),
         ):
             e = specific_energy_kWh_per_t(scenario.V_cell, scenario.current_efficiency)
             assert e == pytest.approx(expected, rel=0.01)

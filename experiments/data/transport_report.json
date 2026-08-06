@@ -62,126 +62,126 @@
       "support_M": 0.0,
       "t_Fe": 0.3959,
       "diffusion_limit_A_m2": 2778.77756,
-      "transport_limit_A_m2": 5354.7971,
+      "transport_limit_A_m2": 5354.79717,
       "migration_enhancement": 1.92703,
-      "migration_flux_fraction": 0.50606,
-      "film_potential_drop_mV": -2.40277,
-      "surface_pH": 2.68516,
-      "surface_fe_M": 0.84907,
-      "current_efficiency": 0.84846
+      "migration_flux_fraction": 0.50663,
+      "film_potential_drop_mV": -2.37935,
+      "surface_pH": 2.80248,
+      "surface_fe_M": 0.8507,
+      "current_efficiency": 0.84013
     },
     {
       "support_M": 0.1,
       "t_Fe": 0.36142,
       "diffusion_limit_A_m2": 2778.77756,
-      "transport_limit_A_m2": 4514.41504,
+      "transport_limit_A_m2": 4514.41521,
       "migration_enhancement": 1.6246,
-      "migration_flux_fraction": 0.46152,
-      "film_potential_drop_mV": -2.22595,
-      "surface_pH": 2.70797,
-      "surface_fe_M": 0.83723,
-      "current_efficiency": 0.84729
+      "migration_flux_fraction": 0.46212,
+      "film_potential_drop_mV": -2.20502,
+      "surface_pH": 2.82721,
+      "surface_fe_M": 0.83892,
+      "current_efficiency": 0.83925
     },
     {
       "support_M": 0.5,
       "t_Fe": 0.26804,
       "diffusion_limit_A_m2": 2778.77756,
-      "transport_limit_A_m2": 3708.86203,
+      "transport_limit_A_m2": 3708.86223,
       "migration_enhancement": 1.33471,
-      "migration_flux_fraction": 0.33862,
-      "film_potential_drop_mV": -1.71948,
-      "surface_pH": 2.74889,
-      "surface_fe_M": 0.80334,
-      "current_efficiency": 0.8461
+      "migration_flux_fraction": 0.33926,
+      "film_potential_drop_mV": -1.70444,
+      "surface_pH": 2.8712,
+      "surface_fe_M": 0.80524,
+      "current_efficiency": 0.83852
     },
     {
       "support_M": 2.0,
       "t_Fe": 0.13614,
       "diffusion_limit_A_m2": 2778.77756,
-      "transport_limit_A_m2": 3143.77609,
+      "transport_limit_A_m2": 3143.77615,
       "migration_enhancement": 1.13135,
-      "migration_flux_fraction": 0.16561,
-      "film_potential_drop_mV": -0.92204,
-      "surface_pH": 2.80133,
-      "surface_fe_M": 0.75198,
-      "current_efficiency": 0.84541
+      "migration_flux_fraction": 0.1661,
+      "film_potential_drop_mV": -0.91478,
+      "surface_pH": 2.92717,
+      "surface_fe_M": 0.75412,
+      "current_efficiency": 0.83841
     }
   ],
   "model_comparison": [
     {
       "j_mA_cm2": 5.0,
-      "nernst_planck_surface_pH": 2.039,
+      "nernst_planck_surface_pH": 2.045,
       "linear_film_surface_pH": 9.541,
-      "nernst_planck_CE_pct": 67.7,
+      "nernst_planck_CE_pct": 63.32,
       "linear_film_CE_pct": 99.29
     },
     {
       "j_mA_cm2": 20.0,
-      "nernst_planck_surface_pH": 2.142,
+      "nernst_planck_surface_pH": 2.166,
       "linear_film_surface_pH": 11.097,
-      "nernst_planck_CE_pct": 73.86,
+      "nernst_planck_CE_pct": 70.44,
       "linear_film_CE_pct": 93.61
     },
     {
       "j_mA_cm2": 50.0,
-      "nernst_planck_surface_pH": 2.344,
+      "nernst_planck_surface_pH": 2.407,
       "linear_film_surface_pH": 11.334,
-      "nernst_planck_CE_pct": 79.36,
+      "nernst_planck_CE_pct": 77.24,
       "linear_film_CE_pct": 95.59
     },
     {
       "j_mA_cm2": 100.0,
-      "nernst_planck_surface_pH": 2.685,
+      "nernst_planck_surface_pH": 2.802,
       "linear_film_surface_pH": 11.512,
-      "nernst_planck_CE_pct": 84.85,
+      "nernst_planck_CE_pct": 84.01,
       "linear_film_CE_pct": 96.68
     },
     {
       "j_mA_cm2": 200.0,
-      "nernst_planck_surface_pH": 3.319,
+      "nernst_planck_surface_pH": 3.481,
       "linear_film_surface_pH": 11.689,
-      "nernst_planck_CE_pct": 90.55,
+      "nernst_planck_CE_pct": 90.43,
       "linear_film_CE_pct": 97.5
     }
   ],
   "operating_points": {
     "Unsupported acidic (pH 2)": {
       "j applied (mA/cm²)": 100.0,
-      "E cathode (V vs SHE)": -1.043,
-      "Current efficiency (%)": 84.8,
-      "Surface pH": 2.69,
-      "ΔpH (surface − bulk)": 0.69,
-      "Surface Fe²⁺ (M)": 0.8491,
+      "E cathode (V vs SHE)": -1.013,
+      "Current efficiency (%)": 84.0,
+      "Surface pH": 2.8,
+      "ΔpH (surface − bulk)": 0.8,
+      "Surface Fe²⁺ (M)": 0.8507,
       "i_lim diffusion (A/m²)": 2778.8,
       "i_lim with migration (A/m²)": 5354.8,
       "Migration enhancement (×)": 1.927,
-      "Migration share of Fe²⁺ flux": 0.506,
-      "Film potential drop (mV)": -2.4,
+      "Migration share of Fe²⁺ flux": 0.507,
+      "Film potential drop (mV)": -2.38,
       "t_Fe²⁺ (bulk)": 0.396,
-      "Max Fe(OH)₂ supersaturation": 4.07e-07
+      "Max Fe(OH)₂ supersaturation": 6.99e-07
     },
     "Supported acidic (2 M Na₂SO₄)": {
       "j applied (mA/cm²)": 100.0,
-      "E cathode (V vs SHE)": -1.052,
-      "Current efficiency (%)": 84.5,
-      "Surface pH": 2.8,
-      "ΔpH (surface − bulk)": 0.8,
-      "Surface Fe²⁺ (M)": 0.752,
+      "E cathode (V vs SHE)": -1.022,
+      "Current efficiency (%)": 83.8,
+      "Surface pH": 2.93,
+      "ΔpH (surface − bulk)": 0.93,
+      "Surface Fe²⁺ (M)": 0.7541,
       "i_lim diffusion (A/m²)": 2778.8,
       "i_lim with migration (A/m²)": 3143.8,
       "Migration enhancement (×)": 1.131,
       "Migration share of Fe²⁺ flux": 0.166,
-      "Film potential drop (mV)": -0.92,
+      "Film potential drop (mV)": -0.91,
       "t_Fe²⁺ (bulk)": 0.136,
-      "Max Fe(OH)₂ supersaturation": 6.15e-07
+      "Max Fe(OH)₂ supersaturation": 1.1e-06
     },
     "HER-inhibited acidic": {
       "j applied (mA/cm²)": 100.0,
-      "E cathode (V vs SHE)": -1.053,
-      "Current efficiency (%)": 99.6,
+      "E cathode (V vs SHE)": -1.024,
+      "Current efficiency (%)": 99.5,
       "Surface pH": 1.97,
       "ΔpH (surface − bulk)": -0.03,
-      "Surface Fe²⁺ (M)": 0.8201,
+      "Surface Fe²⁺ (M)": 0.8202,
       "i_lim diffusion (A/m²)": 2778.8,
       "i_lim with migration (A/m²)": 5354.8,
       "Migration enhancement (×)": 1.927,
@@ -192,7 +192,7 @@
     },
     "Dilute + stagnant": {
       "j applied (mA/cm²)": 50.0,
-      "E cathode (V vs SHE)": -1.773,
+      "E cathode (V vs SHE)": -1.732,
       "Current efficiency (%)": 26.8,
       "Surface pH": 12.92,
       "ΔpH (surface − bulk)": 9.92,
@@ -207,18 +207,18 @@
     },
     "Alkaline (pH 9)": {
       "j applied (mA/cm²)": 20.0,
-      "E cathode (V vs SHE)": -1.084,
+      "E cathode (V vs SHE)": -1.055,
       "Current efficiency (%)": 99.9,
-      "Surface pH": 9.31,
-      "ΔpH (surface − bulk)": 0.31,
+      "Surface pH": 9.36,
+      "ΔpH (surface − bulk)": 0.36,
       "Surface Fe²⁺ (M)": 0.0141,
       "i_lim diffusion (A/m²)": 138.9,
       "i_lim with migration (A/m²)": 277.0,
       "Migration enhancement (×)": 1.994,
       "Migration share of Fe²⁺ flux": 0.495,
-      "Film potential drop (mV)": -18.22,
+      "Film potential drop (mV)": -18.21,
       "t_Fe²⁺ (bulk)": 0.402,
-      "Max Fe(OH)₂ supersaturation": 206000.0
+      "Max Fe(OH)₂ supersaturation": 244000.0
     }
   }
 }

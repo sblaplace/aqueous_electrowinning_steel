@@ -318,3 +318,36 @@ def test_no_nan_in_results():
             s.film_potential_drop_V,
         ):
             assert math.isfinite(val), f"Non-finite value at j={j}: {val}"
+
+
+# ── Pitzer activity-coefficient correction (2026-08) ───────────────────────
+
+
+def test_ideal_activity_model_is_default():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D()
+    assert m.activity_model == "ideal"
+    assert m.gamma_fe == 1.0
+
+
+def test_pitzer_activity_model_gives_strong_nonideality():
+    """γ_Fe²⁺ in concentrated sulfate is well below 1 (Pitzer 2–2 salt)."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    m = DiffusionLayer1D(activity_model="pitzer", fe_conc_M=1.0, temperature_C=60.0)
+    assert 0.0 < m.gamma_fe < 0.25
+
+
+def test_pitzer_shifts_fe_equilibrium_potential_negative():
+    """a_Fe = γ·[Fe] < [Fe] for concentrated sulfate → E_eq(Fe) shifts negative."""
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    ideal = DiffusionLayer1D(activity_model="ideal")._fe_equilibrium_potential(0.5)
+    pitzer = DiffusionLayer1D(activity_model="pitzer")._fe_equilibrium_potential(0.5)
+    # Tens of mV negative shift — comparable to the HER margin.
+    assert pitzer < ideal - 0.020
+
+
+def test_invalid_activity_model_rejected():
+    from models.diffusion_layer_1d import DiffusionLayer1D
+    import pytest
+    with pytest.raises(ValueError):
+        DiffusionLayer1D(activity_model="davies")

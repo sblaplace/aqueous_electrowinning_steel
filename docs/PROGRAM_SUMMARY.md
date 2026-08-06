@@ -25,9 +25,17 @@ The next program gate is a controlled experimental dataset: iron deposition, Far
 
 | Scenario | Assumed j | Assumed FE | Assumed V_cell | Model energy | Model LCOFe |
 |---|---:|---:|---:|---:|---:|
-| Optimized alkaline | 200 mA/cm² | 93% | 1.418 V | 1,464 kWh/t Fe | $281/t Fe |
-| AWARE acidic comparator | 500 mA/cm² | 99% | 2.485 V | 2,410 kWh/t Fe | $253/t Fe |
-| Future target | 400 mA/cm² | 97% | 2.441 V | 2,415 kWh/t Fe | $214/t Fe |
+| Optimized alkaline | 200 mA/cm² | 93% | 1.268 V | 1,309 kWh/t Fe | $281/t Fe |
+| AWARE acidic comparator | 500 mA/cm² | 99% | 2.350 V | 2,278 kWh/t Fe | $253/t Fe |
+| Future target | 400 mA/cm² | 97% | 2.309 V | 2,284 kWh/t Fe | $214/t Fe |
+
+> **2026-08 physics correction:** earlier table versions carried a spurious
+> ~0.14 V anode concentration overpotential. The prior anode model
+> attributed η_conc to dissolved-O₂ *depletion* at an OER anode
+> (i_lim ≈ 4 A/m² from C_O₂ = 0.25 mol/m³), so every real current was
+> mass-transport-limited and added a ~0.14 V penalty that is not physical
+> — OER *produces* O₂, and the genuine supporting-salt concentration
+> polarization is only a few mV. The corrected values remove that term.
 
 These values are conditional on assumed voltage, FE, utilization, component cost, electricity price, feedstock cost, and operating costs. They are not a demonstration that the proposed sulfate route beats H2-DRI or that it produces steel at those costs. The model reports iron cost; comparisons with H2-DRI + EAF must make product scope and finishing energy explicit.
 

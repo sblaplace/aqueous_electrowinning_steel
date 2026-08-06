@@ -16,7 +16,13 @@ Full Nernst-Planck transport in a stagnant cathode film with:
 * **Arrhenius temperature correction** for all diffusivities
 * **Butler-Volmer (Tafel) kinetics** at the electrode surface
 * **Surface pH** from proton flux balance
-* **Fe(OH)₂ precipitation** criterion ([Fe²⁺][OH⁻]² / Ksp)
+* **Fe(OH)₂ precipitation** criterion ([Fe²⁺][OH⁻]² / Ksp(T));
+  Ksp is van 't Hoff corrected to the operating temperature (Fe(OH)₂ is
+  more soluble at elevated T) via :func:`pourbaix.ksp_feoh2`.
+* **Optional Pitzer activity correction** (``activity_model="pitzer"``):
+  the Fe²⁺/Fe Nernst potential uses the multicomponent Pitzer
+  activity coefficient γ_Fe²⁺(m, T) (valid at the multi-molal ionic
+  strengths of real FeSO₄/Na₂SO₄ baths) instead of the ideal a = [Fe²⁺].
 * **Outputs**:  FE(j, T, C_Fe²⁺, δ, pH, buffer), V_cell, surface_pH
 
 Conserved transported variables
@@ -54,7 +60,8 @@ from .kinetics import (
     I0_REF_K,
     arrhenius_i0,
 )
-from .pourbaix import LOGKSP_FEOH2
+from .pourbaix import LOGKSP_FEOH2, ksp_feoh2
+from . import pitzer as _pitzer
 
 # ─── Reference temperature ────────────────────────────────────────────
 T_REF = 298.15  # K
@@ -72,7 +79,7 @@ KAB_25C = 5.8e-10       # mol/L at 25 °C  (pKa ≈ 9.24)
 KAB_EA_J_MOL = 14.0e3   # J/mol (endothermic; Ka_b increases with T)
 
 # ─── Fe(OH)₂ solubility product ──────────────────────────────────────
-KSP_FEOH2 = 10.0 ** LOGKSP_FEOH2  # (mol/L)³
+KSP_FEOH2 = 10.0 ** LOGKSP_FEOH2  # (mol/L)³ at 25 °C; see Ksp property for T
 
 # ─── Limiting ionic diffusivities at 25 °C (m²/s) ────────────────────
 D_FE2 = 7.2e-10
@@ -118,6 +125,7 @@ class FilmProfile:
     h2bo3_mol_m3: np.ndarray
     potential_V: np.ndarray
     depleted: bool
+    Ksp_FeOH2: float = KSP_FEOH2  # (mol/L)³ at the film temperature
 
     # ── convenience views (mol/L) ───────────────────────────────────
     @property
@@ -139,7 +147,7 @@ class FilmProfile:
     @property
     def feoh2_supersaturation(self) -> np.ndarray:
         """[Fe²⁺][OH⁻]² / Ksp along the film; >1 means Fe(OH)₂ unstable."""
-        return self.fe_M * self.oh_M ** 2 / KSP_FEOH2
+        return self.fe_M * self.oh_M ** 2 / self.Ksp_FeOH2
 
     @property
     def film_potential_drop_V(self) -> float:
@@ -249,6 +257,21 @@ class DiffusionLayer1D:
     # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
     fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
     her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
+    # Activity-coefficient model for the Fe²⁺/Fe Nernst potential:
+    #   "ideal"  — a = [Fe²⁺] (mol/L), the pre-2026-08 default;
+    #   "pitzer" — a_Fe²⁺ = γ_Fe²⁺(m, T) · [Fe²⁺], with γ from the
+    #              multicomponent Pitzer model (valid to the multi-molal
+    #              ionic strengths of real FeSO₄/Na₂SO₄ baths).  At the
+    #              reference bath γ_Fe²⁺ ≈ 0.05–0.15, shifting E_eq(Fe) by
+    #              −20 to −40 mV — directly comparable to the HER margin
+    #              the whole program hinges on.  The coefficient is
+    #              evaluated at the *bulk* composition once (the film spans
+    #              only tens of micrometres, so composition variation across
+    #              it is small relative to bulk non-ideality) and applied
+    #              consistently in the surface Nernst correction.  This is
+    #              the first, safe step toward full non-ideal transport; a
+    #              per-node Pitzer activity remains future work.
+    activity_model: str = "ideal"
 
     def __post_init__(self) -> None:
         if self.fe_conc_M <= 0.0:
@@ -257,6 +280,14 @@ class DiffusionLayer1D:
             raise ValueError("delta_m must be positive")
         if self.grid_points < 3:
             raise ValueError("grid_points must be at least 3")
+        if self.activity_model not in ("ideal", "pitzer"):
+            raise ValueError(
+                f"activity_model must be 'ideal' or 'pitzer', got "
+                f"{self.activity_model!r}"
+            )
+        # Cache the composition-dependent Pitzer γ so the per-iteration
+        # Nernst correction does not re-solve Pitzer dozens of times.
+        self._gamma_fe_cache: float | None = None
 
     # ─── Temperature-dependent properties ───────────────────────────
 
@@ -306,6 +337,55 @@ class DiffusionLayer1D:
     @property
     def D_h2bo3(self) -> float:
         return _diffusivity_T(D_H2BO3, self.T)
+
+    @property
+    def Ksp(self) -> float:
+        """Fe(OH)₂ solubility product (mol/L)³ at the operating temperature.
+
+        Fe(OH)₂ is more soluble at elevated T (endothermic dissolution), so
+        the precipitation boundary shifts to higher pH as the bath warms.
+        See :func:`pourbaix.ksp_feoh2`.
+        """
+        return float(ksp_feoh2(self.T))
+
+    @property
+    def gamma_fe(self) -> float:
+        """Bulk Fe²⁺ activity coefficient (Pitzer) at the operating T.
+
+        Returns 1.0 for ``activity_model="ideal"``.  For ``"pitzer"`` the
+        multicomponent Pitzer model is evaluated once at the bulk bath
+        composition (FeSO₄ + Na₂SO₄ support + H₂SO₄ at pH_bulk), giving the
+        strong 2–2-salt non-ideality (γ_Fe²⁺ ≈ 0.05–0.15 at 1 M) that the
+        ideal model ignores.  Used in the Fe²⁺/Fe Nernst potential.
+        """
+        if self.activity_model == "ideal":
+            return 1.0
+        if self._gamma_fe_cache is not None:
+            return self._gamma_fe_cache
+
+        # Build molalities from the molar bulk recipe.  Use the Pitzer
+        # module's own density estimate (same convention as speciation.py)
+        # for the molar→molal conversion.
+        rho = _pitzer.water_density_kg_L(self.temperature_C)
+        # Solute mass per litre (FeSO4 151.9 + Na2SO4 142.0 g/mol)
+        solute_kg_L = (
+            self.fe_conc_M * 151.908e-3
+            + self.support_conc_M * 142.04e-3
+        )
+        kg_water_per_L = max(rho - solute_kg_L, 0.3)
+        m_fe = self.fe_conc_M / kg_water_per_L
+        m_na = 2.0 * self.support_conc_M / kg_water_per_L
+        m_so4 = (self.fe_conc_M + self.support_conc_M) / kg_water_per_L
+        # H+ at the bulk pH (trace relative to sulfate); include for charge.
+        m_h = max(self._bulk_c_h / 1000.0 / kg_water_per_L, 1e-10)
+
+        composition = {
+            "Fe2+": m_fe, "Na+": m_na, "H+": m_h,
+            "SO4-2": m_so4 + 0.5 * m_h,  # approximate sulfate/bisulfate
+        }
+        sol = _pitzer.solve_pitzer(composition, T_C=self.temperature_C)
+        self._gamma_fe_cache = float(sol.gamma.get("Fe2+", 1.0))
+        return self._gamma_fe_cache
 
     # ─── Bulk composition ──────────────────────────────────────────
 
@@ -541,12 +621,14 @@ class DiffusionLayer1D:
             h2bo3_mol_m3=f_h2bo3 * c_b,
             potential_V=phi,
             depleted=depleted,
+            Ksp_FeOH2=self.Ksp,
         )
 
     # ─── Electrode kinetics ────────────────────────────────────────
 
     def _fe_equilibrium_potential(self, fe_surface_M: float) -> float:
-        a = max(fe_surface_M, 1e-15)
+        # a_Fe²⁺ = γ_Fe²⁺ · [Fe²⁺]; the ideal model uses γ = 1.
+        a = max(self.gamma_fe * fe_surface_M, 1e-15)
         return E0_FE + (R_GAS * self.T / (Z_FE * FARADAY)) * np.log(a)
 
     def _her_equilibrium_potential(self, surface_pH: float) -> float:

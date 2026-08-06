@@ -40,13 +40,38 @@ E0_FEOH2_FE = -0.047    # Fe(OH)2 + 2H+ + 2e- -> Fe + 2H2O    V vs. SHE
 E0_HFEO2_FE = -0.909    # HFeO2- + 3H+ + 2e- -> Fe + 2H2O     V vs. SHE
 E0_FEOH3_FEOH2 = 0.271  # Fe(OH)3 + H+ + e- -> Fe(OH)2 + H2O  V vs. SHE
 
-# Solubility products and hydrolysis constants (log10)
+# Solubility products and hydrolysis constants (log10, 25 °C)
 LOGKSP_FEOH2 = -16.31    # Fe(OH)2 <-> Fe2+ + 2OH-   (Ksp = 4.87e-17)
 LOGKSP_FEOH3 = -38.55    # Fe(OH)3 <-> Fe3+ + 3OH-   (Ksp = 2.79e-39)
 LOGK_FEOH2_HFEO2 = -18.30  # Fe(OH)2 <-> HFeO2- + H+
 KW = 14.0                # -log10 Kw at 298 K
 
 T_REF = 298.15
+
+# Fe(OH)₂ solubility has a strong temperature dependence: it becomes *more*
+# soluble as T rises (the dissolution enthalpy is positive, endothermic).
+# Screening central value ΔH_sol ≈ +22 kJ/mol for
+# Fe(OH)₂(s) ⇌ Fe²⁺ + 2 OH⁻, anchored at the 25 °C pKsp = 16.31 and chosen
+# to reproduce the ~5× Ksp rise between 25 and 60 °C reported in the
+# FeSO₄/Fe(OH)₂ solubility literature (Ball & Nordstrom; Kobylin et al.).
+# This is a van 't Hoff screening value, not a fitted thermodynamic model.
+DH_SOL_FEOH2_J_MOL = 22.0e3
+
+
+def logksp_feoh2(T: float = T_REF, dH_J_mol: float = DH_SOL_FEOH2_J_MOL) -> float:
+    """log₁₀ Ksp of Fe(OH)₂ at temperature T (K), van 't Hoff corrected.
+
+    Fe(OH)₂ is more soluble at elevated temperature (endothermic
+    dissolution), so Ksp rises and the Fe²⁺/Fe(OH)₂ precipitation boundary
+    shifts to higher pH as the bath warms.  The previous code used the
+    25 °C Ksp unchanged at 60–90 °C, biasing the precipitation criterion.
+    """
+    return LOGKSP_FEOH2 - (dH_J_mol / (2.303 * R_GAS)) * (1.0 / T - 1.0 / T_REF)
+
+
+def ksp_feoh2(T: float = T_REF, dH_J_mol: float = DH_SOL_FEOH2_J_MOL) -> float:
+    """Ksp of Fe(OH)₂ (mol/L)³ at temperature T (K)."""
+    return 10.0 ** logksp_feoh2(T, dH_J_mol)
 
 
 def _slope(T: float, n_h: int, n_e: int) -> float:

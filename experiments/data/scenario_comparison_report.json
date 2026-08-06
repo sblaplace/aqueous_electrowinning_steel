@@ -15,7 +15,7 @@
         "current_density_mA_cm2": 100.0,
         "current_efficiency": 0.9,
         "temperature_C": 70.0,
-        "cell_voltage_V": 1.69
+        "cell_voltage_V": 1.548
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 0.841,
@@ -24,12 +24,12 @@
         "ir_drop_V": 0.2
       },
       "results": {
-        "specific_energy_kWh_t": 1803.0,
+        "specific_energy_kWh_t": 1651.0,
         "annual_production_t": 7501.0,
-        "total_capex_M$": 2.78,
-        "annual_opex_M$": 3.26,
-        "LCOFe_$_t": 470.0,
-        "electricity_cost_$_t": 72.12,
+        "total_capex_M$": 2.75,
+        "annual_opex_M$": 3.21,
+        "LCOFe_$_t": 463.0,
+        "electricity_cost_$_t": 66.04,
         "capex_share_pct": 7.4,
         "opex_share_pct": 92.6
       },
@@ -42,7 +42,7 @@
         "current_density_mA_cm2": 200.0,
         "current_efficiency": 0.93,
         "temperature_C": 90.0,
-        "cell_voltage_V": 1.418
+        "cell_voltage_V": 1.268
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 0.841,
@@ -51,14 +51,14 @@
         "ir_drop_V": 0.15
       },
       "results": {
-        "specific_energy_kWh_t": 1464.0,
+        "specific_energy_kWh_t": 1309.0,
         "annual_production_t": 15502.0,
-        "total_capex_M$": 4.36,
-        "annual_opex_M$": 4.08,
-        "LCOFe_$_t": 290.0,
-        "electricity_cost_$_t": 58.55,
-        "capex_share_pct": 9.1,
-        "opex_share_pct": 90.9
+        "total_capex_M$": 4.3,
+        "annual_opex_M$": 3.98,
+        "LCOFe_$_t": 282.0,
+        "electricity_cost_$_t": 52.36,
+        "capex_share_pct": 9.2,
+        "opex_share_pct": 90.8
       },
       "references": "Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano"
     },
@@ -69,7 +69,7 @@
         "current_density_mA_cm2": 500.0,
         "current_efficiency": 0.99,
         "temperature_C": 60.0,
-        "cell_voltage_V": 2.485
+        "cell_voltage_V": 2.35
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 1.8,
@@ -78,14 +78,14 @@
         "ir_drop_V": 0.1
       },
       "results": {
-        "specific_energy_kWh_t": 2410.0,
+        "specific_energy_kWh_t": 2278.0,
         "annual_production_t": 41256.0,
-        "total_capex_M$": 10.71,
-        "annual_opex_M$": 9.8,
-        "LCOFe_$_t": 262.0,
-        "electricity_cost_$_t": 96.39,
-        "capex_share_pct": 9.3,
-        "opex_share_pct": 90.7
+        "total_capex_M$": 10.55,
+        "annual_opex_M$": 9.55,
+        "LCOFe_$_t": 256.0,
+        "electricity_cost_$_t": 91.14,
+        "capex_share_pct": 9.4,
+        "opex_share_pct": 90.6
       },
       "references": "AWARE process (2024\u20132025), ChemRxiv; follow-up publications"
     },
@@ -96,7 +96,7 @@
         "current_density_mA_cm2": 400.0,
         "current_efficiency": 0.97,
         "temperature_C": 50.0,
-        "cell_voltage_V": 2.441
+        "cell_voltage_V": 2.309
       },
       "cell_voltage_breakdown": {
         "thermodynamic_V": 1.669,
@@ -105,12 +105,12 @@
         "ir_drop_V": 0.08
       },
       "results": {
-        "specific_energy_kWh_t": 2415.0,
+        "specific_energy_kWh_t": 2284.0,
         "annual_production_t": 32338.0,
-        "total_capex_M$": 6.23,
-        "annual_opex_M$": 6.56,
-        "LCOFe_$_t": 221.0,
-        "electricity_cost_$_t": 72.45,
+        "total_capex_M$": 6.15,
+        "annual_opex_M$": 6.42,
+        "LCOFe_$_t": 216.0,
+        "electricity_cost_$_t": 68.53,
         "capex_share_pct": 8.2,
         "opex_share_pct": 91.8
       },

@@ -10,8 +10,21 @@ Implements the anode half of the full cell, covering:
   AWARE-type acidic electrolytes where it competes with OER and may be the
   thermodynamically favoured anodic process.
 * Ohmic drop from bubble-induced electrolyte resistance.
-* Concentration (gas-diffusion) overpotential from O₂ transport away from
-  the anode surface.
+* Concentration overpotential from **supporting-electrolyte (salt)
+  concentration polarization** in the anode diffusion layer.
+
+  NOTE (2026-08): a previous version of this module attributed η_conc to
+  dissolved-O₂ diffusion *away* from the anode, treating bulk O₂ as a
+  reactant that depletes at the surface (i_lim = 4F D_O2 C_O2/δ). That
+  sign/mechanism is wrong: OER *produces* O₂, so the surface oxygen
+  activity is *higher* than bulk and the product leaves primarily as
+  gas bubbles, not dissolved species. The genuine mass-transport penalty
+  at a gas-evolving metal anode is enrichment (or depletion) of the
+  supporting salt in the migration-coupled Nernst diffusion layer — the
+  classic Hittorf/Nernst concentration overpotential. The gas-side
+  penalty (bubble masking, reduced active area) is already carried by the
+  bubble-resistance term; dissolved-O₂ back-diffusion contributes only a
+  few mV and is not the named η_conc. See ``concentration_overpotential_oer``.
 
 The anode overpotential is decomposed as:
 
@@ -268,65 +281,126 @@ def bubble_resistance_multiplier(theta: float) -> float:
 
 # ─── Concentration overpotential ───────────────────────────────────────
 
+# Typical transport numbers in the concentrated sulfate / sulfate-chloride
+# baths used here.  In a well-supported Na₂SO₄ / FeSO₄ bath the current is
+# carried roughly 40 % by the anion (SO₄²⁻ / HSO₄⁻ / Cl⁻) and 60 % by the
+# cations (Na⁺, H⁺, Fe²⁺); these are screening central values (±0.1).
+DEFAULT_CATION_TRANSPORT_NUMBER = 0.60
+
+# Supporting-salt diffusivity (m²/s) and concentration defaults for the
+# anode Nernst film.  D_salt ≈ 1e-9 m²/s for a sulfate salt at 60 °C;
+# bulk_salt_M = 1.0 is representative of the FeSO₄/Na₂SO₄ reference bath.
+DEFAULT_SALT_DIFFUSIVITY_M2_S = 1.0e-9
+DEFAULT_BULK_SALT_M = 1.0
+
+
 def concentration_overpotential_oer(
     j_mA_cm2: float,
     temperature_C: float = 60.0,
     boundary_layer_m: float = 5e-5,
-    diffusivity_O2_m2_s: float = 2.0e-9,
-    bulk_O2_mol_m3: float = 0.25,   # ≈ 8 mg/L dissolved O₂ in aerated water
+    diffusivity_O2_m2_s: float | None = None,
+    bulk_O2_mol_m3: float | None = None,
+    *,
+    bulk_salt_M: float = DEFAULT_BULK_SALT_M,
+    salt_diffusivity_m2_s: float = DEFAULT_SALT_DIFFUSIVITY_M2_S,
+    cation_transport_number: float = DEFAULT_CATION_TRANSPORT_NUMBER,
+    n_valence: int = 2,
 ) -> float:
     """
-    Concentration overpotential at the OER anode (V).
+    Concentration overpotential at a gas-evolving anode (V).
 
-    At high current densities the O₂ bubbles generated at the surface
-    create a diffusion barrier, effectively lowering the local O₂ activity
-    and requiring a more-positive anode potential to sustain the same
-    current density.
+    This is the **supporting-electrolyte (salt) concentration polarization**
+    in the anode Nernst diffusion film — the classical Hittorf/Nernst
+    concentration overpotential — not dissolved-O₂ transport.
 
-    Model: linear stagnant film, O₂ diffusion away from surface.
-    η_conc = (RT / nF) · ln(a_O2,bulk / a_O2,surface)
+    Physical picture
+    ----------------
+    In a stagnant film of thickness δ the ionic current is carried by both
+    diffusion and migration.  For a binary z:z supporting salt the anion
+    (the sulfate/chloride that must be present to balance the H⁺ produced
+    by OER) is *depleted* at the anode relative to bulk.  Its surface
+    concentration falls linearly with current,
 
-    The surface O₂ activity approaches zero at the limiting current,
-    giving η_conc,max = (RT / nF) · ln(a_O2,bulk / 1e-9) ≈ 0.05–0.09 V.
+        C_s / C_b = 1 − (1 − t₊) · j / j_lim,
+
+    and the thermodynamic penalty for operating against that concentration
+    gradient is the Nernst concentration overpotential
+
+        η_conc = (RT / nF) · ln[ C_b / C_s ]
+               = (RT / nF) · ln[ 1 / (1 − (1 − t₊) j / j_lim) ],
+
+    with the salt-transport limiting current
+
+        j_lim = n F D C_b / [ (1 − t₊) δ ].
+
+    At the gas-evolving anode the product (O₂/Cl₂) leaves as bubbles; the
+    associated masking/active-area loss is already in ``η_bubble``, so it
+    is not double-counted here.
 
     Parameters
     ----------
     j_mA_cm2 : float
         Anodic current density (mA/cm²).
     temperature_C : float
-        Temperature (°C) for RT/nF correction.
+        Temperature (°C) for the RT/nF prefactor.
     boundary_layer_m : float
-        Anode diffusion layer thickness (m).
-    diffusivity_O2_m2_s : float
-        O₂ diffusion coefficient in the electrolyte.
-    bulk_O2_mol_m3 : float
-        Bulk dissolved O₂ concentration (mol/m³).
+        Anode Nernst diffusion-layer thickness (m).
+    diffusivity_O2_m2_s, bulk_O2_mol_m3 : float, optional
+        DEPRECATED.  Accepted (with a warning) for backwards compatibility
+        with the previous dissolved-O₂ implementation; they no longer
+        influence the result.
+    bulk_salt_M : float
+        Bulk concentration of the supporting salt (mol/L) that is depleted
+        at the anode — FeSO₄/Na₂SO₄ for the sulfate route, LiCl for the
+        AWARE chloride route.
+    salt_diffusivity_m2_s : float
+        Effective salt diffusivity in the film (m²/s).
+    cation_transport_number : float
+        Transport number of the cation (0–1); the anion carries 1 − t₊.
+    n_valence : int
+        Charge number of the depleted ion (2 for SO₄²⁻, 1 for Cl⁻).
 
     Returns
     -------
     float
-        Concentration overpotential (V), positive.
+        Concentration overpotential (V), non-negative.
     """
+    if diffusivity_O2_m2_s is not None or bulk_O2_mol_m3 is not None:
+        import warnings
+
+        warnings.warn(
+            "concentration_overpotential_oer: the dissolved-O₂ parameters "
+            "(diffusivity_O2_m2_s, bulk_O2_mol_m3) are deprecated and "
+            "ignored — η_conc is now supporting-salt concentration "
+            "polarization, not O₂ diffusion. Pass bulk_salt_M / "
+            "salt_diffusivity_m2_s instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     if j_mA_cm2 <= 0.0:
         return 0.0
 
-    n = 4  # OER electrons
-    T = temperature_C + 273.15
-    RT_nF = R_GAS * T / (n * FARADAY)
+    t_plus = min(max(cation_transport_number, 0.0), 1.0)
+    t_minus = 1.0 - t_plus
+    if t_minus <= 1e-9:
+        # All current carried by the cation — no anion depletion.
+        return 0.0
 
-    # OER limiting current (O₂ diffusion away from surface)
-    # Flux of O₂ leaving = j_anode / (4F)  (mol/(m²·s))
-    # i_lim = 4 F D C_bulk / δ
-    i_lim = n * FARADAY * diffusivity_O2_m2_s * bulk_O2_mol_m3 / boundary_layer_m
+    T = temperature_C + 273.15
+    RT_nF = R_GAS * T / (n_valence * FARADAY)
+    C_bulk = max(bulk_salt_M * 1000.0, 1e-12)  # mol/L → mol/m³
+
+    # Salt-transport limiting current (A/m²) for the depleted anion.
+    j_lim = n_valence * FARADAY * salt_diffusivity_m2_s * C_bulk / (t_minus * boundary_layer_m)
     j_A_m2 = j_mA_cm2 * 10.0
 
-    if j_A_m2 >= i_lim:
-        # Mass-transport limited; cap η_conc
-        return float(RT_nF * np.log(bulk_O2_mol_m3 / 1e-9))
-
-    # a_O2,surface / a_O2,bulk = 1 − j / i_lim  (linear profile approximation)
-    ratio = max(1e-9 / bulk_O2_mol_m3, 1.0 - j_A_m2 / i_lim)
-    return float(RT_nF * np.abs(np.log(ratio)))
+    # Surface-to-bulk concentration ratio (linear film).
+    ratio = 1.0 - t_minus * j_A_m2 / j_lim
+    # Cap before the transport limit (the Nernst film model diverges there);
+    # leave a 1 % floor so η_conc stays finite and monotonic.
+    ratio = max(ratio, 0.01)
+    return float(RT_nF * np.log(1.0 / ratio))
 
 
 # ─── Core anode kinetics class ─────────────────────────────────────────

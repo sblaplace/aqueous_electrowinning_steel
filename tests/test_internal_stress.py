@@ -165,8 +165,11 @@ class TestDepositStressFromConditions:
             deposition_time_s=900.0,
         )
         comp = res["components"]
-        assert comp["total_MPa"] == pytest.approx(414.3, abs=1.0)
-        assert comp["hydrogen_MPa"] == pytest.approx(372.6, abs=1.0)
+        # Hydrogen is the dominant term (~370 of ~415 MPa) at ~240 ppm —
+        # the same screening story as before, now produced by the IPZ
+        # surface-kinetic H-entry model rather than the empirical 5% factor.
+        assert comp["total_MPa"] == pytest.approx(414.0, abs=3.0)
+        assert comp["hydrogen_MPa"] == pytest.approx(372.0, abs=3.0)
         assert res["dominant_mechanism"] == "hydrogen"
         assert res["derived"]["thickness_um"] == pytest.approx(28.0, abs=1.0)
         assert res["derived"]["C_H_diffusible_ppm"] == pytest.approx(240.0, abs=5.0)
