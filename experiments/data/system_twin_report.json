@@ -52,44 +52,44 @@
         "mounting_spec": "no ballast required, tie-down anchors, medium-grade sealing + drainage"
       },
       "stack": {
-        "n_stacks": 25,
+        "n_stacks": 46,
         "cells_per_stack": 20,
-        "power_kW": 1168.7,
-        "production_t_yr": 2004.4,
-        "FE": 0.995,
-        "V_cell": 4.836,
-        "j_mA_cm2": 96.7
+        "power_kW": 992.5,
+        "production_t_yr": 2037.2,
+        "FE": 0.996,
+        "V_cell": 4.045,
+        "j_mA_cm2": 53.3
       },
-      "LCOFe": 1016.0,
-      "LCOFe_adjusted": 600.0,
+      "LCOFe": 1000.0,
+      "LCOFe_adjusted": 583.0,
       "go_no_go": {
         "Grid capacity": {
           "pass": true,
-          "detail": "1.2 MW needed, 5.0 MW available"
+          "detail": "1.0 MW needed, 5.0 MW available"
         },
         "LCOFe vs DRI-H2": {
-          "pass": false,
-          "detail": "$600/t vs DRI-H2 $600/t"
+          "pass": true,
+          "detail": "$583/t vs DRI-H2 $600/t"
         },
         "Site footprint": {
           "pass": false,
-          "detail": "1200 m\u00b2 needed, 300 m\u00b2 available"
+          "detail": "2040 m\u00b2 needed, 300 m\u00b2 available"
         },
         "Operating temperature": {
           "pass": true,
-          "detail": "Steady-state 13 \u00b0C (limit 90 \u00b0C)"
+          "detail": "Steady-state 12 \u00b0C (limit 90 \u00b0C)"
         },
         "Feedstock supply": {
           "pass": true,
-          "detail": "16704 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
+          "detail": "16977 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
         },
         "Water supply": {
           "pass": true,
-          "detail": "8018 m\u00b3/yr, availability: municipal"
+          "detail": "8149 m\u00b3/yr, availability: municipal"
         },
         "Energy kill criterion": {
           "pass": false,
-          "detail": "5057 kWh/t Fe (limit 4,000)"
+          "detail": "4214 kWh/t Fe (limit 4,000)"
         },
         "Crate overturning": {
           "pass": true,
@@ -162,15 +162,15 @@
         "mounting_spec": "1526 kg ballast, tie-down anchors, high-grade sealing + drainage, elevate above flood level"
       },
       "stack": {
-        "n_stacks": 7,
+        "n_stacks": 12,
         "cells_per_stack": 20,
-        "power_kW": 327.2,
-        "production_t_yr": 561.2,
-        "FE": 0.995,
-        "V_cell": 4.836,
-        "j_mA_cm2": 96.7
+        "power_kW": 258.9,
+        "production_t_yr": 531.5,
+        "FE": 0.996,
+        "V_cell": 4.045,
+        "j_mA_cm2": 53.3
       },
-      "LCOFe": 3014.0,
+      "LCOFe": 3148.0,
       "LCOFe_adjusted": null,
       "go_no_go": {
         "Grid capacity": {
@@ -179,27 +179,27 @@
         },
         "LCOFe vs DRI-H2": {
           "pass": false,
-          "detail": "$3014/t vs DRI-H2 $600/t"
+          "detail": "$3148/t vs DRI-H2 $600/t"
         },
         "Site footprint": {
           "pass": false,
-          "detail": "480 m\u00b2 needed, 200 m\u00b2 available"
+          "detail": "680 m\u00b2 needed, 200 m\u00b2 available"
         },
         "Operating temperature": {
           "pass": true,
-          "detail": "Steady-state 14 \u00b0C (limit 90 \u00b0C)"
+          "detail": "Steady-state 12 \u00b0C (limit 90 \u00b0C)"
         },
         "Feedstock supply": {
           "pass": true,
-          "detail": "28062 t/yr consumed (Acid mine drainage (2% Fe))"
+          "detail": "26573 t/yr consumed (Acid mine drainage (2% Fe))"
         },
         "Water supply": {
           "pass": true,
-          "detail": "2245 m\u00b3/yr, availability: municipal"
+          "detail": "2126 m\u00b3/yr, availability: municipal"
         },
         "Energy kill criterion": {
           "pass": false,
-          "detail": "5057 kWh/t Fe (limit 4,000)"
+          "detail": "4214 kWh/t Fe (limit 4,000)"
         },
         "Crate overturning": {
           "pass": true,
@@ -274,22 +274,22 @@
       "stack": {
         "n_stacks": 63,
         "cells_per_stack": 20,
-        "power_kW": 2649.6,
-        "production_t_yr": 5053.1,
-        "FE": 0.996,
-        "V_cell": 4.351,
+        "power_kW": 2742.8,
+        "production_t_yr": 5051.7,
+        "FE": 0.995,
+        "V_cell": 4.504,
         "j_mA_cm2": 96.7
       },
-      "LCOFe": 522.0,
-      "LCOFe_adjusted": 422.0,
+      "LCOFe": 528.0,
+      "LCOFe_adjusted": 428.0,
       "go_no_go": {
         "Grid capacity": {
           "pass": true,
-          "detail": "2.6 MW needed, 10.0 MW available"
+          "detail": "2.7 MW needed, 10.0 MW available"
         },
         "LCOFe vs DRI-H2": {
           "pass": true,
-          "detail": "$422/t vs DRI-H2 $600/t"
+          "detail": "$428/t vs DRI-H2 $600/t"
         },
         "Site footprint": {
           "pass": false,
@@ -301,15 +301,15 @@
         },
         "Feedstock supply": {
           "pass": true,
-          "detail": "16844 t/yr consumed (Red mud / bauxite residue (30% Fe))"
+          "detail": "16839 t/yr consumed (Red mud / bauxite residue (30% Fe))"
         },
         "Water supply": {
           "pass": true,
-          "detail": "20212 m\u00b3/yr, availability: municipal"
+          "detail": "20207 m\u00b3/yr, availability: municipal"
         },
         "Energy kill criterion": {
           "pass": false,
-          "detail": "4611 kWh/t Fe (limit 4,000)"
+          "detail": "4774 kWh/t Fe (limit 4,000)"
         },
         "Crate overturning": {
           "pass": true,
@@ -382,28 +382,28 @@
         "mounting_spec": "6893 kg ballast, tie-down anchors, lowered CG or fixed anchorage"
       },
       "stack": {
-        "n_stacks": 125,
+        "n_stacks": 226,
         "cells_per_stack": 20,
-        "power_kW": 5677.2,
-        "production_t_yr": 10023.0,
-        "FE": 0.995,
-        "V_cell": 4.698,
-        "j_mA_cm2": 96.7
+        "power_kW": 4738.2,
+        "production_t_yr": 10007.5,
+        "FE": 0.996,
+        "V_cell": 3.931,
+        "j_mA_cm2": 53.3
       },
-      "LCOFe": 545.0,
+      "LCOFe": 550.0,
       "LCOFe_adjusted": null,
       "go_no_go": {
         "Grid capacity": {
           "pass": true,
-          "detail": "5.7 MW needed, 20.0 MW available"
+          "detail": "4.7 MW needed, 20.0 MW available"
         },
         "LCOFe vs DRI-H2": {
           "pass": true,
-          "detail": "$545/t vs DRI-H2 $600/t"
+          "detail": "$550/t vs DRI-H2 $600/t"
         },
         "Site footprint": {
           "pass": false,
-          "detail": "5200 m\u00b2 needed, 2000 m\u00b2 available"
+          "detail": "9240 m\u00b2 needed, 2000 m\u00b2 available"
         },
         "Operating temperature": {
           "pass": true,
@@ -411,15 +411,15 @@
         },
         "Feedstock supply": {
           "pass": true,
-          "detail": "16166 t/yr consumed (High-grade hematite ore (62% Fe))"
+          "detail": "16141 t/yr consumed (High-grade hematite ore (62% Fe))"
         },
         "Water supply": {
           "pass": false,
-          "detail": "30069 m\u00b3/yr, availability: scarce"
+          "detail": "30022 m\u00b3/yr, availability: scarce"
         },
         "Energy kill criterion": {
           "pass": false,
-          "detail": "4975 kWh/t Fe (limit 4,000)"
+          "detail": "4157 kWh/t Fe (limit 4,000)"
         },
         "Crate overturning": {
           "pass": true,
@@ -494,22 +494,22 @@
       "stack": {
         "n_stacks": 19,
         "cells_per_stack": 20,
-        "power_kW": 847.9,
-        "production_t_yr": 1523.6,
-        "FE": 0.995,
-        "V_cell": 4.616,
+        "power_kW": 897.3,
+        "production_t_yr": 1524.3,
+        "FE": 0.996,
+        "V_cell": 4.885,
         "j_mA_cm2": 96.7
       },
-      "LCOFe": 1368.0,
-      "LCOFe_adjusted": 1268.0,
+      "LCOFe": 1386.0,
+      "LCOFe_adjusted": 1286.0,
       "go_no_go": {
         "Grid capacity": {
           "pass": true,
-          "detail": "0.8 MW needed, 3.0 MW available"
+          "detail": "0.9 MW needed, 3.0 MW available"
         },
         "LCOFe vs DRI-H2": {
           "pass": false,
-          "detail": "$1268/t vs DRI-H2 $600/t"
+          "detail": "$1286/t vs DRI-H2 $600/t"
         },
         "Site footprint": {
           "pass": false,
@@ -521,15 +521,15 @@
         },
         "Feedstock supply": {
           "pass": true,
-          "detail": "7618 t/yr consumed (Copperas (FeSO4.7H2O) from TiO2 production)"
+          "detail": "7621 t/yr consumed (Copperas (FeSO4.7H2O) from TiO2 production)"
         },
         "Water supply": {
           "pass": true,
-          "detail": "6094 m\u00b3/yr, availability: municipal"
+          "detail": "6097 m\u00b3/yr, availability: municipal"
         },
         "Energy kill criterion": {
           "pass": false,
-          "detail": "4829 kWh/t Fe (limit 4,000)"
+          "detail": "5112 kWh/t Fe (limit 4,000)"
         },
         "Crate overturning": {
           "pass": true,

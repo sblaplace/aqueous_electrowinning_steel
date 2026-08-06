@@ -10,10 +10,10 @@
     "operating": {
       "current_A": 3.0,
       "current_density_mA_cm2": 300.0,
-      "cell_voltage_V": 5.845352689519192,
-      "faradaic_efficiency": 0.9928902796897269,
-      "specific_energy_kWh_t": 5650.852310656684,
-      "deposit_rate_um_hr": 394.11467623645285
+      "cell_voltage_V": 5.668079145738046,
+      "faradaic_efficiency": 0.991508605620903,
+      "specific_energy_kWh_t": 5487.113120395187,
+      "deposit_rate_um_hr": 393.5662389726003
     },
     "hydraulics": {
       "superficial_velocity_m_s": 0.1388888888888889,
@@ -22,13 +22,13 @@
       "channel_residence_time_s": 0.36
     },
     "utilities_and_gas": {
-      "heat_generation_W": 13.696058068557576,
-      "h2_rate_L_h": 0.009735030896078276,
+      "heat_generation_W": 13.164237437214137,
+      "h2_rate_L_h": 0.011626897124469121,
       "h2_design_rate_L_h": 1.3692565208242764
     },
     "feasible": true,
     "failures": [],
-    "score": 1.3677107024349708
+    "score": 1.3322559936787417
   },
   "instruments": [
     {

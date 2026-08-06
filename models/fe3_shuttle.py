@@ -105,8 +105,13 @@ def _production_rate_M_s(p: ShuttleParams, s: ShuttleScenario) -> float:
     r_ox = fe2_oxidation_rate(
         p.fe2_M, o2_M, p.pH, p.temperature_C, p.k_ox_ref, p.Ea_ox_J_mol
     )
-    v_m3 = p.catholyte_volume_L / 1000.0
-    r_cross = s.crossover_o2_flux_mol_m2_s * p.cathode_area_m2 / v_m3  # O₂ → 4 Fe³⁺
+    # flux (mol/m²/s) × A (m²) = mol/s crossing; ÷ volume in L → mol/L/s
+    # directly.  (2026-08-06 erratum: the previous form divided by the volume
+    # in m³, yielding mol/m³/s, which was then added to the mol/L/s
+    # homogeneous rate — overstating crossover production by 1000×.  The RC-1
+    # conclusions were unaffected: at RC-1's tiny A/V the fault row is pinned
+    # at the Fe(OH)₃ cap either way; see docs/SIM_BATH_REDOX.md.)
+    r_cross = s.crossover_o2_flux_mol_m2_s * p.cathode_area_m2 / p.catholyte_volume_L
     return r_ox + 4.0 * r_cross
 def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
     """Steady-state Fe³⁺ shuttle picture for one catholyte/scenario pair."""
@@ -118,9 +123,13 @@ def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
     fe3_ss = min(fe3_uncapped, cap)
     precipitated = fe3_uncapped > cap
     i_shuttle = FARADAY * km * fe3_ss * 1000.0     # A/m² (fe3_ss M → mol/m³)
-    # Iron inventory loss to Fe(OH)3 sludge, mol Fe /m²/s of cathode:
+    # Iron inventory loss to Fe(OH)3 sludge, mol Fe /m²/s of cathode.
+    # (r_prod − sink) is mol/L/s; mol/s = ×V_L, and per m² of cathode that is
+    # ×(V_L/A) = 1000×(V_m³/A) = 1000/area_per_vol_m.  (2026-08-06 erratum:
+    # this field was previously reported 1000× low; the g/L/day field below
+    # was and is correct.)
     if precipitated:
-        sludge_flux = (r_prod - km * area_per_vol_m * fe3_ss) / area_per_vol_m
+        sludge_flux = (r_prod - km * area_per_vol_m * fe3_ss) / area_per_vol_m * 1000.0
     else:
         sludge_flux = 0.0
     return {

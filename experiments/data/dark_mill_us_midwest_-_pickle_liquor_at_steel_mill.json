@@ -2,119 +2,119 @@
   "site_name": "US Midwest \u2014 Pickle Liquor at Steel Mill",
   "feedstock": "pickle_liquor",
   "stack_design": {
-    "n_stacks": 25,
+    "n_stacks": 46,
     "cells_per_stack": 20,
     "electrode_area_m2": 0.5,
-    "current_density_mA_cm2": 96.66666666666667,
-    "cell_voltage_V": 4.835875924687166,
-    "total_power_kW": 1168.7,
-    "annual_production_t": 2004.0
+    "current_density_mA_cm2": 53.333333333333336,
+    "cell_voltage_V": 4.0454028481412205,
+    "total_power_kW": 992.5,
+    "annual_production_t": 2037.0
   },
   "mass_balance": {
-    "iron_production_t_yr": 2004.43,
-    "feedstock_consumed_t_yr": 16703.56,
+    "iron_production_t_yr": 2037.24,
+    "feedstock_consumed_t_yr": 16977.04,
     "feedstock_cost_per_t_Fe": -416.67,
-    "water_consumption_m3_yr": 8017.71,
-    "water_cost_yr": 12026.56,
+    "water_consumption_m3_yr": 8148.98,
+    "water_cost_yr": 12223.47,
     "acid_consumption_t_yr": 0.0,
     "acid_cost_yr": 0.0,
-    "electrolyte_makeup_m3_yr": 2.4,
-    "electrolyte_cost_yr": 12000.0,
-    "waste_generated_t_yr": 7369.61,
-    "waste_disposal_cost_yr": 221088.35,
-    "electrolysis_energy_MWh_yr": 9349.36,
+    "electrolyte_makeup_m3_yr": 4.42,
+    "electrolyte_cost_yr": 22080.0,
+    "waste_generated_t_yr": 7490.27,
+    "waste_disposal_cost_yr": 224708.11,
+    "electrolysis_energy_MWh_yr": 7939.78,
     "grinding_energy_MWh_yr": 0.0,
-    "cooling_energy_MWh_yr": 687.47,
-    "auxiliary_energy_MWh_yr": 100.22,
-    "total_energy_MWh_yr": 10137.05,
-    "scope1_CO2_t_yr": 40.09,
-    "scope2_CO2_t_yr": 4054.82,
+    "cooling_energy_MWh_yr": 542.76,
+    "auxiliary_energy_MWh_yr": 101.86,
+    "total_energy_MWh_yr": 8584.4,
+    "scope1_CO2_t_yr": 40.74,
+    "scope2_CO2_t_yr": 3433.76,
     "post_processing_energy_MWh_yr": 0.0,
     "product_grade": "Pure Iron (EW grade)"
   },
   "capex": {
-    "Electrodes ($)": 75000.0,
-    "Membranes/separators ($)": 40000.0,
-    "Cell hardware ($)": 50000.0,
-    "Stack subtotal ($)": 189750.0,
-    "Rectifiers ($)": 140240.0,
-    "Electrolyte system ($)": 50000.0,
-    "Ore leaching ($)": 100221.0,
-    "Ore grinding ($)": 50111.0,
-    "BOP subtotal ($)": 340572.0,
-    "Infrastructure ($)": 132581.0,
-    "Engineering ($)": 79548.0,
-    "Contingency ($)": 111368.0,
-    "Total CAPEX ($)": 853819.0,
-    "Total CAPEX (M$)": 0.85,
-    "Annual capacity (t/yr)": 2004.0,
-    "n_stacks": 25
+    "Electrodes ($)": 138000.0,
+    "Membranes/separators ($)": 73600.0,
+    "Cell hardware ($)": 92000.0,
+    "Stack subtotal ($)": 349140.0,
+    "Rectifiers ($)": 119097.0,
+    "Electrolyte system ($)": 92000.0,
+    "Ore leaching ($)": 101862.0,
+    "Ore grinding ($)": 50931.0,
+    "BOP subtotal ($)": 363890.0,
+    "Infrastructure ($)": 178258.0,
+    "Engineering ($)": 106955.0,
+    "Contingency ($)": 149736.0,
+    "Total CAPEX ($)": 1147978.0,
+    "Total CAPEX (M$)": 1.15,
+    "Annual capacity (t/yr)": 2037.0,
+    "n_stacks": 46
   },
   "opex": {
-    "Electricity ($/yr)": 327228.0,
+    "Electricity ($/yr)": 277892.0,
     "  of which grinding ($/yr)": 0.0,
-    "Electrolyte makeup ($/yr)": 30066.0,
+    "Electrolyte makeup ($/yr)": 30559.0,
     "Iron ore feedstock ($/yr)": 0.0,
-    "Water ($/yr)": 12027.0,
-    "Anode replacement ($/yr)": 15000.0,
-    "Variable OPEX ($/yr)": 384321.0,
-    "Maintenance ($/yr)": 25615.0,
-    "Insurance ($/yr)": 8538.0,
+    "Water ($/yr)": 12223.0,
+    "Anode replacement ($/yr)": 27600.0,
+    "Variable OPEX ($/yr)": 348274.0,
+    "Maintenance ($/yr)": 34439.0,
+    "Insurance ($/yr)": 11480.0,
     "Labor ($/yr)": 1500000.0,
-    "Overhead ($/yr)": 38432.0,
-    "Fixed OPEX ($/yr)": 1572585.0,
-    "Total OPEX ($/yr)": 1956905.0,
-    "Total OPEX (M$/yr)": 1.96,
-    "Annual production (t/yr)": 2004.0,
-    "Specific energy (kWh/t Fe)": 4664.0,
-    "Electricity cost ($/t Fe)": 163.25
+    "Overhead ($/yr)": 34827.0,
+    "Fixed OPEX ($/yr)": 1580747.0,
+    "Total OPEX ($/yr)": 1929021.0,
+    "Total OPEX (M$/yr)": 1.93,
+    "Annual production (t/yr)": 2037.0,
+    "Specific energy (kWh/t Fe)": 3897.0,
+    "Electricity cost ($/t Fe)": 136.41
   },
   "lcofe": {
     "Capital recovery factor": 0.0937,
-    "Annualized CAPEX ($/yr)": 79985.0,
-    "Annual OPEX ($/yr)": 1956905.0,
-    "Total annual cost ($/yr)": 2036890.0,
-    "Annual production (t/yr)": 2004.0,
-    "LCOFe ($/t Fe)": 1016.0,
-    "CAPEX share (%)": 3.9,
-    "OPEX share (%)": 96.1,
-    "LCOFe ($/t Fe) adjusted": 600.0,
+    "Annualized CAPEX ($/yr)": 107541.0,
+    "Annual OPEX ($/yr)": 1929021.0,
+    "Total annual cost ($/yr)": 2036562.0,
+    "Annual production (t/yr)": 2037.0,
+    "LCOFe ($/t Fe)": 1000.0,
+    "CAPEX share (%)": 5.3,
+    "OPEX share (%)": 94.7,
+    "LCOFe ($/t Fe) adjusted": 583.0,
     "Feedstock revenue ($/t Fe)": 416.67
   },
   "thermal": {
-    "steady_state_temp_C": 12.6,
-    "cooling_required_W": 1558.0,
+    "steady_state_temp_C": 12.1,
+    "cooling_required_W": 577.0,
     "ambient_C": 12.0,
     "thermal_management": "active jacket cooling"
   },
   "go_no_go": {
     "Grid capacity": {
       "pass": true,
-      "detail": "1.2 MW needed, 5.0 MW available"
+      "detail": "1.0 MW needed, 5.0 MW available"
     },
     "LCOFe vs DRI-H2": {
-      "pass": false,
-      "detail": "$600/t vs DRI-H2 $600/t"
+      "pass": true,
+      "detail": "$583/t vs DRI-H2 $600/t"
     },
     "Site footprint": {
       "pass": false,
-      "detail": "1200 m\u00b2 needed, 300 m\u00b2 available"
+      "detail": "2040 m\u00b2 needed, 300 m\u00b2 available"
     },
     "Operating temperature": {
       "pass": true,
-      "detail": "Steady-state 13 \u00b0C (limit 90 \u00b0C)"
+      "detail": "Steady-state 12 \u00b0C (limit 90 \u00b0C)"
     },
     "Feedstock supply": {
       "pass": true,
-      "detail": "16704 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
+      "detail": "16977 t/yr consumed (Spent pickle liquor (12% Fe as FeCl2/FeSO4))"
     },
     "Water supply": {
       "pass": true,
-      "detail": "8018 m\u00b3/yr, availability: municipal"
+      "detail": "8149 m\u00b3/yr, availability: municipal"
     },
     "Energy kill criterion": {
       "pass": false,
-      "detail": "5057 kWh/t Fe (limit 4,000)"
+      "detail": "4214 kWh/t Fe (limit 4,000)"
     },
     "Crate overturning": {
       "pass": true,

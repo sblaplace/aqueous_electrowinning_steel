@@ -11,41 +11,41 @@
       "Frequency (Hz)": 1.0,
       "Duty cycle (%)": 100.0,
       "Average current density (mA/cm\u00b2)": 100.0,
-      "Cycle-averaged current efficiency (%)": 99.50000000000004,
-      "Net plating rate (\u00b5m/hr)": 131.65070061175794,
-      "Net Fe deposited (g/m\u00b2)": 0.28794933794916167,
-      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.7625729874093002,
-      "Max surface pH": 2.022790730826449
+      "Cycle-averaged current efficiency (%)": 94.4210142030022,
+      "Net plating rate (\u00b5m/hr)": 124.93057962108524,
+      "Net Fe deposited (g/m\u00b2)": 0.27325093998234035,
+      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8444560833430752,
+      "Max surface pH": 2.1764333341807265
     },
     "dc_avg": {
       "Frequency (Hz)": 1.0,
       "Duty cycle (%)": 100.0,
       "Average current density (mA/cm\u00b2)": 50.0,
-      "Cycle-averaged current efficiency (%)": 99.50000000000004,
-      "Net plating rate (\u00b5m/hr)": 65.82535030587897,
-      "Net Fe deposited (g/m\u00b2)": 0.14397466897458083,
-      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8812864937046837,
-      "Max surface pH": 2.0112458822159773
+      "Cycle-averaged current efficiency (%)": 92.92391002657243,
+      "Net plating rate (\u00b5m/hr)": 61.474863610965905,
+      "Net Fe deposited (g/m\u00b2)": 0.13445918779798488,
+      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.923468382909267,
+      "Max surface pH": 2.104820226261847
     },
     "pulsed": {
       "Frequency (Hz)": 10.0,
       "Duty cycle (%)": 50.0,
       "Average current density (mA/cm\u00b2)": 50.0,
-      "Cycle-averaged current efficiency (%)": 99.50000000000001,
-      "Net plating rate (\u00b5m/hr)": 66.02282635679663,
-      "Net Fe deposited (g/m\u00b2)": 0.1444065929815046,
-      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8626140920061958,
-      "Max surface pH": 2.013506593634133
+      "Cycle-averaged current efficiency (%)": 93.47144451184519,
+      "Net plating rate (\u00b5m/hr)": 62.02260251582416,
+      "Net Fe deposited (g/m\u00b2)": 0.13565721450266652,
+      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.9107545905666194,
+      "Max surface pH": 2.1214620837648783
     },
     "pulse_reverse": {
       "Frequency (Hz)": 10.0,
       "Duty cycle (%)": 50.0,
       "Average current density (mA/cm\u00b2)": 47.99999999999999,
-      "Cycle-averaged current efficiency (%)": 95.39232303090729,
-      "Net plating rate (\u00b5m/hr)": 63.2971937612165,
-      "Net Fe deposited (g/m\u00b2)": 0.13844502879883855,
-      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8662741593867495,
-      "Max surface pH": 2.013506593634133
+      "Cycle-averaged current efficiency (%)": 89.38278069726972,
+      "Net plating rate (\u00b5m/hr)": 59.30958602274846,
+      "Net Fe deposited (g/m\u00b2)": 0.12972324453975592,
+      "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.9132605364697245,
+      "Max surface pH": 2.121148746864848
     }
   }
 }

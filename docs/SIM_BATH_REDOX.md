@@ -65,8 +65,75 @@ diffusion-layer assumptions.
 
 ## Verification
 
-`pytest tests/test_fe3_shuttle.py` — 11 tests: the steady-state identity
+`pytest tests/test_fe3_shuttle.py` — 13 tests: the steady-state identity
 (and its k_m-independence), monotonicity in O₂ level, cap behavior and
 sludge activation, crossover-fault scaling, ascorbic-acid suppression
-hooks, and the sealed/open/crossover scenario numbers above.
+hooks, litre/m³ unit pins (erratum below), and the sealed/open/crossover
+scenario numbers above.
 `python -m models.fe3_shuttle` prints the scenario table shown here.
+
+## Erratum (2026-08-06): two ×1000 m³↔L slips, found while wiring the CSTR
+
+Wiring this chemistry into `bath_dynamics` surfaced two independent litre↔m³
+unit slips in the original module.  Both are fixed; unit pins now guard them.
+
+1. **Crossover production overstated ×1000.**  The crossover term divided by
+   the volume *in m³* (`flux·A/V_m3`, i.e. mol/m³/s) and was added to the
+   homogeneous rate in mol/L/s.  Correct form: `flux·A/V_L` gives mol/L/s
+   directly.  Effect on the shipped table: the production *rate* behind the
+   `anolyte_crossover_fault` row drops 6.22e-04 → 1.03e-06 M/s.  **The
+   headline conclusions are unchanged** — the fault row remains pinned at the
+   Fe(OH)₃ cap with its 0.006 % CE loss — but the fault-row sludge estimate
+   drops from ≈3000 to ≈5.0 g/L/day.  Physically: at RC-1's tiny A/V
+   (1e-3 m² per 0.5 L) a 1 % anode leak is a *modest adder*, not a dominant
+   source; it dominates only at pilot-scale A/V (new test
+   `test_crossover_dominates_at_large_area_to_volume`).
+2. **`iron_sludge_loss_mol_m2_s` understated ×1000.**  A mol/L/s volumetric
+   rate was divided by A/V in 1/m; converting M → mol/m³ needs the extra
+   ×1000.  (`iron_sludge_loss_g_L_day` was and is correct.)  Curiously the
+   two slips partially cancelled in the old mol/m²/s field (3.1e-4 old vs
+   4.9e-4 correct for the fault row) — which is exactly the kind of accident
+   that lets both survive review.  Both fixed rows are pinned in
+   `tests/test_bath_fe3_cstr.py::TestIronLedger`.
+
+## Follow-up shipped (2026-08-06): the shuttle is now a CSTR term in `bath_dynamics`
+
+The "remaining" item from this note and from `SIM_PITZER_ACTIVITY.md`
+step 3 is **done**: `models/bath_dynamics.py` integrates the
+production → shuttle | sludge triangle in time, behind the
+`fe3_shuttle_enabled` design-point flag (default **off** → existing twin
+runs are byte-identical; enable via `bath_dynamics.apply_fe3_scenario`).
+
+* **States** (all auxiliary, outside the 7-state EKF vector, so nothing in
+  the EKF/Jacobian path changes): `fe3_catholyte_M`, `fe3_reservoir_M`, and
+  `fe3_sludge_cumulative_mol` on `BathAux` — the sludge ledger is what makes
+  the total-iron ledger close once precipitation runs.
+* **Integration**: production (homogeneous autoxidation + crossover fault,
+  state-dependent in T/pH/Fe²⁺) and recirculation exchange enter an
+  exact-exponential CSTR step — unconditionally stable at any recirc
+  stiffness, the same treatment as the cell-voltage relaxation — followed by
+  an operator-split instant Fe(OH)₃ cap whose excess joins the sludge ledger.
+  The same cap applies in the reservoir at its own pH (a pH ≈ 3.5 balance
+  tank holds almost no Fe³⁺).
+* **Back-couplings**: autoxidation drains the Fe²⁺ balance while the
+  cathodic shuttle returns it (net inventory loss only via sludge); the
+  shuttle slip `i_sh = F·k_m·[Fe³⁺]` is subtracted galvanostatically from
+  the current available to the Fe/HER pair (deposit growth and HER/OH⁻
+  split); and the proton stoichiometry loads the pH balance (−1 H⁺ per Fe²⁺
+  oxidised, +3 H⁺ per Fe precipitated — net **+2 H⁺ per mol of sludge**,
+  so an ingress bath acidifies until the rising cap throttles precipitation).
+* **Cross-validation**: the dynamic bath, held at fixed (T, pH, Fe²⁺) with
+  precipitation inactive everywhere, relaxes to the static module's
+  closed-form `[Fe³⁺]_ss = r_prod/(k_m·A/V)` (the recirculation terms cancel
+  identically at mutual steady state) — pinned at 5 % after ~7 slow-mode time
+  constants, plus instantaneous-terms and stiffness pins.
+
+**Tests:** `tests/test_bath_fe3_cstr.py` (11) + the repinned
+`tests/test_fe3_shuttle.py`.  All outputs remain L0 screening; the dominant
+uncertainties are unchanged (`fe2_autoxidation_k_ref` prior, O₂ ingress
+fractions) and none of this is gate evidence.
+
+**Known limitation:** reservoir autoxidation is not modelled — the scenario
+O₂ pinning describes the catholyte; a rained-out/aerated balance tank is a
+documented extension (and the reservoir cap at least bounds its dissolved
+Fe³⁺ consistently).

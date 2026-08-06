@@ -190,9 +190,69 @@ class ButlerVolmerBranch:
         blended = 1.0 / (1.0 / np.maximum(i_cat, 1e-30) + 1.0 / self.i_lim)
         return np.where(i_kin > 0.0, blended, i_kin)
 
+    def current_scaled(self, E, forward_scale: float = 1.0):
+        """BV current with the CATHODIC (forward) arm multiplied by
+        ``forward_scale`` (2026-08; the anodic arm is never scaled).
+
+        First-order surface-activity correction for transport-resolved
+        solvers: as the surface reactant concentration falls, the reduction
+        rate falls with it (scale ≈ a_surf/a_ref), while the oxidation arm —
+        whose reactant is the solid surface itself — is unchanged.  This
+        keeps a resolved-film solver's wall flux mass-consistent through
+        deep depletion without re-introducing a transport cap.  Any
+        ``i_lim`` blend is bypassed (returns the uncapped form).
+        """
+        E = np.asarray(E, dtype=float)
+        eta = self.E_eq - E
+        b_a = self.anodic_slope_V if self.anodic_slope_V is not None else self.tafel_slope_V
+        return (forward_scale * self.i0 * 10.0 ** (eta / self.tafel_slope_V)
+                - self.i0 * 10.0 ** (-eta / b_a))
+
     def current_magnitude(self, E):
         """Cathodic magnitude (A/m^2); 0 anodic of E_eq."""
         return np.where(self.current(E) > 0.0, self.current(E), 0.0)
+
+
+def surface_bv_branches(
+    pH: float,
+    temperature_C: float,
+    fe_i0: float,
+    her_i0: float,
+    fe_tafel_V: float = 0.120,
+    her_tafel_V: float = 0.140,
+    fe_E_eq: float = -0.440,
+    fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL,
+    her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL,
+    kinetics_ref_K: float = I0_REF_K,
+) -> "tuple[ButlerVolmerBranch, ButlerVolmerBranch]":
+    """Signed Butler–Volmer Fe/HER pair with NO transport cap (2026-08).
+
+    For transport-resolved solvers (``pulse.py``'s Crank–Nicolson film, or
+    any code that owns its concentration profile): the branches are pure
+    surface-kinetics rate laws evaluated at the caller's surface state and
+    temperature.  Transport capping is the caller's job — blending a
+    Koutecký–Levich cap on top of a resolved film would count depletion
+    twice.  ``DepositionKinetics`` remains the right entry point for
+    bulk-driven (mixed-control) calculations.
+
+    i0 values follow the module convention (anchored at ``kinetics_ref_K``,
+    Arrhenius-scaled to ``temperature_C``); the Fe equilibrium potential is
+    the canonical fixed screening value (surface-activity Nernst corrections
+    are a documented limitation of the whole stack, not of this function).
+
+    Returns ``(fe_branch, her_branch)`` — both signed: cathodic positive,
+    exactly 0 at their equilibrium potentials, net oxidation anodic of them.
+    """
+    T_K = temperature_C + 273.15
+    fe = ButlerVolmerBranch(
+        arrhenius_i0(fe_i0, T_K, fe_i0_Ea_J_mol, kinetics_ref_K),
+        fe_tafel_V, fe_E_eq, None, FE_ANODIC_SLOPE_V,
+    )
+    her = ButlerVolmerBranch(
+        arrhenius_i0(her_i0, T_K, her_i0_Ea_J_mol, kinetics_ref_K),
+        her_tafel_V, float(her_line(pH, T_K)), None, HER_ANODIC_SLOPE_V,
+    )
+    return fe, her
 
 
 @dataclass

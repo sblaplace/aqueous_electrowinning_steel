@@ -11,11 +11,11 @@ This dry-run proves, before any L1 hardware is bought, that the **full co-locate
 
 | operating point | base rank | full rank | sv_min (full) | cond (full) |
 |-----------------|----------:|----------:|--------------:|------------:|
-| nominal | 6 | **7** | 1.003e+00 | 3.863e+02 |
-| lo_j_lo_T_lo_fe2 | 6 | **7** | 1.003e+00 | 3.856e+02 |
-| hi_j_hi_T_hi_fe2 | 6 | **7** | 1.004e+00 | 3.910e+02 |
-| lo_j_hi_T_hi_fe2 | 6 | **7** | 1.003e+00 | 3.874e+02 |
-| hi_j_lo_T_lo_fe2 | 6 | **7** | 1.009e+00 | 8.862e+04 |
+| nominal | 6 | **7** | 1.003e+00 | 3.861e+02 |
+| lo_j_lo_T_lo_fe2 | 6 | **7** | 1.003e+00 | 3.860e+02 |
+| hi_j_hi_T_hi_fe2 | 6 | **7** | 1.004e+00 | 3.978e+02 |
+| lo_j_hi_T_hi_fe2 | 6 | **7** | 1.003e+00 | 3.871e+02 |
+| hi_j_lo_T_lo_fe2 | 6 | **7** | 1.016e+00 | 8.898e+04 |
 
 The base 5-sensor suite is rank-6 (deposit_thickness unobservable + divergent). Adding the L1 sensors raises the Gramian to **full rank 7** at every point.
 
@@ -25,11 +25,11 @@ Per-state end-of-run estimation-error 1-sigma and a stability flag (covariance b
 
 | operating point | catholyte_temperature | anolyte_temperature | bulk_fe2 | bulk_pH | current_density | deposit_thickness | cell_voltage | cov stable |
 |---|---|---|---|---|---|---|---|---|
-| nominal | 0.238 / 0.291 / 0.017 / 0.045 / 0.384 / 0.342 / 0.010 | YES |
-| lo_j_lo_T_lo_fe2 | 0.255 / 0.291 / 0.017 / 0.045 / 0.322 / 0.341 / 0.010 | YES |
-| hi_j_hi_T_hi_fe2 | 0.200 / 0.291 / 0.017 / 0.045 / 0.420 / 0.342 / 0.010 | YES |
-| lo_j_hi_T_hi_fe2 | 0.263 / 0.291 / 0.017 / 0.045 / 0.390 / 0.342 / 0.010 | YES |
-| hi_j_lo_T_lo_fe2 | 0.225 / 0.291 / 0.011 / 0.045 / 0.436 / 0.365 / 0.010 | YES |
+| nominal | 0.228 / 0.291 / 0.016 / 0.045 / 0.397 / 0.342 / 0.010 | YES |
+| lo_j_lo_T_lo_fe2 | 0.245 / 0.291 / 0.016 / 0.045 / 0.323 / 0.341 / 0.010 | YES |
+| hi_j_hi_T_hi_fe2 | 0.196 / 0.291 / 0.016 / 0.045 / 0.430 / 0.342 / 0.010 | YES |
+| lo_j_hi_T_hi_fe2 | 0.259 / 0.291 / 0.017 / 0.045 / 0.395 / 0.342 / 0.010 | YES |
+| hi_j_lo_T_lo_fe2 | 0.230 / 0.291 / 0.010 / 0.045 / 0.443 / 0.360 / 0.010 | YES |
 
 Stability icon: `sigma` is the final 1-sigma in state units.
 
