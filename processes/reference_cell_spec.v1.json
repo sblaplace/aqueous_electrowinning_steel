@@ -1,0 +1,187 @@
+{
+  "batch": {
+    "impurity_ceilings_ppm": {
+      "Cu": 15.0,
+      "Ni": 50.0,
+      "Pb": 10.0,
+      "Sn": 5.0,
+      "Zn": 50.0
+    },
+    "physical_properties": {
+      "conductivity_S_m": {
+        "band": [
+          5.0,
+          15.0
+        ],
+        "target": 10.0
+      },
+      "density_g_mL": {
+        "band": [
+          1.0,
+          1.2
+        ],
+        "target": 1.05
+      },
+      "temperature_C": {
+        "qualified_band": [
+          50.0,
+          70.0
+        ],
+        "target": 60.0
+      },
+      "viscosity_mPa_s_at_60C": {
+        "band": [
+          0.3,
+          1.0
+        ],
+        "target": 0.47
+      }
+    },
+    "recipe_targets": {
+      "ascorbic_acid_g_L": 1.0,
+      "bulk_pH": 2.0,
+      "bulk_pH_band": [
+        1.8,
+        2.2
+      ],
+      "fe2_M": 1.0,
+      "fe_so4_7h2o_g_L": 278.0,
+      "h3_bo3_g_L": 24.8
+    }
+  },
+  "cell_stack": {
+    "anode_channel_mm": {
+      "depth": 3.0,
+      "length": 50.0,
+      "width": 20.0
+    },
+    "anode_material": "OER_capable_insoluble_controlled_per_campaign",
+    "anode_minimum_exposed_area_cm2": 10.0,
+    "cathode_active_area_cm2": 10.0,
+    "cathode_channel_mm": {
+      "depth": 3.0,
+      "length": 50.0,
+      "width": 20.0
+    },
+    "cathode_material": "316L",
+    "cathode_roughness_band_um": [
+      0.001,
+      2.0
+    ],
+    "cathode_surface_preparation": "controlled per run; Ra target <= 0.8 um, measured Ra recorded",
+    "cathode_thickness_mm": 1.0,
+    "cell_type": "divided_membrane_separated_recirculating",
+    "electrode_to_membrane_gap_mm": 3.0,
+    "membrane": "Nafion_N117",
+    "membrane_wetted_area_mm2": 2500.0,
+    "orientation": "vertical_bottom_inlet_top_outlet",
+    "wetted_materials_allowed": [
+      "borosilicate",
+      "polypropylene",
+      "PVDF",
+      "PTFE",
+      "FEP"
+    ],
+    "wetted_materials_conditional": [
+      "EPDM",
+      "Viton"
+    ]
+  },
+  "configuration_id": "RC-1",
+  "deposit_metrology": {
+    "complete_record_requires": [
+      "mass",
+      "thickness_map",
+      "composition",
+      "morphology",
+      "porosity",
+      "adhesion",
+      "hydrogen_content"
+    ],
+    "methods": {
+      "adhesion": "peel_strip_force",
+      "composition": "SEM_EDS_wt_pct_plus_combustion_XRD_kept_separate",
+      "hydrogen_content": "independent_H_analysis_bake_out_combustion",
+      "mass": "dry_coupon_mass_before_after_with_uncertainty",
+      "morphology": "imaging_micrograph_record",
+      "porosity": "metallographic_image_analysis",
+      "thickness_map": "dual_optical_opt101_plus_ultrasonic_thk101_co_live_0_500um"
+    },
+    "required": [
+      "mass",
+      "thickness_map",
+      "composition"
+    ]
+  },
+  "effective_date": "2026-08-05",
+  "flow_mixing_gas_thermal": {
+    "gas_vents": "separate_cathode_anode_to_safe_exhaust",
+    "heat_generation_measured_as": "I_times_V",
+    "hydrogen_design_bound_L_h_at_3A_all_HER": 1.37,
+    "installed_flow_band_L_min": [
+      0.1,
+      1.0
+    ],
+    "mixing_mechanism": "forced_recirculation",
+    "nominal_flow_L_min_per_loop": 0.5,
+    "recirculation_loops": "independent",
+    "required_temperature_probes": [
+      "catholyte_reservoir",
+      "anolyte_reservoir",
+      "cathode_outlet",
+      "anode_outlet"
+    ],
+    "sealed_gas_path_forbidden": true,
+    "superficial_velocity_m_s_at_0_5_L_min": 0.14
+  },
+  "human_doc": "docs/REFERENCE_CELL_SPEC.md",
+  "immutable_rule": "No value may be changed in place; any change requires a new spec version and regenerated sha256. Runs pin spec_version + sha256 and are comparable only at the same version.",
+  "rectifier": {
+    "current_density_ceiling_mA_cm2": 300.0,
+    "current_sign_convention": "cathodic_negative",
+    "independent_measurements": [
+      "DMM_cell_voltage_VT201",
+      "series_coulomb_counter_CT201"
+    ],
+    "normal_current_ceiling_A": 3.0,
+    "power_supply": "30V_10A_CC_CV",
+    "synchronized_timestamps": {
+      "required": true,
+      "time_base": "DAQ-101"
+    },
+    "voltage_hard_ceiling_V": 8.0
+  },
+  "sampling": {
+    "after": {
+      "required": true,
+      "samples": [
+        "catholyte_anolyte_Fe2_measured_volume"
+      ]
+    },
+    "before": {
+      "required": true,
+      "samples": [
+        "catholyte_Fe2_pH_conductivity_density_viscosity_impurities",
+        "anolyte_Fe2_pH"
+      ]
+    },
+    "during": {
+      "required_for_drift_crossover_claims": true,
+      "samples": [
+        "periodic_catholyte_anolyte_grabs_at_timestamp_s"
+      ]
+    }
+  },
+  "schema": "aqueous-electrowinning.reference-cell-spec",
+  "schema_version": "1.0",
+  "sha256": "44f69f3dc58035c88f1b5ccfd9b3067dd575a81b7fdc6af81daaa5461ddfe931",
+  "spec_version": "1.0",
+  "status": "FROZEN",
+  "traceability": {
+    "batch_recipe_impurities": "docs/BATH_SPEC.md",
+    "data_contract": "docs/DATA_CONTRACT.md",
+    "deposit_metrology": "docs/DEPOSIT_METROLOGY.md",
+    "design_inputs_yaml": "processes/reference_cell_rc1.yaml",
+    "geometry_stack_safety": "docs/REFERENCE_CELL_DESIGN_BASIS.md"
+  }
+}

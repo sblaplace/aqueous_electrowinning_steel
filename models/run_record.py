@@ -40,6 +40,8 @@ from .plating_data import (
     compute_derived,
     detect_anomalies,
 )
+from .reference_cell_spec import load_spec as _load_refcell_spec
+from .reference_cell_spec import verify_spec as _verify_refcell_spec
 from .run_manifest import (
     load_bath_batch,
     load_experiment_manifest,
@@ -80,6 +82,7 @@ DEFAULT_FILES = {
     "timeseries_csv": "timeseries.csv",
     "bath_batch_json": "bath_batch.json",
     "metadata_json": "metadata.json",
+    "reference_cell_json": "reference_cell.json",
     "mass_log_csv": "mass_log.csv",
     "characterization_csv": "characterization.csv",
     "video_index_csv": "video_index.csv",
@@ -90,6 +93,7 @@ DEFAULT_FILES = {
 FILE_ALIASES = {
     "bath_batch_json": ("bath_batch_json", "bath_batch_file"),
     "metadata_json": ("metadata_json", "metadata_file"),
+    "reference_cell_json": ("reference_cell_json", "reference_cell_file"),
     "timeseries_csv": ("timeseries_csv", "timeseries_file"),
     "mass_log_csv": ("mass_log_csv", "mass_file"),
     "characterization_csv": (
@@ -545,6 +549,188 @@ def _validate_batch_dict(data: Any) -> ContractReport:  # noqa: C901
     return report
 
 
+# Reference-cell metrology groups per docs/REFERENCE_CELL_SPEC.md §7/§9.
+# ``mass``, ``thickness_map`` and ``composition`` are required to declare a
+# reference deposit record; the remaining four close a *complete* one.
+REFCELL_METROLOGY_REQUIRED = frozenset({"mass", "thickness_map", "composition"})
+REFCELL_METROLOGY_COMPLETE = frozenset({
+    "mass", "thickness_map", "composition",
+    "morphology", "porosity", "adhesion", "hydrogen_content",
+})
+# Reference-cell runs declare experiment_type "divided_cell" (see the D1 spec).
+REFCELL_EXPERIMENT_TYPES = frozenset({"divided_cell", "reference_cell"})
+
+
+def _canonical_refcell_spec_path() -> Path:
+    """Return the repo's canonical frozen reference-cell spec path.
+
+    ``models/run_record.py`` resolves to ``models/``; its parent is the repo
+    root, so the canonical spec is ``<repo>/processes/reference_cell_spec.v1.json``.
+    """
+    return Path(__file__).resolve().parent.parent / "processes" / "reference_cell_spec.v1.json"
+
+
+def _check_sha256_digest(sha: Any, label: str, report: ContractReport) -> bool:
+    """Report an invalid 64-hex SHA-256 digest; return True when it is valid."""
+    if isinstance(sha, str) and len(sha) == 64 and all(
+        c in "0123456789abcdefABCDEF" for c in sha
+    ):
+        return True
+    report.add(label, "must be a 64-hex SHA-256 digest")
+    return False
+
+
+def _validate_sample_list(values: Any, phase: str, report: ContractReport) -> None:
+    if not isinstance(values, list):
+        report.add(f"samples.{phase}", "must be a list of sample entries")
+        return
+    for index, item in enumerate(values):
+        if not isinstance(item, dict):
+            report.add(f"samples.{phase}[{index}]", "must be an object")
+            continue
+        for req_field in ("sample_id", "timestamp_s", "loop"):
+            if req_field not in item:
+                report.add(f"samples.{phase}[{index}].{req_field}", "required field is missing")
+
+
+def validate_reference_cell_record(  # noqa: C901
+    data: Any,
+    *,
+    spec_file: str | Path | None = None,
+    record_status: str = "complete",
+) -> ContractReport:
+    """Validate a ``reference_cell.json`` raw-linked sidecar (D1 §9).
+
+    This is the consumer that ``models.run_record`` applies to every reference
+    run. It enforces the invariants documented in ``docs/REFERENCE_CELL_SPEC.md``
+    §9.2:
+
+    - ``spec_sha256`` is a 64-hex digest and, when the canonical spec file is
+      reachable, matches that file's content hash (tamper-evident pin);
+    - ``samples.before`` and ``samples.after`` are required in a complete
+      record; ``samples.during`` is required when a run claims drift/crossover
+      (represented by a non-empty ``samples.during`` key presence is optional);
+    - ``deposit_metrology.mass/thickness_map/composition`` are required; the
+      remaining groups are warnings on a complete record;
+    - ``as_built_deviations`` items must carry a ``path``, an ``as_built`` value
+      and an ``authorized_by``.
+
+    ``spec_file`` is the canonical frozen spec (defaults to the repo's
+    ``processes/reference_cell_spec.v1.json``). When it is unreachable the
+    content pin is downgraded to a warning (format is still enforced).
+    """
+    report = ContractReport("reference-cell-record")
+    if not isinstance(data, dict):
+        report.add("", "must be a JSON object")
+        return report
+
+    schema_version = data.get("schema_version")
+    if schema_version is None:
+        report.add("schema_version", "required")
+    elif schema_version != SCHEMA_VERSION:
+        report.add(
+            "schema_version",
+            f"unsupported version {schema_version!r}; expected {SCHEMA_VERSION!r}",
+        )
+    if not data.get("run_id"):
+        report.add("run_id", "required")
+
+    pin = data.get("reference_cell_spec")
+    if not isinstance(pin, dict):
+        report.add("reference_cell_spec", "required object pinning spec version + sha256")
+    else:
+        if not isinstance(pin.get("spec_version"), str) or not pin.get("spec_version"):
+            report.add("reference_cell_spec.spec_version", "required")
+        if not isinstance(pin.get("configuration_id"), str) or not pin.get("configuration_id"):
+            report.add("reference_cell_spec.configuration_id", "required")
+        sha = pin.get("spec_sha256")
+        if isinstance(sha, str) and _check_sha256_digest(
+            sha, "reference_cell_spec.spec_sha256", report
+        ):
+            if spec_file is not None and Path(spec_file).is_file():
+                try:
+                    spec_data = _load_refcell_spec(spec_file)
+                except (ValueError, FileNotFoundError) as exc:
+                    report.add(
+                        "reference_cell_spec.spec_sha256",
+                        f"cannot load canonical spec for content check: {exc}",
+                    )
+                else:
+                    declared = str(spec_data.get("sha256", "")).lower()
+                    if declared != sha.lower():
+                        report.add(
+                            "reference_cell_spec.spec_sha256",
+                            "does not match the canonical spec file content hash "
+                            f"(declared {declared or '(unfrozen)'})",
+                        )
+                    ok, _ = _verify_refcell_spec(spec_file)
+                    if not ok:
+                        report.add(
+                            "reference_cell_spec.spec_sha256",
+                            "canonical spec file fails its own content hash; it is not frozen",
+                        )
+            else:
+                report.add(
+                    "reference_cell_spec.spec_sha256",
+                    "canonical spec file not reachable; content check unavailable",
+                    severity="warning",
+                )
+        elif sha is not None:
+            _check_sha256_digest(sha, "reference_cell_spec.spec_sha256", report)
+
+    deviations = data.get("as_built_deviations")
+    if deviations is not None:
+        if not isinstance(deviations, list):
+            report.add("as_built_deviations", "must be a list")
+        else:
+            for index, item in enumerate(deviations):
+                if not isinstance(item, dict):
+                    report.add(f"as_built_deviations[{index}]", "must be an object")
+                    continue
+                for field in ("path", "as_built", "authorized_by"):
+                    if field not in item:
+                        report.add(f"as_built_deviations[{index}].{field}", "required field is missing")
+
+    rectifier = data.get("rectifier")
+    if rectifier is not None and not isinstance(rectifier, dict):
+        report.add("rectifier", "must be an object")
+
+    samples = data.get("samples")
+    if not isinstance(samples, dict):
+        report.add("samples", "required object with before/after sample lists")
+    else:
+        for phase in ("before", "after"):
+            values = samples.get(phase)
+            if record_status == "complete" and not values:
+                report.add(f"samples.{phase}", "required at least one entry in a complete record")
+            elif values is not None:
+                _validate_sample_list(values, phase, report)
+        if "during" in samples:
+            _validate_sample_list(samples.get("during"), "during", report)
+
+    metrology = data.get("deposit_metrology")
+    if not isinstance(metrology, dict):
+        report.add("deposit_metrology", "required object of measurement groups")
+    else:
+        for key in sorted(REFCELL_METROLOGY_REQUIRED):
+            entry = metrology.get(key)
+            if entry is None:
+                if record_status == "complete":
+                    report.add(f"deposit_metrology.{key}", "required in a complete reference record")
+            elif not isinstance(entry, dict):
+                report.add(f"deposit_metrology.{key}", "must be an object")
+            elif not entry.get("file"):
+                report.add(f"deposit_metrology.{key}.file", "required raw-linked file")
+        for key in sorted(REFCELL_METROLOGY_COMPLETE - REFCELL_METROLOGY_REQUIRED):
+            if metrology.get(key) is None and record_status == "complete":
+                report.add(
+                    f"deposit_metrology.{key}",
+                    "required for a complete reference deposit record",
+                    severity="warning",
+                )
+    return report
+
+
 def _load_json(path: Path, label: str) -> Any:
     if not path.is_file():
         raise FileNotFoundError(f"{label} file not found: {path}")
@@ -975,14 +1161,24 @@ class RunRecord:
         return self.qa_report
 
 
-def build_qa_report(run_dir: str | Path) -> dict[str, Any]:  # noqa: C901
+def build_qa_report(  # noqa: C901
+    run_dir: str | Path,
+    *,
+    reference_cell_spec_file: str | Path | None = None,
+) -> dict[str, Any]:
     """Inspect a run directory and return a non-throwing JSON-ready report.
 
     This is the preferred entry point for planned/incomplete runs.  It reports
     every missing or malformed component in one pass.  Use
     :func:`load_run_record` when analysis code should fail fast instead.
+
+    ``reference_cell_spec_file`` overrides the canonical frozen spec used to
+    content-check a ``reference_cell.json`` pin (defaults to the repo's
+    ``processes/reference_cell_spec.v1.json``).
     """
     root = Path(run_dir).resolve()
+    if reference_cell_spec_file is None:
+        reference_cell_spec_file = _canonical_refcell_spec_path()
     report = ContractReport(CONTRACT_NAME)
     manifest = _load_manifest_for_report(root, report)
     if manifest is None:
@@ -1055,6 +1251,30 @@ def build_qa_report(run_dir: str | Path) -> dict[str, Any]:  # noqa: C901
                 )
         except (ValueError, DataContractError, FileNotFoundError) as exc:
             report.add("metadata", str(exc))
+
+    # Reference-cell raw-linked record (D1 §9). Optional for non-reference
+    # runs; required for a run that declares a reference-cell experiment type.
+    reference_cell_data: dict[str, Any] | None = None
+    refcell_path = paths.get("reference_cell_json", Path())
+    experiment_type = str(manifest.get("experiment_type", "")).strip()
+    is_refcell_experiment = experiment_type.casefold() in REFCELL_EXPERIMENT_TYPES
+    if is_refcell_experiment and not refcell_path.is_file():
+        report.add(
+            "reference_cell",
+            "divided-cell/reference-cell run requires a reference_cell.json sidecar",
+        )
+    if refcell_path.is_file():
+        try:
+            reference_cell_data = _load_json(refcell_path, "reference-cell record")
+            refcell_report = validate_reference_cell_record(
+                reference_cell_data,
+                spec_file=reference_cell_spec_file,
+                record_status=status,
+            )
+            component_reports["reference_cell"] = refcell_report.to_dict()
+            report.extend(refcell_report, prefix="reference_cell")
+        except (ValueError, DataContractError, FileNotFoundError) as exc:
+            report.add("reference_cell", str(exc))
 
     # Normalized plating trace
     if paths.get("timeseries_csv", Path()).is_file():
