@@ -76,6 +76,11 @@ E0_OER_ALKALINE = 0.401   # vs. SHE at pH 14, 25 °C; use Nernst shift
 # CER:         2Cl⁻ → Cl₂ + 2e⁻
 E0_CER = 1.360            # vs. SHE at a_Cl- = 1 M, 25 °C (AWARE bath)
 
+# Soluble iron anode: Fe → Fe²⁺ + 2e⁻ (reverse of cathode deposition).
+# E° = −0.440 V vs SHE for Fe²⁺ + 2e⁻ → Fe; soluble anode operates near
+# this potential with only a small dissolution overpotential (no gas).
+E0_FE2_FE_SOLUBLE = -0.440
+
 
 # ─── Physical constants ─────────────────────────────────────────────────
 
@@ -447,6 +452,22 @@ class AnodeKinetics:
     electrolyte_conductivity_S_m: float = 10.0
     electrolyte_resistivity_ohm_m2: float = 0.001  # Ω·m² (0.01 Ω·cm², anode half-cell)
 
+    # Anode chemistry:
+    #   "inert"   — dimensionally stable anode (DSA/NiCo/Pt): OER and/or
+    #               CER, gas evolution, bubbles; the η_bubble term applies.
+    #   "soluble" — soluble Fe anode: Fe → Fe²⁺ + 2e⁻, no gas, near-zero
+    #               overpotential; the bubble/concentration terms are
+    #               suppressed and the equilibrium potential is that of
+    #               Fe²⁺/Fe (not OER).  This is the classical iron
+    #               electrorefining / electrowinning anode and removes the
+    #               entire gas-handling and high-voltage penalty.
+    anode_chemistry: str = "inert"
+    # Fe²⁺ concentration at the anode (mol/L) and kinetic constants for
+    # the soluble-Fe dissolution branch.
+    fe2_conc_M: float = 1.0
+    fe_dissolution_i0: float = 10.0       # A/m² (fast, active dissolution)
+    fe_dissolution_tafel_V: float = 0.040  # V/decade
+
     # ─── Derived properties ─────────────────────────────────────────
 
     @property
@@ -463,6 +484,34 @@ class AnodeKinetics:
         if self.electrolyte_type == "acidic_chloride":
             return self.a_Cl_molar > 0.05
         return False
+
+    def __post_init__(self) -> None:
+        if self.anode_chemistry not in ("inert", "soluble"):
+            raise ValueError(
+                f"anode_chemistry must be 'inert' or 'soluble', got "
+                f"{self.anode_chemistry!r}"
+            )
+
+    @property
+    def is_soluble(self) -> bool:
+        """True for a soluble Fe anode (Fe → Fe²⁺ + 2e⁻, no gas)."""
+        return self.anode_chemistry == "soluble"
+
+    def fe_dissolution_equilibrium(self) -> float:
+        """E_eq for Fe²⁺ + 2e⁻ ⇌ Fe at the anode surface (V vs SHE)."""
+        T = self.T
+        return E0_FE2_FE_SOLUBLE + (R_GAS * T / (2.0 * FARADAY)) * np.log(
+            max(self.fe2_conc_M, 1e-15)
+        )
+
+    def _fe_dissolution_current(self, E: float) -> float:
+        """Anodic Fe dissolution current (A/m²) on a soluble anode."""
+        i0 = self.fe_dissolution_i0
+        E_eq = self.fe_dissolution_equilibrium()
+        eta = E - E_eq
+        if eta <= 0.0:
+            return 0.0
+        return float(i0 * 10.0 ** (eta / self.fe_dissolution_tafel_V))
 
     # ─── Equilibrium potentials ──────────────────────────────────────
 
@@ -525,7 +574,13 @@ class AnodeKinetics:
         return float(i0 * 10.0 ** (eta / self.material.cer_tafel_V))
 
     def total_anodic_current(self, E: float) -> float:
-        """Sum of OER and CER currents at potential E."""
+        """Sum of all anodic currents at potential E.
+
+        For a soluble Fe anode this is just the Fe dissolution current
+        (no gas); for an inert anode it is OER + CER.
+        """
+        if self.is_soluble:
+            return self._fe_dissolution_current(E)
         return self._oer_current(E) + self._cer_current(E)
 
     # ─── Overpotential decomposition ─────────────────────────────────
@@ -552,8 +607,14 @@ class AnodeKinetics:
                 "eta_activation_V": 0.0,
                 "eta_concentration_V": 0.0,
                 "eta_bubble_V": 0.0,
-                "E_anode_V": self.oer_equilibrium(),
-                "E_eq_V": self.oer_equilibrium(),
+                "E_anode_V": (
+                    self.fe_dissolution_equilibrium()
+                    if self.is_soluble else self.oer_equilibrium()
+                ),
+                "E_eq_V": (
+                    self.fe_dissolution_equilibrium()
+                    if self.is_soluble else self.oer_equilibrium()
+                ),
                 "i_oer_A_m2": 0.0,
                 "i_cer_A_m2": 0.0,
                 "cer_fraction": 0.0,
@@ -562,8 +623,14 @@ class AnodeKinetics:
 
         target = j_mA_cm2 * 10.0   # A/m²
 
-        # Find anode potential that satisfies i_total = target
-        E_eq = self.oer_equilibrium()
+        # Find anode potential that satisfies i_total = target.  The
+        # reference equilibrium is OER for an inert anode and Fe²⁺/Fe for
+        # a soluble anode.
+        E_eq = (
+            self.fe_dissolution_equilibrium()
+            if self.is_soluble
+            else self.oer_equilibrium()
+        )
         # Bracket: anode must be above E_eq by at least 0.05 V
         lo, hi = E_eq + 0.05, E_eq + 5.0
 
@@ -580,11 +647,17 @@ class AnodeKinetics:
 
         # Component overpotentials
         eta_act = max(E_anode - E_eq, 0.0)
-        eta_conc = concentration_overpotential_oer(
-            j_mA_cm2,
-            self.material.temperature_C,
-            self.boundary_layer_m,
-        )
+        if self.is_soluble:
+            # No gas evolution on a dissolving Fe anode: no bubble
+            # resistance, and the product (Fe²⁺) is the charge-carrying
+            # ion rather than a depleted supporting salt, so η_conc ≈ 0.
+            eta_conc = 0.0
+        else:
+            eta_conc = concentration_overpotential_oer(
+                j_mA_cm2,
+                self.material.temperature_C,
+                self.boundary_layer_m,
+            )
 
         # Bubble resistance
         anode_key = "IrO2"
@@ -595,14 +668,26 @@ class AnodeKinetics:
         elif "Pt" in self.material.name:
             anode_key = "Pt"
 
-        theta = bubble_fraction(j_mA_cm2, self.material.temperature_C, anode_key)
-        R_mult = bubble_resistance_multiplier(theta)
-        eta_bubble = self.electrolyte_resistivity_ohm_m2 * (R_mult - 1.0) * target
+        if self.is_soluble:
+            theta = 0.0
+            eta_bubble = 0.0
+        else:
+            theta = bubble_fraction(j_mA_cm2, self.material.temperature_C, anode_key)
+            R_mult = bubble_resistance_multiplier(theta)
+            eta_bubble = self.electrolyte_resistivity_ohm_m2 * (R_mult - 1.0) * target
 
-        # CER contribution
-        i_cer = self._cer_current(E_anode)
-        i_oer = self._oer_current(E_anode)
-        cer_frac = i_cer / max(target, 1e-30)
+        # Current split between reactions.
+        if self.is_soluble:
+            i_fe = self._fe_dissolution_current(E_anode)
+            i_oer = 0.0
+            i_cer = 0.0
+            cer_frac = 0.0
+            fe_frac = i_fe / max(target, 1e-30)
+        else:
+            i_cer = self._cer_current(E_anode)
+            i_oer = self._oer_current(E_anode)
+            cer_frac = i_cer / max(target, 1e-30)
+            fe_frac = 0.0
 
         return {
             "total_V": float(eta_act + eta_conc + max(eta_bubble, 0.0)),
@@ -613,8 +698,11 @@ class AnodeKinetics:
             "E_eq_V": float(E_eq),
             "i_oer_A_m2": float(i_oer),
             "i_cer_A_m2": float(i_cer),
+            "i_fe_dissolution_A_m2": float(i_fe) if self.is_soluble else 0.0,
+            "fe_dissolution_fraction": float(fe_frac),
             "cer_fraction": float(cer_frac),
             "bubble_fraction": float(theta),
+            "anode_chemistry": self.anode_chemistry,
         }
 
     # ─── Full anode polarization curve ──────────────────────────────
