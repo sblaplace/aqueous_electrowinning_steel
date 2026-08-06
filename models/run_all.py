@@ -28,7 +28,8 @@ What it does
 15. Internal stress & coupon curvature (Stoney/bent-strip) + adhesion/peel (adhesion_peel, internal_stress)
 16. RDE kinetics/transport separation — Levich + Koutecky-Levich (rde_levich)
 17. Cathode-channel gas hold-up: void fraction, current redistribution, H2 safety (gas_holdup)
-18. Dashboard summary figure + master JSON
+18. Unified RC-1 reference-cell state: physics + gas + thermal + ledgers + advisory safety (reference_cell_pipeline)
+19. Dashboard summary figure + master JSON
 
 Outputs
 -------
@@ -674,7 +675,7 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         master["steps"]["rde_levich"] = {"error": str(e)}
 
     # Cathode-channel gas hold-up — the two-phase field left open by NEXT_STEPS 3.3
-    print("\n[21/21] Cathode-channel gas hold-up (void fraction, redistribution, H2 safety)...")
+    print("\n[21/22] Cathode-channel gas hold-up (void fraction, redistribution, H2 safety)...")
     try:
         run_gas_holdup_main(quick=quick)
         master["steps"]["gas_holdup"] = _load_json(
@@ -685,6 +686,25 @@ def main(quick: bool = False, master_out: Path = DATA_DIR / "master_report.json"
         print(f"  ❌ gas hold-up: {e}")
         import traceback; traceback.print_exc()
         master["steps"]["gas_holdup"] = {"error": str(e)}
+
+    # Unified RC-1 state — this is the single integration boundary for the
+    # reference-cell models.  It is intentionally a screening prediction; it
+    # does not create experimental gate evidence or arm hardware actuation.
+    print("\n[22/22] Unified RC-1 reference-cell pipeline (physics + gas + thermal + safety)...")
+    try:
+        from models.reference_cell_pipeline import ReferenceCellPipeline
+
+        pipeline = ReferenceCellPipeline(gas_segments=4, gas_iterations=6)
+        pipeline_inputs = pipeline.default_inputs(
+            current_density_mA_cm2=100.0 if quick else None,
+        )
+        integrated_state = pipeline.simulate(pipeline_inputs)
+        master["steps"]["reference_cell_pipeline"] = integrated_state.to_dict()
+        print("  ✅ reference_cell_pipeline")
+    except Exception as e:
+        print(f"  ❌ reference_cell_pipeline: {e}")
+        import traceback; traceback.print_exc()
+        master["steps"]["reference_cell_pipeline"] = {"error": str(e)}
 
     # Dashboard
     print("\n[Dashboard] Generating master dashboard...")

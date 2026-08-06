@@ -31,3 +31,18 @@ def test_active_jacket_reduces_temperature():
     res_c = simulate_thermal_transient(p_cooled, t_end_hr=2.0)
 
     assert res_c["T_ss_C"] < res_u["T_ss_C"]
+
+
+def test_configured_target_temperature_is_reported_separately_from_legacy_50c_field():
+    """The integrated pipeline must be able to request the RC-1 60 °C target."""
+    params = CellThermalParams(
+        V_cell=2.5,
+        current_A=10.0,
+        T_init_C=25.0,
+        T_amb_C=25.0,
+        T_target_C=60.0,
+    )
+    result = simulate_thermal_transient(params, t_end_hr=0.05, dt_s=10.0)
+    assert result["T_target_C"] == 60.0
+    assert result["cooling_duty_target_W"] >= 0.0
+    assert result["cooling_duty_50C_W"] >= 0.0

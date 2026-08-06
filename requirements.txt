@@ -21,5 +21,6 @@ pint>=0.22
 
 # Testing
 pytest>=7.0
+pytest-xdist>=3.0          # required by Makefile's parallel test targets
 pytest-benchmark>=4.0
 scikit-optimize

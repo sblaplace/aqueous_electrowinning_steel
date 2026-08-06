@@ -40,6 +40,7 @@ class CellThermalParams:
     cooling_active: bool = False
     T_cool_in_C: float = 15.0  # °C, coolant inlet temperature
     UA_jacket_W_K: float = 10.0 # W/K, heat exchanger UA value
+    T_target_C: float = 50.0    # °C, target used for the cooling-duty calculation
 
 
 def evaporative_heat_loss_W(T_C: float, T_amb_C: float, A_surf_m2: float, RH: float) -> float:
@@ -109,11 +110,19 @@ def simulate_thermal_transient(p: CellThermalParams, t_end_hr: float = 4.0, dt_s
     # Steady state equilibrium temperature
     T_ss = T_array[-1]
 
-    # Cooling duty required to maintain target temperature T_target (e.g. 50 °C)
-    T_target = 50.0
+    # Cooling duty required to maintain the configured target temperature.
+    # Keep the historical 50 °C value as a compatibility/reporting field;
+    # integrated reference-cell runs use T_target_C from their design basis.
+    T_target = float(p.T_target_C)
     Q_amb_target = p.UA_amb_W_K * (T_target - p.T_amb_C)
     Q_evap_target = evaporative_heat_loss_W(T_target, p.T_amb_C, p.A_surface_m2, p.relative_humidity)
     Q_cool_req_W = max(0.0, Q_gen - Q_amb_target - Q_evap_target)
+    T_legacy = 50.0
+    Q_amb_legacy = p.UA_amb_W_K * (T_legacy - p.T_amb_C)
+    Q_evap_legacy = evaporative_heat_loss_W(
+        T_legacy, p.T_amb_C, p.A_surface_m2, p.relative_humidity
+    )
+    Q_cool_legacy_W = max(0.0, Q_gen - Q_amb_legacy - Q_evap_legacy)
 
     return {
         "time_hr": t_array,
@@ -124,7 +133,9 @@ def simulate_thermal_transient(p: CellThermalParams, t_end_hr: float = 4.0, dt_s
         "Q_jacket_W": Q_jacket_array,
         "T_ss_C": float(T_ss),
         "T_max_C": float(np.max(T_array)),
-        "cooling_duty_50C_W": float(Q_cool_req_W),
+        "T_target_C": T_target,
+        "cooling_duty_target_W": float(Q_cool_req_W),
+        "cooling_duty_50C_W": float(Q_cool_legacy_W),
         "thermal_mass_kJ_K": float(C_total / 1000.0),
         "heat_gen_power_W": float(Q_gen),
     }
