@@ -215,6 +215,10 @@ STILL OPEN (planned in the lost turn, not written; carry into a follow-up)
 *** UPDATE 2026-08-06 (Arena follow-up turn): all three items below are now ***
 *** DONE on PR #43 — T-form framework in commit 001fa7e, registry entries in  ***
 *** commit 20f2db2, docs/README in the docs commit closing this brief.        ***
+*** UPDATE 2026-08-06 (later same-day turn): the first verified T-coefficient ***
+*** table has now landed on the framework — Fe2+–SO4(2-) ships Kobylin et al. ***
+*** (2011) verbatim in the MTDATA form (t_form="mtd", 10–90 °C), gated by     ***
+*** docs/PITZER_TCOEFF_ACCEPTANCE.md. R&B 1987 stays open (paywalled).        ***
 *** Original plan text retained underneath for the record.                    ***
 ================================================================================
 

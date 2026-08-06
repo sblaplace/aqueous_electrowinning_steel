@@ -61,16 +61,19 @@ def test_feso4_gamma_concentrated():
 
 def test_feso4_gamma_dilute_limit_and_minimum():
     """γ± rises toward 1 in the dilute limit and passes through the
-    characteristic 2–2-sulfate minimum before rising near saturation."""
+    characteristic 2–2-sulfate minimum before rising toward saturation."""
     g_dilute = mean_activity_coefficient_pure("Fe2+", "SO4-2", 0.001)
     g_01 = mean_activity_coefficient_pure("Fe2+", "SO4-2", 0.1)
     g_1 = mean_activity_coefficient_pure("Fe2+", "SO4-2", 1.0)
+    g_min = mean_activity_coefficient_pure("Fe2+", "SO4-2", 2.0)
     g_sat = mean_activity_coefficient_pure("Fe2+", "SO4-2", 3.58)  # copperas saturation
     assert g_dilute > g_01 > 0.04
     assert g_1 < g_01
     assert g_dilute > 0.7
-    # minimum near ~2 m, upturn at the solubility limit (Kobylin 2011 behaviour)
-    assert g_sat > g_1
+    # minimum near ~2 m with upturn toward the solubility limit (Kobylin
+    # et al. 2011 curve: at 3.58 m γ± ≈ 0.048 — still below the 1 m value)
+    assert g_min < g_1
+    assert g_sat > g_min
 
 
 def test_mgso4_gamma_crosscheck():
@@ -124,19 +127,48 @@ def test_2minus2_convention_alpha1():
 
 # ─── Temperature-dependence framework (2026-08) ─────────────────────
 #
-# The shipped binary tables carry all-zero T-coefficients (frozen 25 °C
-# set).  These tests pin (a) that frozen tables are byte-identical under
-# at_T at any T, (b) the EQ3/6-Sandia polynomial form, and (c) that the
-# solver actually routes pairs through at_T.
+# Shipped state (2026-08-06): every pair EXCEPT Fe2+–SO4-2 ships frozen
+# 25 °C parameters; the Fe–SO4 pair carries the verified Kobylin et al.
+# (2011) T-functions verbatim (t_form="mtd") — pinned in detail in
+# tests/test_pitzer_tcoeffs.py.  These tests pin (a) that frozen tables
+# are byte-identical under at_T at any T, (b) the EQ3/6-Sandia polynomial
+# form, and (c) that the solver actually routes pairs through at_T.
 
 
-def test_shipped_tables_are_frozen_and_byte_identical():
-    """Every shipped pair must still ship frozen parameters: at_T is the
-    identity object at any T, so default results cannot drift."""
+def test_frozen_pairs_are_byte_identical_under_at_T():
+    """Every shipped pair except the accepted-table Fe–SO4 pair must still
+    ship frozen parameters: at_T is the identity object at any T, so those
+    results cannot drift."""
     for key, pair in PITZER_BINARY.items():
+        if key == ("Fe2+", "SO4-2"):
+            continue  # carriers the verified Kobylin table; see test_pitzer_tcoeffs.py
         assert all(c == 0.0 for row in pair.t_coeffs for c in row), key
+        assert pair.t_form == "eq36", key
         for T_C in (5.0, 25.0, 50.0, 90.0):
             assert pair.at_T(T_C) is pair, key
+
+
+def test_fe_so4_pair_ships_verified_kobylin_table():
+    """The one shipped deviation from frozen: verbatim Kobylin et al.
+    (2011) MTDATA-form functions, window 10–90 °C.  Transcription and
+    acceptance anchors are pinned in tests/test_pitzer_tcoeffs.py."""
+    pair = PITZER_BINARY[("Fe2+", "SO4-2")]
+    assert pair.t_form == "mtd"
+    assert pair.t_range_C == (10.0, 90.0)
+    # verbatim transcription of Kobylin et al. (2011) Table 6
+    assert pair.t_coeffs == (
+        (5.1934, -0.0161, 1.8349e-5, -508.3),
+        (15.8514, 0.0085, -6.0442e-5, -3205.3),
+        (-16.2142, 0.0, 0.0, 0.0),
+        (-0.0588, 0.0, 0.0, 12.8),
+    )
+    # her 25 °C projection supersedes the base set (Kobylin et al. Table 6
+    # evaluated at 298.15 K)
+    p25 = pair.at_T(25.0)
+    assert p25.beta0 == pytest.approx(0.3194, abs=1e-4)
+    assert p25.beta1 == pytest.approx(2.2621, abs=1e-4)
+    assert p25.beta2 == pytest.approx(-16.2142, abs=1e-6)
+    assert p25.Cphi == pytest.approx(-0.01587, abs=1e-4)
 
 
 def test_at_T_polynomial_form_and_anchor():
@@ -160,6 +192,29 @@ def test_at_T_polynomial_form_and_anchor():
     assert pair.at_T(40.0).Cphi == pytest.approx(0.01)
     # alpha parameters belong to the functional form — never T-evolved
     assert pair.at_T(40.0).alpha1 == pair.alpha1
+
+
+def test_at_T_mtd_form():
+    """t_form="mtd": p(T) = A + B·T + D·T² + F/T (T in K), verbatim basis
+    used for the shipped Kobylin Fe–SO4 table.  Zero rows still frozen."""
+    pair = PitzerPair(
+        0.5, 2.0, -10.0, 0.02,
+        t_coeffs=(
+            (3.0, -1.0e-2, 1.0e-5, -500.0),
+            (0.0, 0.0, 0.0, 0.0),
+            (-5.0, 0.0, 0.0, 0.0),
+            (0.1, 0.0, 0.0, 2.0),
+        ),
+        t_form="mtd",
+    )
+    for T_C in (10.0, 25.0, 60.0):
+        T = T_C + 273.15
+        evolved = pair.at_T(T_C)
+        assert evolved.beta0 == pytest.approx(
+            3.0 - 1.0e-2 * T + 1.0e-5 * T * T - 500.0 / T, rel=1e-12)
+        assert evolved.beta1 == pytest.approx(2.0)         # zero row → base
+        assert evolved.beta2 == pytest.approx(-5.0)        # constant (A only)
+        assert evolved.Cphi == pytest.approx(0.1 + 2.0 / T, rel=1e-12)
 
 
 def test_at_T_returns_new_object_and_leaves_original():
@@ -198,8 +253,15 @@ def test_solve_pitzer_routes_pairs_through_at_T():
 
 
 def test_extreme_T_still_solves():
-    """Outside the 10–60 °C window the solver still evaluates (flagging is
-    the caller's job); the frozen tables keep the numbers well-defined."""
-    sol = solve_pitzer({"Fe2+": 1.0, "SO4-2": 1.0}, T_C=95.0)
+    """Outside the Fe–SO4 table's certified window (10–90 °C) the solver
+    still evaluates and the pair raises its extrapolation warning."""
+    import warnings as _warnings
+
+    with pytest.warns(UserWarning, match="outside"):
+        solve_pitzer({"Fe2+": 1.0, "SO4-2": 1.0}, T_C=95.0)
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        sol = solve_pitzer({"Fe2+": 1.0, "SO4-2": 1.0}, T_C=60.0)
+        assert not any("outside" in str(x.message) for x in w)
     assert 0.0 < sol.gamma["Fe2+"] < 1.0
     assert 0.0 < sol.water_activity < 1.0

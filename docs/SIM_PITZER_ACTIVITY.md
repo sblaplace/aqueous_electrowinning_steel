@@ -97,16 +97,26 @@ mechanistic decomposition; plan temperature sweeps accordingly.
 
 ## Limitations (unchanged honesty)
 
-- Pitzer binary parameters are 25 °C values; Aφ responds to T exactly,
-  and as of 2026-08-06 the binaries route through a per-parameter T-form
-  framework (`PitzerPair.at_T`, EQ3/6-Sandia-style polynomials).  The
-  shipped tables carry all-zero coefficients (frozen 25 °C set), so
-  current numbers are byte-identical to frozen-parameter behavior;
-  Reardon & Beckie (1987) publish fitted T-dependence over 10–60 °C —
-  wiring verified coefficients in is the remaining follow-up.  Treat
-  >60 °C activity numbers as extrapolated.
+- Pitzer binary parameters are anchored at 25 °C; Aφ responds to T
+  exactly, and as of 2026-08-06 the binaries route through a
+  per-parameter T-form framework (`PitzerPair.at_T`).  The Fe²⁺–SO₄²⁻
+  pair ships the verified Kobylin et al. (2011) T-coefficients verbatim
+  (MTDATA form `p(T) = A + B·T + D·T² + F/T`, fitted/valid 10–90 °C),
+  installed through the `docs/PITZER_TCOEFF_ACCEPTANCE.md` gate; its
+  25 °C curve shifts slightly (γ±(0.1 m) 0.159→0.163, within the
+  published assessment spread).  All other pairs still carry all-zero
+  T-coefficients (frozen 25 °C set); Reardon & Beckie (1987) stays on
+  the shopping list (paywalled tables, documented internal enthalpy
+  inconsistency — Kobylin supersedes).  Treat <10 °C / >90 °C activity
+  numbers as extrapolated (out-of-window warnings are emitted).
 - Density estimate is apparent-volume screening level (±2 %); a measured
   bath density should be supplied when available.
+- The osmotic coefficient / water activity is markedly more sensitive to
+  the β⁰/β¹ parameter partition than γ± is: the Kobylin wiring moves the
+  50 °C mixture φ 0.706 → 0.547 (a_w 0.957 → 0.966) while all pinned γ
+  anchors still pass.  Both correlations are verbatim-published; treat
+  φ/a_w as assessment-uncertain (~±0.1 in φ) until measured bath data
+  exist (see `docs/PITZER_TCOEFF_ACCEPTANCE.md` §5).
 - Conductivity retains an empirical DHO-style attenuation calibrated to
   pure FeSO₄/Na₂SO₄ near 1 M (±15–20 %); measured bath κ supersedes.
 - Chloride-route (AWARE) chemistry is not yet in the Pitzer parameter set
@@ -125,14 +135,29 @@ mechanistic decomposition; plan temperature sweeps accordingly.
 2. ~~Full Butler–Volmer reverse branches~~ — **shipped 2026-08-06**
    (`ButlerVolmerBranch`, default-on; `i(E_eq)=0` exact, dissolution
    branch anodic of E_eq, reverse term 10⁻³–10⁻⁸ at operating η so all
-   FE/V results are unchanged at screening precision — same doc).  The
-   `pulse.py` heuristic PRE split was deliberately left as-is.
+   FE/V results are unchanged at screening precision — same doc).  ~~The
+   `pulse.py` heuristic PRE split was deliberately left as-is~~ —
+   **shipped 2026-08-06**: the split is now an honest per-step BV
+   surface-potential solve (legacy form kept behind a flag);
+   see `docs/SIM_PULSE_BV.md`.
 3. ~~Fe³⁺ redox shuttle + O₂-based bath aging~~ — **shipped 2026-08-06**
    as `models/fe3_shuttle.py` (sealed/open/crossover scenarios; the
    honest L0 finding is iron-inventory sludge bleed, not CE loss — see
-   `docs/SIM_BATH_REDOX.md`).  Remaining: wiring it as a CSTR source
-   term in `bath_dynamics`/`closed_loop`.
-4. Temperature-dependent Pitzer parameter fits — **framework shipped
-   2026-08-06** (`PitzerPair.t_coeffs` / `at_T`, all-zero by default);
-   the verified coefficient tables themselves (R&B 1987 functions) are
-   still to be sourced and are the open part.
+   `docs/SIM_BATH_REDOX.md`).  ~~Remaining: wiring it as a CSTR source
+   term in `bath_dynamics`/`closed_loop`~~ — **shipped 2026-08-06**:
+   `bath_dynamics` integrates the production → shuttle | sludge triangle
+   behind `fe3_shuttle_enabled` (default off, byte-identical), with
+   Fe²⁺/deposit/pH back-couplings and a sludge ledger that closes the
+   iron balance (same doc; also surfaced two ×1000 m³↔L errata in the
+   original module — fixed and unit-pinned).
+4. ~~Temperature-dependent Pitzer parameter fits~~ — **shipped
+   2026-08-06**: the Fe²⁺–SO₄²⁻ pair now carries the verified
+   Kobylin et al. (2011, CALPHAD 35:499–511, doi
+   10.1016/j.calphad.2011.08.005) T-coefficient table verbatim in the
+   MTDATA form (`t_form="mtd"`, valid 10–90 °C), installed through the
+   `docs/PITZER_TCOEFF_ACCEPTANCE.md` verification gate (25 °C
+   projection reproduces the printed coefficients exactly;
+   γ±(0.1 m, 25 °C) = 0.163 vs the 0.164 published anchor, 0.7 %).
+   All other pairs stay frozen-25 °C.  Reardon & Beckie (1987) and the
+   Kobylin 2012 ternary (Fe–Na mixing) remain on the sourcing list —
+   see the acceptance doc §4.

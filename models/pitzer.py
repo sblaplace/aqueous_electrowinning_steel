@@ -42,14 +42,48 @@ Temperature
 -----------
 The Debye–Hückel slope Aφ(T) is computed exactly from the water dielectric
 constant and density.  Binary interaction parameters are anchored at 25 °C;
-``PitzerPair.at_T`` (2026-08) applies a per-parameter EQ3/6-Sandia-style
-polynomial T-correction when a verified coefficient table is supplied —
-the shipped tables carry all-zero T-coefficients (frozen 25 °C set,
-historically the "Zomaitis simplification"), so current results are
-byte-identical to the frozen-parameter behavior.  Reardon & Beckie (1987)
-provide fitted functions over 10–60 °C for the FeSO₄–H₂SO₄–H₂O system —
-wiring verified coefficients in is the remaining follow-up.  Flag results
-outside 10–60 °C as extrapolated.
+``PitzerPair.at_T`` applies a per-parameter polynomial T-correction when
+the pair ships verified coefficients, in one of two named bases:
+
+* ``t_form="eq36"`` — the EQ3/6-Sandia form
+  ``p(T) = a + c1·(1/T − 1/Tr) + c2·ln(T/Tr) + c3·(T − Tr)`` (Tr = 298.15 K),
+  with ``a`` the value at Tr (slots for documented re-fits).
+* ``t_form="mtd"`` — the MTDATA/NPL form ``p(T) = A + B·T + D·T² + F/T``
+  (T in K), used to ship published coefficient tables **verbatim**.
+
+An all-zero row always means "frozen at the base value", so pairs without
+tables stay byte-identical to the frozen-parameter behavior.
+
+**Shipped T-table (2026-08-06): Fe²⁺–SO₄²⁻ from Kobylin, Sippola &
+Taskinen (2011).**  The Kobylin CALPHAD assessment of the FeSO4–H2O binary
+(their Table 6, MTDATA form) is wired verbatim with
+``t_range_C = (10, 90)`` — the window jointly certified by the R&B (binary
+10–90 °C) and Kobylin assessments; the Kobylin model itself spans −2–220 °C
+with self-declared sparsity above 100 °C.  Verification on this repo's
+machinery: γ±(FeSO4, 0.1 m, 25 °C) = 0.163 vs the published anchor 0.164
+(≈0.7 %; Reardon & Beckie 1987: 0.161 — both inside the 0.150–0.164
+assessment spread).  **Honest provenance note:** the original
+Reardon & Beckie (1987, GCA 51:2355–2368) β(T)/Cφ(T) functions are
+paywalled and could not be transcribed-verified in this environment; what
+is publicly verifiable is their 25 °C projection (β⁰=0.2568, β¹=3.063,
+β²=−42 — retained as the pair's ``beta*``/``Cphi`` base fields, the
+Pitzer (1991) anchor set) and the abstract-published Ksp(T) relations.
+Kobylin et al. document an internal enthalpy inconsistency in the R&B fits
+(ΔHs ≈ 16.1 vs 21.2 kJ/mol) that the 2011 re-assessment resolved, so the
+Kobylin set is the defensible "verified" wiring; its 25 °C projection
+(β⁰=0.3194, β¹=2.2621, β²=−16.2142, Cφ=−0.0159) *supersedes* the anchor
+set at every temperature, 25 °C included — a ~2.5 % shift of γ± at 0.1 m,
+inside the mutual spread of the two assessments.  Fe²⁺–HSO₄⁻ and the
+H⁺–SO₄²⁻/HSO₄⁻ binaries remain frozen (no publicly verified T-functions;
+Kobylin et al. 2012's ternary A+F/T set is paywalled).
+Treat results outside 10–90 °C as extrapolated (``at_T`` warns).
+
+The **acceptance gate** that vetted this table remains in place for future
+tables (e.g. a transcribed R&B 1987 set): ``register_t_coeff_table`` /
+``apply_t_coeff_library`` / ``verify_t_coeff_table`` /
+``revert_t_coeff_library`` with ``FESO4_GAMMA_ANCHORS`` and
+``RB1987_ACCEPTANCE_ANCHORS`` (still pending); see
+``docs/PITZER_TCOEFF_ACCEPTANCE.md``.
 
 References
 ----------
@@ -185,16 +219,28 @@ class PitzerPair:
     """Cation–anion binary interaction parameters (molal scale, 25 °C anchor).
 
     ``t_coeffs`` carries the optional temperature dependence (2026-08
-    framework): one 4-coefficient row ``(a, c1, c2, c3)`` per parameter,
-    in the order (β⁰, β¹, β², Cφ), using the EQ3/6-Sandia-style form
+    framework): one 4-coefficient row per parameter, in the order
+    (β⁰, β¹, β², Cφ), interpreted by ``t_form``:
 
-        p(T) = a + c1·(1/T − 1/Tr) + c2·ln(T/Tr) + c3·(T − Tr),  Tr = 298.15 K.
+    * ``t_form="eq36"`` (default) — rows ``(a, c1, c2, c3)``, EQ3/6-Sandia:
+      ``p(T) = a + c1·(1/T − 1/Tr) + c2·ln(T/Tr) + c3·(T − Tr)``
+      with Tr = 298.15 K and ``a`` the 25 °C value (which should coincide
+      with the base field).
+    * ``t_form="mtd"`` — rows ``(A, B, D, F)``, MTDATA/NPL:
+      ``p(T) = A + B·T + D·T² + F/T``  (T in K).
 
-    An all-zero row means "frozen at the base value" (the shipped tables —
-    no verified T-coefficient set for this system has been sourced yet).
-    A non-zero row *supersedes* the base field for that parameter, with
-    ``a`` the 25 °C anchor (which should coincide with the base value).
-    α₁/α₂ belong to the functional form itself and get no T-form.
+      Verbatim-published tables (the shipped Fe²⁺–SO₄²⁻ Kobylin et al. 2011
+      set) ship in this form; their 25 °C projection *supersedes* the
+      ``beta*``/``Cphi`` base fields at every temperature — the base fields
+      then document the previously-shipped anchor set only (see the module
+      docstring's Temperature section).
+
+    An all-zero row always means "frozen at the base value" under either
+    form.  α₁/α₂ belong to the functional form itself and get no T-form.
+
+    ``t_range_C`` is the validity window certified by the table's
+    provenance (``None`` for the shipped frozen tables).  Evaluating an
+    evolved (non-frozen) pair outside it raises an extrapolation warning.
     """
     beta0: float
     beta1: float
@@ -204,22 +250,38 @@ class PitzerPair:
     alpha2: float = 12.0
     ref: str = ""
     t_coeffs: Tuple[Tuple[float, float, float, float], ...] = _ZERO_T_COEFFS
+    t_range_C: "Tuple[float, float] | None" = None
+    t_form: str = "eq36"
 
     def at_T(self, T_C: float) -> "PitzerPair":
         """Return a copy with β⁰/β¹/β²/Cφ evaluated at ``T_C``.
 
-        With every ``t_coeffs`` row zero (all shipped tables) this returns
-        ``self`` unchanged, so default results stay byte-identical.
+        With every ``t_coeffs`` row zero this returns ``self`` unchanged,
+        so default (frozen) results stay byte-identical.
         """
         if all(c == 0.0 for row in self.t_coeffs for c in row):
             return self
+        if self.t_range_C is not None and not (
+            self.t_range_C[0] <= T_C <= self.t_range_C[1]
+        ):
+            import warnings
+
+            warnings.warn(
+                f"PitzerPair({self.ref or 'unnamed'}): T = {T_C} °C is outside "
+                f"the table's certified window {self.t_range_C} °C — "
+                "extrapolated; treat results as unverified."
+            )
         T = T_C + 273.15
         Tr = PITZER_T_REF_K
 
         def evolve(base: float, row: Tuple[float, float, float, float]) -> float:
-            a, c1, c2, c3 = row
-            if a == 0.0 and c1 == 0.0 and c2 == 0.0 and c3 == 0.0:
+            if all(c == 0.0 for c in row):
                 return base
+            if self.t_form == "mtd":
+                a, b, d, f = row
+                return a + b * T + d * T * T + f / T
+            # EQ3/6-Sandia form
+            a, c1, c2, c3 = row
             return (a + c1 * (1.0 / T - 1.0 / Tr)
                     + c2 * math.log(T / Tr) + c3 * (T - Tr))
 
@@ -239,9 +301,27 @@ class PitzerPair:
 PITZER_BINARY: Dict[Tuple[str, str], PitzerPair] = {
     # 2–2 sulfate — α1 = 1.4 is the Pitzer convention for 2–2 electrolytes.
     # FeSO4 association is absorbed in β2; no explicit pair species.
+    # Base values (25 °C anchor): Pitzer (1991) tabulation of the
+    # Reardon & Beckie (1987) fit.  Since 2026-08-06 the pair ships the
+    # Kobylin, Sippola & Taskinen (2011, CALPHAD 35:499–511, Table 6)
+    # VERIFIED temperature functions VERBATIM (MTDATA form
+    # p = A + B·T + D·T² + F/T, T in K; their table prints D·10⁻⁵ and
+    # F·10³ — transcription validated by reproducing their anchor
+    # γ±(0.1 m, 25 °C) = 0.164 to ≈0.7 %, see FESO4_GAMMA_ANCHORS and
+    # docs/PITZER_TCOEFF_ACCEPTANCE.md).  The Kobylin 25 °C projection
+    # (0.3194/2.2621/−16.2142/−0.0159) supersedes the base set at all T
+    # (module docstring, Temperature section).
     ("Fe2+", "SO4-2"): PitzerPair(
         0.2568, 3.063, -42.42, 0.0213, alpha1=1.4,
-        ref="Pitzer (1991) tabulation; γ±(0.1 m)→0.16 matches Kobylin et al. (2011)",
+        ref="Pitzer (1991)/R&B-1987 25 °C anchor + Kobylin et al. (2011) T-functions (verbatim, mtd form)",
+        t_coeffs=(
+            (5.1934, -0.0161, 1.8349e-5, -508.3),    # β⁰: A, B, D, F
+            (15.8514, 0.0085, -6.0442e-5, -3205.3),  # β¹: A, B, D, F
+            (-16.2142, 0.0, 0.0, 0.0),               # β²: constant
+            (-0.0588, 0.0, 0.0, 12.8),               # Cφ: A + F/T
+        ),
+        t_range_C=(10.0, 90.0),
+        t_form="mtd",
     ),
     # Harvie-Møller-Weare (1984) — PHREEQC pitzer.dat set.
     ("Na+", "SO4-2"): PitzerPair(0.01958, 1.113, 0.0, 0.00497, ref="Harvie et al. 1984 / PHREEQC pitzer.dat"),
@@ -270,6 +350,194 @@ PITZER_THETA: Dict[Tuple[str, str], float] = {
 
 # Same-sign/opposite-charge ψ triplets — all default 0.0 (see docstring).
 PITZER_PSI: Dict[Tuple[str, str, str], float] = {}
+
+# Snapshot of the database exactly as shipped (2026-08-06: Fe–SO4 carries
+# its accepted Kobylin table).  ``revert_t_coeff_library`` restores from
+# this, i.e. revert means "back to the shipped state", not "back to zero
+# T-coefficients".
+PITZER_BINARY_SHIPPED: Dict[Tuple[str, str], PitzerPair] = dict(PITZER_BINARY)
+
+
+# ─── Verified T-coefficient table registry & acceptance gate (2026-08) ──
+
+@dataclass(frozen=True)
+class TCoeffTable:
+    """A candidate verified T-coefficient table for one binary pair.
+
+    Fields
+    ------
+    cation, anion : the pair it applies to (key of ``PITZER_BINARY``).
+    t_coeffs : four rows in the order (β⁰, β¹, β², Cφ); each row is
+        ``(a, c1, c2, c3)`` for ``t_form="eq36"`` or ``(A, B, D, F)`` for
+        ``t_form="mtd"`` — the ``PitzerPair.at_T`` bases.
+    t_range_C : provenance-certified validity window.
+    provenance : REQUIRED exact citation, including the table/equation
+        numbers the values were transcribed from.  This is the whole point
+        of the gate: "verified" means traceable reproduction, not a number
+        of unknown parse lineage.
+    t_form : ``"eq36"`` (default) or ``"mtd"``.
+    """
+    cation: str
+    anion: str
+    t_coeffs: Tuple[Tuple[float, float, float, float], ...]
+    t_range_C: Tuple[float, float]
+    provenance: str
+    t_form: str = "eq36"
+
+
+@dataclass(frozen=True)
+class GammaAnchor:
+    """One published mean-activity-coefficient anchor a T-table must hit."""
+    t_C: float
+    molality: float
+    gamma_expected: float
+    rel_tol: float
+    source: str
+
+
+# γ± anchors for the Fe–SO4 pair, from the published record.  The shipped
+# Kobylin table must (and does) reproduce BOTH through this module's
+# machinery: γ±(0.1 m, 25 °C) = 0.1628 computed → 0.7 % vs Kobylin's
+# anchor, 1.1 % vs Reardon & Beckie's — each well inside its tolerance
+# (see docs/PITZER_TCOEFF_ACCEPTANCE.md).
+FESO4_GAMMA_ANCHORS: Tuple[GammaAnchor, ...] = (
+    GammaAnchor(25.0, 0.1, 0.164, 0.02,
+                "Kobylin, Sippola & Taskinen (2011), CALPHAD 35:499-511, "
+                "assessment anchor γ±(FeSO4, 0.1 m, 25 °C) = 0.164"),
+    GammaAnchor(25.0, 0.1, 0.161, 0.02,
+                "Reardon & Beckie (1987), GCA 51:2355-2368 — "
+                "γ±(FeSO4, 0.1 m, 25 °C) = 0.161"),
+)
+
+
+KOBYLIN2011_FESO4_TTABLE = TCoeffTable(
+    cation="Fe2+", anion="SO4-2",
+    t_coeffs=(
+        (5.1934, -0.0161, 1.8349e-5, -508.3),    # β⁰: A, B, D, F
+        (15.8514, 0.0085, -6.0442e-5, -3205.3),  # β¹: A, B, D, F
+        (-16.2142, 0.0, 0.0, 0.0),               # β²: constant
+        (-0.0588, 0.0, 0.0, 12.8),               # Cφ: A + F/T
+    ),
+    t_range_C=(10.0, 90.0),
+    provenance=(
+        "Kobylin, Sippola & Taskinen (2011), 'Thermodynamic modelling of "
+        "aqueous Fe(II) sulfate solutions', CALPHAD 35(4):499-511, Table 6, "
+        "verbatim in the paper's MTDATA form p = A + B·T + D·T² + F/T "
+        "(printed column scales D·10⁻⁵, F·10³; their Table 6).  Functional "
+        "form confirmed from Kobylin's doctoral dissertation (Aalto 2013, "
+        "eq. 26); same 2–2 electrolyte α₁=1.4/α₂=12 convention as Table 1 "
+        "here (Pitzer/HMW).  Validated in-repo by reproducing both γ±(0.1 m, "
+        "25 °C) anchors (0.164 Kobylin / 0.161 R&B) to ≈0.7 %/1.1 %."
+    ),
+    t_form="mtd",
+)
+
+# The library ships with the table that has PASSED the gate (applied to
+# PITZER_BINARY above).  The R&B (1987) β(T)/Cφ(T) functions remain a
+# shopping-list item (paywalled; see RB1987_ACCEPTANCE_ANCHORS comment and
+# docs/PITZER_TCOEFF_ACCEPTANCE.md).
+T_COEFF_LIBRARY: Dict[str, TCoeffTable] = {
+    "kobylin-2011-feso4": KOBYLIN2011_FESO4_TTABLE,
+}
+
+# Acceptance anchors for a future transcribed R&B FeSO4 T-set: gamma and
+# copperas solubility vs T over 10–60 °C.  Empty by design — populated only
+# when values with publication-grade provenance (table/equation numbers
+# from the 1987 paper itself) exist.  tests/test_pitzer_tcoeffs.py pins
+# this pending state so a future table installation cannot sneak in
+# untested.
+RB1987_ACCEPTANCE_ANCHORS: Tuple[GammaAnchor, ...] = ()
+
+
+def register_t_coeff_table(name: str, table: TCoeffTable) -> None:
+    """Register a candidate T-coefficient table (does not apply it)."""
+    if not table.provenance:
+        raise ValueError(
+            "TCoeffTable.provenance is required — unverified tables are "
+            "exactly what this gate refuses.")
+    if table.t_form not in ("eq36", "mtd"):
+        raise ValueError(f"t_form must be 'eq36' or 'mtd', got {table.t_form!r}")
+    expected_key = (table.cation, table.anion)
+    if expected_key not in PITZER_BINARY:
+        raise KeyError(f"No PitzerPair for {expected_key} in PITZER_BINARY")
+    if len(table.t_coeffs) != 4 or any(len(r) != 4 for r in table.t_coeffs):
+        raise ValueError("t_coeffs must be 4 rows × 4 coefficients")
+    if name in T_COEFF_LIBRARY:
+        raise ValueError(f"T-coefficient table {name!r} already registered")
+    T_COEFF_LIBRARY[name] = table
+
+
+def apply_t_coeff_library(name: str) -> None:
+    """Install a registered table's coefficients into its PITZER_BINARY pair.
+
+    Raises on out-of-window evaluation later via the pair's ``t_range_C``.
+    Call ``revert_t_coeff_library`` to restore the pair as shipped.
+    """
+    table = T_COEFF_LIBRARY[name]
+    key = (table.cation, table.anion)
+    PITZER_BINARY[key] = replace(
+        PITZER_BINARY[key],
+        t_coeffs=table.t_coeffs,
+        t_range_C=table.t_range_C,
+        t_form=table.t_form,
+        ref=(PITZER_BINARY[key].ref + f" [{name} T-coeffs: {table.provenance}]").strip(),
+    )
+
+
+def revert_t_coeff_library(name: str) -> None:
+    """Restore the table's pair to its shipped state (PITZER_BINARY_SHIPPED).
+
+    For the Fe–SO4 pair the shipped state *includes* the accepted Kobylin
+    et al. (2011) table, so reverting ships-frozen behaviour is wrong —
+    the module snapshot is the source of truth.
+    """
+    table = T_COEFF_LIBRARY[name]
+    key = (table.cation, table.anion)
+    PITZER_BINARY[key] = PITZER_BINARY_SHIPPED[key]
+
+
+def verify_t_coeff_table(
+    table: TCoeffTable,
+    anchors: Tuple[GammaAnchor, ...],
+) -> Dict[str, object]:
+    """Check a candidate table against published γ± anchors.
+
+    Temporarily installs the table, evaluates
+    ``mean_activity_coefficient_pure`` at each anchor, and restores the
+    frozen set afterwards.  Returns a report dict:
+    ``{"passed": bool, "rows": [{t_C, molality, expected, actual, rel_err,
+    source}], "provenance": str}``.
+
+    NOTE: passing here establishes only that the table reproduces the given
+    anchors.  Verification *of provenance* additionally requires that the
+    anchor values themselves come from the source publication (see
+    ``FESO4_GAMMA_ANCHORS`` / ``RB1987_ACCEPTANCE_ANCHORS`` /
+    docs/PITZER_TCOEFF_ACCEPTANCE.md).
+    """
+    key = (table.cation, table.anion)
+    if key not in PITZER_BINARY:
+        raise KeyError(f"No PitzerPair for {key} in PITZER_BINARY")
+    saved = PITZER_BINARY[key]
+    try:
+        PITZER_BINARY[key] = replace(
+            saved, t_coeffs=table.t_coeffs, t_range_C=table.t_range_C,
+            t_form=table.t_form)
+        rows = []
+        passed = True
+        for a in anchors:
+            actual = mean_activity_coefficient_pure(
+                table.cation, table.anion, a.molality, T_C=a.t_C)
+            rel_err = abs(actual - a.gamma_expected) / a.gamma_expected
+            ok = rel_err <= a.rel_tol
+            passed = passed and ok
+            rows.append({
+                "t_C": a.t_C, "molality": a.molality,
+                "expected": a.gamma_expected, "actual": actual,
+                "rel_err": rel_err, "source": a.source, "passed": ok,
+            })
+    finally:
+        PITZER_BINARY[key] = saved
+    return {"passed": passed, "rows": rows, "provenance": table.provenance}
 
 PITZER_CHARGES: Dict[str, int] = {
     "Fe2+": 2,
@@ -310,9 +578,10 @@ def solve_pitzer(
         responsibility (checked to 1e-4 rel. tolerance and warned, not
         enforced).
     T_C : temperature.  Aφ responds to T exactly; binary parameters respond
-        through ``PitzerPair.at_T`` — with the shipped all-zero coefficient
-        tables they stay frozen at the 25 °C set (see module docstring —
-        10–60 °C is the reliable window).
+        through ``PitzerPair.at_T`` — the Fe²⁺–SO₄²⁻ pair carries the
+        verified Kobylin et al. (2011) T-functions verbatim (t_form="mtd"),
+        the other shipped pairs stay frozen at their 25 °C set (see module
+        docstring — 10–90 °C is the certified window for the Fe–SO4 table).
 
     Returns
     -------

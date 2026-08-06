@@ -326,7 +326,10 @@ def _solve_speciation_pitzer(comp: SolutionComposition) -> Dict[str, Any]:
         "pH_activity": float(pH_act),
         "pH_concentration": float(pH_conc),
         "conductivity_S_m": conductivity,
-        "pitzer_parameter_temperature_window": "binary parameters at 25 °C; reliable 10-60 °C",
+        "pitzer_parameter_temperature_window": (
+            "Fe2+-SO4(2-): verified Kobylin et al. (2011) T-functions, 10-90 °C; "
+            "other binaries frozen at 25 °C (see docs/PITZER_TCOEFF_ACCEPTANCE.md)"
+        ),
         **thermo,
     }
 
