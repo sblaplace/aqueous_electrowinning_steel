@@ -41,11 +41,15 @@ Parameter provenance (25 °C)
 Temperature
 -----------
 The Debye–Hückel slope Aφ(T) is computed exactly from the water dielectric
-constant and density.  The interaction parameters themselves are 25 °C
-values; their enthalpic derivatives are not yet wired in (Reardon & Beckie
-1987 provide fitted functions over 10–60 °C — a follow-up).  Over the
-bath's 25–90 °C envelope the binary parameters drift slowly for sulfate
-salts; flag results outside 10–60 °C as extrapolated.
+constant and density.  Binary interaction parameters are anchored at 25 °C;
+``PitzerPair.at_T`` (2026-08) applies a per-parameter EQ3/6-Sandia-style
+polynomial T-correction when a verified coefficient table is supplied —
+the shipped tables carry all-zero T-coefficients (frozen 25 °C set,
+historically the "Zomaitis simplification"), so current results are
+byte-identical to the frozen-parameter behavior.  Reardon & Beckie (1987)
+provide fitted functions over 10–60 °C for the FeSO₄–H₂SO₄–H₂O system —
+wiring verified coefficients in is the remaining follow-up.  Flag results
+outside 10–60 °C as extrapolated.
 
 References
 ----------
@@ -65,7 +69,7 @@ References
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Dict, Tuple
 
 # ─── Debye–Hückel osmotic slope Aφ(T) ────────────────────────────────
@@ -168,9 +172,30 @@ def _etheta_prime(z_i: int, z_j: int, I: float, Aphi: float) -> float:
 
 # ─── Parameter database ─────────────────────────────────────────────
 
+# Anchor temperature of the tabulated binary parameters (25 °C).
+PITZER_T_REF_K = 298.15
+
+# One all-zero 4-coefficient row: "parameter frozen to its 25 °C value".
+_ZERO_T_ROW: Tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
+_ZERO_T_COEFFS: Tuple[Tuple[float, float, float, float], ...] = (_ZERO_T_ROW,) * 4
+
+
 @dataclass(frozen=True)
 class PitzerPair:
-    """Cation–anion binary interaction parameters (molal scale, 25 °C)."""
+    """Cation–anion binary interaction parameters (molal scale, 25 °C anchor).
+
+    ``t_coeffs`` carries the optional temperature dependence (2026-08
+    framework): one 4-coefficient row ``(a, c1, c2, c3)`` per parameter,
+    in the order (β⁰, β¹, β², Cφ), using the EQ3/6-Sandia-style form
+
+        p(T) = a + c1·(1/T − 1/Tr) + c2·ln(T/Tr) + c3·(T − Tr),  Tr = 298.15 K.
+
+    An all-zero row means "frozen at the base value" (the shipped tables —
+    no verified T-coefficient set for this system has been sourced yet).
+    A non-zero row *supersedes* the base field for that parameter, with
+    ``a`` the 25 °C anchor (which should coincide with the base value).
+    α₁/α₂ belong to the functional form itself and get no T-form.
+    """
     beta0: float
     beta1: float
     beta2: float
@@ -178,6 +203,36 @@ class PitzerPair:
     alpha1: float = 2.0
     alpha2: float = 12.0
     ref: str = ""
+    t_coeffs: Tuple[Tuple[float, float, float, float], ...] = _ZERO_T_COEFFS
+
+    def at_T(self, T_C: float) -> "PitzerPair":
+        """Return a copy with β⁰/β¹/β²/Cφ evaluated at ``T_C``.
+
+        With every ``t_coeffs`` row zero (all shipped tables) this returns
+        ``self`` unchanged, so default results stay byte-identical.
+        """
+        if all(c == 0.0 for row in self.t_coeffs for c in row):
+            return self
+        T = T_C + 273.15
+        Tr = PITZER_T_REF_K
+
+        def evolve(base: float, row: Tuple[float, float, float, float]) -> float:
+            a, c1, c2, c3 = row
+            if a == 0.0 and c1 == 0.0 and c2 == 0.0 and c3 == 0.0:
+                return base
+            return (a + c1 * (1.0 / T - 1.0 / Tr)
+                    + c2 * math.log(T / Tr) + c3 * (T - Tr))
+
+        evolved = tuple(
+            evolve(base, row)
+            for base, row in zip(
+                (self.beta0, self.beta1, self.beta2, self.Cphi), self.t_coeffs
+            )
+        )
+        return replace(
+            self, beta0=evolved[0], beta1=evolved[1],
+            beta2=evolved[2], Cphi=evolved[3],
+        )
 
 
 # Key: (cation, anion).  Charges keyed in PITZER_CHARGES below.
@@ -254,8 +309,10 @@ def solve_pitzer(
         in ``PITZER_CHARGES``; electroneutrality is the caller's
         responsibility (checked to 1e-4 rel. tolerance and warned, not
         enforced).
-    T_C : temperature.  Only Aφ responds to T; binary parameters are the
-        25 °C set (see module docstring — 10–60 °C is the reliable window).
+    T_C : temperature.  Aφ responds to T exactly; binary parameters respond
+        through ``PitzerPair.at_T`` — with the shipped all-zero coefficient
+        tables they stay frozen at the 25 °C set (see module docstring —
+        10–60 °C is the reliable window).
 
     Returns
     -------
@@ -298,7 +355,9 @@ def solve_pitzer(
         p = PITZER_BINARY.get((c, a))
         if p is None:
             raise KeyError(f"No Pitzer parameters for ({c}, {a})")
-        return p
+        # 2026-08: T-evolved copy (identity when the pair ships frozen
+        # 25 °C parameters, so default runs stay byte-identical).
+        return p.at_T(T_C)
 
     def B_gamma(c: str, a: str) -> float:
         if m.get(c, 0.0) <= 0.0 or m.get(a, 0.0) <= 0.0:
