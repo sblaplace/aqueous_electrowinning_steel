@@ -1,16 +1,20 @@
 # RECOVERY BRIEF — PR #43 follow-up physics (interrupted turn)
 
-Status: recovery handoff. Recover what the interrupted Arena turn wrote, then
-finish the missing BV-core edits. Do NOT re-do work already recovered.
+Status: recovery + completion record. The lost uncommitted working-tree edits
+from the interrupted Arena turn were recovered and the BV-core edits they gated
+implemented. All four follow-up items shipped on PR #43 (head `f59480b`). The
+remaining items below (Pitzer T-form, registry entries, docs) were planned in
+the lost turn but not written — they are still open.
 
-Committed scope that was LOST to a sandbox `reset --hard` (uncommitted working
-tree edits) and is now RESTORED on branch `recover/fe3-herm` (base `6d361c6`,
-PR #43):
+Restored / shipped scope (all on `recover/fe3-herm`, base `6d361c6`, PR #43):
 
   - models/fe3_shuttle.py            (VERBATIM)            Fe3+ shuttle / O2 bath aging, L0
   - models/her_microkinetics.py      (RECONSTRUCTED)       DFT HER Volmer-Heyrovsky check, L0
   - tests/test_fe3_shuttle.py        (VERBATIM)            11 tests, green
   - tests/test_her_microkinetics.py  (RECONSTRUCTED)       8 tests, green
+  - models/kinetics.py / transport.py / diffusion_layer_1d.py  (BV core edits) — IMPLEMENTED
+  - tests/test_butler_volmer.py      (VERBATIM)            restored + green
+  - tests/test_kinetics.py                                  polarization CE mask updated
 
 Verification on base 6d361c6: 19/19 pass, ruff-clean. `python -m models.fe3_shuttle`
 reproduces the recorded output (sealed 0.003%, open 0.006% CE loss, sludge active
@@ -31,12 +35,13 @@ Design intent (from the lost turn, preserved here so nothing is re-derived):
     empirical apparent Ea (60 kJ/mol) so off-anchor T-ratios isolate the slope form.
 
 ================================================================================
-STILL TO DO — the Butler-Volmer core edits (NOT recovered verbatim)
+DONE — Butler-Volmer core edits (implemented in f59480b; kept here as the record)
 ================================================================================
 
-These were in the lost uncommitted working tree and are only partially captured
+These were in the lost uncommitted working tree and only partially captured
 (diffs present, final files truncated). They gate tests/test_butler_volmer.py
-(see below). Reconstruct them on top of base 6d361c6.
+(see below). **Implemented in commit f59480b on PR #43; spec retained below so
+the physics is auditable.** The test file is now restored and green.
 
 Intent (from the turn): the repo kinetics were Tafel-only, which has two
 artifacts the full Butler-Volmer form fixes: i(E_eq) = i0 != 0 (thermodynamically
@@ -87,11 +92,11 @@ existing FE/V results must NOT move at screening precision. BV is default-ON.
   of E_eq(Fe), where Fe dissolves (i_fe < 0) and CE as a ratio is undefined; the [0,1]
   bound holds wherever the net current is actually cathodic."
 
-### tests/test_butler_volmer.py  (GATED on the above — full content below)
-This test file was fully captured and is verbatim-recoverable, but CANNOT import
-until kinetics.py gains ButlerVolmerBranch / FE_ANODIC_SLOPE_V / HER_ANODIC_SLOPE_V
-and transport.py/DepositionKinetics gain the anodic-slope wiring. Restore it once
-the core edits are in. Full content follows.
+### tests/test_butler_volmer.py  (RESTORED — landed in f59480b; content below for the record)
+This test file was fully captured and is verbatim-recoverable, but could not import
+until kinetics.py gained ButlerVolmerBranch / FE_ANODIC_SLOPE_V / HER_ANODIC_SLOPE_V
+and transport.py/DepositionKinetics gained the anodic-slope wiring. **It is now
+restored and green on PR #43 (f59480b).** Full content retained below for audit.
 
 --------------------------------------------------------------------------------
 BEGIN tests/test_butler_volmer.py
@@ -205,7 +210,7 @@ END tests/test_butler_volmer.py
 --------------------------------------------------------------------------------
 
 ================================================================================
-ALSO CAPTURED BUT NOT FINISHED IN THE LOST TURN (plans, not code)
+STILL OPEN (planned in the lost turn, not written; carry into a follow-up)
 ================================================================================
 
 ### Pitzer T-form framework (models/pitzer.py) — planned, not implemented
@@ -234,14 +239,16 @@ ALSO CAPTURED BUT NOT FINISHED IN THE LOST TURN (plans, not code)
   fe3_shuttle (+ kinetics BV note, pitzer T-framework note).
 
 ================================================================================
-VERIFICATION GATE (from the turn)
+VERIFICATION (from the turn — now run and green on PR #43)
 ================================================================================
-Full fast tier must stay green: `tests/test_transport.py tests/test_kinetics.py
+Full fast tier is green: `tests/test_transport.py tests/test_kinetics.py
 tests/test_diffusion_layer_1d.py tests/test_fe3_shuttle.py
-tests/test_her_microkinetics.py` + ruff. The BV edits must leave operating-point
-FE/V unchanged to printed precision (theory_confidence report values stay put).
-Recorded parity reference: j=300 -> FE=0.985112, V=5.770117; j=100 ->
-FE=0.995400, V=3.664786; j=200 -> FE=0.993171, V=4.712985.
+tests/test_her_microkinetics.py tests/test_butler_volmer.py`
+`tests/test_operating_window.py tests/test_theory_confidence.py
+tests/test_cell_physics.py` + ruff. BV parity holds: operating-point
+FE/V unchanged to printed precision (theory_confidence values stay put).
+Recorded parity reference reproduced: j=300 -> FE=0.985112, V=5.770117; j=100 ->
+FE=0.995400, V=3.664786; j=200 -> FE=0.993171, V=4.712985. 177 tests pass.
 
 Commit small and incremental (the loss happened because a single big turn's
 uncommitted edits were wiped) — each module/test lands as its own commit so a
