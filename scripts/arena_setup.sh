@@ -67,6 +67,16 @@ else
   REDO=""
 fi
 
+# 3b. Ensure the persisted numba cache directory exists (Arena wipes
+#     __pycache__/ but preserves .numba_cache/; _transport_jit.py redirects
+#     numba's cache here).
+mkdir -p .numba_cache
+
+# 3c. Pre-compile Python bytecode now so first import in the session is fast
+#     (saves ~30-60 s of lazy compilation across 90+ modules).
+echo ">> pre-compiling bytecode"
+"$VENV_PY" -m compileall -q models/ tests/ 2>/dev/null || true
+
 # 4. smoke check
 echo ">> smoke"
 echo "   python : $("$VENV_PY" --version)"
@@ -101,3 +111,16 @@ if [ -n "${REDO:-}" ]; then
   echo "   redo   : $REDO"
 fi
 echo ">> done. Use:  make <target>   or   just <recipe>   (1:1 parity)"
+
+# 5. Numba JIT warmup (one-shot per session; cached to .numba_cache/)
+echo ">> warming up numba JIT (cached to .numba_cache/)"
+NUMBA_CACHE_DIR="$(pwd)/.numba_cache" PYTHONPATH="$(pwd)" "$VENV_PY" <<'PYEOF' 2>/dev/null || echo "   (numba warmup skipped — numba not available)"
+from models._transport_jit import get_integrate_film_jit
+fn = get_integrate_film_jit()
+import numpy as np
+if fn is not None:
+    y0 = np.array([100.0, 1e-4, 500.0, 250.0])
+    x_eval = np.linspace(0, 1e-4, 20)
+    fn(y0, 2.0, -1.0, 0.0, 1e-4, x_eval, 7e-10, 9.3e-9, 5.3e-9, 1.3e-9, 1.1e-9, 38.7, 1e-20)
+    print('   numba JIT warmup complete')
+PYEOF
