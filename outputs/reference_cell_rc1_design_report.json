@@ -15,10 +15,10 @@
     "operating": {
       "current_A": 3.0,
       "current_density_mA_cm2": 300.0,
-      "cell_voltage_V": 5.845352689519192,
-      "faradaic_efficiency": 0.9928902796897269,
-      "specific_energy_kWh_t": 5650.852310656684,
-      "deposit_rate_um_hr": 394.11467623645285
+      "cell_voltage_V": 5.668079145738046,
+      "faradaic_efficiency": 0.991508605620903,
+      "specific_energy_kWh_t": 5487.113120395187,
+      "deposit_rate_um_hr": 393.5662389726003
     },
     "hydraulics": {
       "superficial_velocity_m_s": 0.1388888888888889,
@@ -27,13 +27,13 @@
       "channel_residence_time_s": 0.36
     },
     "utilities_and_gas": {
-      "heat_generation_W": 13.696058068557576,
-      "h2_rate_L_h": 0.009735030896078276,
+      "heat_generation_W": 13.164237437214137,
+      "h2_rate_L_h": 0.011626897124469121,
       "h2_design_rate_L_h": 1.3692565208242764
     },
     "feasible": true,
     "failures": [],
-    "score": 1.3677107024349708
+    "score": 1.3322559936787417
   },
   "candidate_count": 36,
   "feasible_candidate_count": 18,
@@ -47,10 +47,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.1388888888888889,
@@ -59,13 +59,13 @@
         "channel_residence_time_s": 0.36
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.696058068557576,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 13.164237437214137,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 1.3677107024349708
+      "score": 1.3322559936787417
     },
     {
       "candidate": {
@@ -76,10 +76,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.06944444444444445,
@@ -88,13 +88,13 @@
         "channel_residence_time_s": 0.72
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.696058068557576,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 13.164237437214137,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 3.6403906201694047
+      "score": 3.6049359114131754
     },
     {
       "candidate": {
@@ -105,10 +105,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.027777777777777776,
@@ -117,13 +117,13 @@
         "channel_residence_time_s": 1.8
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.696058068557576,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 13.164237437214137,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 5.003998570810065
+      "score": 4.968543862053836
     },
     {
       "candidate": {
@@ -134,10 +134,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.2777777777777778,
@@ -146,15 +146,15 @@
         "channel_residence_time_s": 0.18
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.696058068557576,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 13.164237437214137,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 5.004169048784283
+      "score": 4.968714340028054
     },
     {
       "candidate": {
@@ -165,10 +165,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.20833333333333331,
@@ -177,13 +177,13 @@
         "channel_residence_time_s": 0.24
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.0072488883741,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 12.639198487245933,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 7.988670947461897
+      "score": 7.964134254053353
     },
     {
       "candidate": {
@@ -194,10 +194,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.10416666666666666,
@@ -206,13 +206,13 @@
         "channel_residence_time_s": 0.48
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.0072488883741,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 12.639198487245933,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 10.261243770010086
+      "score": 10.236707076601542
     },
     {
       "candidate": {
@@ -223,10 +223,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -235,13 +235,13 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.0072488883741,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 12.639198487245933,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 11.624787463538999
+      "score": 11.600250770130454
     },
     {
       "candidate": {
@@ -252,10 +252,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.41666666666666663,
@@ -264,15 +264,15 @@
         "channel_residence_time_s": 0.12
       },
       "utilities_and_gas": {
-        "heat_generation_W": 13.0072488883741,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 12.639198487245933,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 11.625343484183702
+      "score": 11.600806790775158
     },
     {
       "candidate": {
@@ -283,10 +283,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.08333333333333333,
@@ -295,13 +295,13 @@
         "channel_residence_time_s": 0.6
       },
       "utilities_and_gas": {
-        "heat_generation_W": 15.073676428924529,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 14.214315337150552,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 14.792812536912939
+      "score": 14.73552179746134
     },
     {
       "candidate": {
@@ -312,10 +312,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -324,13 +324,13 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 15.073676428924529,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 14.214315337150552,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 17.065528816087287
+      "score": 17.00823807663569
     },
     {
       "candidate": {
@@ -341,10 +341,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.016666666666666666,
@@ -353,13 +353,13 @@
         "channel_residence_time_s": 3.0000000000000004
       },
       "utilities_and_gas": {
-        "heat_generation_W": 15.073676428924529,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 14.214315337150552,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": true,
       "failures": [],
-      "score": 18.429158583591892
+      "score": 18.371867844140297
     },
     {
       "candidate": {
@@ -370,10 +370,10 @@
       "operating": {
         "current_A": 3.0,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.16666666666666666,
@@ -382,15 +382,15 @@
         "channel_residence_time_s": 0.3
       },
       "utilities_and_gas": {
-        "heat_generation_W": 15.073676428924529,
-        "h2_rate_L_h": 0.009735030896078276,
+        "heat_generation_W": 14.214315337150552,
+        "h2_rate_L_h": 0.011626897124469121,
         "h2_design_rate_L_h": 1.3692565208242764
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 18.429198160382423
+      "score": 18.371907420930825
     },
     {
       "candidate": {
@@ -401,10 +401,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.1388888888888889,
@@ -413,13 +413,13 @@
         "channel_residence_time_s": 0.36
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.848029034278788,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.582118718607068,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 50.91117543348305
+      "score": 50.893448079104935
     },
     {
       "candidate": {
@@ -430,10 +430,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.06944444444444445,
@@ -442,13 +442,13 @@
         "channel_residence_time_s": 0.72
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.848029034278788,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.582118718607068,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 53.18385535121748
+      "score": 53.16612799683937
     },
     {
       "candidate": {
@@ -459,10 +459,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.027777777777777776,
@@ -471,13 +471,13 @@
         "channel_residence_time_s": 1.8
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.848029034278788,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.582118718607068,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 54.54746330185815
+      "score": 54.529735947480034
     },
     {
       "candidate": {
@@ -488,10 +488,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.2777777777777778,
@@ -500,15 +500,15 @@
         "channel_residence_time_s": 0.18
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.848029034278788,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.582118718607068,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 54.54763377983237
+      "score": 54.52990642545425
     },
     {
       "candidate": {
@@ -519,10 +519,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.20833333333333331,
@@ -531,13 +531,13 @@
         "channel_residence_time_s": 0.24
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.50362444418705,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.319599243622966,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 57.55509598451609
+      "score": 57.54282763781182
     },
     {
       "candidate": {
@@ -548,10 +548,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.10416666666666666,
@@ -560,13 +560,13 @@
         "channel_residence_time_s": 0.48
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.50362444418705,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.319599243622966,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 59.82766880706428
+      "score": 59.81540046036001
     },
     {
       "candidate": {
@@ -577,10 +577,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -589,13 +589,13 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.50362444418705,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.319599243622966,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 61.191212500593196
+      "score": 61.17894415388892
     },
     {
       "candidate": {
@@ -606,10 +606,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.41666666666666663,
@@ -618,15 +618,15 @@
         "channel_residence_time_s": 0.12
       },
       "utilities_and_gas": {
-        "heat_generation_W": 6.50362444418705,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 6.319599243622966,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 61.19176852123789
+      "score": 61.17950017453362
     },
     {
       "candidate": {
@@ -637,10 +637,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.08333333333333333,
@@ -649,13 +649,13 @@
         "channel_residence_time_s": 0.6
       },
       "utilities_and_gas": {
-        "heat_generation_W": 7.536838214462264,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 7.107157668575276,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 64.29035665594878
+      "score": 64.26171128622299
     },
     {
       "candidate": {
@@ -666,10 +666,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -678,13 +678,13 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 7.536838214462264,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 7.107157668575276,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 66.56307293512315
+      "score": 66.53442756539734
     },
     {
       "candidate": {
@@ -695,10 +695,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.016666666666666666,
@@ -707,13 +707,13 @@
         "channel_residence_time_s": 3.0000000000000004
       },
       "utilities_and_gas": {
-        "heat_generation_W": 7.536838214462264,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 7.107157668575276,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": true,
       "failures": [],
-      "score": 67.92670270262774
+      "score": 67.89805733290194
     },
     {
       "candidate": {
@@ -724,10 +724,10 @@
       "operating": {
         "current_A": 1.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.16666666666666666,
@@ -736,15 +736,15 @@
         "channel_residence_time_s": 0.3
       },
       "utilities_and_gas": {
-        "heat_generation_W": 7.536838214462264,
-        "h2_rate_L_h": 0.004867515448039138,
+        "heat_generation_W": 7.107157668575276,
+        "h2_rate_L_h": 0.005813448562234561,
         "h2_design_rate_L_h": 0.6846282604121382
       },
       "feasible": false,
       "failures": [
         "hydraulic_regime_outside_laminar_model"
       ],
-      "score": 67.92674227941828
+      "score": 67.89809690969247
     },
     {
       "candidate": {
@@ -755,10 +755,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.1388888888888889,
@@ -767,8 +767,8 @@
         "channel_residence_time_s": 0.36
       },
       "utilities_and_gas": {
-        "heat_generation_W": 34.24014517139394,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 32.910593593035344,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -776,7 +776,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 152.73731650929074
+      "score": 152.64867973740016
     },
     {
       "candidate": {
@@ -787,10 +787,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.06944444444444445,
@@ -799,8 +799,8 @@
         "channel_residence_time_s": 0.72
       },
       "utilities_and_gas": {
-        "heat_generation_W": 34.24014517139394,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 32.910593593035344,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -808,7 +808,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 155.00999642702516
+      "score": 154.92135965513458
     },
     {
       "candidate": {
@@ -819,10 +819,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.027777777777777776,
@@ -831,8 +831,8 @@
         "channel_residence_time_s": 1.8
       },
       "utilities_and_gas": {
-        "heat_generation_W": 34.24014517139394,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 32.910593593035344,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -840,7 +840,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 156.37360437766583
+      "score": 156.28496760577525
     },
     {
       "candidate": {
@@ -851,10 +851,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.845352689519192,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5650.852310656684,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.668079145738046,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5487.113120395187,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.2777777777777778,
@@ -863,8 +863,8 @@
         "channel_residence_time_s": 0.18
       },
       "utilities_and_gas": {
-        "heat_generation_W": 34.24014517139394,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 32.910593593035344,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -873,7 +873,7 @@
         "hydraulic_regime_outside_laminar_model",
         "hydrogen_design_limit"
       ],
-      "score": 156.37377485564005
+      "score": 156.28513808374947
     },
     {
       "candidate": {
@@ -884,10 +884,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.20833333333333331,
@@ -896,8 +896,8 @@
         "channel_residence_time_s": 0.24
       },
       "utilities_and_gas": {
-        "heat_generation_W": 32.51812222093525,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 31.597996218114833,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -905,7 +905,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 159.28939583629932
+      "score": 159.22805410277795
     },
     {
       "candidate": {
@@ -916,10 +916,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.10416666666666666,
@@ -928,8 +928,8 @@
         "channel_residence_time_s": 0.48
       },
       "utilities_and_gas": {
-        "heat_generation_W": 32.51812222093525,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 31.597996218114833,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -937,7 +937,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 161.5619686588475
+      "score": 161.50062692532612
     },
     {
       "candidate": {
@@ -948,10 +948,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -960,8 +960,8 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 32.51812222093525,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 31.597996218114833,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -969,7 +969,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 162.92551235237642
+      "score": 162.86417061885504
     },
     {
       "candidate": {
@@ -980,10 +980,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 5.615749629458033,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 5428.889145832292,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 5.493066162415311,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5317.687815571812,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.41666666666666663,
@@ -992,8 +992,8 @@
         "channel_residence_time_s": 0.12
       },
       "utilities_and_gas": {
-        "heat_generation_W": 32.51812222093525,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 31.597996218114833,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -1002,7 +1002,7 @@
         "hydraulic_regime_outside_laminar_model",
         "hydrogen_design_limit"
       ],
-      "score": 162.9260683730211
+      "score": 162.86472663949974
     },
     {
       "candidate": {
@@ -1013,10 +1013,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.08333333333333333,
@@ -1025,8 +1025,8 @@
         "channel_residence_time_s": 0.6
       },
       "utilities_and_gas": {
-        "heat_generation_W": 37.68419107231132,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 35.53578834287638,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -1034,7 +1034,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 166.3001801798054
+      "score": 166.15695333117642
     },
     {
       "candidate": {
@@ -1045,10 +1045,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.041666666666666664,
@@ -1057,8 +1057,8 @@
         "channel_residence_time_s": 1.2
       },
       "utilities_and_gas": {
-        "heat_generation_W": 37.68419107231132,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 35.53578834287638,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -1066,7 +1066,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 168.57289645897976
+      "score": 168.42966961035074
     },
     {
       "candidate": {
@@ -1077,10 +1077,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.016666666666666666,
@@ -1089,8 +1089,8 @@
         "channel_residence_time_s": 3.0000000000000004
       },
       "utilities_and_gas": {
-        "heat_generation_W": 37.68419107231132,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 35.53578834287638,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -1098,7 +1098,7 @@
         "current_limit",
         "hydrogen_design_limit"
       ],
-      "score": 169.93652622648438
+      "score": 169.79329937785536
     },
     {
       "candidate": {
@@ -1109,10 +1109,10 @@
       "operating": {
         "current_A": 7.5,
         "current_density_mA_cm2": 300.0,
-        "cell_voltage_V": 6.3045588096415095,
-        "faradaic_efficiency": 0.9928902796897269,
-        "specific_energy_kWh_t": 6094.778640305465,
-        "deposit_rate_um_hr": 394.11467623645285
+        "cell_voltage_V": 6.018105112383518,
+        "faradaic_efficiency": 0.991508605620903,
+        "specific_energy_kWh_t": 5825.963730041939,
+        "deposit_rate_um_hr": 393.5662389726003
       },
       "hydraulics": {
         "superficial_velocity_m_s": 0.16666666666666666,
@@ -1121,8 +1121,8 @@
         "channel_residence_time_s": 0.3
       },
       "utilities_and_gas": {
-        "heat_generation_W": 37.68419107231132,
-        "h2_rate_L_h": 0.024337577240195692,
+        "heat_generation_W": 35.53578834287638,
+        "h2_rate_L_h": 0.02906724281117281,
         "h2_design_rate_L_h": 3.4231413020606904
       },
       "feasible": false,
@@ -1131,7 +1131,7 @@
         "hydraulic_regime_outside_laminar_model",
         "hydrogen_design_limit"
       ],
-      "score": 169.9365658032749
+      "score": 169.7933389546459
     }
   ],
   "design_boundaries": [

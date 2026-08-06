@@ -16,10 +16,10 @@
 | Channel depth / electrode gap | 3.0 mm |
 | Catholyte and anolyte recirculation | 0.50 L/min per loop |
 | Current / current density | 3.00 A / 300 mA/cm² |
-| Modeled cell voltage | 5.85 V |
-| Modeled FE / deposit rate | 99.3% / 394.1 µm/h |
+| Modeled cell voltage | 5.67 V |
+| Modeled FE / deposit rate | 99.2% / 393.6 µm/h |
 | Channel Reynolds number / pressure drop | 1643 / 4.7 Pa |
-| Heat generation / all-HER H₂ bound | 13.7 W / 1.37 L/h |
+| Heat generation / all-HER H₂ bound | 13.2 W / 1.37 L/h |
 
 ## Process and instrumentation diagram
 

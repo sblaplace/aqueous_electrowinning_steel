@@ -18,20 +18,20 @@
     "flag": "unvalidated (L0)",
     "current_density_mA_cm2": 96.66666666666667,
     "current_A": 19.333333333333336,
-    "current_efficiency": 0.9954395734512754,
-    "surface_pH": 1.9809787963666667,
-    "surface_fe_M": 0.773760003382651,
-    "transport_limit_mA_cm2": 370.88620396876615,
+    "current_efficiency": 0.9954395735385426,
+    "surface_pH": 1.9809787983631937,
+    "surface_fe_M": 0.7737600078386946,
+    "transport_limit_mA_cm2": 370.8862234988579,
     "diffusion_limit_mA_cm2": 277.877756448,
-    "migration_enhancement": 1.3347099411973664,
+    "migration_enhancement": 1.3347100114804,
     "feoh2_supersaturation": 2.041737944669523e-08,
     "precipitation_active": false,
-    "film_potential_drop_V": -0.0018888500794205741,
-    "V_cell": 4.632041307981989,
-    "specific_energy_kWh_t": 4466.445276688466,
-    "deposition_rate_um_hr": 127.31856618373091,
-    "free_fe2_activity": 0.052181362675546517,
-    "conductivity_S_m": 11.404288640855748,
+    "film_potential_drop_V": -0.0018888500019089431,
+    "V_cell": 4.631596646334953,
+    "specific_energy_kWh_t": 4466.016511357022,
+    "deposition_rate_um_hr": 127.31856619489253,
+    "free_fe2_activity": 0.05224353745192281,
+    "conductivity_S_m": 11.40858961633695,
     "transport_converged": true,
     "V_decomposition": {
       "E_cathode (V)": -0.4811,
@@ -39,35 +39,35 @@
       "E_thermodynamic (V)": 1.7101,
       "\u03b7_cathode (V)": 0.5691,
       "\u03b7_anode (V)": 0.4,
-      "IR_electrolyte (V)": 1.1795,
+      "IR_electrolyte (V)": 1.179,
       "IR_membrane (V)": 0.29,
       "IR_contacts (V)": 0.4833,
-      "IR_total (V)": 1.9528,
-      "V_cell (V)": 4.632
+      "IR_total (V)": 1.9524,
+      "V_cell (V)": 4.6316
     },
     "verdicts": {
       "fe": {
-        "value": 0.9954395734512754,
+        "value": 0.9954395735385426,
         "acceptance": "FE >= 0.80",
         "pass": true
       },
       "v_cell": {
-        "value": 4.632041307981989,
+        "value": 4.631596646334953,
         "acceptance": "2.5 V <= V_cell <= 6.0 V",
         "pass": true
       },
       "specific_energy": {
-        "value": 4466.445276688466,
+        "value": 4466.016511357022,
         "acceptance": "specific energy <= 6000 kWh/t",
         "pass": true
       },
       "transport_limit": {
-        "value": 370.88620396876615,
+        "value": 370.8862234988579,
         "acceptance": "transport limit / j >= 1.2 (not binding)",
         "pass": true
       },
       "deposition_rate": {
-        "value": 127.31856618373091,
+        "value": 127.31856619489253,
         "acceptance": "20 <= rate <= 300 \u00b5m/hr",
         "pass": true
       }
@@ -76,13 +76,13 @@
   },
   "thermal": {
     "flag": "unvalidated (L0)",
-    "steady_state_T_C": 21.54881478722468,
+    "steady_state_T_C": 21.548067397370726,
     "max_T_C": 50.0,
-    "steady_state_uncooled_T_C": 34.06679911873136,
-    "heat_gen_power_W": 64.80613195431846,
+    "steady_state_uncooled_T_C": 34.0651070430797,
+    "heat_gen_power_W": 64.79753516247575,
     "cooling_duty_50C_W": 0.0,
     "thermal_mass_kJ_K": 13.352,
-    "joule_heat_W": 37.75413333333334,
+    "joule_heat_W": 37.7464,
     "activation_heat_W": 18.735933333333335,
     "thermal_limit_C": 60.0,
     "verdict": {
@@ -96,19 +96,19 @@
       "charge": {
         "status": "partial_with_fe_deposit",
         "applied_cathodic_charge_C": 139200.00000000003,
-        "apparent_fe_from_total_mass": 0.9954395734512754,
-        "apparent_fe_percent_from_total_mass": 99.54395734512754,
-        "measured_fe_deposition_charge_C": 138565.18862441758,
-        "unresolved_charge_C": 634.8113755824452,
+        "apparent_fe_from_total_mass": 0.9954395735385426,
+        "apparent_fe_percent_from_total_mass": 99.54395735385427,
+        "measured_fe_deposition_charge_C": 138565.18863656517,
+        "unresolved_charge_C": 634.8113634348556,
         "missing": [],
         "note": "Apparent FE uses total dry mass; it is not an Fe-specific charge closure without composition."
       },
       "iron": {
         "status": "closed",
         "initial_fe_inventory_mol": 3.0,
-        "deposit_fe_mass_g": 40.10025560522789,
-        "deposit_fe_mol": 0.7180634901106258,
-        "post_run_fe_inventory_mol": 2.2819365098893742,
+        "deposit_fe_mass_g": 40.10025560874336,
+        "deposit_fe_mol": 0.7180634901735762,
+        "post_run_fe_inventory_mol": 2.2819365098264237,
         "solids_fe_mol": 0.0,
         "other_fe_mol": 0.0,
         "unaccounted_fe_mol": 0.0,
@@ -118,7 +118,7 @@
       },
       "energy": {
         "status": "closed",
-        "stack_electrical_Wh": 179.1055972419703,
+        "stack_electrical_Wh": 179.08840365828485,
         "auxiliary_energy_Wh": {
           "cooling": 1.0,
           "drying": 0.5,
@@ -128,15 +128,15 @@
           "pumps": 3.0
         },
         "auxiliary_energy_uncertainty_Wh": 0.4387482193696061,
-        "total_measured_energy_Wh": 185.20559724197028,
+        "total_measured_energy_Wh": 185.18840365828484,
         "missing_components": [],
         "note": "Stack energy is integrated from measured V\u00d7I; auxiliary loads are included only when logged."
       }
     },
     "charge": {
       "status": "partial_with_fe_deposit",
-      "unresolved_charge_C": 634.8113755824452,
-      "residual_fraction": 0.004560426548724462,
+      "unresolved_charge_C": 634.8113634348556,
+      "residual_fraction": 0.004560426461457295,
       "tolerance": 0.02,
       "missing": [],
       "pass": true
@@ -152,8 +152,8 @@
     "energy": {
       "status": "closed",
       "missing_components": [],
-      "stack_Wh": 179.1055972419703,
-      "total_Wh": 185.20559724197028,
+      "stack_Wh": 179.08840365828485,
+      "total_Wh": 185.18840365828484,
       "pass": true
     },
     "all_pass": true
@@ -163,7 +163,7 @@
       "claim": 1,
       "claim_text": "the feed and electrolyte are what we think they are",
       "substantiated_by": "reference_cell() recipe + speciation (CellPhysics __init__)",
-      "predicted_value": "free [Fe\u00b2\u207a]=0.052 M, conductivity=11.4 S/m, pH=2.0 @ 50 \u00b0C (unvalidated (L0))",
+      "predicted_value": "a(Fe\u00b2\u207a)=0.052 (dimensionless), conductivity=11.4 S/m, pH=2.0 @ 50 \u00b0C (unvalidated (L0))",
       "acceptance": "reference recipe reproduces the intended bath",
       "verdict": "PASS (L0 \u2014 reference recipe assumed; real feed identity is L1, unvalidated)"
     },

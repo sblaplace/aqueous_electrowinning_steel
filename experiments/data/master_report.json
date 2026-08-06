@@ -1,6 +1,6 @@
 {
   "title": "Aqueous Electrowinning \u2014 Master Report",
-  "date": "2026-08-01T00:22:26.506427",
+  "date": "2026-08-06T14:00:27.101958",
   "quick": true,
   "steps": {
     "electrochemistry": {
@@ -46,63 +46,63 @@
       "kinetics": {
         "Acidic active cathode": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -0.831,
-          "\u03b7_Fe (V)": 0.391,
-          "i_Fe (A/m\u00b2)": 18.0,
-          "i_HER (A/m\u00b2)": 982.0,
-          "i_lim,Fe (A/m\u00b2)": 2778.8,
-          "Current efficiency (%)": 1.8,
-          "Deposition rate (\u00b5m/hr)": 2.4,
-          "H\u2082 flux (mol/m\u00b2/hr)": 18.32,
-          "specific energy @2.6 V (kWh/t Fe)": 138303.0
+          "E cathode (V vs SHE)": -0.791,
+          "\u03b7_Fe (V)": 0.351,
+          "i_Fe (A/m\u00b2)": 14.6,
+          "i_HER (A/m\u00b2)": 985.4,
+          "i_lim,Fe (A/m\u00b2)": 5958.7,
+          "Current efficiency (%)": 1.5,
+          "Deposition rate (\u00b5m/hr)": 1.9,
+          "H\u2082 flux (mol/m\u00b2/hr)": 18.38,
+          "specific energy @2.6 V (kWh/t Fe)": 171515.0
         },
         "Acidic + HER inhibitor": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.06,
-          "\u03b7_Fe (V)": 0.62,
-          "i_Fe (A/m\u00b2)": 957.8,
-          "i_HER (A/m\u00b2)": 42.2,
-          "i_lim,Fe (A/m\u00b2)": 2778.8,
-          "Current efficiency (%)": 95.8,
-          "Deposition rate (\u00b5m/hr)": 126.7,
-          "H\u2082 flux (mol/m\u00b2/hr)": 0.79,
-          "specific energy @2.6 V (kWh/t Fe)": 2606.0
+          "E cathode (V vs SHE)": -1.018,
+          "\u03b7_Fe (V)": 0.578,
+          "i_Fe (A/m\u00b2)": 958.6,
+          "i_HER (A/m\u00b2)": 41.4,
+          "i_lim,Fe (A/m\u00b2)": 5958.7,
+          "Current efficiency (%)": 95.9,
+          "Deposition rate (\u00b5m/hr)": 126.8,
+          "H\u2082 flux (mol/m\u00b2/hr)": 0.77,
+          "specific energy @2.6 V (kWh/t Fe)": 2603.0
         },
         "Mildly acidic complexed": {
           "j applied (mA/cm\u00b2)": 150.0,
-          "E cathode (V vs SHE)": -1.101,
-          "\u03b7_Fe (V)": 0.661,
-          "i_Fe (A/m\u00b2)": 1496.8,
-          "i_HER (A/m\u00b2)": 3.2,
-          "i_lim,Fe (A/m\u00b2)": 2778.8,
+          "E cathode (V vs SHE)": -1.047,
+          "\u03b7_Fe (V)": 0.607,
+          "i_Fe (A/m\u00b2)": 1497.4,
+          "i_HER (A/m\u00b2)": 2.6,
+          "i_lim,Fe (A/m\u00b2)": 5958.7,
           "Current efficiency (%)": 99.8,
-          "Deposition rate (\u00b5m/hr)": 198.0,
-          "H\u2082 flux (mol/m\u00b2/hr)": 0.06,
-          "specific energy @2.6 V (kWh/t Fe)": 2501.0
+          "Deposition rate (\u00b5m/hr)": 198.1,
+          "H\u2082 flux (mol/m\u00b2/hr)": 0.05,
+          "specific energy @2.6 V (kWh/t Fe)": 2500.0
         },
         "Transport-limited (stagnant)": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.314,
-          "\u03b7_Fe (V)": 0.874,
-          "i_Fe (A/m\u00b2)": 69.4,
-          "i_HER (A/m\u00b2)": 930.6,
-          "i_lim,Fe (A/m\u00b2)": 69.5,
-          "Current efficiency (%)": 6.9,
-          "Deposition rate (\u00b5m/hr)": 9.2,
-          "H\u2082 flux (mol/m\u00b2/hr)": 17.36,
-          "specific energy @2.6 V (kWh/t Fe)": 35937.0
+          "E cathode (V vs SHE)": -1.268,
+          "\u03b7_Fe (V)": 0.828,
+          "i_Fe (A/m\u00b2)": 148.8,
+          "i_HER (A/m\u00b2)": 851.2,
+          "i_lim,Fe (A/m\u00b2)": 149.0,
+          "Current efficiency (%)": 14.9,
+          "Deposition rate (\u00b5m/hr)": 19.7,
+          "H\u2082 flux (mol/m\u00b2/hr)": 15.88,
+          "specific energy @2.6 V (kWh/t Fe)": 16771.0
         },
         "Transport-limited (agitated)": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.248,
-          "\u03b7_Fe (V)": 0.808,
-          "i_Fe (A/m\u00b2)": 685.9,
-          "i_HER (A/m\u00b2)": 314.1,
-          "i_lim,Fe (A/m\u00b2)": 694.7,
-          "Current efficiency (%)": 68.6,
-          "Deposition rate (\u00b5m/hr)": 90.7,
-          "H\u2082 flux (mol/m\u00b2/hr)": 5.86,
-          "specific energy @2.6 V (kWh/t Fe)": 3639.0
+          "E cathode (V vs SHE)": -1.064,
+          "\u03b7_Fe (V)": 0.624,
+          "i_Fe (A/m\u00b2)": 970.1,
+          "i_HER (A/m\u00b2)": 29.9,
+          "i_lim,Fe (A/m\u00b2)": 1489.7,
+          "Current efficiency (%)": 97.0,
+          "Deposition rate (\u00b5m/hr)": 128.4,
+          "H\u2082 flux (mol/m\u00b2/hr)": 0.56,
+          "specific energy @2.6 V (kWh/t Fe)": 2573.0
         }
       }
     },
@@ -170,126 +170,126 @@
           "support_M": 0.0,
           "t_Fe": 0.3959,
           "diffusion_limit_A_m2": 2778.77756,
-          "transport_limit_A_m2": 5354.7971,
+          "transport_limit_A_m2": 5354.79717,
           "migration_enhancement": 1.92703,
-          "migration_flux_fraction": 0.50606,
-          "film_potential_drop_mV": -2.40277,
-          "surface_pH": 2.68516,
-          "surface_fe_M": 0.84907,
-          "current_efficiency": 0.84846
+          "migration_flux_fraction": 0.50663,
+          "film_potential_drop_mV": -2.37935,
+          "surface_pH": 2.80248,
+          "surface_fe_M": 0.8507,
+          "current_efficiency": 0.84013
         },
         {
           "support_M": 0.1,
           "t_Fe": 0.36142,
           "diffusion_limit_A_m2": 2778.77756,
-          "transport_limit_A_m2": 4514.41504,
+          "transport_limit_A_m2": 4514.41521,
           "migration_enhancement": 1.6246,
-          "migration_flux_fraction": 0.46152,
-          "film_potential_drop_mV": -2.22595,
-          "surface_pH": 2.70797,
-          "surface_fe_M": 0.83723,
-          "current_efficiency": 0.84729
+          "migration_flux_fraction": 0.46212,
+          "film_potential_drop_mV": -2.20502,
+          "surface_pH": 2.82721,
+          "surface_fe_M": 0.83892,
+          "current_efficiency": 0.83925
         },
         {
           "support_M": 0.5,
           "t_Fe": 0.26804,
           "diffusion_limit_A_m2": 2778.77756,
-          "transport_limit_A_m2": 3708.86203,
+          "transport_limit_A_m2": 3708.86223,
           "migration_enhancement": 1.33471,
-          "migration_flux_fraction": 0.33862,
-          "film_potential_drop_mV": -1.71948,
-          "surface_pH": 2.74889,
-          "surface_fe_M": 0.80334,
-          "current_efficiency": 0.8461
+          "migration_flux_fraction": 0.33926,
+          "film_potential_drop_mV": -1.70444,
+          "surface_pH": 2.8712,
+          "surface_fe_M": 0.80524,
+          "current_efficiency": 0.83852
         },
         {
           "support_M": 2.0,
           "t_Fe": 0.13614,
           "diffusion_limit_A_m2": 2778.77756,
-          "transport_limit_A_m2": 3143.77609,
+          "transport_limit_A_m2": 3143.77615,
           "migration_enhancement": 1.13135,
-          "migration_flux_fraction": 0.16561,
-          "film_potential_drop_mV": -0.92204,
-          "surface_pH": 2.80133,
-          "surface_fe_M": 0.75198,
-          "current_efficiency": 0.84541
+          "migration_flux_fraction": 0.1661,
+          "film_potential_drop_mV": -0.91478,
+          "surface_pH": 2.92717,
+          "surface_fe_M": 0.75412,
+          "current_efficiency": 0.83841
         }
       ],
       "model_comparison": [
         {
           "j_mA_cm2": 5.0,
-          "nernst_planck_surface_pH": 2.039,
+          "nernst_planck_surface_pH": 2.045,
           "linear_film_surface_pH": 9.541,
-          "nernst_planck_CE_pct": 67.7,
+          "nernst_planck_CE_pct": 63.32,
           "linear_film_CE_pct": 99.29
         },
         {
           "j_mA_cm2": 20.0,
-          "nernst_planck_surface_pH": 2.142,
+          "nernst_planck_surface_pH": 2.166,
           "linear_film_surface_pH": 11.097,
-          "nernst_planck_CE_pct": 73.86,
+          "nernst_planck_CE_pct": 70.44,
           "linear_film_CE_pct": 93.61
         },
         {
           "j_mA_cm2": 50.0,
-          "nernst_planck_surface_pH": 2.344,
+          "nernst_planck_surface_pH": 2.407,
           "linear_film_surface_pH": 11.334,
-          "nernst_planck_CE_pct": 79.36,
+          "nernst_planck_CE_pct": 77.24,
           "linear_film_CE_pct": 95.59
         },
         {
           "j_mA_cm2": 100.0,
-          "nernst_planck_surface_pH": 2.685,
+          "nernst_planck_surface_pH": 2.802,
           "linear_film_surface_pH": 11.512,
-          "nernst_planck_CE_pct": 84.85,
+          "nernst_planck_CE_pct": 84.01,
           "linear_film_CE_pct": 96.68
         },
         {
           "j_mA_cm2": 200.0,
-          "nernst_planck_surface_pH": 3.319,
+          "nernst_planck_surface_pH": 3.481,
           "linear_film_surface_pH": 11.689,
-          "nernst_planck_CE_pct": 90.55,
+          "nernst_planck_CE_pct": 90.43,
           "linear_film_CE_pct": 97.5
         }
       ],
       "operating_points": {
         "Unsupported acidic (pH 2)": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.043,
-          "Current efficiency (%)": 84.8,
-          "Surface pH": 2.69,
-          "\u0394pH (surface \u2212 bulk)": 0.69,
-          "Surface Fe\u00b2\u207a (M)": 0.8491,
+          "E cathode (V vs SHE)": -1.013,
+          "Current efficiency (%)": 84.0,
+          "Surface pH": 2.8,
+          "\u0394pH (surface \u2212 bulk)": 0.8,
+          "Surface Fe\u00b2\u207a (M)": 0.8507,
           "i_lim diffusion (A/m\u00b2)": 2778.8,
           "i_lim with migration (A/m\u00b2)": 5354.8,
           "Migration enhancement (\u00d7)": 1.927,
-          "Migration share of Fe\u00b2\u207a flux": 0.506,
-          "Film potential drop (mV)": -2.4,
+          "Migration share of Fe\u00b2\u207a flux": 0.507,
+          "Film potential drop (mV)": -2.38,
           "t_Fe\u00b2\u207a (bulk)": 0.396,
-          "Max Fe(OH)\u2082 supersaturation": 4.07e-07
+          "Max Fe(OH)\u2082 supersaturation": 6.99e-07
         },
         "Supported acidic (2 M Na\u2082SO\u2084)": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.052,
-          "Current efficiency (%)": 84.5,
-          "Surface pH": 2.8,
-          "\u0394pH (surface \u2212 bulk)": 0.8,
-          "Surface Fe\u00b2\u207a (M)": 0.752,
+          "E cathode (V vs SHE)": -1.022,
+          "Current efficiency (%)": 83.8,
+          "Surface pH": 2.93,
+          "\u0394pH (surface \u2212 bulk)": 0.93,
+          "Surface Fe\u00b2\u207a (M)": 0.7541,
           "i_lim diffusion (A/m\u00b2)": 2778.8,
           "i_lim with migration (A/m\u00b2)": 3143.8,
           "Migration enhancement (\u00d7)": 1.131,
           "Migration share of Fe\u00b2\u207a flux": 0.166,
-          "Film potential drop (mV)": -0.92,
+          "Film potential drop (mV)": -0.91,
           "t_Fe\u00b2\u207a (bulk)": 0.136,
-          "Max Fe(OH)\u2082 supersaturation": 6.15e-07
+          "Max Fe(OH)\u2082 supersaturation": 1.1e-06
         },
         "HER-inhibited acidic": {
           "j applied (mA/cm\u00b2)": 100.0,
-          "E cathode (V vs SHE)": -1.053,
-          "Current efficiency (%)": 99.6,
+          "E cathode (V vs SHE)": -1.024,
+          "Current efficiency (%)": 99.5,
           "Surface pH": 1.97,
           "\u0394pH (surface \u2212 bulk)": -0.03,
-          "Surface Fe\u00b2\u207a (M)": 0.8201,
+          "Surface Fe\u00b2\u207a (M)": 0.8202,
           "i_lim diffusion (A/m\u00b2)": 2778.8,
           "i_lim with migration (A/m\u00b2)": 5354.8,
           "Migration enhancement (\u00d7)": 1.927,
@@ -300,7 +300,7 @@
         },
         "Dilute + stagnant": {
           "j applied (mA/cm\u00b2)": 50.0,
-          "E cathode (V vs SHE)": -1.773,
+          "E cathode (V vs SHE)": -1.732,
           "Current efficiency (%)": 26.8,
           "Surface pH": 12.92,
           "\u0394pH (surface \u2212 bulk)": 9.92,
@@ -315,18 +315,18 @@
         },
         "Alkaline (pH 9)": {
           "j applied (mA/cm\u00b2)": 20.0,
-          "E cathode (V vs SHE)": -1.084,
+          "E cathode (V vs SHE)": -1.055,
           "Current efficiency (%)": 99.9,
-          "Surface pH": 9.31,
-          "\u0394pH (surface \u2212 bulk)": 0.31,
+          "Surface pH": 9.36,
+          "\u0394pH (surface \u2212 bulk)": 0.36,
           "Surface Fe\u00b2\u207a (M)": 0.0141,
           "i_lim diffusion (A/m\u00b2)": 138.9,
           "i_lim with migration (A/m\u00b2)": 277.0,
           "Migration enhancement (\u00d7)": 1.994,
           "Migration share of Fe\u00b2\u207a flux": 0.495,
-          "Film potential drop (mV)": -18.22,
+          "Film potential drop (mV)": -18.21,
           "t_Fe\u00b2\u207a (bulk)": 0.402,
-          "Max Fe(OH)\u2082 supersaturation": 206000.0
+          "Max Fe(OH)\u2082 supersaturation": 244000.0
         }
       }
     },
@@ -343,41 +343,41 @@
           "Frequency (Hz)": 1.0,
           "Duty cycle (%)": 100.0,
           "Average current density (mA/cm\u00b2)": 100.0,
-          "Cycle-averaged current efficiency (%)": 99.50000000000004,
-          "Net plating rate (\u00b5m/hr)": 131.65070061175794,
-          "Net Fe deposited (g/m\u00b2)": 0.28794933794916167,
-          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.7625729874093002,
-          "Max surface pH": 2.022790730826449
+          "Cycle-averaged current efficiency (%)": 94.4210142030022,
+          "Net plating rate (\u00b5m/hr)": 124.93057962108524,
+          "Net Fe deposited (g/m\u00b2)": 0.27325093998234035,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8444560833430752,
+          "Max surface pH": 2.1764333341807265
         },
         "dc_avg": {
           "Frequency (Hz)": 1.0,
           "Duty cycle (%)": 100.0,
           "Average current density (mA/cm\u00b2)": 50.0,
-          "Cycle-averaged current efficiency (%)": 99.50000000000004,
-          "Net plating rate (\u00b5m/hr)": 65.82535030587897,
-          "Net Fe deposited (g/m\u00b2)": 0.14397466897458083,
-          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8812864937046837,
-          "Max surface pH": 2.0112458822159773
+          "Cycle-averaged current efficiency (%)": 92.92391002657243,
+          "Net plating rate (\u00b5m/hr)": 61.474863610965905,
+          "Net Fe deposited (g/m\u00b2)": 0.13445918779798488,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.923468382909267,
+          "Max surface pH": 2.104820226261847
         },
         "pulsed": {
           "Frequency (Hz)": 10.0,
           "Duty cycle (%)": 50.0,
           "Average current density (mA/cm\u00b2)": 50.0,
-          "Cycle-averaged current efficiency (%)": 99.50000000000001,
-          "Net plating rate (\u00b5m/hr)": 66.02282635679663,
-          "Net Fe deposited (g/m\u00b2)": 0.1444065929815046,
-          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8626140920061958,
-          "Max surface pH": 2.013506593634133
+          "Cycle-averaged current efficiency (%)": 93.47144451184519,
+          "Net plating rate (\u00b5m/hr)": 62.02260251582416,
+          "Net Fe deposited (g/m\u00b2)": 0.13565721450266652,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.9107545905666194,
+          "Max surface pH": 2.1214620837648783
         },
         "pulse_reverse": {
           "Frequency (Hz)": 10.0,
           "Duty cycle (%)": 50.0,
           "Average current density (mA/cm\u00b2)": 47.99999999999999,
-          "Cycle-averaged current efficiency (%)": 95.39232303090729,
-          "Net plating rate (\u00b5m/hr)": 63.2971937612165,
-          "Net Fe deposited (g/m\u00b2)": 0.13844502879883855,
-          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.8662741593867495,
-          "Max surface pH": 2.013506593634133
+          "Cycle-averaged current efficiency (%)": 89.38278069726972,
+          "Net plating rate (\u00b5m/hr)": 59.30958602274846,
+          "Net Fe deposited (g/m\u00b2)": 0.12972324453975592,
+          "Min surface Fe\u00b2\u207a ratio (C_surf / C_bulk)": 0.9132605364697245,
+          "Max surface pH": 2.121148746864848
         }
       }
     },
@@ -875,7 +875,7 @@
     },
     "carburization": {
       "title": "Post-deposition gaseous carburization screening",
-      "date": "2026-08-01T00:23:29.090331",
+      "date": "2026-08-06T14:00:49.476480",
       "params": {
         "temperature_C": 900.0,
         "surface_c_wt": 1.1,
@@ -930,7 +930,7 @@
     },
     "carbon_potential": {
       "title": "Carbon potential screening \u2014 gas carburizing atmosphere",
-      "date": "2026-08-01T00:23:30.080603",
+      "date": "2026-08-06T14:00:50.667414",
       "example_T_C": 930.0,
       "example_summary_930C": {
         "T_C": 930,
@@ -972,7 +972,7 @@
     },
     "tempering": {
       "title": "Tempering & retained austenite screening",
-      "date": "2026-08-01T00:23:31.072580",
+      "date": "2026-08-06T14:00:51.596884",
       "example_alloy": {
         "C": 0.8,
         "Mn": 0.3,
@@ -1001,6 +1001,58 @@
         "500": 215.52734375,
         "400": 269.23828125
       }
+    },
+    "thermomechanical": {
+      "title": "Thermomechanical processing (cold roll + recrystallization) screening",
+      "date": "2026-08-06T14:00:52.786984",
+      "params": {
+        "deposit_grain_size_um": 1.0,
+        "total_reduction_frac": 0.5,
+        "n_passes": 2,
+        "anneal_temperature_C": 700.0,
+        "anneal_time_min": 60.0,
+        "ni_wt_percent": 0.0,
+        "carbon_wt_percent": 0.0,
+        "current_efficiency_percent": 95.0
+      },
+      "summary": {
+        "deposit_grain_um": 1.0,
+        "total_reduction_frac": 0.5,
+        "true_strain": 0.693,
+        "n_passes": 2,
+        "anneal_temperature_C": 700.0,
+        "anneal_time_min": 60.0,
+        "recrystallized_grain_um": 10.03,
+        "final_grain_um": 10.26,
+        "fraction_recrystallized": 1.0,
+        "time_to_full_rx_min": 9.65,
+        "annealed_yield_MPa": 252.3,
+        "annealed_uts_MPa": 315.4,
+        "annealed_hv": 82.3,
+        "annealed_elongation_pct": 20.4,
+        "annealed_grade": "AISI 1018-like (low-Cstructural, good weldability)",
+        "deposit_yield_MPa": 591.1,
+        "deposit_uts_MPa": 738.9,
+        "deposit_elongation_pct": 12.0,
+        "annealing_energy_kWh_per_kg": 0.14,
+        "flags": []
+      },
+      "figures": [
+        "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_recrystallization.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_temperature_sweep.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_reduction_sweep.png",
+        "/home/user/aqueous_electrowinning_steel/docs/figures/thermomech_deposit_vs_annealed.png"
+      ],
+      "csv": "/home/user/aqueous_electrowinning_steel/experiments/data/synthetic_thermomechanical.csv",
+      "model_notes": [
+        "JMAK recrystallization X=1-exp(-(k t)^n), k=k0\u00b7\u03b5^m\u00b7exp(-Q/RT); Q\u2248210 kJ/mol, n=2 (screening means)",
+        "Recrystallized grain size D_rx = D_rx_ref\u00b7(D0/D0_ref)^0.35\u00b7(\u03b5_ref/\u03b5)^0.55\u00b7(T/T_ref)^0.6",
+        "Normal grain growth D\u00b2-D_rx\u00b2 = K_gg\u00b7t\u00b7exp(-Q_gg/RT), Q_gg\u2248240 kJ/mol",
+        "Annealed strength reuses mechanical_properties Hall-Petch + solid solution + dispersion machinery",
+        "Energy is heating only (Cp=449 J/kg/K, 60% furnace eff.); no atmosphere or soak credit",
+        "Does NOT model texture development, abnormal grain growth, recrystallized C redistribution, or hydrogen",
+        "Screening constants must be calibrated with real rolling trials, EBSD, and hardness traverses"
+      ]
     },
     "foil_calibration": {
       "D_fit": {
@@ -1314,7 +1366,7 @@
       ],
       "report": {
         "title": "Pilot P&ID screening \u2014 aqueous electrowinning + carburizing + tempering",
-        "date": "2026-08-01T00:23:35.546303",
+        "date": "2026-08-06T14:00:57.482565",
         "figures": [
           "/home/user/aqueous_electrowinning_steel/docs/figures/pid_overview.png",
           "/home/user/aqueous_electrowinning_steel/docs/figures/pid_detailed.png"
@@ -1400,25 +1452,34 @@
     },
     "speciation": {
       "base_case": {
+        "activity_model": "pitzer",
+        "activity_scale": "molal",
         "temperature_C": 50.0,
-        "ionic_strength_M": 1.5978603718606506,
-        "davies_A": 0.5377680722023105,
-        "gamma_Fe2": 0.6763237600602704,
-        "gamma_H": 0.9068566901027215,
-        "gamma_SO4": 0.6763237600602704,
-        "c_Fe2_free_M": 0.026395568205186227,
-        "c_SO4_free_M": 0.5175339113467134,
-        "c_H_free_M": 0.0011383431415999319,
-        "c_HSO4_free_M": 0.018861656858400067,
-        "c_FeSO4_pair_M": 0.9736044317948138,
-        "a_Fe2": 0.017851949937458873,
-        "a_H": 0.001032314093592448,
-        "pH_activity": 2.9861881434453723,
-        "pH_concentration": 2.943726804689482,
-        "E_rev_Fe_V_SHE": -0.503050857608822,
-        "pH_precip_Fe_OH2": 6.131055504695438,
-        "conductivity_S_m": 13.545173942360677,
-        "fe2_pair_percentage": 97.36044317948138
+        "solution_density_kg_L": 1.2636394971999998,
+        "ionic_strength_M": 5.515098506459259,
+        "ionic_strength_molal": 5.433601508393389,
+        "gamma_Fe2": 0.05302712297325642,
+        "gamma_H": 0.3590851163277642,
+        "gamma_SO4": 0.030209470353795034,
+        "gamma_Na": 0.4747197912219569,
+        "gamma_HSO4": 1.280366590441891,
+        "osmotic_coefficient": 0.5465182389818057,
+        "water_activity": 0.9664077911456435,
+        "c_Fe2_free_M": 1.0,
+        "c_SO4_free_M": 1.5025492532296292,
+        "c_H_free_M": 0.012549253229629166,
+        "c_HSO4_free_M": 0.007450746770370833,
+        "c_FeSO4_pair_M": 0.26980288389809154,
+        "fe2_pair_percentage": 26.980288389809154,
+        "fe2_pair_basis": "secondary contact-pair estimate (K=200, Pitzer gammas)",
+        "a_Fe2": 0.05224353745192281,
+        "a_H": 0.004439660882149309,
+        "pH_activity": 2.3526502016502246,
+        "pH_concentration": 1.9013821170435596,
+        "conductivity_S_m": 11.40858961633695,
+        "pitzer_parameter_temperature_window": "Fe2+-SO4(2-): verified Kobylin et al. (2011) T-functions, 10-90 \u00b0C; other binaries frozen at 25 \u00b0C (see docs/PITZER_TCOEFF_ACCEPTANCE.md)",
+        "E_rev_Fe_V_SHE": -0.48809980220730714,
+        "pH_precip_Fe_OH2": 5.897882046985085
       },
       "temperature_sweep": {
         "temperature_C": [
@@ -1437,293 +1498,373 @@
           80.0,
           85.0
         ],
-        "ionic_strength_M": [
-          1.571297666630047,
-          1.5755673401352464,
-          1.5799056311860746,
-          1.5843082528067867,
-          1.5887709534638756,
-          1.5932895264423166,
-          1.5978603718606506,
-          1.6024781994208217,
-          1.6071396625916332,
-          1.6118408365430847,
-          1.6165778976869776,
-          1.6213476608950044,
-          1.6261453971763211,
-          1.630968324134755
+        "solution_density_kg_L": [
+          1.26896096806,
+          1.26801854788125,
+          1.26699780376,
+          1.2659741311637502,
+          1.2650229255599998,
+          1.2642195824162499,
+          1.2636394971999998,
+          1.26335806537875,
+          1.26345068242,
+          1.26399274379125,
+          1.2650596449599998,
+          1.26672678139375,
+          1.2690695485599999,
+          1.27216334192625
         ],
-        "davies_A": [
-          0.5071967294302046,
-          0.5116756567428918,
-          0.516400846316389,
-          0.5213718988852644,
-          0.5265891945142209,
-          0.5320539145969758,
-          0.5377680722023105,
-          0.5437345509969973,
-          0.5499571530885454,
-          0.5564406562509524,
-          0.5631908811271888,
-          0.5702147691467008,
-          0.5775204720589092,
-          0.5851174541693256
+        "ionic_strength_M": [
+          5.50470408246971,
+          5.506415145438409,
+          5.508169759787908,
+          5.509941715549858,
+          5.511704107217532,
+          5.513430923264966,
+          5.515098506459259,
+          5.516686718398202,
+          5.518179701400417,
+          5.51956620415642,
+          5.520839505478231,
+          5.5219970190645435,
+          5.52303968562998,
+          5.523971258980457
+        ],
+        "ionic_strength_molal": [
+          5.395075193882921,
+          5.401741506390477,
+          5.4088788954774545,
+          5.416063243584363,
+          5.422865981583519,
+          5.428855904077609,
+          5.433601508393389,
+          5.436673694491959,
+          5.437648709002341,
+          5.436111275057643,
+          5.43165790218984,
+          5.423900403054346,
+          5.4124696499380685,
+          5.3970195855327745
         ],
         "gamma_Fe2": [
-          0.6727264731270408,
-          0.6733710243199662,
-          0.6739938453076214,
-          0.6745979698635907,
-          0.6751860864729292,
-          0.6757605426021702,
-          0.6763237600602704,
-          0.6768765191834714,
-          0.6774206504598481,
-          0.6779571610633007,
-          0.6784867279154251,
-          0.6790101176657038,
-          0.6795264386880474,
-          0.680035903298847
+          0.06358833080784988,
+          0.062465484549378975,
+          0.06103952476191108,
+          0.05934617545006735,
+          0.057422038108616125,
+          0.05530372737101063,
+          0.05302712297325642,
+          0.050626745906923766,
+          0.048135260106191055,
+          0.045583095286758545,
+          0.04299818213263108,
+          0.04040578811315676,
+          0.037828440710526254,
+          0.03528592445169821
         ],
         "gamma_H": [
-          0.9056484112623799,
-          0.9058652628250466,
-          0.9060746556759378,
-          0.906277624167342,
-          0.9064750835376518,
-          0.9066678319218983,
-          0.9068566901027215,
-          0.9070419267370691,
-          0.9072241612927662,
-          0.9074037361588474,
-          0.9075808823984917,
-          0.9077558604641404,
-          0.9079283762457884,
-          0.9080985047938103
+          0.3880656959554636,
+          0.38335578079869864,
+          0.3785987120249588,
+          0.37379369961655706,
+          0.3689401370627555,
+          0.3640374738239345,
+          0.3590851163277642,
+          0.3540823658323502,
+          0.34902839666350427,
+          0.34392227288659843,
+          0.33876299668906673,
+          0.3335495784862652,
+          0.3282811173010384,
+          0.3229568800945023
         ],
         "gamma_SO4": [
-          0.6727264731270408,
-          0.6733710243199662,
-          0.6739938453076214,
-          0.6745979698635907,
-          0.6751860864729292,
-          0.6757605426021702,
-          0.6763237600602704,
-          0.6768765191834714,
-          0.6774206504598481,
-          0.6779571610633007,
-          0.6784867279154251,
-          0.6790101176657038,
-          0.6795264386880474,
-          0.680035903298847
+          0.03747571593831492,
+          0.03648505294280728,
+          0.03538297007493744,
+          0.03418743123655035,
+          0.032915807273635765,
+          0.03158464270242408,
+          0.030209470353795034,
+          0.02880467289203353,
+          0.027383388672677072,
+          0.02595745811410602,
+          0.024537405834771646,
+          0.0231324533212922,
+          0.021750556810842175,
+          0.020398465295898047
+        ],
+        "gamma_Na": [
+          0.5122968247901675,
+          0.506195953573741,
+          0.5000301591722967,
+          0.4937994188158194,
+          0.48750388868802275,
+          0.4811438722670639,
+          0.4747197912219569,
+          0.4682321568377699,
+          0.4616815406289867,
+          0.4550685433877582,
+          0.44839376227473576,
+          0.4416577556510214,
+          0.43486100521269594,
+          0.42800387472361356
+        ],
+        "gamma_HSO4": [
+          1.3783969856649465,
+          1.3626240983975284,
+          1.3467140852928383,
+          1.3305977201612498,
+          1.3142088770490168,
+          1.2974848197198658,
+          1.280366590441891,
+          1.2627994634706379,
+          1.244733435467699,
+          1.2261237324922654,
+          1.2069313187879447,
+          1.1871233948845523,
+          1.1666738713370164,
+          1.145563800637024
+        ],
+        "osmotic_coefficient": [
+          0.5944869048684444,
+          0.5878678769567426,
+          0.5806477276851505,
+          0.5728660606397058,
+          0.5645605522391473,
+          0.5557668214526605,
+          0.5465182389818057,
+          0.5368456830228138,
+          0.5267772480402804,
+          0.516337911758568,
+          0.5055491644854152,
+          0.49442860447802517,
+          0.4829895036153079,
+          0.4712403491013888
+        ],
+        "water_activity": [
+          0.9637531554797069,
+          0.9641082942570381,
+          0.9644976080694164,
+          0.9649216656474431,
+          0.9653810330921854,
+          0.9658762468914757,
+          0.9664077911456435,
+          0.9669760795724176,
+          0.9675814425531669,
+          0.9682241191479489,
+          0.9689042537132082,
+          0.9696218965404516,
+          0.9703770078002557,
+          0.971169464004351
         ],
         "c_Fe2_free_M": [
-          0.020068695668467446,
-          0.02109577989462886,
-          0.022135527218152474,
-          0.023186638182342425,
-          0.02424784328634594,
-          0.025317909141383762,
-          0.026395568205186227,
-          0.027479839195128433,
-          0.028569546048496045,
-          0.0296636580026059,
-          0.030761208368617,
-          0.031861200200667225,
-          0.03296302187518877,
-          0.03406581012342896
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
         ],
         "c_SO4_free_M": [
-          0.5105793770205731,
-          0.5116872361747946,
-          0.5128167298399848,
-          0.5139670145505434,
-          0.5151372346699797,
-          0.5163265209068247,
-          0.5175339113467134,
-          0.5187586714630193,
-          0.5199997980075567,
-          0.5212563606754267,
-          0.5225274157057345,
-          0.5238119065781816,
-          0.5251090895336232,
-          0.5264178802280439
+          1.4973520412348553,
+          1.4982075727192046,
+          1.4990848798939536,
+          1.4999708577749287,
+          1.5008520536087657,
+          1.501715461632483,
+          1.5025492532296292,
+          1.503343359199101,
+          1.5040898507002085,
+          1.50478310207821,
+          1.5054197527391158,
+          1.505998509532272,
+          1.5065198428149897,
+          1.5069856294902286
         ],
         "c_H_free_M": [
-          0.0005106813521716084,
-          0.0005914562802243,
-          0.0006812026218838888,
-          0.000780376368245984,
-          0.0008893913836726916,
-          0.001008611765474381,
-          0.0011383431415999319,
-          0.0012788322679531299,
-          0.0014302519591133072,
-          0.0015927026728651,
-          0.0017662073371543317,
-          0.0019507063775984423,
-          0.0021460676585043988,
-          0.0023520701046723775
+          0.007352041234855236,
+          0.00820757271920452,
+          0.009084879893953693,
+          0.009970857774928933,
+          0.010852053608765708,
+          0.01171546163248309,
+          0.012549253229629166,
+          0.01334335919910096,
+          0.014089850700208597,
+          0.014783102078210215,
+          0.01541975273911576,
+          0.01599850953227215,
+          0.016519842814989662,
+          0.016985629490228554
         ],
         "c_HSO4_free_M": [
-          0.019489318647828394,
-          0.0194085437197757,
-          0.01931879737811611,
-          0.019219623631754015,
-          0.01911060861632731,
-          0.01899138823452562,
-          0.018861656858400067,
-          0.01872116773204687,
-          0.018569748040886694,
-          0.0184072973271349,
-          0.01823379266284567,
-          0.01804929362240156,
-          0.017853932341495602,
-          0.017647929895327624
+          0.012647958765144766,
+          0.01179242728079548,
+          0.010915120106046308,
+          0.010029142225071069,
+          0.009147946391234292,
+          0.008284538367516912,
+          0.007450746770370833,
+          0.00665664080089904,
+          0.005910149299791405,
+          0.005216897921789785,
+          0.004580247260884238,
+          0.004001490467727847,
+          0.0034801571850103367,
+          0.003014370509771446
         ],
         "c_FeSO4_pair_M": [
-          0.9799313043315325,
-          0.9789042201053711,
-          0.9778644727818475,
-          0.9768133618176575,
-          0.975752156713654,
-          0.9746820908586162,
-          0.9736044317948138,
-          0.9725201608048716,
-          0.971430453951504,
-          0.970336341997394,
-          0.969238791631383,
-          0.9681387997993328,
-          0.9670369781248113,
-          0.965934189876571
-        ],
-        "a_Fe2": [
-          0.013500742857308026,
-          0.014205286916474784,
-          0.014919209107674102,
-          0.015641659045769817,
-          0.016371806413916806,
-          0.017108844018933936,
-          0.017851949937458873,
-          0.01860045790212006,
-          0.019353600467514775,
-          0.020110689366199357,
-          0.020871071612747538,
-          0.0216340772972256,
-          0.02239924486324323,
-          0.023165973958893023
-        ],
-        "a_H": [
-          0.0004624977552555411,
-          0.00053577969873491,
-          0.0006172204310689906,
-          0.0007072376409703092,
-          0.0008062111288123709,
-          0.000914475842653575,
-          0.001032314093592448,
-          0.0011599544842977427,
-          0.0012975591340439057,
-          0.0014452243559479744,
-          0.0016029760135532185,
-          0.0017707651463097602,
-          0.0019484757244994997,
-          0.0021359113452232067
-        ],
-        "pH_activity": [
-          3.3348903707789974,
-          3.271013746297873,
-          3.2095597064688004,
-          3.150434633132611,
-          3.0935512112084647,
-          3.038827762621487,
-          2.9861881434453723,
-          2.9355590518128665,
-          2.8868728407983832,
-          2.8400647280030777,
-          2.7950729762481115,
-          2.7518390347586466,
-          2.7103050005880407,
-          2.6704167774297156
-        ],
-        "pH_concentration": [
-          3.2918500003720528,
-          3.2280773524038913,
-          3.166723689148201,
-          3.107695890604739,
-          3.0509070822645636,
-          2.9962759700943966,
-          2.943726804689482,
-          2.893186413988413,
-          2.8445874486792206,
-          2.797865291107894,
-          2.7529583154263175,
-          2.7098080961541213,
-          2.6683565902675874,
-          2.6285497380301535
-        ],
-        "E_rev_Fe_V_SHE": [
-          -0.5013759695569322,
-          -0.5016499279610451,
-          -0.5019259253141544,
-          -0.5022039921312936,
-          -0.5024841531628436,
-          -0.502766427030543,
-          -0.503050857608822,
-          -0.5033373821292587,
-          -0.5036260354036903,
-          -0.5039168079538755,
-          -0.5042096824947655,
-          -0.5045046711098038,
-          -0.504801659255649,
-          -0.5051006493781475
-        ],
-        "pH_precip_Fe_OH2": [
-          6.907970464495047,
-          6.767539475622776,
-          6.631774776506054,
-          6.500449722467511,
-          6.373352051205553,
-          6.250282746871631,
-          6.131055504695438,
-          6.015493736923543,
-          5.903432933058786,
-          5.7947176525368045,
-          5.689201399763971,
-          5.5867465199410224,
-          5.487221347013078,
-          5.390503213726468
-        ],
-        "conductivity_S_m": [
-          7.688262243109543,
-          8.654231559956406,
-          9.624109226300103,
-          10.59802159425006,
-          11.576091687447319,
-          12.558438608276363,
-          13.545173942360677,
-          14.536413027051369,
-          15.532255924101376,
-          16.532799071893045,
-          17.5381314186615,
-          18.54832894668826,
-          19.563473818293993,
-          20.583623364603415
+          0.4249597865148026,
+          0.40116835439692794,
+          0.376130782957091,
+          0.35014233156093266,
+          0.323526827045209,
+          0.2966288444528137,
+          0.26980288389809154,
+          0.24340036884584842,
+          0.217755643800414,
+          0.19317235184904955,
+          0.16991156739050806,
+          0.14818283579254785,
+          0.1281388711603132,
+          0.10987416861096608
         ],
         "fe2_pair_percentage": [
-          97.99313043315325,
-          97.89042201053711,
-          97.78644727818475,
-          97.68133618176576,
-          97.5752156713654,
-          97.46820908586162,
-          97.36044317948138,
-          97.25201608048715,
-          97.1430453951504,
-          97.03363419973941,
-          96.92387916313831,
-          96.81387997993328,
-          96.70369781248112,
-          96.5934189876571
+          42.49597865148026,
+          40.11683543969279,
+          37.6130782957091,
+          35.01423315609327,
+          32.3526827045209,
+          29.662884445281367,
+          26.980288389809154,
+          24.340036884584844,
+          21.775564380041402,
+          19.317235184904956,
+          16.991156739050805,
+          14.818283579254784,
+          12.813887116031319,
+          10.987416861096607
+        ],
+        "a_Fe2": [
+          0.06232193793202683,
+          0.06127805326968469,
+          0.05993921968145495,
+          0.058335034397063945,
+          0.05649650470979411,
+          0.05445537833596626,
+          0.05224353745192281,
+          0.04989246476367223,
+          0.047432785653482065,
+          0.04489388641697552,
+          0.0423036053717473,
+          0.03968799144151038,
+          0.03707112367541334,
+          0.03447498483085769
+        ],
+        "a_H": [
+          0.0027962546069823855,
+          0.0030866088885169512,
+          0.003377522597947087,
+          0.0036635423859968552,
+          0.003939225224206077,
+          0.00419944477889644,
+          0.004439660882149309,
+          0.0046561227526209364,
+          0.004845989417184992,
+          0.005007365227464705,
+          0.005139260867325087,
+          0.005241498415661858,
+          0.0053145821415258206,
+          0.005359555484421464
+        ],
+        "pH_activity": [
+          2.553423287370815,
+          2.5105183975085,
+          2.4714017365676964,
+          2.4360987794496496,
+          2.404589187803805,
+          2.376808125173774,
+          2.3526502016502246,
+          2.3319755785980365,
+          2.3146175386226107,
+          2.3003907308523712,
+          2.2890993370989525,
+          2.280544541140809,
+          2.2745308761573426,
+          2.270871228715506
+        ],
+        "pH_concentration": [
+          2.13359206581946,
+          2.085785260726634,
+          2.0416808098791117,
+          2.0012674785094093,
+          1.964488069505574,
+          1.931240593922323,
+          1.9013821170435596,
+          1.8747348227447649,
+          1.8510936087656673,
+          1.830234424257177,
+          1.8119225902862668,
+          1.795920475597887,
+          1.7819940892739532,
+          1.769918353470622
+        ],
+        "conductivity_S_m": [
+          5.696152515173161,
+          6.547991654236872,
+          7.440450901347843,
+          8.373847726502012,
+          9.347546539110521,
+          10.3599564075628,
+          11.40858961633695,
+          12.490183485338939,
+          13.600879918631005,
+          14.736449371969355,
+          15.892539808884049,
+          17.06492798046032,
+          18.249750637695247,
+          19.443696900782623
+        ],
+        "E_rev_Fe_V_SHE": [
+          -0.482056206113765,
+          -0.48287112497182355,
+          -0.48376122946556066,
+          -0.48472773557202165,
+          -0.48577198835542035,
+          -0.48689546872444783,
+          -0.48809980220730714,
+          -0.48938676906089673,
+          -0.49075831514040585,
+          -0.49221656315021955,
+          -0.4937638241186192,
+          -0.4954026091335516,
+          -0.49713564151179235,
+          -0.4989658696423426
+        ],
+        "pH_precip_Fe_OH2": [
+          6.575828822519368,
+          6.450112000693077,
+          6.329792134647095,
+          6.214626400814592,
+          6.1043895615844574,
+          5.998872690451208,
+          5.897882046985085,
+          5.801238075144262,
+          5.708774503291802,
+          5.620337529740372,
+          5.5357850827878075,
+          5.454986148294435,
+          5.377820160567459,
+          5.304176453754789
         ]
       }
     },
@@ -1745,21 +1886,19 @@
         "pH_bulk": 2.5,
         "T_C": 50.0,
         "c_Fe2_M": 1.0,
-        "status_code": 4,
+        "status_code": 3,
         "is_pass": false,
         "reasons": [
-          "Current density 200.0 mA/cm2 exceeds 90% of j_lim (138.9 mA/cm2)",
-          "FE (69.1%) below minimum requirement (70.0%)",
-          "V_cell (4.58 V) or energy (6353 kWh/t) exceeds threshold"
+          "V_cell (4.44 V) or energy (4341 kWh/t) exceeds threshold"
         ],
-        "FE": 0.6913412230285861,
+        "FE": 0.9823817309944289,
         "pH_surface": 13.077027612991257,
-        "pH_precip": 6.134101641675167,
+        "pH_precip": 5.89915807018206,
         "feoh2_supersaturation": 0.2911087275736815,
-        "V_cell": 4.575723954122941,
-        "specific_energy_kWh_t": 6353.212100272801,
-        "j_lim_mA_cm2": 138.938878224,
-        "j_ratio_lim": 1.439481897050846
+        "V_cell": 4.442813416520892,
+        "specific_energy_kWh_t": 4341.139970306093,
+        "j_lim_mA_cm2": 243.66134558318873,
+        "j_ratio_lim": 0.8208113581631591
       },
       "pass_fraction_pct": 13.333333333333334,
       "x_vals_j_mA_cm2": [
@@ -2058,9 +2197,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2075,9 +2214,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2092,9 +2231,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2109,9 +2248,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2126,9 +2265,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2143,9 +2282,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2160,9 +2299,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2177,9 +2316,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2194,9 +2333,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2211,9 +2350,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2228,9 +2367,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2245,9 +2384,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2262,9 +2401,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2279,9 +2418,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -2296,9 +2435,9 @@
           0,
           0,
           3,
-          4,
-          4,
-          4,
+          3,
+          3,
+          3,
           4,
           2,
           2,
@@ -3090,6 +3229,1098 @@
         "docs/figures/adhesion_substrate_screen.png",
         "docs/figures/adhesion_foil_window.png",
         "docs/figures/adhesion_robustness.png"
+      ]
+    },
+    "internal_stress": {
+      "title": "Deposit internal stress (Stoney / bent-strip) report",
+      "purpose": "Predict internal residual stress from deposition conditions (intrinsic, hydrogen, thermal), evaluate bent-strip cantilever deflection and GUM uncertainty budget, and connect stress state to drum-and-strip adhesion and peel.",
+      "model_scope": {
+        "computes": [
+          "Forward Stoney: stress \u2192 curvature \u2192 cantilever deflection",
+          "Inverse Stoney / bent-strip: deflection \u2192 stress",
+          "Exact two-layer laminate curvature and the finite-thickness correction",
+          "GUM uncertainty budget for the measured stress",
+          "Stress decomposition from plating conditions (intrinsic, hydrogen, thermal)",
+          "Saccharin and chloride bath corrections (screening estimates)",
+          "Stress evolution with thickness (local vs Stoney-averaged)",
+          "Peel-driving force G(\u03c3, h) and the drum verdict from bath conditions",
+          "The coupon-curvature experiment design with decision rules"
+        ],
+        "does_not_compute": [
+          "Texture (crystallographic) stress contributions",
+          "Local stress at defects, pinholes, edge build-up, nodules",
+          "Time-resolved in-situ stress transients (only end-state + exponential relaxation)",
+          "Additives beyond saccharin/chloride (e.g. organic brighteners, thiourea)",
+          "Stress relief by annealing or hydrogen bake-out kinetics",
+          "Ductility-limited cracking (see mechanical_properties.py)"
+        ],
+        "calibration_required": [
+          "Measured \u03c3(h) by coupon curvature in the actual bath (the protocol above)",
+          "Diffusible H by thermal desorption on the same coupons",
+          "Grain size by metallography on the same coupons",
+          "Saccharin relief constant for this bath chemistry"
+        ],
+        "key_uncertainty": "The screening constants: HOFFMAN_DELTA_M, the saccharin relief fit, the chloride shift, and the absorption-fraction factor in hydrogen_embrittlement. All four are literature-order estimates, and all four are replaced by the coupon protocol's measurements.",
+        "limitations": "Screening mechanics with literature values and engineering estimates. No iron internal-stress data exists in this repository; the protocol is specified so the first measured number replaces the widest assumption."
+      },
+      "reference_case": {
+        "components": {
+          "intrinsic_MPa": 8.490945674044266,
+          "hydrogen_MPa": 372.56772174371054,
+          "thermal_MPa": 33.28450704225352,
+          "total_MPa": 414.3431744600083
+        },
+        "dominant_mechanism": "hydrogen",
+        "sign": "tensile",
+        "derived": {
+          "grain_size_um": 3.5,
+          "C_H_diffusible_ppm": 240.73403778125632,
+          "thickness_um": 28.116355658290008,
+          "deposition_rate_um_hr": 112.46542263316003
+        },
+        "corrections": {
+          "saccharin_g_L": 0.0,
+          "intrinsic_relief_fraction": 0.0,
+          "chloride_shift_MPa": 0.0,
+          "raw_intrinsic_MPa": 8.490945674044266
+        },
+        "substrate": "ti_passive_tio2",
+        "sources": {
+          "grain_size": "mechanical_properties.estimate_grain_size_um",
+          "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+          "thickness": "Faraday's law at the supplied j, FE and time",
+          "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+          "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+          "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+          "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+          "chloride": "internal_stress screening shift (Di Bari electroforming)"
+        }
+      },
+      "peel_verdicts": {
+        "dc": {
+          "inputs": {
+            "j_mA_cm2": 100.0,
+            "current_efficiency_percent": 85.0,
+            "deposition_time_s": 900.0,
+            "waveform": "dc",
+            "bath_pH": 3.0,
+            "temperature_C": 60.0,
+            "substrate": "ti_passive_tio2",
+            "saccharin_g_L": 0.0,
+            "chloride_bath": false
+          },
+          "stress": {
+            "components": {
+              "intrinsic_MPa": 8.490945674044266,
+              "hydrogen_MPa": 372.56772174371054,
+              "thermal_MPa": 33.28450704225352,
+              "total_MPa": 414.3431744600083
+            },
+            "dominant_mechanism": "hydrogen",
+            "sign": "tensile",
+            "derived": {
+              "grain_size_um": 3.5,
+              "C_H_diffusible_ppm": 240.73403778125632,
+              "thickness_um": 28.116355658290008,
+              "deposition_rate_um_hr": 112.46542263316003
+            },
+            "corrections": {
+              "saccharin_g_L": 0.0,
+              "intrinsic_relief_fraction": 0.0,
+              "chloride_shift_MPa": 0.0,
+              "raw_intrinsic_MPa": 8.490945674044266
+            },
+            "substrate": "ti_passive_tio2",
+            "sources": {
+              "grain_size": "mechanical_properties.estimate_grain_size_um",
+              "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+              "thickness": "Faraday's law at the supplied j, FE and time",
+              "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+              "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+              "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+              "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+              "chloride": "internal_stress screening shift (Di Bari electroforming)"
+            }
+          },
+          "equivalent_inputs_to_peel_model": {
+            "grain_size_um": 3.5,
+            "C_H_diffusible_ppm": 240.7340377812563,
+            "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+          },
+          "peel": {
+            "substrate_id": "ti_passive_tio2",
+            "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+            "evidence_level": "commercial",
+            "electrically_conductive": true,
+            "residual_stress_MPa": 414.3,
+            "stress_breakdown_MPa": {
+              "intrinsic_MPa": 8.5,
+              "hydrogen_MPa": 372.6,
+              "thermal_MPa": 33.3,
+              "total_MPa": 414.3
+            },
+            "driving_force_G_J_m2": 16.2426,
+            "work_of_adhesion_J_m2": 0.3,
+            "interfacial_toughness_J_m2": 1.24,
+            "film_tearing_energy_J_m2": 976.08,
+            "hydrogen_retention_factor": 0.15,
+            "peel_force_N_per_m": 0.0,
+            "web_stress_MPa": 0.0,
+            "allowable_web_stress_MPa": 173.6,
+            "critical_thickness_um": 2.1,
+            "self_release_ratio": 13.1053,
+            "cohesive_ratio": 0.0013,
+            "tear_margin": null,
+            "outcome": "spontaneous_delamination",
+            "peelable": false,
+            "good_for_flake_harvest": true,
+            "reasons": [
+              "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 13.11): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+            ]
+          },
+          "verdict": "spontaneous_delamination",
+          "peelable": false,
+          "good_for_flake_harvest": true
+        },
+        "pre": {
+          "inputs": {
+            "j_mA_cm2": 100.0,
+            "current_efficiency_percent": 95.0,
+            "deposition_time_s": 900.0,
+            "waveform": "pre",
+            "bath_pH": 3.0,
+            "temperature_C": 60.0,
+            "substrate": "ti_passive_tio2",
+            "saccharin_g_L": 0.0,
+            "chloride_bath": false
+          },
+          "stress": {
+            "components": {
+              "intrinsic_MPa": 21.41001065469103,
+              "hydrogen_MPa": 124.18924058123692,
+              "thermal_MPa": 33.28450704225352,
+              "total_MPa": 178.88375827818146
+            },
+            "dominant_mechanism": "hydrogen",
+            "sign": "tensile",
+            "derived": {
+              "grain_size_um": 1.3880567524446104,
+              "C_H_diffusible_ppm": 80.24467926041882,
+              "thickness_um": 31.424162206324134,
+              "deposition_rate_um_hr": 125.69664882529653
+            },
+            "corrections": {
+              "saccharin_g_L": 0.0,
+              "intrinsic_relief_fraction": 0.0,
+              "chloride_shift_MPa": 0.0,
+              "raw_intrinsic_MPa": 21.41001065469103
+            },
+            "substrate": "ti_passive_tio2",
+            "sources": {
+              "grain_size": "mechanical_properties.estimate_grain_size_um",
+              "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+              "thickness": "Faraday's law at the supplied j, FE and time",
+              "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+              "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+              "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+              "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+              "chloride": "internal_stress screening shift (Di Bari electroforming)"
+            }
+          },
+          "equivalent_inputs_to_peel_model": {
+            "grain_size_um": 1.3880567524446101,
+            "C_H_diffusible_ppm": 80.24467926041882,
+            "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+          },
+          "peel": {
+            "substrate_id": "ti_passive_tio2",
+            "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+            "evidence_level": "commercial",
+            "electrically_conductive": true,
+            "residual_stress_MPa": 178.9,
+            "stress_breakdown_MPa": {
+              "intrinsic_MPa": 21.4,
+              "hydrogen_MPa": 124.2,
+              "thermal_MPa": 33.3,
+              "total_MPa": 178.9
+            },
+            "driving_force_G_J_m2": 3.3836,
+            "work_of_adhesion_J_m2": 0.3,
+            "interfacial_toughness_J_m2": 1.38,
+            "film_tearing_energy_J_m2": 1623.5,
+            "hydrogen_retention_factor": 0.15,
+            "peel_force_N_per_m": 0.0,
+            "web_stress_MPa": 0.0,
+            "allowable_web_stress_MPa": 258.3,
+            "critical_thickness_um": 12.8,
+            "self_release_ratio": 2.4605,
+            "cohesive_ratio": 0.0008,
+            "tear_margin": null,
+            "outcome": "spontaneous_delamination",
+            "peelable": false,
+            "good_for_flake_harvest": true,
+            "reasons": [
+              "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 2.46): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+            ]
+          },
+          "verdict": "spontaneous_delamination",
+          "peelable": false,
+          "good_for_flake_harvest": true
+        },
+        "saccharin": {
+          "inputs": {
+            "j_mA_cm2": 100.0,
+            "current_efficiency_percent": 85.0,
+            "deposition_time_s": 900.0,
+            "waveform": "dc",
+            "bath_pH": 3.0,
+            "temperature_C": 60.0,
+            "substrate": "ti_passive_tio2",
+            "saccharin_g_L": 1.5,
+            "chloride_bath": false
+          },
+          "stress": {
+            "components": {
+              "intrinsic_MPa": 4.197104614476437,
+              "hydrogen_MPa": 372.56772174371054,
+              "thermal_MPa": 33.28450704225352,
+              "total_MPa": 410.04933340044045
+            },
+            "dominant_mechanism": "hydrogen",
+            "sign": "tensile",
+            "derived": {
+              "grain_size_um": 3.5,
+              "C_H_diffusible_ppm": 240.73403778125632,
+              "thickness_um": 28.116355658290008,
+              "deposition_rate_um_hr": 112.46542263316003
+            },
+            "corrections": {
+              "saccharin_g_L": 1.5,
+              "intrinsic_relief_fraction": 0.5056964470628461,
+              "chloride_shift_MPa": 0.0,
+              "raw_intrinsic_MPa": 8.490945674044266
+            },
+            "substrate": "ti_passive_tio2",
+            "sources": {
+              "grain_size": "mechanical_properties.estimate_grain_size_um",
+              "hydrogen": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis",
+              "thickness": "Faraday's law at the supplied j, FE and time",
+              "intrinsic": "adhesion_peel.hoffman_intrinsic_stress_MPa",
+              "hydrogen_stress": "adhesion_peel.hydrogen_stress_MPa",
+              "thermal": "adhesion_peel.thermal_mismatch_stress_MPa",
+              "saccharin": "internal_stress screening fit (Di Bari electroforming)",
+              "chloride": "internal_stress screening shift (Di Bari electroforming)"
+            }
+          },
+          "equivalent_inputs_to_peel_model": {
+            "grain_size_um": 7.080669315854569,
+            "C_H_diffusible_ppm": 240.7340377812563,
+            "note": "evaluate_peel rebuilds stress from these; the mapping from corrected stress components is exact for both mechanisms."
+          },
+          "peel": {
+            "substrate_id": "ti_passive_tio2",
+            "substrate_name": "Titanium drum with passive TiO\u2082 (Cu-foil practice)",
+            "evidence_level": "commercial",
+            "electrically_conductive": true,
+            "residual_stress_MPa": 410.0,
+            "stress_breakdown_MPa": {
+              "intrinsic_MPa": 4.2,
+              "hydrogen_MPa": 372.6,
+              "thermal_MPa": 33.3,
+              "total_MPa": 410.0
+            },
+            "driving_force_G_J_m2": 15.9077,
+            "work_of_adhesion_J_m2": 0.3,
+            "interfacial_toughness_J_m2": 1.24,
+            "film_tearing_energy_J_m2": 976.08,
+            "hydrogen_retention_factor": 0.15,
+            "peel_force_N_per_m": 0.0,
+            "web_stress_MPa": 0.0,
+            "allowable_web_stress_MPa": 173.6,
+            "critical_thickness_um": 2.2,
+            "self_release_ratio": 12.835,
+            "cohesive_ratio": 0.0013,
+            "tear_margin": null,
+            "outcome": "spontaneous_delamination",
+            "peelable": false,
+            "good_for_flake_harvest": true,
+            "reasons": [
+              "Stored elastic energy exceeds interfacial toughness (G/\u0393 = 12.84): the deposit releases without applied force. Fatal for continuous foil, ideal for a flake/powder harvester."
+            ]
+          },
+          "verdict": "spontaneous_delamination",
+          "peelable": false,
+          "good_for_flake_harvest": true
+        }
+      },
+      "uncertainty_budget_reference": {
+        "sigma_MPa": 249.99999999999994,
+        "u_sigma_MPa": 13.436953458740525,
+        "relative_uncertainty": 0.05374781383496211,
+        "contributions_MPa": {
+          "deflection": 1.6108502869066248,
+          "substrate_thickness": 2.499999999999999,
+          "film_thickness": 9.999999999999996,
+          "substrate_modulus": 6.476683937823832,
+          "poisson": 3.5211267605633796,
+          "gauge_length": 4.166666666666666
+        },
+        "dominant_uncertainty": "film_thickness",
+        "deflection_um": 1551.975388601036
+      },
+      "coupon_curvature_protocol": {
+        "title": "Bent-strip / Stoney coupon-curvature set (Tier 0 item 6)",
+        "gates": "docs/RESEARCH_PROGRAM.md Missing Physics item 7; Tier 0 item 6; adhesion_peel.calibration_required ('Residual stress by coupon curvature (Stoney) in the actual bath')",
+        "runs_alongside": "The Day-1 Hull cell and adhesion coupon set (docs/FIRST_LAB_DAY.md) \u2014 same bath, same rectifier, same session; the 316L shim is the same material as the R3/R4 gravimetric coupons.",
+        "coupons": [
+          {
+            "material": "316L shim stock",
+            "thickness_mm": 0.2,
+            "role": "thin \u2014 maximizes deflection sensitivity, stays in Stoney validity to ~20 \u00b5m",
+            "n_replicates": 3
+          },
+          {
+            "material": "316L shim stock",
+            "thickness_mm": 0.4,
+            "role": "reference geometry for the uncertainty budget; matches FE coupons",
+            "n_replicates": 3
+          },
+          {
+            "material": "Titanium shim (drum surface)",
+            "thickness_mm": 0.4,
+            "role": "stress on the actual drum candidate (adhesion_peel reference substrate)",
+            "n_replicates": 3
+          }
+        ],
+        "plating_plan": [
+          {
+            "run": "DC baseline",
+            "conditions": "100 mA/cm\u00b2, 50\u201360 \u00b0C, bath B0 per FIRST_LAB_DAY.md, mask one face, plate 10\u2013100 \u00b5m (thickness series by time)",
+            "yields": "\u03c3(h) \u2014 the thickness sweep resolves the interfacial transient"
+          },
+          {
+            "run": "Waveform comparison",
+            "conditions": "DC vs PE vs PRE at equal average j (same thickness)",
+            "yields": "\u03c3(waveform) \u2014 does pulsing buy stress relief along with FE?"
+          },
+          {
+            "run": "Saccharin \u00b1",
+            "conditions": "\u00b12 g/L saccharin in a fresh B0 aliquot",
+            "yields": "intrinsic-term relief constant for this bath (calibrates the screening fit)"
+          }
+        ],
+        "measurements": [
+          {
+            "measurement": "Cantilever deflection \u03b4 before/after plating",
+            "instrument": "Dial gauge (10 \u00b5m) or stylus profilometer (1 \u00b5m) over 60 mm gauge length; 3 traces per coupon",
+            "yields": "\u03c3 via bent_strip_stress_MPa() / stoney_stress_MPa()",
+            "replaces_in_model": "HOFFMAN_DELTA_M and the whole forward intrinsic estimate"
+          },
+          {
+            "measurement": "Deposit thickness by mass and cross-section",
+            "instrument": "Analytical balance + metallographic mount",
+            "yields": "h_f for Stoney; Faradaic cross-check",
+            "replaces_in_model": "Faraday-law thickness assumption"
+          },
+          {
+            "measurement": "Diffusible hydrogen (optional on one coupon)",
+            "instrument": "Inert-gas fusion analyser (outsourced)",
+            "yields": "C_H to separate hydrogen stress from intrinsic stress",
+            "replaces_in_model": "hydrogen_embrittlement.hydrogen_uptake_from_electrolysis absorption-fraction screening factor"
+          }
+        ],
+        "uncertainty_budget": {
+          "reference_stress_MPa": 414.3431744600083,
+          "reference_thickness_um": 56.232711316580016,
+          "deflection_at_reference_um": 5785.674883579191,
+          "small_deflection_valid": true,
+          "u_sigma_dial_gauge_MPa": 16.39951867445482,
+          "stress_resolution_dial_gauge_MPa": 0.7161535737792495,
+          "stress_resolution_profilometer_MPa": 0.07161535737792496,
+          "dominant_uncertainty": "substrate_modulus",
+          "note": "If the reference deflection is below the instrument floor, thin the shim (\u03b4 \u221d h_s\u207b\u00b2) or lengthen the gauge (\u03b4 \u221d L\u00b2)."
+        },
+        "decision_rules": [
+          {
+            "if": "measured \u03c3 within \u00b150% of the model decomposition at \u22653 thicknesses",
+            "then": "model confirmed as a screening tool; proceed to use \u03c3(h) in the peel window (adhesion_peel) with measured inputs",
+            "class": "confirm"
+          },
+          {
+            "if": "\u03c3 > 400 MPa tensile at the 25 \u00b5m drum target, or self-delamination observed",
+            "then": "foil branch at risk from the film side; prioritize H suppression (waveform, temperature, additives) before any drum scale-up",
+            "class": "kill-or-redirect (foil branch)"
+          },
+          {
+            "if": "\u03c3(h) trend or sign disagrees with the mechanism decomposition",
+            "then": "recalibrate the intrinsic and hydrogen terms against the measured C_H and grain size before using the peel model",
+            "class": "redirect"
+          }
+        ],
+        "budget_usd": {
+          "shim_stock_and_masking": 60,
+          "dial_gauge_or_profilometer_access": 120,
+          "consumables": 20,
+          "total": 200,
+          "note": "Shared Day-1 items (rectifier, bath, balance) excluded; hydrogen analysis extra if run."
+        },
+        "replaces_in_model_set": [
+          "HOFFMAN_DELTA_M (intrinsic term) \u2014 via measured \u03c3 at known grain size",
+          "absorption-fraction screening factor (hydrogen term) \u2014 via measured C_H",
+          "the forward residual-stress estimate used by adhesion_peel",
+          "plastic amplification cross-check for the peel interface (paired with adhesion_peel.coupon_test_protocol)"
+        ]
+      },
+      "findings": [
+        "Baseline DC electrowinning (100 mA/cm\u00b2, 85% FE, 60 \u00b0C) produces a total tensile residual stress of 414.3 MPa on reference TiO\u2082 drum cathodes, with hydrogen effusion contributing 372.6 MPa (90% of the total stress).",
+        "Because hydrogen dominance (372.6 MPa) overwhelms the interfacial fracture toughness of passive oxides, the drum-and-strip verdict for DC baseline electrowinning is 'spontaneous_delamination'.",
+        "Pulse Reverse Electrowinning (PRE) at 95% efficiency reduces hydrogen effusion stress to 124.2 MPa, lowering total deposit stress to 178.9 MPa \u2014 demonstrating that pulse waveforms can mitigate hydrogen embrittlement and internal stress.",
+        "Saccharin additive (1.5 g/L) relieves intrinsic grain-boundary stress, reducing the intrinsic contribution from 8.5 MPa to 4.2 MPa, while chloride baths introduce a \u221230 MPa compressive shift.",
+        "On a standard 0.4 mm 316L coupon (L = 60 mm), a 25 \u00b5m deposit at 250 MPa induces a free-end cantilever deflection of 1552.0 \u00b5m, well above the 10 \u00b5m dial-gauge resolution floor and yielding a relative standard uncertainty of 5.4%.",
+        "The coupon curvature protocol (Bent-strip / Stoney coupon-curvature set (Tier 0 item 6)) specifies a $200 experiment across 3 coupons with explicit kill/confirm rules to replace screening estimates with measured \u03c3(h) data."
+      ],
+      "figures": [
+        "docs/figures/internal_stress_mechanism_decomposition.png",
+        "docs/figures/internal_stress_coupon_measurability.png",
+        "docs/figures/internal_stress_evolution_and_peel.png"
+      ]
+    },
+    "rde_levich": {
+      "title": "RDE kinetics/transport separation (Levich + Koutecky-Levich)",
+      "purpose": "Extract D, the Nernst film thickness, and the Fe/HER Tafel kinetics from one RDE polarization set, calibrating diffusion_layer_1d's free boundary-layer parameter from measurement rather than assumption.",
+      "model_scope": {
+        "computes": [
+          "Levich limiting current i_lim = 0.62 z F D^(2/3) omega^(1/2) nu^(-1/6) C_bulk",
+          "Diffusivity D from a Levich plot (i_lim vs omega^(1/2))",
+          "Nernst film thickness delta on the RDE (the number that calibrates diffusion_layer_1d / transport.py)",
+          "Koutecky-Levich kinetic-current correction (1/i_k = 1/i - 1/i_lim)",
+          "Fe and HER Tafel slopes + exchange-current densities from a single RDE polarization set",
+          "Automatic plateau / kinetic-window / HER-window recommendation from the data",
+          "Synthetic RDE polarization simulator for method validation and experiment planning",
+          "RDE measurement matrix with resolution requirements and gate rules"
+        ],
+        "does_not_compute": [
+          "Rotation-rate-independent convection inside the film (assumed steady, well-established Cochran flow)",
+          "Activity coefficients, complexation, or ion-pairing corrections to C_bulk",
+          "Non-ideal Levich behaviour at very high omega (transition to turbulence)",
+          "Migration enhancement of i_lim (supporting-electrolyte-free limit; see transport.py)",
+          "Boron/borate or sulfate transport-limited corrections to the HER branch",
+          "Anodic branch fitting (module is cathodic-only by design)"
+        ],
+        "calibration_required": [
+          "One RDE polarization set in the actual bath to fix D (and hence delta) for diffusion_layer_1d",
+          "Tafel slopes to be confirmed by Levich-line independence of the kinetic current",
+          "Kinematic viscosity of the real electrolyte (the water-only value is a screening input)"
+        ],
+        "key_uncertainty": "nu (kinematic viscosity) is taken as water-only here; real sulfate/chloride baths raise nu a few percent, which shifts D by ~nu^(1/4). Measure nu (Ostwald viscometer) before trusting absolute D; the method's internal cross-checks (Tafel linearity, Levich R^2) are what gate acceptance.",
+        "limitations": "Screening model demonstrating the method on synthetic data. No wet-lab RDE current exists in this repository; the module converts a free model parameter (delta) into a measured one the first time it is run against real data."
+      },
+      "true_parameters": {
+        "D_m2_s": 7.2e-10,
+        "C_fe_M": 1.0,
+        "nu_m2_s": 8.9e-07,
+        "fe_i0_A_m2": 500.0,
+        "fe_tafel_V": 0.12,
+        "fe_E_eq_V": -0.44,
+        "her_i0_A_m2": 0.02,
+        "her_tafel_V": 0.15,
+        "pH": 2.0
+      },
+      "experiment": {
+        "omega_rpm": [
+          400.0,
+          900.0,
+          1600.0,
+          2500.0
+        ],
+        "potential_min_V": -1.05,
+        "potential_max_V": -0.5
+      },
+      "analysis": {
+        "plateau_E_V": -0.7721052631578947,
+        "windows": {
+          "plateau_E_V": -0.7721052631578947,
+          "kinetic_window_V": [
+            -0.6794736842105263,
+            -0.5
+          ],
+          "her_window_V": [
+            -1.05,
+            -0.7894736842105263
+          ]
+        },
+        "levich": {
+          "B_A_m2_per_sqrt_rps": 974.4501452214786,
+          "r_squared": 0.9943626688839787,
+          "n_points": 4,
+          "D_m2_s": 7.139412361953515e-10,
+          "i_lim_by_omega_A_m2": [
+            6306.725508185623,
+            9460.088262278434,
+            12613.451016371246,
+            15766.813770464058
+          ]
+        },
+        "nernst_layer_m_at_1600rpm": 1.0902783772950551e-05,
+        "fe_tafel": {
+          "tafel_slope_V_decade": 0.11721331127211357,
+          "i0_A_m2": 481.1071202056337,
+          "r_squared": 0.9998365141457047,
+          "n_points": 32,
+          "overpotential_min_V": 0.06,
+          "overpotential_max_V": 0.23947368421052634
+        },
+        "her_tafel": {
+          "tafel_slope_V_decade": 0.1410136993404146,
+          "i0_A_m2": 0.008706753684482742,
+          "r_squared": 0.9944735460533853,
+          "n_points": 46,
+          "overpotential_min_V": 0.6711549936089871,
+          "overpotential_max_V": 0.9316813093984608
+        },
+        "E_eq_fe_V": -0.44,
+        "E_eq_her_V": -0.11831869060153916,
+        "recovery_checks": {
+          "D_ref_m2_s": 7.2e-10,
+          "D_recovered_m2_s": 7.139412361953515e-10,
+          "relative_error_pct": -0.8414949728678459,
+          "delta_ref_m_at_1600rpm": 1.0902783772950551e-05
+        }
+      },
+      "experiment_design": {
+        "rotation_matrix_rpm": [
+          400.0,
+          577.0799623628855,
+          832.5532074018732,
+          1201.1244339814311,
+          1732.8621078878657,
+          2500.0
+        ],
+        "expected_i_lim_A_m2": [
+          11726.993725488013,
+          14085.578700830587,
+          16918.532744336044,
+          20321.26306633694,
+          24408.365598341716,
+          29317.484313720033
+        ],
+        "expected_nernst_layer_m": [
+          2.5360077280179578e-05,
+          2.1113613679572876e-05,
+          1.7578206788772463e-05,
+          1.4634792442365895e-05,
+          1.218424338755242e-05,
+          1.014403091207183e-05
+        ],
+        "i_lim_spread_ratio": 2.5,
+        "current_precision_requirement_pct": 40.0,
+        "diffusivity_at_T_C": 1.5439328517829522e-09,
+        "kinematic_viscosity_at_T_C": 4.7093090396496756e-07,
+        "gates": [
+          "Levich plot R^2 >= 0.995 over the plateau (else re-run with more rotation rates / wider omega range)",
+          "Recovered D within 25% of literature D_Fe2 (7.2e-10 m^2/s at 25 C, Arrhenius-scaled) or of the FE engine's calibration anchor",
+          "Fe Tafel fit R^2 >= 0.98 and a slope in 0.06-0.18 V/decade (single-step 2e- transfer, alpha~0.5)",
+          "HER Tafel fit R^2 >= 0.98 in a window where total current exceeds the fastest-rotation i_lim by >10% (Fe fully saturated)",
+          "Koutecky-Levich intercept positive (1/i_k > 0); a negative intercept means the plateau potential was mis-placed"
+        ]
+      },
+      "findings": [
+        "Levich plateau @ -0.77 V recovers D = 7.14e-10 m\u00b2/s (true 7.2e-10, -0.8%)",
+        "Nernst film thickness at 1600 rpm = 10.9 \u00b5m \u2014 the value to feed diffusion_layer_1d as its boundary layer.",
+        "Fe Tafel b = 0.117 V/dec, i0 = 481 A/m\u00b2 (true 0.120, 500; R\u00b2=1.000)",
+        "HER Tafel b = 0.141 V/dec, i0 = 0.0087 A/m\u00b2 (true 0.150, 0.02; R\u00b2=0.994)",
+        "Design: 400\u20132500 rpm gives an i_lim spread of 2.5\u00d7; current meter should resolve ~40.0%."
+      ],
+      "figures": [
+        "docs/figures/rde_levich_levich_kl.png",
+        "docs/figures/rde_levich_polarization.png",
+        "docs/figures/rde_levich_tafel.png"
+      ]
+    },
+    "gas_holdup": {
+      "title": "Cathode-channel gas hold-up and two-phase coupling report",
+      "purpose": "Model cathodic hydrogen generation, axial void fraction, effective conductivity, current redistribution, bubble microconvection and hydrogen safety margin for the RC-1 vertical channel \u2014 the hydrodynamics gap left open by docs/NEXT_STEPS.md section 3.3.",
+      "model_scope": {
+        "provenance": "Screening two-phase model, Level 0. No gas hold-up, bubble size, surface coverage or void-fraction data exists in this repository. Drift-flux, Fritz, Harmathy, Bruggeman and Stephan-Vogt correlations are transferred from water electrolysis, chlor-alkali and air-water column practice, not fitted to an iron sulfate cell.",
+        "computes": [
+          "Faradaic H2/O2 generation as wet gas at cell temperature",
+          "Drift-flux void fraction profile up a vertical channel",
+          "Bruggeman effective conductivity and axial ohmic burden",
+          "Bubble surface coverage and active-area reduction",
+          "Stephan-Vogt bubble microconvection and effective boundary layer",
+          "Equipotential-electrode current redistribution over height",
+          "Self-consistent gas <-> current <-> FE fixed point",
+          "Headspace hydrogen concentration, LFL margin, dilution flow",
+          "Electrode-height scaling limit set by hold-up non-uniformity"
+        ],
+        "does_not_compute": [
+          "Radial/lateral bubble distribution or wall-vs-core segregation",
+          "Bubble coalescence, breakup and size distribution evolution",
+          "Slug or churn-turbulent regime transitions",
+          "Gas blinding of the membrane or anolyte-side crossover effects",
+          "Dissolved-gas supersaturation and nucleation kinetics",
+          "Transient/startup gas dynamics or flow instability",
+          "Dead zones and maldistribution from real manifold geometry",
+          "Hydrogen absorption into the deposit (see hydrogen_embrittlement.py)"
+        ],
+        "dominant_uncertainty": "Surface coverage ceiling theta_max and the Bruggeman exponent. Literature coverage on gas-evolving electrodes spans a few percent to above 0.5, and measured Bruggeman exponents span 1.5-2.5. Both act directly on the ohmic penalty and the active-area correction.",
+        "replaced_by": "measurement_protocol() \u2014 ~$450, 3 days, RC-1 hardware",
+        "level": 0,
+        "gap_closed": [
+          "docs/NEXT_STEPS.md section 3.3 (hydrodynamics, bubbles)",
+          "docs/REFERENCE_CELL_DESIGN_BASIS.md line 42 (no validated bubble model)",
+          "docs/SIM_THEORY_CONFIDENCE.md claim 2 (gas/flow partially modeled)"
+        ]
+      },
+      "geometry": {
+        "height_mm": 50.0,
+        "width_mm": 20.0,
+        "depth_mm": 3.0,
+        "interelectrode_gap_mm": 20.0,
+        "liquid_flow_L_min": 0.25,
+        "superficial_liquid_velocity_m_s": 0.06944444444444445,
+        "electrode_area_cm2": 10.0,
+        "source": "processes/reference_cell_rc1.yaml"
+      },
+      "current_density_sweep": [
+        {
+          "j_mA_cm2": 50.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.002008161628067972,
+          "mean_void_fraction": 0.0010485089133322365,
+          "conductivity_penalty": 1.0015746904765244,
+          "surface_coverage_max": 0.014987512487363993,
+          "delta_eff_min_um": 45.28045926635265,
+          "current_uniformity": 0.9982096309832728,
+          "j_top_mA_cm2": 49.95522420926654,
+          "j_bottom_mA_cm2": 50.04482290965158
+        },
+        {
+          "j_mA_cm2": 100.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.004006668011786731,
+          "mean_void_fraction": 0.0020935140137355985,
+          "conductivity_penalty": 1.0031479626817381,
+          "surface_coverage_max": 0.029900398387486746,
+          "delta_eff_min_um": 41.68630243973171,
+          "current_uniformity": 0.9963460610370524,
+          "j_top_mA_cm2": 99.81716305805567,
+          "j_bottom_mA_cm2": 100.18322645262472
+        },
+        {
+          "j_mA_cm2": 200.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.007974992247972424,
+          "mean_void_fraction": 0.004173091461774849,
+          "conductivity_penalty": 1.0062902705588719,
+          "surface_coverage_max": 0.0592125960674712,
+          "delta_eff_min_um": 36.4925837841391,
+          "current_uniformity": 0.9926368578927819,
+          "j_top_mA_cm2": 199.26253952092137,
+          "j_bottom_mA_cm2": 200.74062124181611
+        },
+        {
+          "j_mA_cm2": 300.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.011905520511685372,
+          "mean_void_fraction": 0.006238888153649052,
+          "conductivity_penalty": 1.0094269599257513,
+          "surface_coverage_max": 0.08739378373547727,
+          "delta_eff_min_um": 32.85543165503154,
+          "current_uniformity": 0.9889543422018426,
+          "j_top_mA_cm2": 298.3392686722915,
+          "j_bottom_mA_cm2": 301.6714280338347
+        },
+        {
+          "j_mA_cm2": 400.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.015798790220501832,
+          "mean_void_fraction": 0.008291057434883986,
+          "conductivity_penalty": 1.0125580666546443,
+          "surface_coverage_max": 0.11398468867656747,
+          "delta_eff_min_um": 30.126085792220547,
+          "current_uniformity": 0.9852987172093034,
+          "j_top_mA_cm2": 397.0505523121091,
+          "j_bottom_mA_cm2": 402.97479878659493
+        },
+        {
+          "j_mA_cm2": 500.0,
+          "current_efficiency": 0.85,
+          "outlet_void_fraction": 0.01965532865140372,
+          "mean_void_fraction": 0.010329750237462163,
+          "conductivity_penalty": 1.0156836262027533,
+          "surface_coverage_max": 0.13863514717800296,
+          "delta_eff_min_um": 27.980513109574737,
+          "current_uniformity": 0.9816698172666017,
+          "j_top_mA_cm2": 495.3995620745696,
+          "j_bottom_mA_cm2": 504.6498867144339
+        }
+      ],
+      "height_scaling_screen": [
+        {
+          "height_mm": 50.0,
+          "area_scale_vs_RC1": 1.0,
+          "outlet_void_fraction": 0.012033059736731765,
+          "conductivity_penalty": 1.009426873070533,
+          "current_uniformity": 0.988704724743297,
+          "passes_uniformity_floor": true
+        },
+        {
+          "height_mm": 100.0,
+          "area_scale_vs_RC1": 2.0,
+          "outlet_void_fraction": 0.02372355906932465,
+          "conductivity_penalty": 1.0188033285680012,
+          "current_uniformity": 0.9776573294548342,
+          "passes_uniformity_floor": true
+        },
+        {
+          "height_mm": 250.0,
+          "area_scale_vs_RC1": 5.0,
+          "outlet_void_fraction": 0.05687998542398868,
+          "conductivity_penalty": 1.046639528738685,
+          "current_uniformity": 0.9459324973951417,
+          "passes_uniformity_floor": true
+        },
+        {
+          "height_mm": 500.0,
+          "area_scale_vs_RC1": 10.0,
+          "outlet_void_fraction": 0.10649130237568474,
+          "conductivity_penalty": 1.0921075272396505,
+          "current_uniformity": 0.8973960516223893,
+          "passes_uniformity_floor": false
+        },
+        {
+          "height_mm": 1000.0,
+          "area_scale_vs_RC1": 20.0,
+          "outlet_void_fraction": 0.1888495972714918,
+          "conductivity_penalty": 1.1799056317893755,
+          "current_uniformity": 0.8141099652112481,
+          "passes_uniformity_floor": false
+        }
+      ],
+      "coupled_operating_points": [],
+      "hydrogen_safety": [
+        {
+          "hydrogen_flow_L_h": 0.0952,
+          "dilution_flow_L_h": 0.0,
+          "hydrogen_vol_percent": 100.0,
+          "fraction_of_LFL": 25.0,
+          "target_fraction_of_LFL": 0.25,
+          "required_dilution_flow_L_h": 9.43,
+          "flammable_mixture": false,
+          "acceptable": false,
+          "headspace_L": 0.5,
+          "time_to_LFL_min_unventilated": 12.6
+        },
+        {
+          "hydrogen_flow_L_h": 0.2857,
+          "dilution_flow_L_h": 0.0,
+          "hydrogen_vol_percent": 100.0,
+          "fraction_of_LFL": 25.0,
+          "target_fraction_of_LFL": 0.25,
+          "required_dilution_flow_L_h": 28.29,
+          "flammable_mixture": false,
+          "acceptable": false,
+          "headspace_L": 0.5,
+          "time_to_LFL_min_unventilated": 4.2
+        },
+        {
+          "hydrogen_flow_L_h": 0.5715,
+          "dilution_flow_L_h": 0.0,
+          "hydrogen_vol_percent": 100.0,
+          "fraction_of_LFL": 25.0,
+          "target_fraction_of_LFL": 0.25,
+          "required_dilution_flow_L_h": 56.58,
+          "flammable_mixture": false,
+          "acceptable": false,
+          "headspace_L": 0.5,
+          "time_to_LFL_min_unventilated": 2.1
+        },
+        {
+          "hydrogen_flow_L_h": 1.905,
+          "dilution_flow_L_h": 0.0,
+          "hydrogen_vol_percent": 100.0,
+          "fraction_of_LFL": 25.0,
+          "target_fraction_of_LFL": 0.25,
+          "required_dilution_flow_L_h": 188.59,
+          "flammable_mixture": false,
+          "acceptable": false,
+          "headspace_L": 0.5,
+          "time_to_LFL_min_unventilated": 0.63
+        }
+      ],
+      "measurement_protocol": {
+        "title": "RC-1 gas hold-up and bubble characterisation",
+        "objective": "Replace the four transferred correlations in gas_holdup.py (detachment diameter, distribution parameter C0, Bruggeman exponent, surface coverage \u03b8_max) with measured values for the actual sulfate bath and cathode surface.",
+        "estimated_cost_usd": 450,
+        "estimated_duration_days": 3,
+        "prerequisite": "RC-1 water flow test and transparent channel window",
+        "measurements": [
+          {
+            "quantity": "Volumetric gas rate at the cathode vent",
+            "method": "Inverted graduated cylinder / water displacement, temperature and barometric pressure recorded",
+            "resolution_required": "\u00b12 % of flow",
+            "calibrates": "Faradaic gas closure and, with the charge ledger, an independent check on FE"
+          },
+          {
+            "quantity": "Void fraction, channel-averaged",
+            "method": "Level swell / manometric: liquid level rise in the riser with current on versus off, at fixed flow",
+            "resolution_required": "\u00b10.5 mm level, giving \u03b5 to ~\u00b10.01",
+            "calibrates": "Distribution parameter C0 in the drift-flux closure"
+          },
+          {
+            "quantity": "Bubble departure diameter and coverage",
+            "method": "Backlit high-frame-rate phone video through the channel window; frame-count sizing on 200+ bubbles",
+            "resolution_required": "\u2265240 fps, \u226520 px per bubble diameter",
+            "calibrates": "Fritz contact angle and \u03b8_max in surface_coverage_fraction"
+          },
+          {
+            "quantity": "Effective conductivity in situ",
+            "method": "High-frequency AC resistance (EIS series-R intercept) between reference probes, current on versus off",
+            "resolution_required": "\u00b13 % on R_s",
+            "calibrates": "Bruggeman exponent \u2014 the direct measurement of the ohmic penalty this module predicts"
+          },
+          {
+            "quantity": "Axial current non-uniformity",
+            "method": "Segmented cathode (3-5 electrically isolated strips, individual shunts) at fixed total current",
+            "resolution_required": "\u00b11 % per segment",
+            "calibrates": "solve_current_distribution end-to-end; this is the only measurement that tests the coupling rather than a single correlation"
+          }
+        ],
+        "decision_rules": {
+          "confirm": "Measured outlet void fraction and segment current spread within \u00b130 % of prediction at 100 and 300 mA/cm\u00b2 \u2014 the reduced-order model is adequate and the design basis's no-CFD rule holds.",
+          "recalibrate": "Systematic offset but correct trend with j and height \u2014 refit C0, Bruggeman exponent and \u03b8_max, keep the model structure.",
+          "escalate": "Observed maldistribution, dead zones, slugging or gas channelling that a 1-D axial model cannot represent \u2014 this is the specific trigger for two-phase CFD named in docs/REFERENCE_CELL_DESIGN_BASIS.md line 108."
+        },
+        "safety_note": "Gas measurement train must not add meaningful backpressure, and the collection vessel must not create a closed hydrogen path. Displacement collection vents to the same safe exhaust as the cell."
+      },
+      "findings": [
+        "Departure diameter 152 \u00b5m rising at 22 mm/s against a 69 mm/s liquid velocity: buoyancy, not forced flow, clears gas from the RC-1 channel.",
+        "At the 300 mA/cm\u00b2 kill-criterion point RC-1 reaches only 1.2 % outlet void fraction, a 0.9 % ohmic penalty and 1.1 % current spread \u2014 gas hold-up does not threaten the RC-1 decision run.",
+        "Hold-up becomes a scale-up constraint, not a bench one: uniformity holds to 250 mm of electrode height but fails the 0.90 floor by 500 mm (0.90) and reaches 0.81 at 1000 mm. RC-1 cannot observe this; a tall-cell geometry-transfer test must.",
+        "Hydrogen: a 3 A all-HER cell makes 1.91 L/h of wet gas and needs 189 L/h of dilution air to stay at 25 % of the 4 vol % LFL. An unventilated 0.5 L headspace reaches the LFL in 0.6 min \u2014 which is the quantitative reason the design basis forbids a closed gas path.",
+        "Dominant uncertainty is bubble departure diameter: it enters rise velocity quadratically through Stokes, so a 2\u00d7 sizing error moves void fraction ~4\u00d7. This is the cheapest thing to measure and the first thing to measure."
+      ],
+      "figures": [
+        "docs/figures/gas_holdup_axial_profiles.png",
+        "docs/figures/gas_holdup_scaling_safety.png"
+      ]
+    },
+    "reference_cell_pipeline": {
+      "contract": "aqueous-electrowinning.reference-cell-state",
+      "schema_version": "1.0",
+      "state_id": "screening-RC-1-100",
+      "inputs": {
+        "configuration_id": "RC-1",
+        "active_area_cm2": 10.0,
+        "current_density_mA_cm2": 100.0,
+        "flow_L_min": 0.25,
+        "temperature_C": 60.0,
+        "ambient_temperature_C": 25.0,
+        "initial_temperature_C": null,
+        "relative_humidity": 0.5,
+        "thermal_duration_hr": 1.0,
+        "thermal_dt_s": 10.0,
+        "cooling_active": false,
+        "current_A": 1.0
+      },
+      "predicted": {
+        "status": "screening_prediction",
+        "operating": {
+          "current_A": 1.0,
+          "j_mA_cm2": 100.0,
+          "FE_uncoupled": 0.9952422327089442,
+          "FE_coupled": 0.9952491476961236,
+          "FE_shift_percentage_points": 0.0006914987179418297,
+          "V_cell_uncoupled": 3.6212142502583617,
+          "V_cell_coupled": 3.6212439324788357,
+          "gas_ohmic_penalty_V": 2.968222047394775e-05,
+          "specific_energy_uncoupled_kWh_t": 3492.4477669818425,
+          "specific_energy_coupled_kWh_t": 3492.4763937344865,
+          "specific_energy_with_coupled_fe_kWh_t": 3492.4521280221843,
+          "transport_limit_mA_cm2": 535.4797170810405,
+          "transport_margin": 5.3547971708104045,
+          "surface_pH": 1.9684144016071774,
+          "surface_fe_M": 0.8202226522056626,
+          "feoh2_supersaturation": 2.041737944669523e-08,
+          "precipitation_active": false,
+          "deposition_rate_um_hr": 131.6827509693897,
+          "conductivity_S_m": 10.086222649466922,
+          "V_decomposition": {
+            "E_cathode (V)": -0.4866,
+            "E_anode (V)": 1.229,
+            "E_thermodynamic (V)": 1.7156,
+            "\u03b7_cathode (V)": 0.5306,
+            "\u03b7_anode (V)": 0.4,
+            "IR_electrolyte (V)": 0.175,
+            "IR_membrane (V)": 0.3,
+            "IR_contacts (V)": 0.5,
+            "IR_total (V)": 0.975,
+            "V_cell (V)": 3.6212,
+            "gas_ohmic_penalty_V": 2.968222047394775e-05,
+            "V_cell_coupled": 3.6212439324788357
+          },
+          "transport_converged": true
+        },
+        "gas": {
+          "j_mean_mA_cm2": 100.0,
+          "area_average_FE": 0.99525,
+          "FE_no_bubbles": 0.99524,
+          "FE_shift_percentage_points": 0.0007,
+          "segment_FE": [
+            0.99525,
+            0.99525,
+            0.99525,
+            0.99525
+          ],
+          "delta_forced_um": 50.0,
+          "ohmic_penalty_V": 3e-05,
+          "ohmic_gas_free_V": 0.29744,
+          "hydrogen_flow_L_h_wet_at_T": 0.003,
+          "converged": true,
+          "iterations": 2,
+          "profile": {
+            "y_mm": [
+              6.25,
+              18.75,
+              31.25,
+              43.75
+            ],
+            "j_mA_cm2": [
+              100.001,
+              100.0,
+              100.0,
+              99.999
+            ],
+            "void_fraction": [
+              2e-05,
+              5e-05,
+              8e-05,
+              0.00012
+            ],
+            "kappa_eff_S_m": [
+              10.086,
+              10.0855,
+              10.085,
+              10.0845
+            ],
+            "surface_coverage": [
+              0.00095,
+              0.00095,
+              0.00095,
+              0.00095
+            ],
+            "delta_eff_um": [
+              49.656,
+              49.656,
+              49.656,
+              49.656
+            ],
+            "bubble_diameter_um": 152.19,
+            "rise_velocity_mm_s": 21.632,
+            "outlet_void_fraction": 0.00012,
+            "mean_void_fraction": 7e-05,
+            "conductivity_penalty": 1.0001,
+            "current_uniformity": 1.0
+          }
+        },
+        "thermal": {
+          "T_ss_C": 28.871037971523855,
+          "T_max_C": 60.0,
+          "T_target_C": 60.0,
+          "cooling_duty_target_W": 0.0,
+          "cooling_duty_50C_W": 0.0,
+          "thermal_mass_kJ_K": 8.868,
+          "heat_gen_power_W": 2.341243932478836,
+          "time_hr_points": 360,
+          "temperature_C_points": 360
+        },
+        "ledgers": {
+          "charge": {
+            "duration_s": 3600.0,
+            "applied_cathodic_charge_C": 3600.0,
+            "predicted_fe_mass_g": 1.0368771853515963,
+            "predicted_fe_mass_uncoupled_g": 1.0368699811329745,
+            "predicted_her_fraction": 0.004750852303876396,
+            "hydrogen_flow_L_h_wet": 0.0030167533205613007,
+            "status": "model_projection_only"
+          },
+          "energy": {
+            "stack_energy_Wh": 3.621243932478836,
+            "specific_energy_kWh_t": 3492.4763937344865,
+            "specific_energy_with_coupled_fe_kWh_t": 3492.4521280221843,
+            "auxiliary_energy_Wh": null,
+            "status": "model_projection_only"
+          }
+        },
+        "provenance": {
+          "level": "L0",
+          "status": "screening_prediction",
+          "configuration_id": "RC-1",
+          "config_source": "/home/user/aqueous_electrowinning_steel/processes/reference_cell_rc1.yaml",
+          "models": [
+            "cell_physics.CellPhysics",
+            "gas_holdup.solve_coupled",
+            "thermal_balance.simulate_thermal_transient"
+          ],
+          "gate_evidence": false,
+          "note": "No model output is experimental gate evidence."
+        },
+        "uncertainty": {
+          "status": "not_calibrated",
+          "parameter_uncertainty": "not yet estimated from RC-1 measurements",
+          "dominant_unknowns": [
+            "Fe/HER kinetics and Tafel parameters on the actual cathode",
+            "membrane resistance and crossover",
+            "bubble departure/coverage and bubbly-electrolyte conductivity",
+            "thermal loss coefficients and auxiliary loads"
+          ]
+        }
+      },
+      "observed": null,
+      "safety": {
+        "mode": "advisory",
+        "snapshot_count": 1,
+        "final_state": {
+          "mode": "advisory",
+          "last_timestamp_s": 0.0,
+          "charge_cathodic_C": 0.0,
+          "theoretical_fe_mass_g": 0.0,
+          "trip_reasons": [],
+          "update_count": 1,
+          "last_current_A": 1.0,
+          "last_voltage_V": 3.6212439324788357,
+          "last_temperature_C": 60.0,
+          "last_pH": 2.0,
+          "last_fe2_M": 1.0
+        },
+        "command": {
+          "timestamp_s": 0.0,
+          "mode": "advisory",
+          "current_A": 0.0,
+          "temperature_setpoint_C": 60.0,
+          "reasons": [
+            "actuation_not_armed"
+          ],
+          "source_run_id": "screening-RC-1"
+        },
+        "shutdown_request": null,
+        "trip_reasons": [],
+        "advisory_only": true
+      },
+      "gates": {
+        "status": "not_evidence",
+        "evidence_count": 0,
+        "candidate_verdicts": [],
+        "note": "Simulation output is deliberately excluded from process-gate evidence."
+      },
+      "calibration": {
+        "status": "not_applied",
+        "next_step": "ingest replicated RC-1 run records and fit only declared parameters"
+      },
+      "notes": [
+        "All integrated outputs are L0 screening predictions.",
+        "Safety assessment is advisory; independent shutdown remains required."
       ]
     }
   },
