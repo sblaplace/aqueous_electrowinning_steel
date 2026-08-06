@@ -15,7 +15,20 @@ Fallback: if numba is unavailable, transport.py falls back to solve_ivp.
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
+
+# ── Persist numba cache across Arena sandbox resets ──────────────────
+# Arena wipes __pycache__/ (numba's default cache location) between sessions.
+# Redirect to .numba_cache/ in the repo root, which Arena snapshots preserve.
+# Must be set BEFORE numba is imported — the cache dir is read at import time.
+_NUMBA_CACHE_DIR = os.environ.get("NUMBA_CACHE_DIR")
+if not _NUMBA_CACHE_DIR:
+    _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _candidate = os.path.join(_repo_root, ".numba_cache")
+    os.makedirs(_candidate, exist_ok=True)
+    os.environ["NUMBA_CACHE_DIR"] = _candidate
 
 try:
     from numba import njit as _njit

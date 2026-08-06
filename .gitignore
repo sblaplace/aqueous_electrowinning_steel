@@ -56,6 +56,11 @@ Thumbs.db
 
 # Generated figures are tracked in git (small enough for GitHub)
 
+# Numba JIT cache — excluded from git but MUST survive Arena snapshot wipes.
+# Arena excludes __pycache__/ from snapshots, so numba's default cache location
+# is lost every session.  We redirect it here via NUMBA_CACHE_DIR.
+.numba_cache/
+
 # Test artifacts
 .pytest_cache/
 .worktrees/
