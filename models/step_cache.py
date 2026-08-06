@@ -27,6 +27,9 @@ Safety guarantees
   partial/stale outputs never silently pass.
 * The key incorporates source hashes, so a code change that alters results
   always invalidates the affected steps (and downstream dependents).
+  Both absolute imports (``from models.kinetics import ...``) and relative
+  imports (``from .kinetics import ...``, ``from ..electrochemistry import
+  ...``) are tracked.
 * The key does *not* incorporate dependency *versions* (numpy etc.); those
   are assumed stable within a session.  ``--no-cache`` or ``--force-step``
   are the escape hatches for a dependency upgrade.
@@ -86,7 +89,11 @@ def _parameter_hash(params: Any) -> str:
 
 
 def _resolve_module_file(mod_name: str) -> Optional[Path]:
-    """Return the .py source file for a top-level module name, or None."""
+    """Return the .py source file for a top-level module name, or None.
+
+    Only returns files inside the ``models/`` package — stdlib and
+    third-party modules are excluded from the dependency graph.
+    """
     try:
         spec = importlib.util.find_spec(mod_name)
     except (ModuleNotFoundError, ValueError):
@@ -104,12 +111,95 @@ def _resolve_module_file(mod_name: str) -> Optional[Path]:
     return p
 
 
+def _file_to_dotted_package(filepath: Path) -> Optional[str]:
+    """Derive the dotted package name of a file inside ``models/``.
+
+    E.g. ``models/uncertainty/monte_carlo.py`` → ``"models.uncertainty"``.
+    ``models/transport.py`` → ``"models"`` (top-level package).
+    Returns ``None`` for files not inside ``models/``.
+    """
+    try:
+        rel = filepath.relative_to(MODELS_DIR)
+    except ValueError:
+        return None
+    # Drop the filename, keep the directory parts
+    dir_parts = list(rel.parent.parts)
+    # For files directly in models/, rel.parent is "." → dir_parts=[]
+    # The package is still "models"
+    return "models" + ("" if not dir_parts else "." + ".".join(dir_parts))
+
+
+def _resolve_relative_import(
+    raw: str, containing_file: Path
+) -> Optional[str]:
+    """Resolve a relative import token to an absolute dotted module name.
+
+    Parameters
+    ----------
+    raw : str
+        The import token, e.g. ``".kinetics"``, ``"..electrochemistry"``,
+        or ``".uncertainty.sample"``.
+    containing_file : Path
+        The .py file containing the import statement.
+
+    Returns
+    -------
+    str or None
+        Fully-qualified dotted name (e.g. ``"models.kinetics"``), or None
+        if the import cannot be resolved or falls outside ``models/``.
+    """
+    if not raw.startswith("."):
+        return None  # not a relative import
+
+    # Count leading dots: 1 dot = same package, 2 = parent, etc.
+    dots = 0
+    for ch in raw:
+        if ch == ".":
+            dots += 1
+        else:
+            break
+
+    # The module path after the dots (e.g. "kinetics" or "uncertainty.sample")
+    remainder = raw[dots:]
+    if not remainder:
+        # `from . import foo` — the package itself; we'll pick up the
+        # names in the `import` clause below.  For now, resolve the
+        # package.
+        remainder = ""
+
+    # Walk up (dots - 1) levels from the containing file's package
+    package = _file_to_dotted_package(containing_file)
+    if package is None:
+        return None
+
+    pkg_parts = package.split(".")
+    # `from .` means stay in the same package (dots=1 → go up 0)
+    # `from ..` means go to parent package (dots=2 → go up 1)
+    go_up = dots - 1
+    if go_up > len(pkg_parts) - 1:
+        # Goes above the models/ root — outside our scope
+        return None
+    base_parts = pkg_parts[: len(pkg_parts) - go_up] if go_up > 0 else pkg_parts
+
+    if remainder:
+        candidate = ".".join(base_parts + remainder.split("."))
+    else:
+        candidate = ".".join(base_parts)
+
+    # Only return if it stays within models
+    if candidate.startswith("models"):
+        return candidate
+    return None
+
+
 def _scan_imports(filepath: Path, seen: Optional[Set[Path]] = None) -> Set[Path]:
     """Walk static ``import`` / ``from ... import`` within ``models/``.
 
     This is a *conservative* scanner: it finds all ``models.*`` imports
-    recursively.  It may over-estimate (e.g. conditional imports), which
-    is safe — it just means more files enter the hash, causing more
+    (both absolute like ``from models.kinetics import ...`` and relative
+    like ``from .kinetics import ...`` or ``from ..electrochemistry import
+    ...``) recursively.  It may over-estimate (e.g. conditional imports),
+    which is safe — it just means more files enter the hash, causing more
     invalidation than strictly necessary, never less.
     """
     if seen is None:
@@ -125,35 +215,78 @@ def _scan_imports(filepath: Path, seen: Optional[Set[Path]] = None) -> Set[Path]
 
     for line in text.splitlines():
         stripped = line.strip()
-        # Skip comments
-        if stripped.startswith("#"):
+        # Skip comments and blank lines
+        if not stripped or stripped.startswith("#"):
             continue
-        # import models.foo / import models.foo as bar
-        # from models.foo import ... / from models.foo.bar import ...
-        for keyword in ("import ", "from "):
-            if not stripped.startswith(keyword):
-                continue
-            tokens = stripped[len(keyword):].split()
+
+        # ── from X import ... ──────────────────────────────────────
+        if stripped.startswith("from "):
+            tokens = stripped[len("from "):].split()
             if not tokens:
                 continue
-            raw = tokens[0].split(",")[0]  # first token before comma
-            # Walk up to find the longest resolvable models.* submodule
-            parts = raw.split(".")
-            for end in range(len(parts), 0, -1):
-                candidate = ".".join(parts[:end])
-                if not candidate.startswith("models"):
-                    break
-                resolved = _resolve_module_file(candidate)
-                if resolved is not None:
-                    _scan_imports(resolved, seen)
-                    break
-            break  # handled the line
+            raw = tokens[0].rstrip(",")
+
+            # Resolve the import token to a candidate module name
+            if raw.startswith("."):
+                # Relative import: from .foo import ...
+                candidate_abs = _resolve_relative_import(raw, filepath)
+                if candidate_abs is None:
+                    continue
+                candidates = [candidate_abs]
+            else:
+                # Absolute import: from models.foo import ...
+                candidates = _walk_candidates(raw)
+
+            _try_resolve_and_recurse(candidates, seen)
+
+        # ── import X ───────────────────────────────────────────────
+        elif stripped.startswith("import "):
+            tokens = stripped[len("import "):].split(",")
+            for tok in tokens:
+                raw = tok.strip().split()[0] if tok.strip() else ""
+                if not raw:
+                    continue
+                if raw.startswith("."):
+                    candidate_abs = _resolve_relative_import(raw, filepath)
+                    if candidate_abs is None:
+                        continue
+                    candidates = [candidate_abs]
+                else:
+                    candidates = _walk_candidates(raw)
+                _try_resolve_and_recurse(candidates, seen)
 
     return seen
 
 
+def _walk_candidates(raw: str) -> list[str]:
+    """Given an absolute import token, return candidate dotted names
+    from longest to shortest (e.g. ``"models.foo.bar"`` →
+    ``["models.foo.bar", "models.foo"]``).
+    """
+    parts = raw.split(".")
+    candidates = []
+    for end in range(len(parts), 0, -1):
+        candidate = ".".join(parts[:end])
+        if candidate.startswith("models"):
+            candidates.append(candidate)
+    return candidates
+
+
+def _try_resolve_and_recurse(candidates: list[str], seen: Set[Path]) -> None:
+    """Try each candidate module name; recurse into the first one that
+    resolves to a file inside ``models/``.
+    """
+    for candidate in candidates:
+        resolved = _resolve_module_file(candidate)
+        if resolved is not None:
+            _scan_imports(resolved, seen)
+            return
+
+
 def transitive_deps(module_name: str) -> FrozenSet[Path]:
-    """Return the frozen set of ``models/*.py`` files *module_name* transitively depends on."""
+    """Return the frozen set of ``models/*.py`` files *module_name*
+    transitively depends on (including relative and absolute imports).
+    """
     entry = _resolve_module_file(module_name)
     if entry is None:
         return frozenset()
