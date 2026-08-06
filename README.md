@@ -43,7 +43,7 @@ This repository hosts the technical exposition, literature synthesis, and propos
 
 **The next gate is physical, not conceptual:** a controlled dataset in the intended divided sulfate cell — iron deposition, Faradaic efficiency, V_cell decomposition, deposit quality, electrolyte balance — at useful current density. **Decision-grade kill criterion:** at j ≥ 300 mA/cm², kill or redesign if replicated divided-cell runs cannot sustain FE ≥ 70% and net DC ≤ 4,000 kWh/t Fe. The primary artifact is a weighed, characterized iron deposit with a closed charge/mass/electrolyte balance — not a photograph.
 
-Full position: **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)** · roadmap: **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)** · twin vision: **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)**
+Full position: **[docs/PROGRAM_SUMMARY.md](docs/PROGRAM_SUMMARY.md)** · roadmap: **[docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)** · twin vision: **[docs/SYSTEM_TWIN.md](docs/SYSTEM_TWIN.md)** · strategic positioning: **[docs/STRATEGIC_POSITIONING.md](docs/STRATEGIC_POSITIONING.md)**
 
 ---
 
