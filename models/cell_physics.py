@@ -18,7 +18,8 @@ Data flow:
 References
 ----------
 - transport.py — steady 1-D Nernst-Planck film model
-- speciation.py — Davies activity coefficients, HSO4⁻/FeSO4 pairing
+- speciation.py — Pitzer activity coefficients, HSO4⁻ dissociation
+  (legacy Davies + explicit FeSO4⁰ pairing retained for A/B only)
 - electrochemistry.py — CellVoltageModel, conductivity, diffusivity
 - kinetics.py — DepositionKinetics, Tafel branches
 - anode.py — AnodeKinetics, bubble resistance
@@ -222,7 +223,12 @@ class CellPhysics:
             E_cathode_eq=self._spec.get("E_rev_Fe_V_SHE", -0.440),
             eta_cathode=cathode_overpotential_V,
             temperature_C=self.conditions.temperature_C,
-            fe2_conc_M=self._free_fe2_M,
+            # fe2_conc_M drives the Nernst term (γ≡1 inside CellVoltageModel),
+            # so it must receive the speciation ACTIVITY a_Fe2+, not a
+            # nominal concentration.  With the Pitzer model (2026-08 default)
+            # a_Fe2+ is small (≈0.05) and this term matters; the superseded
+            # Davies path smuggled the same effect in via "free" [Fe²⁺].
+            fe2_conc_M=self._activity_fe2,
             electrolyte_conductivity_S_m=self._conductivity,
             interelectrode_gap_m=g.interelectrode_gap_m,
             contact_resistance_ohm_m2=g.contact_resistance_ohm_m2,

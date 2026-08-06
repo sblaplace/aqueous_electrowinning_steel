@@ -81,9 +81,32 @@ class TestTafelBranch:
 
 class TestDepositionKinetics:
     def test_defaults_construct_and_expose_branches(self):
-        k = DepositionKinetics()
-        assert k.fe_branch.i0 == k.fe_i0
-        assert k.her_branch.i0 == k.her_i0
+        """At the kinetics reference temperature (50 °C) the branches expose
+        the configured i0; elsewhere they are Arrhenius-scaled."""
+        k = DepositionKinetics(temperature_C=50.0)
+        assert k.fe_branch.i0 == pytest.approx(k.fe_i0)
+        assert k.her_branch.i0 == pytest.approx(k.her_i0)
+
+    def test_exchange_currents_are_arrhenius_scaled(self):
+        """2026-08 physics change: i0 now carries an Arrhenius temperature
+        dependence (previously constant).  HER (Ea≈60 kJ/mol) grows faster
+        than Fe deposition (Ea≈50 kJ/mol) with temperature."""
+        cold = DepositionKinetics(temperature_C=30.0)
+        hot = DepositionKinetics(temperature_C=70.0)
+        assert cold.fe_branch.i0 < cold.fe_i0 < hot.fe_branch.i0
+        assert cold.her_branch.i0 < cold.her_i0 < hot.her_branch.i0
+        ratio_fe = hot.fe_branch.i0 / cold.fe_branch.i0
+        ratio_her = hot.her_branch.i0 / cold.her_branch.i0
+        assert ratio_her > ratio_fe  # HER Ea is larger
+
+    def test_current_efficiency_temperature_trend_is_physical(self):
+        """With HER Ea > Fe Ea, galvanostatic FE falls with temperature at
+        fixed current density — the direction long known for Zn/Fe
+        electrowinning, where CE peaks at moderate temperature because the
+        hydrogen branch is more strongly activated than metal deposition."""
+        cold = DepositionKinetics(temperature_C=30.0, her_i0=1e-4)
+        hot = DepositionKinetics(temperature_C=70.0, her_i0=1e-4)
+        assert hot.efficiency_at_current(100.0) < cold.efficiency_at_current(100.0)
 
     def test_temperature_property(self):
         assert DepositionKinetics(temperature_C=60.0).T == pytest.approx(333.15)

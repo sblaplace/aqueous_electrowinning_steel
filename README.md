@@ -130,7 +130,8 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 |--------|---------|
 | `models/electrochemistry.py` | Faraday's law, cell-voltage decomposition, specific energy |
 | `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
-| `models/kinetics.py` | Butler–Volmer Fe/HER partial currents, mass-transport limits, current efficiency |
+| `models/speciation.py` + `models/pitzer.py` | **Pitzer** multicomponent activities for the concentrated Fe²⁺–Na⁺–H⁺ ∥ SO₄²⁻–HSO₄⁻ bath (validated against NaCl/Na₂SO₄/MgSO₄/FeSO₄ anchors), bisulfate dissociation, water activity, conductivity, Nernst reversible potentials; legacy Davies path retained for comparison |
+| `models/kinetics.py` | Butler–Volmer Fe/HER partial currents with **Arrhenius-temperature** exchange currents, mass-transport limits, current efficiency |
 | `models/boundary_layer.py` | Local cathode pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `models/transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, multi-ion profiles, migration-corrected limiting current |
 | `models/pulse.py` | Transient 1-D diffusion-kinetics model for **pulsed (PE) and pulse-reverse (PRE)** electrodeposition |

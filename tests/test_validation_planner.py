@@ -86,8 +86,11 @@ def test_sequential_planner_removes_completed():
     assert first_exp not in remaining_names, (
         f"Completed experiment '{first_exp}' still in remaining plan"
     )
-    # Should have one fewer
-    assert len(remaining.experiments) == len(plan_initial.experiments) - 1
+    # 2026-08: the catalog grew to 8 experiments while the initial plan is
+    # budget-capped at 7, and sequential_planner is uncapped — so it returns
+    # every un-completed catalog experiment, not "one fewer" than the capped
+    # initial plan (that identity only held while catalog size == budget).
+    assert len(remaining.experiments) == len(experiment_catalog()) - 1
 
 
 # ---------------------------------------------------------------------------

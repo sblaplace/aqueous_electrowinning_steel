@@ -115,7 +115,10 @@ def evaluate_operating_point(
     # 5. Cell voltage & Specific energy
     v_model = CellVoltageModel(
         temperature_C=T_C,
-        fe2_conc_M=c_Fe2_M,
+        # Nernst driver is the Fe2+ activity from speciation (γ≡1 inside
+        # CellVoltageModel); passing the nominal recipe concentration would
+        # erase the activity correction now handled by the Pitzer model.
+        fe2_conc_M=spec_res["a_Fe2"],
         eta_cathode=eta_c,
         interelectrode_gap_m=gap_cm / 100.0,
         j_operating_mA_cm2=j_mA_cm2,

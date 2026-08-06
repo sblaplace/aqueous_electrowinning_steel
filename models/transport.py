@@ -60,7 +60,13 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
 from .electrochemistry import E0_FE, FARADAY, R_GAS
-from .kinetics import limiting_current_density
+from .kinetics import (
+    EA_FE_DEPOSITION_J_MOL,
+    EA_HER_ON_FE_J_MOL,
+    I0_REF_K,
+    arrhenius_i0,
+    limiting_current_density,
+)
 from .pourbaix import LOGKSP_FEOH2, her_line
 
 # Water autoprotolysis constant expressed in (mol/m^3)^2:
@@ -169,6 +175,11 @@ class NernstPlanckFilm:
     her_i0: float = 1e-6
     fe_tafel_V: float = 0.120
     her_tafel_V: float = 0.140
+    # Exchange-current densities are anchored at kinetics_ref_K and
+    # Arrhenius-scaled to the operating temperature; see models/kinetics.py.
+    fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
+    her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL
+    kinetics_ref_K: float = I0_REF_K
     diffusivity_fe_m2_s: float = D_FE
     diffusivity_h_m2_s: float = D_H
     diffusivity_oh_m2_s: float = D_OH
@@ -369,6 +380,16 @@ class NernstPlanckFilm:
         activity = max(fe_surface_M, 1e-15)
         return E0_FE + (R_GAS * self.T / (2.0 * FARADAY)) * np.log(activity)
 
+    @property
+    def fe_i0_T(self) -> float:
+        """Fe exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.fe_i0, self.T, self.fe_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def her_i0_T(self) -> float:
+        """HER exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.her_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K)
+
     def _tafel_current(self, E: float, i0: float, slope: float, E_eq: float) -> float:
         return float(i0 * 10.0 ** ((E_eq - E) / slope))
 
@@ -376,11 +397,11 @@ class NernstPlanckFilm:
         """Tafel currents evaluated at the surface produced by (i_fe, i_her)."""
         profile = self.integrate(i_fe, i_her)
         her = self._tafel_current(
-            E, self.her_i0, self.her_tafel_V,
+            E, self.her_i0_T, self.her_tafel_V,
             float(her_line(float(profile.pH[0]), self.T)),
         )
         fe_kin = self._tafel_current(
-            E, self.fe_i0, self.fe_tafel_V,
+            E, self.fe_i0_T, self.fe_tafel_V,
             self._fe_equilibrium_potential(float(profile.fe_M[0])),
         )
         # Deposition cannot outrun what the film can deliver.  A hard min()

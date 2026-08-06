@@ -16,16 +16,59 @@ Sign convention
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
 import numpy as np
 from scipy.optimize import brentq
 
-from .electrochemistry import FARADAY, M_FE, Z_FE
+from .electrochemistry import FARADAY, M_FE, R_GAS, Z_FE
 from .pourbaix import her_line
 
 T_REF = 298.15
+
+# ─── Arrhenius temperature corrections for kinetics ──────────────────
+#
+# Exchange current densities in this repository are anchored at the bath
+# reference temperature I0_REF_K = 323.15 K (50 °C) — i.e. the literature
+# i0 values configured in this module represent the kinetics *at the
+# electrolyte reference condition*, not at 25 °C.
+#
+# Apparent activation energies (screening values, ±50 %):
+#   Fe²⁺ + 2e⁻ → Fe on Fe, sulfate media: Ea ≈ 50 kJ/mol
+#     (metal-deposition apparent Ea's are typically 40–60 kJ/mol;
+#      e.g. Axt & Grant-style ferrous sulfate polarization data)
+#   HER on Fe, mildly acidic media: Ea ≈ 60 kJ/mol
+#     (HER apparent Ea's on iron-group metals in acid are typically
+#      50–90 kJ/mol)
+# Consequence: the HER branch (Ea ≈ 60) is more temperature-activated
+# than Fe deposition (Ea ≈ 50), so at galvanostatic, HER-active
+# conditions FE falls modestly with temperature — the CE-peaks-at-
+# moderate-T behaviour long known for ferrous/zinc electrowinning — while
+# transport-limited cases can still improve via D(T).
+EA_FE_DEPOSITION_J_MOL = 50.0e3   # J/mol
+EA_HER_ON_FE_J_MOL = 60.0e3       # J/mol
+I0_REF_K = 323.15                 # K (50 °C)
+EA_DIFFUSION_J_MOL = 18.0e3       # J/mol (aqueous diffusivities)
+D_REF_K = 298.15                  # K — diffusivity literature anchor (25 °C)
+
+
+def arrhenius_i0(i0_ref: float, T_K: float, Ea_J_mol: float,
+                 T_ref_K: float = I0_REF_K) -> float:
+    """Exchange current density at temperature T_K.
+
+    i0(T) = i0(T_ref) · exp[ Ea/R · (1/T_ref − 1/T) ]
+    """
+    return float(i0_ref * math.exp((Ea_J_mol / R_GAS) * (1.0 / T_ref_K - 1.0 / T_K)))
+
+
+def arrhenius_diffusivity(D_ref: float, T_K: float,
+                          Ea_J_mol: float = EA_DIFFUSION_J_MOL,
+                          T_ref_K: float = D_REF_K) -> float:
+    """Diffusivity at temperature T_K (Arrhenius; same convention as
+    ``diffusion_layer_1d._diffusivity_T``)."""
+    return float(D_ref * math.exp((Ea_J_mol / R_GAS) * (1.0 / T_ref_K - 1.0 / T_K)))
 
 
 def limiting_current_density(
@@ -93,13 +136,24 @@ class DepositionKinetics:
     temperature_C : float
         Temperature in degrees Celsius.
     fe_i0, her_i0 : float
-        Exchange current densities (A/m^2).
+        Exchange current densities (A/m^2) **at the kinetics reference
+        temperature** ``kinetics_ref_K`` (default 50 °C).  At any other
+        temperature they are Arrhenius-scaled with
+        ``fe_i0_Ea_J_mol`` / ``her_i0_Ea_J_mol``.
     fe_tafel_V, her_tafel_V : float
         Cathodic Tafel slopes (V/decade).
     fe_conc_M : float
         Bulk Fe2+ concentration (mol/L), used for the limiting current.
     boundary_layer_m : float
         Nernst diffusion layer thickness (m); agitation reduces this.
+    fe_i0_Ea_J_mol, her_i0_Ea_J_mol : float
+        Apparent activation energies of the two branches (J/mol).
+    kinetics_ref_K : float
+        Anchor temperature for the i0 values (K).  Results at 50 °C are
+        identical to the pre-Arrhenius model by construction.
+    diffusivity_Ea_J_mol : float
+        Activation energy for Fe2+ diffusivity (J/mol); default
+        diffusivity is the 25 °C literature value.
     """
 
     pH: float = 2.0
@@ -112,26 +166,46 @@ class DepositionKinetics:
     diffusivity_m2_s: float = 7.2e-10
     boundary_layer_m: float = 5e-5
     fe_E_eq: float = -0.440
+    fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
+    her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL
+    kinetics_ref_K: float = I0_REF_K
+    diffusivity_Ea_J_mol: float = EA_DIFFUSION_J_MOL
 
     @property
     def T(self) -> float:
         return self.temperature_C + 273.15
 
     @property
+    def fe_i0_T(self) -> float:
+        """Fe exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.fe_i0, self.T, self.fe_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def her_i0_T(self) -> float:
+        """HER exchange current density Arrhenius-scaled to T."""
+        return arrhenius_i0(self.her_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K)
+
+    @property
+    def D_fe_T(self) -> float:
+        """Fe2+ diffusivity Arrhenius-scaled to T (25 °C anchor)."""
+        return arrhenius_diffusivity(self.diffusivity_m2_s, self.T,
+                                     self.diffusivity_Ea_J_mol)
+
+    @property
     def i_lim(self) -> float:
         """Diffusion-limited Fe deposition current density (A/m^2)."""
         return limiting_current_density(
-            self.fe_conc_M * 1000.0, self.diffusivity_m2_s, self.boundary_layer_m
+            self.fe_conc_M * 1000.0, self.D_fe_T, self.boundary_layer_m
         )
 
     @property
     def fe_branch(self) -> TafelBranch:
-        return TafelBranch(self.fe_i0, self.fe_tafel_V, self.fe_E_eq, self.i_lim)
+        return TafelBranch(self.fe_i0_T, self.fe_tafel_V, self.fe_E_eq, self.i_lim)
 
     @property
     def her_branch(self) -> TafelBranch:
         return TafelBranch(
-            self.her_i0, self.her_tafel_V, float(her_line(self.pH, self.T))
+            self.her_i0_T, self.her_tafel_V, float(her_line(self.pH, self.T))
         )
 
     # ─── Partial currents ─────────────────────────────────────────────

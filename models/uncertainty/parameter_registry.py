@@ -299,6 +299,16 @@ REGISTRY["fe_tafel_V"] = _p(
     "fe_tafel_V", 0.120, 0.020, (0.060, 0.200), "normal",
     "Fe cathodic Tafel slope (screening)", module="kinetics")
 
+REGISTRY["fe_i0_Ea_J_mol"] = _p(
+    "fe_i0_Ea_J_mol", 50.0e3, 12.0e3, (25.0e3, 85.0e3), "uniform",
+    "Apparent activation energy, Fe2+ deposition (screening; metal-deposition "
+    "family 40-60 kJ/mol)", module="kinetics")
+
+REGISTRY["her_i0_Ea_J_mol"] = _p(
+    "her_i0_Ea_J_mol", 60.0e3, 15.0e3, (30.0e3, 95.0e3), "uniform",
+    "Apparent activation energy, HER on Fe (screening; iron-group HER family "
+    "50-90 kJ/mol)", module="kinetics")
+
 REGISTRY["her_tafel_V"] = _p(
     "her_tafel_V", 0.140, 0.020, (0.080, 0.220), "normal",
     "HER cathodic Tafel slope (screening)", module="kinetics")
