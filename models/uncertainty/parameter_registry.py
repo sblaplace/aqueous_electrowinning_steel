@@ -426,6 +426,22 @@ REGISTRY["kappa_Ea_kJ_mol"] = _p(
     "kappa_Ea_kJ_mol", 15.0, 3.0, (8.0, 25.0), "triangular",
     "Ionic conductivity activation energy kJ/mol (screening)", module="electrochemistry")
 
+# 2026-08 additions: the anode-side conductivity of the divided cell is
+# carried as an explicitly assumed/unmeasured screening parameter (no
+# instrument reading exists), and the Fe2+ autoxidation rate mirrors
+# bath_startup.k_ox_ref (Sung & Morgan screening value).  Both have
+# negligible prior variance next to the Ea block (std^2 = 400 and 2.5e-9
+# vs the 4.28e8 registry total), so planner rankings do not move.
+REGISTRY["anolyte_conductivity_S_m"] = _p(
+    "anolyte_conductivity_S_m", 60.0, 20.0, (20.0, 100.0), "uniform",
+    "Divided-cell anolyte conductivity S/m (assumed, unmeasured; screening)",
+    module="cell")
+
+REGISTRY["fe2_autoxidation_k_ref"] = _p(
+    "fe2_autoxidation_k_ref", 1.0e-4, 5.0e-5, (1.0e-5, 1.0e-3), "lognormal",
+    "Fe2+ autoxidation rate constant M^-1 s^-1 at 25 C, pH 2 "
+    "(Sung & Morgan 1980 screening; models/bath_startup.py)", module="bath_startup")
+
 REGISTRY["interelectrode_gap_m"] = _p(
     "interelectrode_gap_m", 0.02, 0.005, (0.005, 0.05), "triangular",
     "Interelectrode gap m (screening)", module="electrochemistry")
