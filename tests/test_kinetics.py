@@ -180,7 +180,13 @@ class TestDepositionKinetics:
         E, i_fe, i_h, i_tot, ce = k.polarization_curve()
         assert len(E) == len(i_fe) == len(i_h) == len(i_tot) == len(ce)
         assert np.all(i_tot >= i_fe - 1e-12)
-        assert np.all((ce >= 0.0) & (ce <= 1.0))
+        # 2026-08: with full Butler–Volmer branches the sweep tail runs
+        # anodic of E_eq(Fe), where Fe dissolves (i_fe < 0) and CE as a
+        # ratio is undefined; the [0,1] bound holds wherever both partial
+        # currents are cathodic (the galvanostatic CE regime).
+        both_cathodic = (i_fe > 0.0) & (i_h > 0.0)
+        assert both_cathodic.any()
+        assert np.all((ce[both_cathodic] >= 0.0) & (ce[both_cathodic] <= 1.0))
 
     def test_efficiency_sweep_returns_paired_arrays(self):
         js, ces = DepositionKinetics().efficiency_sweep([10.0, 50.0, 100.0])

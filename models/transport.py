@@ -63,6 +63,8 @@ from .electrochemistry import E0_FE, FARADAY, R_GAS
 from .kinetics import (
     EA_FE_DEPOSITION_J_MOL,
     EA_HER_ON_FE_J_MOL,
+    FE_ANODIC_SLOPE_V,
+    HER_ANODIC_SLOPE_V,
     I0_REF_K,
     arrhenius_i0,
     limiting_current_density,
@@ -180,6 +182,9 @@ class NernstPlanckFilm:
     fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
     her_i0_Ea_J_mol: float = EA_HER_ON_FE_J_MOL
     kinetics_ref_K: float = I0_REF_K
+    # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
+    fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
+    her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
     diffusivity_fe_m2_s: float = D_FE
     diffusivity_h_m2_s: float = D_H
     diffusivity_oh_m2_s: float = D_OH
@@ -390,20 +395,32 @@ class NernstPlanckFilm:
         """HER exchange current density Arrhenius-scaled to T."""
         return arrhenius_i0(self.her_i0, self.T, self.her_i0_Ea_J_mol, self.kinetics_ref_K)
 
-    def _tafel_current(self, E: float, i0: float, slope: float, E_eq: float) -> float:
-        return float(i0 * 10.0 ** ((E_eq - E) / slope))
+    def _bv_current(self, E: float, i0: float, slope_c: float,
+                    slope_a: float, E_eq: float) -> float:
+        """Full Butler–Volmer branch current (cathodic positive; signed).
+
+        i = i0·(10^((E_eq−E)/b_c) − 10^((E−E_eq)/b_a)).  Negative anodic of
+        E_eq (dissolution / H₂ ionisation); 0 exactly at E=E_eq.
+        """
+        return float(i0 * (10.0 ** ((E_eq - E) / slope_c)
+                           - 10.0 ** ((E - E_eq) / slope_a)))
 
     def _kinetic_currents(self, E: float, i_fe: float, i_her: float):
         """Tafel currents evaluated at the surface produced by (i_fe, i_her)."""
         profile = self.integrate(i_fe, i_her)
-        her = self._tafel_current(
-            E, self.her_i0_T, self.her_tafel_V,
+        her = self._bv_current(
+            E, self.her_i0_T, self.her_tafel_V, self.her_anodic_slope_V,
             float(her_line(float(profile.pH[0]), self.T)),
         )
-        fe_kin = self._tafel_current(
-            E, self.fe_i0_T, self.fe_tafel_V,
+        fe_kin = self._bv_current(
+            E, self.fe_i0_T, self.fe_tafel_V, self.fe_anodic_slope_V,
             self._fe_equilibrium_potential(float(profile.fe_M[0])),
         )
+        # Dissolution (negative BV net) is outside the screening (cathodic-
+        # only) envelope: treat the branch as off, consistent with the
+        # existing floor behaviour of the log-space solve below.
+        her = max(her, 0.0)
+        fe_kin = max(fe_kin, 0.0)
         # Deposition cannot outrun what the film can deliver.  A hard min()
         # would make the residual non-smooth (and the surface Fe2+ collapse
         # onto the numerical floor, destroying the kinetic feedback), so the
