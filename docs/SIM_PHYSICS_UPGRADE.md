@@ -23,9 +23,10 @@ ProcessConditions(transport_model="dilute_np")
 ```
 
 This is an A/B comparison path, not the default reference-cell model. The
-reactive path is still a reduced-order screening model: it does not yet solve
-Pitzer activities at every film node, include multicomponent Maxwell–Stefan
-cross-diffusion, or consume Fe into precipitated solids.
+reactive path is still a reduced-order screening model: per-surface Pitzer gamma
+now feeds the Nernst term at the surface composition and a post-integration
+Fe(OH)2 sludge diagnostic closes the iron ledger; full Maxwell–Stefan
+cross-diffusion and a coupled diffusion-reaction sink in the ODE remain next.
 
 ### Shared thermodynamic anchors
 
@@ -61,9 +62,10 @@ YAML declares its current comparator explicitly as `inert`; a soluble-anode
 campaign must opt into the other mode and provide its Fe²⁺ concentration and
 calibrated dissolution kinetics.
 
-Anode gas/acid/Fe inventory balances are still a follow-up. The inert branch
-continues to use the fixed OER fallback until a material-specific anode is
-selected and measured.
+Anode gas/acid/Fe inventory balances are still a follow-up. As of the
+second tranche the inert branch defaults to the DSA IrO2-Ta2O5 first-principles
+anode (Trasatti) at operating T/pH; the fixed-eta fallback remains behind
+``anode_chemistry="fixed"`` for A/B.
 
 ### Buffer capacity
 
@@ -75,12 +77,13 @@ capacity is negligible compared with free proton and sulfate contributions.
 
 ## Current regenerated screens
 
-After this upgrade, the regenerated machine-readable reports show the impact
+After the second tranche (per-surface Pitzer gamma, DSA anode, precipitation sink,
+Donnan helpers), the regenerated machine-readable reports show the impact
 of the consistency fixes (all still `unvalidated (L0)`):
 
-- theory-confidence reference point: FE **0.9926**, V_cell **5.388 V**,
-  specific energy **5211 kWh/t Fe**;
-- coupled gas screen minimum: **3448.0 → 3448.1 kWh/t Fe** after the gas
+- theory-confidence reference point: FE **0.9926**, V_cell **5.246 V**,
+  specific energy **5073 kWh/t Fe** (DSA IrO2-Ta2O5 anode at operating pH, per-surface Pitzer gamma);
+- coupled gas screen minimum: **3385.1 → 3385.2 kWh/t Fe** after the gas
   correction at the screened 150 mA/cm² / 1.5 mm / low-contact point;
 - the reactive-film transport limit at that point is approximately
   **782 mA/cm²**, versus the 150 mA/cm² operating duty.
