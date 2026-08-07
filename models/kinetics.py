@@ -26,6 +26,18 @@ from scipy.optimize import brentq
 from .electrochemistry import FARADAY, M_FE, R_GAS, Z_FE
 from .pourbaix import her_line
 
+# Adapter reference: ``models.surface_state.SurfaceStateKinetics``
+# wraps ``DepositionKinetics`` behind the ``her_i0`` seam.  The
+# adapter consumes ``base.her_i0_T`` (not ``base.her_i0`` directly)
+# and applies the surface-state correction (site-blocking, Temkin
+# coverage, facet ensemble) with ``use_frumkin=False`` by default.
+# See ``models/surface_state.py`` for the mechanism layer.
+#
+# Note: ``kinetics.py`` does NOT import ``SurfaceStateKinetics``
+# directly to avoid circular imports; consumers (``pulse.py``,
+# ``diffusion_layer_1d``, ``coupled_cell_physics``) import from
+# ``surface_state`` when they need the adapter.
+
 T_REF = 298.15
 
 # ─── Arrhenius temperature corrections for kinetics ──────────────────

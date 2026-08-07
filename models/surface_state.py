@@ -467,62 +467,87 @@ class SurfaceCoverage:
 class SurfaceStateKinetics:
     """Wrap :class:`DepositionKinetics` and return a *corrected* effective
     ``i₀,H`` and effective overpotential, accounting for surface
-    coverage and Frumkin IHP shift.
+    coverage (Temkin), facet ensemble, and anion site-blocking.
 
-    The wrapper does *not* modify the underlying kinetics object — it
-    is read-only.  This is the drop-in replacement for the existing
-    ``DepositionKinetics.her_i0`` lookup, in code that already uses
-    the kinetics class.  Consumers that want the bulk-effective
-    partial currents should switch their own branch building to use
-    :meth:`partial_currents` below.
+    The Frumkin ψ₁ correction is **opt-in** (``use_frumkin=True``)
+    and **flagged OFF by default** because it is the calibration-fragile
+    amplifier: with ``eta_screening`` the i₀ suppression swings
+    44× → 10⁶×.  Baking it into every FE prediction hides the real
+    mechanism (site-blocking) behind a single tuning parameter.
+
+    The adapter is **additive** — it wraps the base ``DepositionKinetics``
+    without modifying it, so ``pulse.py``, ``diffusion_layer_1d`` and
+    other consumers are unaffected.  The full surface-state params
+    (esp. ``eta_screening``) propagate through ``surface_state()``
+    without silent default-rebuild; see ``tests/test_surface_state.py``
+    ``TestEtaScreeningPropagation``.
 
     Why a wrapper, not a fork
     -------------------------
     The existing ``DepositionKinetics`` and its downstream users
-    (``diffusion_layer_1d``, ``pulse``, ``coupled_cell_physics``) are
-    intentionally forward-compatible: the ``her_i0`` field is read at
-    evaluation time, and a *replacement* ``DepositionKinetics``
-    constructed with the corrected ``her_i0`` is bit-identical
-    outside the loop.  This wrapper is the seam.
+    are intentionally forward-compatible: the ``her_i0`` field is
+    read at evaluation time.  The adapter consumes ``base.her_i0_T``
+    and returns a corrected value — the seam is intact.
     """
     base: "object"  # ``DepositionKinetics`` from models.kinetics
     facets: FacetDistribution = field(default_factory=FacetDistribution)
     anion_coverages: Tuple[AnionCoverage, ...] = ()
+    use_frumkin: bool = False  # opt-in; OFF by default (calibration-fragile)
 
     @property
     def T_K(self) -> float:
         return self.base.T
 
     def surface_state(self, eta_V: float) -> SurfaceCoverage:
+        """Build ``SurfaceCoverage`` with full parameter propagation.
+
+        The previous reconstruction rebuilt ``AnionCoverage`` objects
+        from ``self.base.T_K`` (not ``a.T_K``), which was the silent
+        default-rebuild bug: any patched ``eta_screening`` or different
+        temperature in the original coverage was silently overwritten.
+        We now propagate the original coverages directly — only ``eta_V``
+        changes, the bath recipe (anion set, concentrations, screening)
+        remains intact.
+        """
         return SurfaceCoverage(
             eta_V=eta_V,
             T_K=self.T_K,
             facets=self.facets,
-            adsorbed_anions=tuple(
-                AnionCoverage(
-                    a.anion, a.c_bulk_M, self.T_K,
-                    eta_screening=a.eta_screening,
-                )
-                for a in self.anion_coverages
-            ),
+            adsorbed_anions=self.anion_coverages,
         )
 
     def her_i0_corrected(self, eta_V: float) -> float:
-        """Effective i₀,H at this η — replaces the bare ``her_i0``."""
-        return self.surface_state(eta_V).i0_H_from_intrinsic(
-            self.base.her_i0_T
-        )
+        """Effective i₀,H at this η — the robust core (site-blocking +
+        Temkin coverage + facet ensemble) by default; Frumkin is opt-in.
+
+        With ``use_frumkin=False`` (default) the correction factor is:
+            i₀,H_eff = i₀,H_intrinsic · θ_H(1-θ_H) · (1-θ_block)
+        This is the mechanism prediction that does not depend on the
+        calibration-fragile ``eta_screening`` amplifier.
+        """
+        ss = self.surface_state(eta_V)
+        th = ss.theta_H
+        tb = ss.theta_block
+        ratio = th * (1.0 - th) * (1.0 - tb)
+        if self.use_frumkin:
+            ratio *= ss.frumkin_factor
+        return self.base.her_i0_T * ratio
 
     def eta_effective_V(self, eta_V: float) -> float:
-        """Frumkin-corrected overpotential for the HER BV step.
+        """Overpotential for the HER BV step, with optional Frumkin.
 
-        Returns η_eff = η − ψ₁, the overpotential that *enters*
-        the BV exponent (Bockris & Reddy §7.7):
-            i_c = i₀ · exp(-αF·η_eff/RT)
-        For anion-down adsorption (ψ₁ < 0), η_eff > η — the
-        effective overpotential is *larger* and HER is suppressed
-        (Frumkin effect, textbook sign).
+        With ``use_frumkin=True``: η_eff = η − ψ₁ (textbook sign,
+        Bockris & Reddy §7.7).  For anion-down adsorption (ψ₁ < 0),
+        η_eff > η — the effective overpotential is larger and HER
+        is suppressed.
+
+        With ``use_frumkin=False`` (default): η_eff = η.  The
+        suppression is carried entirely by the corrected ``i₀,H``
+        (site-blocking + coverage), not by shifting the BV exponent.
+        This is the robust core claim.
         """
+        if not self.use_frumkin:
+            return eta_V
         return eta_V - self.surface_state(eta_V).psi_1_V
 
     def partial_currents(self, E):
@@ -552,8 +577,7 @@ class SurfaceStateKinetics:
         i_h = np.zeros_like(E, dtype=float)
         for idx, e_val in enumerate(np.ravel(E)):
             eta = her_E_eq - float(e_val)
-            cov = self.surface_state(eta)
-            i0_eff = cov.i0_H_from_intrinsic(self.base.her_i0_T)
+            i0_eff = self.her_i0_corrected(eta)
             eta_eff = self.eta_effective_V(eta)
             # BV at this point; the cathodic arm only (HER is not
             # transport-capped on a free surface).
