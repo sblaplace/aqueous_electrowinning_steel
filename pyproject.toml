@@ -1,7 +1,7 @@
 [project]
 name = "aqueous-electrowinning-steel"
 version = "0.5.0"
-description = "Aqueous electrowinning for sustainable steel — thermodynamics, kinetics, transport, cell architecture, adhesion/peel, pulse, co-deposition, mechanical, carburization, tempering, techno-economics"
+description = "Aqueous electrowinning for sustainable steel — thermodynamics, kinetics, transport, cell architecture, adhesion/peel, pulse, co-deposition, mechanical, carburization, tempering, surface-state HER chemistry, chloride speciation, techno-economics"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
@@ -78,6 +78,8 @@ aq-steel-reference-cell-design = "models.run_reference_cell_design:main"
 aq-steel-reference-cell-deployment = "models.run_reference_cell_deployment:main"
 aq-steel-reference-cell-pipeline = "models.reference_cell_pipeline:main"
 aq-steel-run-record = "models.run_record:main"
+aq-steel-surface-state = "models.run_surface_state:main"
+aq-steel-chloride-speciation = "models.run_fe_chloride_speciation:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

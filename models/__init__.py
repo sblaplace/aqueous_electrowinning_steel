@@ -6,6 +6,27 @@ from .thermodynamic_constants import (
     buffer_capacity_M_per_pH,
     diffusivity_at_temperature,
 )
+from .surface_state import (
+    AdsorbedAnion,
+    AnionCoverage,
+    CL_NA_AWARE, SO4_AWARE, HSO4_AWARE, BORATE_AWARE,
+    ANION_REGISTRY, ANION_BY_KEY,
+    FacetDistribution,
+    SurfaceCoverage,
+    SurfaceStateKinetics,
+    volmer_coverage,
+    diagnostic_table,
+    chloride_aware_default,
+)
+from .fe_chloride_speciation import (
+    FECL2_PITZER,
+    ChlorideBathComposition,
+    solve_chloride_speciation,
+    aware_default_bath,
+    historical_chinese_iron_bath,
+    fe2_diffusivity_in_chloride_bath,
+    log10_k_fecl_species,
+)
 from .electrochemistry import (
     CellVoltageModel,
     specific_energy_kWh_per_kg,
@@ -915,6 +936,25 @@ __all__ = [
     "departure_diameter_m",
     "gas_holdup_current_sweep",
     "gas_holdup_height_screen",
+    # ── Surface-state HER (Tier-1.1 chemistry add) ─────────────────
+    "AdsorbedAnion",
+    "AnionCoverage",
+    "CL_NA_AWARE", "SO4_AWARE", "HSO4_AWARE", "BORATE_AWARE",
+    "ANION_REGISTRY", "ANION_BY_KEY",
+    "FacetDistribution",
+    "SurfaceCoverage",
+    "SurfaceStateKinetics",
+    "volmer_coverage",
+    "diagnostic_table",
+    "chloride_aware_default",
+    # ── Fe²⁺/Cl⁻ Pitzer speciation (Tier-1.4 chemistry add) ────────
+    "FECL2_PITZER",
+    "ChlorideBathComposition",
+    "solve_chloride_speciation",
+    "aware_default_bath",
+    "historical_chinese_iron_bath",
+    "fe2_diffusivity_in_chloride_bath",
+    "log10_k_fecl_species",
     # ── Operating twin (safety + environmental safe-state) ────────────
     "OperatingTwin",
     "TwinConfig",
