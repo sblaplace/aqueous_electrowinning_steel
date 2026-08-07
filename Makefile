@@ -11,7 +11,9 @@ export NUMBA_CACHE_DIR := $(CURDIR)/.numba_cache
 export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
 VENV_PY := $(CURDIR)/.venv/bin/python
 
-.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon arena-setup warmup compileall run-all run-all-fresh run-all-quick run-all-force cache-status
+.PHONY: test test-slow test-all test-change test-fail test-inc install-testmon \
+        arena-setup warmup compileall ninja \
+        run-all run-all-fresh run-all-quick run-all-force cache-status
 
 ## Fast feedback tier — parallel; fits easily under runtime caps
 test:
@@ -42,6 +44,12 @@ fn(y0, 2.0, -1.0, 0.0, 1e-4, x_eval, \
    7e-10, 9.3e-9, 5.3e-9, 1.3e-9, 1.1e-9, 38.7, 1e-20); \
 print('   numba JIT warmup complete')\
 "
+
+# (Re)generate build.ninja from the recipe declarations, then dry-run to
+# confirm the graph is valid. See docs/REPO_OUTPUT_POLICY.md.
+ninja:
+	$(PY) scripts/gen_build_ninja.py
+	@$(shell command -v ninja || echo .venv/bin/ninja) -n
 
 ## Full-fidelity tier — heavy tests (FE engine, hull-cell FE, bath dynamics, Monte Carlo, Sobol, Bayesian/EIS, optimization, benchmarks)
 test-slow:

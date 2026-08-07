@@ -54,17 +54,41 @@ echo ">> installing Python deps into $VENV"
 "$VENV_PY" -m pip install -q --upgrade pip >/dev/null 2>&1 || true
 "$VENV_PY" -m pip install -q -r requirements.txt
 
-# 3. build DAG tool — redo. Prefer the committed pure-python impl (persists),
-#    fall back to pip.
-if [ -x "build/redo" ]; then
-  echo ">> build tool: committed pure-python redo (build/redo)"
-  REDO="$(pwd)/build/redo"
-elif "$VENV_PIP" install -q redo 2>/dev/null; then
-  echo ">> build tool: pip redo"
-  REDO="redo"
+# 3. build-DAG tool — ninja only (apt-first, pip-ninja fallback).
+#    - Prefer apt (Arena sandbox has apt-get): `ninja-build` (real ninja).
+#      OS packages don't persist across resets, but this script re-installs
+#      them every run — that IS the persistence mechanism.
+#    - Fall back to pip `ninja` (ships the real binary in the venv; works on
+#      any box incl. this Nix dev box where apt-cache is empty).
+#    NOTE: pip `redo` is Mozilla's RETRY lib, NOT a build tool — never install
+#    it. redo offers nothing ninja+generated-graph doesn't for our fixed,
+#    declarative cell grids.
+if [ "$(id -u)" = "0" ] || command -v sudo >/dev/null 2>&1; then
+  echo ">> build tool: apt-get install (ninja-build)"
+  if command -v apt-get >/dev/null 2>&1; then
+    apt-get install -y -q ninja-build >/dev/null 2>&1 \
+      || sudo apt-get install -y -q ninja-build >/dev/null 2>&1 \
+      || echo "  (apt ninja unavailable; will fall back to pip)"
+  fi
+fi
+REDO_NINJA=""
+if command -v ninja >/dev/null 2>&1; then
+  echo ">> build tool: ninja available (PATH)"
+  REDO_NINJA="$(command -v ninja)"
+elif [ -x "$VENV/bin/ninja" ]; then
+  echo ">> build tool: ninja available ($VENV)"
+  REDO_NINJA="$VENV/bin/ninja"
 else
-  echo ">> WARN: no redo found (apt 'redo' not used — non-persistent). Using make only."
-  REDO=""
+  echo ">> build tool: pip ninja into $VENV"
+  "$VENV_PY" -m pip install -q ninja
+  REDO_NINJA="$VENV/bin/ninja"
+fi
+# Regenerate the ninja graph from the recipe declarations (if the generator
+# exists), so build.ninja is never hand-maintained / never goes stale.
+if [ -x "scripts/gen_build_ninja.py" ]; then
+  echo ">> build tool: regenerating build.ninja from declarations"
+  "$VENV_PY" scripts/gen_build_ninja.py >/dev/null 2>&1 \
+    && echo "  build.ninja generated" || echo "  (gen_build_ninja skipped/failed)"
 fi
 
 # 3b. Ensure the persisted numba cache directory exists (Arena wipes
