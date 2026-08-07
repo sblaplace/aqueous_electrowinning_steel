@@ -571,6 +571,18 @@ from .chemical_osmosis import (
     estimate_water_activity,
     solve_transmembrane_water_flux,
 )
+from .tempering_kinetics import (
+    SteelMicrostructureSpec,
+    TemperingKineticsResult,
+    carbon_diffusivity_ferrite,
+    lsw_coarsening_rate_constant,
+    simulate_tempering_kinetics,
+)
+from .solutal_convection import (
+    SolutalChannelParams,
+    MixedConvectionResult,
+    solve_solutal_mixed_convection,
+)
 
 __all__ = [
     "buffer_capacity_M_per_pH",
@@ -1072,4 +1084,14 @@ __all__ = [
     "TransmembraneWaterResult",
     "estimate_water_activity",
     "solve_transmembrane_water_flux",
+    # ── 4-Stage tempering kinetics & LSW coarsening ───────────────────
+    "SteelMicrostructureSpec",
+    "TemperingKineticsResult",
+    "carbon_diffusivity_ferrite",
+    "lsw_coarsening_rate_constant",
+    "simulate_tempering_kinetics",
+    # ── Solutal mixed convection & buoyancy ───────────────────────────
+    "SolutalChannelParams",
+    "MixedConvectionResult",
+    "solve_solutal_mixed_convection",
 ]

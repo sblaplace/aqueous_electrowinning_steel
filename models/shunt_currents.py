@@ -208,3 +208,22 @@ def solve_stack_shunt_currents(
         cell_faradaic_currents_A=i_faradaic.tolist(),
         port_currents_A=i_ports.tolist(),
     )
+
+
+def main() -> None:
+    """CLI entrypoint for stack manifold shunt current analysis."""
+    print("=================================================================")
+    print(" Multi-Cell Stack Manifold Shunt Currents (50-Cell Crate Stack)")
+    print("=================================================================")
+    geom = StackManifoldGeometry()
+    res = solve_stack_shunt_currents(geom)
+    print(f"Stack voltage              : {res.stack_voltage_V:.1f} V ({res.n_cells} cells)")
+    print(f"Total shunt leakage current: {res.total_shunt_current_A:.2f} A")
+    print(f"Stack Faradaic loss        : {res.stack_faradaic_efficiency_loss_percent:.3f} %")
+    print(f"Max port current density   : {res.max_port_current_density_mA_cm2:.1f} mA/cm²")
+    print(f"Port corrosion risk        : {'THREAT (exceeds 25 mA/cm²)' if res.is_corrosion_threat else 'Safe'}")
+    print(f"Recommended min port length: {res.recommended_min_port_length_m*1e3:.1f} mm (vs {geom.port_length_m*1e3:.1f} mm nominal)")
+
+
+if __name__ == "__main__":
+    main()

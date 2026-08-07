@@ -254,3 +254,24 @@ def assess_heat_exchanger_scaling(
         max_safe_wall_temp_C=max_safe_t,
         critical_heat_flux_margin=margin,
     )
+
+
+def main() -> None:
+    """CLI entrypoint for FeSO4 solubility and scaling assessment."""
+    print("=================================================================")
+    print(" FeSO4 Temperature-Dependent Solubility & Szomolnokite Scaling")
+    print("=================================================================")
+    for t in [20.0, 40.0, 56.7, 70.0, 85.0, 100.0]:
+        phase = stable_solid_phase(t).name
+        c_sat = feso4_binary_solubility_mol_L(t)
+        c_sat_bg = feso4_solubility_with_common_ion(t, background_sulfate_mol_L=0.5)
+        print(f" T = {t:5.1f} °C | Phase: {phase:12s} | Pure C_sat = {c_sat:4.2f} M | With 0.5M Na2SO4 = {c_sat_bg:4.2f} M")
+    print("\nHeat Exchanger Scaling Evaluation (Bulk 65 °C, Wall 90 °C, 1.5 M Fe2+):")
+    res = assess_heat_exchanger_scaling(65.0, 90.0, 1.5, background_sulfate_mol_L=0.5)
+    print(f"  Wall supersaturation ratio : {res.supersaturation_ratio_wall:.2f}")
+    print(f"  Scaling risk status        : {res.critical_heat_flux_margin}")
+    print(f"  Max safe wall temperature  : {res.max_safe_wall_temp_C:.1f} °C")
+
+
+if __name__ == "__main__":
+    main()

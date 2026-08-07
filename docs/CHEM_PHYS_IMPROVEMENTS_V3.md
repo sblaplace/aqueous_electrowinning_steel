@@ -121,5 +121,7 @@
 | `hydrogen_trapping.py` | Reversible/irreversible trap hierarchy & Oriani bakeout | De-embrittlement baking time for structural steel |
 | `ore_leaching.py` | Shrinking core kinetics & reductive leaching | Sizing of primary ore dissolution reactors in Dark Mill |
 | `chemical_osmosis.py` | Water activity gradient ($\Delta a_w$) & osmotic flux | Long-term cell volume stability & zero-net-flux window |
+| `tempering_kinetics.py` | 4-stage tempering, LSW Ostwald ripening & Orowan bypass | Predicts carbide coarsening, DBTT, and Charpy impact energy |
+| `solutal_convection.py` | Solutal density depletion & Grashof mixed convection | Predicts flow reversal and critical downflow velocity |
 
 — *Round 3 Physics & Chemistry Review, August 2026.*

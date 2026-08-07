@@ -227,3 +227,21 @@ def max_practical_frequency_Hz(
     t_on_min = -tau * math.log(1.0 - fidelity)
     period_min = t_on_min / max(duty_cycle, 0.01)
     return 1.0 / max(period_min, 1e-6)
+
+
+def main() -> None:
+    """CLI entrypoint for pulse RC filter analysis."""
+    print("=================================================================")
+    print(" Pulse RC Double-Layer Filtering & Cutoff Frequency Analysis")
+    print("=================================================================")
+    circuit = PulseCircuitParams()
+    print(f"Cell interfacial time constant: {circuit.tau_charging_s*1e6:.1f} µs")
+    print(f"3dB Cutoff frequency          : {circuit.cutoff_frequency_Hz:.1f} Hz\n")
+    print("Frequency sweep (20% duty, 200 mA/cm² peak):")
+    for f in [10.0, 100.0, 500.0, 1000.0, 5000.0, 10000.0]:
+        res = simulate_pulse_rc_response(f, 0.20, 200.0, circuit)
+        print(f"  f = {f:6.0f} Hz | Peak Faradaic: {res.actual_peak_faradaic_mA_cm2:5.1f} mA/cm² ({res.peak_attenuation_ratio*100:4.1f}%) | {res.waveform_fidelity}")
+
+
+if __name__ == "__main__":
+    main()

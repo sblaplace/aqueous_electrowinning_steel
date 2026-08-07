@@ -214,3 +214,19 @@ def simulate_ore_leaching(
         acid_consumed_kg_per_t_fe=acid_consumed,
         controlling_mechanism=mechanism,
     )
+
+
+def main() -> None:
+    """CLI entrypoint for ore leaching simulation."""
+    print("=================================================================")
+    print(" Primary Iron Ore Shrinking Core Leaching & Reductive Kinetics")
+    print("=================================================================")
+    ore = OreSpec(mineral_type="hematite", particle_p80_um=75.0)
+    for t_hr in [1.0, 2.0, 4.0, 6.0]:
+        res_direct = simulate_ore_leaching(ore, temperature_C=80.0, residence_time_hours=t_hr, use_reductant=False)
+        res_red = simulate_ore_leaching(ore, temperature_C=80.0, residence_time_hours=t_hr, use_reductant=True)
+        print(f" Residence time = {t_hr:3.1f} hr | Direct Acid Extr = {res_direct.fe_recovery_fraction*100:5.1f}% | Reductive Extr = {res_red.fe_recovery_fraction*100:5.1f}%")
+
+
+if __name__ == "__main__":
+    main()

@@ -230,3 +230,18 @@ def solve_bdd_kinetics(
         inductive_relaxation_time_s=tau_ind,
         rate_determining_step=rds,
     )
+
+
+def main() -> None:
+    """CLI entrypoint for BDD multi-step iron deposition kinetics."""
+    print("=================================================================")
+    print(" Bockris–Dražic–Despic (BDD) Multi-Step Iron Deposition Kinetics")
+    print("=================================================================")
+    print("Overpotential sweep at pH 2.5, 1.5 M Fe2+:")
+    for eta in [0.020, 0.040, 0.080, 0.150, 0.250, 0.350]:
+        res = solve_bdd_kinetics(eta, ph=2.5, fe2_mol_L=1.5)
+        print(f"  η = {eta*1e3:4.0f} mV | θ_FeOH = {res.intermediate_coverage_theta:4.2f} | j_Fe = {res.cathodic_current_density_A_m2/10.0:6.2f} mA/cm² | Tafel = {res.apparent_tafel_slope_mV_dec:5.1f} mV/dec | {res.rate_determining_step}")
+
+
+if __name__ == "__main__":
+    main()

@@ -219,3 +219,17 @@ def compute_bakeout_schedule(
         is_embrittlement_safe=is_safe,
         astm_f519_compliance=compliance,
     )
+
+
+def main() -> None:
+    """CLI entrypoint for hydrogen trapping and bakeout optimization."""
+    print("=================================================================")
+    print(" Hierarchical Hydrogen Trapping & ASTM F519 Bakeout Optimization")
+    print("=================================================================")
+    for thickness in [50.0, 100.0, 200.0, 500.0]:
+        res = compute_bakeout_schedule(foil_thickness_um=thickness, bake_temperature_C=190.0)
+        print(f" Thickness = {thickness:5.0f} µm | Bakeout @ 190 °C = {res.required_bake_time_hours:5.2f} hr | {res.astm_f519_compliance}")
+
+
+if __name__ == "__main__":
+    main()

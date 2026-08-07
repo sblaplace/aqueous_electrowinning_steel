@@ -197,3 +197,18 @@ def solve_transmembrane_water_flux(
         zero_net_flux_current_density_mA_cm2=j_zero_mA_cm2,
         transport_regime=regime,
     )
+
+
+def main() -> None:
+    """CLI entrypoint for chemical osmosis and water transport."""
+    print("=================================================================")
+    print(" Transmembrane Chemical Osmosis & Electro-Osmotic Water Flux")
+    print("=================================================================")
+    print("Current density sweep (Catholyte aw = 0.925, Anolyte aw = 0.965):")
+    for j in [10.0, 50.0, 100.0, 200.0, 350.0]:
+        res = solve_transmembrane_water_flux(j, 0.925, 0.965)
+        print(f"  j = {j:5.1f} mA/cm² | J_net = {res.net_water_flux_L_m2_h:+6.3f} L/(m²·hr) | {res.transport_regime}")
+
+
+if __name__ == "__main__":
+    main()
