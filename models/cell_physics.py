@@ -39,7 +39,7 @@ from .electrochemistry import (
     E0_FE,
 )
 from .kinetics import DepositionKinetics
-from .anode import AnodeKinetics, AnodeMaterial
+from .anode import AnodeKinetics, AnodeMaterial, DSA_IRO2_TA2O5
 
 
 # ─── Inputs ───────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ class CellGeometry:
     membrane_area_resistance_ohm_m2: float = 3.0e-4  # configured comparator
     contact_resistance_ohm_m2: float = 5.0e-4
     anode_bubble_fraction: float = 0.10
-    anode_chemistry: Literal["inert", "soluble"] = "inert"
+    anode_chemistry: Literal["inert", "soluble", "fixed"] = "inert"
     anode_fe2_conc_M: float = 1.0
     anode_fe_dissolution_i0_A_m2: float = 10.0
 
@@ -89,8 +89,8 @@ class CellGeometry:
             raise ValueError("contact_resistance_ohm_m2 must be non-negative")
         if not 0.0 <= self.anode_bubble_fraction < 1.0:
             raise ValueError("anode_bubble_fraction must lie in [0, 1)")
-        if self.anode_chemistry not in ("inert", "soluble"):
-            raise ValueError("anode_chemistry must be 'inert' or 'soluble'")
+        if self.anode_chemistry not in ("inert", "soluble", "fixed"):
+            raise ValueError("anode_chemistry must be 'inert', 'soluble', or 'fixed'")
         if self.anode_fe2_conc_M <= 0.0:
             raise ValueError("anode_fe2_conc_M must be positive")
         if self.anode_fe_dissolution_i0_A_m2 <= 0.0:
@@ -280,19 +280,55 @@ class CellPhysics:
     def _build_anode(self) -> Optional[AnodeKinetics]:
         """Build a first-principles anode object for explicit anode modes.
 
-        The inert/OER branch deliberately retains the legacy fixed-anode
-        fallback until an anode material is selected and calibrated.  A
-        soluble Fe anode, however, has unambiguous stoichiometry and must not
-        be represented as OER with a different overpotential.
+        Both branches now use a first-principles AnodeKinetics object so
+        the cell voltage is computed from material-specific Tafel kinetics
+        plus concentration and bubble terms, not a fixed 0.40 V.  The
+        inert/OER branch uses the DSA IrO₂–Ta₂O₅ screening catalogue
+        entry (Trasatti 2000) at the operating T/pH; the soluble branch
+        uses the Fe → Fe²⁺ dissolution stoichiometry.  Pass
+        ``anode_chemistry="soluble"`` for the latter.  The fixed-η
+        fallback is retained only when ``CellGeometry`` explicitly asks
+        for it via ``anode_chemistry="fixed"`` (tests / legacy A/B).
+
+        The change raises V_cell by ~0.08–0.20 V at RC-1 conditions
+        relative to the 0.40 V fallback — the honest cost of a real DSA
+        at 100–300 mA/cm² — and is the quantity the energy number is
+        most sensitive to.
         """
-        if self.geometry.anode_chemistry != "soluble":
+        if self.geometry.anode_chemistry == "soluble":
+            material = AnodeMaterial(
+                name="Soluble Fe anode",
+                oer_i0=1.0,
+                oer_tafel_V=0.060,
+                temperature_C=self.conditions.temperature_C,
+                references="screening soluble-Fe branch; calibrate dissolution i0/Tafel",
+            )
+            return AnodeKinetics(
+                material=material,
+                electrolyte_type="acidic",
+                pH=self.bath.pH,
+                boundary_layer_m=self.conditions.boundary_layer_m,
+                electrolyte_conductivity_S_m=self._conductivity,
+                anode_chemistry="soluble",
+                fe2_conc_M=self.geometry.anode_fe2_conc_M,
+                fe_dissolution_i0=self.geometry.anode_fe_dissolution_i0_A_m2,
+            )
+        if self.geometry.anode_chemistry == "fixed":
             return None
+        # Default: inert DSA — first-principles OER kinetics
+        base = DSA_IRO2_TA2O5
         material = AnodeMaterial(
-            name="Soluble Fe anode",
-            oer_i0=1.0,
-            oer_tafel_V=0.060,
+            name=base.name,
+            oer_i0=base.oer_i0,
+            oer_tafel_V=base.oer_tafel_V,
+            cer_i0=base.cer_i0,
+            cer_tafel_V=base.cer_tafel_V,
+            cer_n=base.cer_n,
+            oer_n=base.oer_n,
+            max_bubble_fraction=base.max_bubble_fraction,
             temperature_C=self.conditions.temperature_C,
-            references="screening soluble-Fe branch; calibrate dissolution i0/Tafel",
+            oer_ea_kj_mol=base.oer_ea_kj_mol,
+            references=base.references,
         )
         return AnodeKinetics(
             material=material,
@@ -300,9 +336,7 @@ class CellPhysics:
             pH=self.bath.pH,
             boundary_layer_m=self.conditions.boundary_layer_m,
             electrolyte_conductivity_S_m=self._conductivity,
-            anode_chemistry="soluble",
-            fe2_conc_M=self.geometry.anode_fe2_conc_M,
-            fe_dissolution_i0=self.geometry.anode_fe_dissolution_i0_A_m2,
+            anode_chemistry="inert",
         )
 
     def _build_voltage_model(

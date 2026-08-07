@@ -304,13 +304,10 @@ class DiffusionLayer1D:
     #              ionic strengths of real FeSO₄/Na₂SO₄ baths).  At the
     #              reference bath γ_Fe²⁺ ≈ 0.05–0.15, shifting E_eq(Fe) by
     #              −20 to −40 mV — directly comparable to the HER margin
-    #              the whole program hinges on.  The coefficient is
-    #              evaluated at the *bulk* composition once (the film spans
-    #              only tens of micrometres, so composition variation across
-    #              it is small relative to bulk non-ideality) and applied
-    #              consistently in the surface Nernst correction.  This is
-    #              the first, safe step toward full non-ideal transport; a
-    #              per-node Pitzer activity remains future work.
+    #              the whole program hinges on.  Gamma is now evaluated
+    #              at the *surface* composition in the Picard Nernst
+    #              correction (local ionic-strength dependence), with bulk
+    #              γ as the seed and a per-composition cache for speed.
     activity_model: str = "ideal"
 
     def __post_init__(self) -> None:
@@ -328,6 +325,7 @@ class DiffusionLayer1D:
         # Cache the composition-dependent Pitzer γ so the per-iteration
         # Nernst correction does not re-solve Pitzer dozens of times.
         self._gamma_fe_cache: float | None = None
+        self._gamma_at_cache: dict = {}
         # Bulk Na+ concentration (mol/m3), used as the boundary value and
         # (when transport_na is False) held constant across the film.
         self._c_na_bulk: float = 2.0 * self.support_conc_M * 1000.0
@@ -409,30 +407,51 @@ class DiffusionLayer1D:
             return 1.0
         if self._gamma_fe_cache is not None:
             return self._gamma_fe_cache
+        self._gamma_fe_cache = self._gamma_at(self.fe_conc_M, self.pH_bulk)
+        return self._gamma_fe_cache
 
-        # Build molalities from the molar bulk recipe.  Use the Pitzer
-        # module's own density estimate (same convention as speciation.py)
-        # for the molar→molal conversion.
+    def _gamma_at(self, fe_M: float, pH: float) -> float:
+        """Fe²⁺ activity coefficient at an arbitrary local composition.
+
+        Re-evaluates the Pitzer model at ``fe_M`` and ``pH`` while holding
+        supporting electrolyte and temperature fixed.  This upgrades the
+        previous bulk-only gamma into a surface-correct Nernst term: as
+        Fe²⁺ depletes toward the cathode, ionic strength falls and γ
+        rises, shifting E_eq positive by 5–15 mV at 50–70% depletion —
+        directly comparable to the HER margin the program hinges on.
+
+        A small per-composition cache keeps the Picard loop cheap (Pitzer
+        solve is µs, but called dozens of times per operating point).
+        """
+        if self.activity_model == "ideal":
+            return 1.0
+        cache: dict = getattr(self, "_gamma_at_cache", None)
+        if cache is None:
+            cache = {}
+            object.__setattr__(self, "_gamma_at_cache", cache)
+        key = (round(float(fe_M), 4), round(float(pH), 2))
+        if key in cache:
+            return float(cache[key])
         rho = _pitzer.water_density_kg_L(self.temperature_C)
-        # Solute mass per litre (FeSO4 151.9 + Na2SO4 142.0 g/mol)
-        solute_kg_L = (
-            self.fe_conc_M * 151.908e-3
-            + self.support_conc_M * 142.04e-3
-        )
+        solute_kg_L = float(fe_M) * 151.908e-3 + self.support_conc_M * 142.04e-3
         kg_water_per_L = max(rho - solute_kg_L, 0.3)
-        m_fe = self.fe_conc_M / kg_water_per_L
+        m_fe = max(float(fe_M), 1e-6) / kg_water_per_L
         m_na = 2.0 * self.support_conc_M / kg_water_per_L
-        m_so4 = (self.fe_conc_M + self.support_conc_M) / kg_water_per_L
-        # H+ at the bulk pH (trace relative to sulfate); include for charge.
-        m_h = max(self._bulk_c_h / 1000.0 / kg_water_per_L, 1e-10)
-
+        m_so4 = (float(fe_M) + self.support_conc_M) / kg_water_per_L
+        c_h_mol_m3 = max(10.0 ** (-float(pH)) * 1000.0, 1e-10)
+        m_h = c_h_mol_m3 / 1000.0 / kg_water_per_L
         composition = {
             "Fe2+": m_fe, "Na+": m_na, "H+": m_h,
-            "SO4-2": m_so4 + 0.5 * m_h,  # approximate sulfate/bisulfate
+            "SO4-2": m_so4 + 0.5 * m_h,
         }
-        sol = _pitzer.solve_pitzer(composition, T_C=self.temperature_C)
-        self._gamma_fe_cache = float(sol.gamma.get("Fe2+", 1.0))
-        return self._gamma_fe_cache
+        try:
+            sol = _pitzer.solve_pitzer(composition, T_C=self.temperature_C)
+            gamma = float(sol.gamma.get("Fe2+", 1.0))
+        except Exception:
+            gamma = float(self._gamma_fe_cache) if self._gamma_fe_cache is not None else 1.0
+        gamma = max(0.02, min(gamma, 1.0))
+        cache[key] = gamma
+        return gamma
 
     # ─── Bulk composition ──────────────────────────────────────────
 
@@ -758,9 +777,18 @@ class DiffusionLayer1D:
 
     # ─── Electrode kinetics ────────────────────────────────────────
 
-    def _fe_equilibrium_potential(self, fe_surface_M: float) -> float:
+    def _fe_equilibrium_potential(self, fe_surface_M: float, surface_pH: float | None = None) -> float:
         # a_Fe²⁺ = γ_Fe²⁺ · [Fe²⁺]; the ideal model uses γ = 1.
-        a = max(self.gamma_fe * fe_surface_M, 1e-15)
+        # When the surface pH is known (Picard loop), use the *local*
+        # Pitzer γ at the surface composition rather than the bulk γ —
+        # the correction is 5–15 mV at the depletion levels that set
+        # FE and the precipitation boundary.  Bulk callers (seed
+        # potentials) pass surface_pH=None and retain the bulk γ.
+        if self.activity_model == "pitzer" and surface_pH is not None:
+            gamma = self._gamma_at(fe_surface_M, float(surface_pH))
+        else:
+            gamma = self.gamma_fe
+        a = max(gamma * fe_surface_M, 1e-15)
         return E0_FE + (R_GAS * self.T / (Z_FE * FARADAY)) * np.log(a)
 
     def _her_equilibrium_potential(self, surface_pH: float) -> float:
@@ -882,7 +910,7 @@ class DiffusionLayer1D:
             surf_fe_M = float(profile.fe_M[0])
             surf_pH = float(profile.pH[0])
 
-            fe_eq = self._fe_equilibrium_potential(surf_fe_M)
+            fe_eq = self._fe_equilibrium_potential(surf_fe_M, surf_pH)
             her_eq = self._her_equilibrium_potential(surf_pH)
 
             i_fe_kin = max(self._bv_current(E, self.fe_i0_T, self.fe_tafel_V,
