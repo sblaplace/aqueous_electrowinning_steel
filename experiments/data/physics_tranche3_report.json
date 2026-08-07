@@ -54,8 +54,8 @@
   "solutal_mixed_convection": {
     "density_depletion_kg_m3": 72.6,
     "grashof_number_Gr_H": "3.80e+11",
-    "upward_effective_boundary_layer_um": 0.4,
-    "downward_effective_boundary_layer_um": 0.9,
+    "upward_effective_boundary_layer_um": 71.7,
+    "downward_effective_boundary_layer_um": 148.1,
     "critical_antireversal_velocity_m_s": 0.06,
     "is_downward_reversal_threat": true
   }

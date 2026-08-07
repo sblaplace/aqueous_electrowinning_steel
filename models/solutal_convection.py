@@ -162,13 +162,17 @@ def solve_solutal_mixed_convection(
     u_buoy = math.sqrt(max(G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * h, 1e-9))
     u_crit = math.sqrt(max(G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * d_h, 1e-9))  # Slot critical velocity
 
-    # Natural convection Sherwood number (Ibl & Muller correlation for vertical plate):
-    # Sh_nat = 0.67 * (Gr_h * Sc)^(1/4) for laminar, or 0.15 * (Gr_h * Sc)^(1/3) for turbulent
+    # Natural convection Sherwood number (Ibl & Muller correlation for vertical plate).
+    # Sh_nat is evaluated on the PLATE height H (it enters via Gr_H, the plate-scale
+    # Grashof), so it must be re-referenced to the channel gap before it can be combined
+    # with the d_h-based forced Sh and divided into d_h for the boundary layer.
+    # Sh_dh = Sh_H * (d_h / H)  (equivalent boundary-layer thickness on either reference).
     ra_h = gr_h * sc
     if ra_h < 1e9:
-        sh_nat = 0.67 * (ra_h ** 0.25)
+        sh_nat_H = 0.67 * (ra_h ** 0.25)
     else:
-        sh_nat = 0.15 * (ra_h ** (1.0 / 3.0))
+        sh_nat_H = 0.15 * (ra_h ** (1.0 / 3.0))
+    sh_nat = sh_nat_H * (d_h / max(h, 1e-12))
 
     # Forced convection Sherwood number (Graetz/Leveque or turbulent duct):
     # Sh_forced = 1.85 * (Re * Sc * d_h / H)^(1/3)

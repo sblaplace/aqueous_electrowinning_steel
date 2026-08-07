@@ -26,6 +26,10 @@ def test_solutal_density_depletion_and_grashof():
     assert res.grashof_number_Gr_dh > 1e4  # Gap-scale Grashof (~8.9e4)
     assert res.buoyancy_velocity_m_s > 0.05
     assert not res.is_flow_reversal_threat
+    # Effective Nernst layer must stay physical (tens of microns). Regression guard:
+    # re-referencing the H-based natural-convection Sh to the gap must NOT collapse
+    # the boundary layer to ~1 um (which would imply unrealistically fast transport).
+    assert 10.0 <= res.effective_boundary_layer_um <= 300.0
 
 
 def test_downward_flow_reversal_threat():
