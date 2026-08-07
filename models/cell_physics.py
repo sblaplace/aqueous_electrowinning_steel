@@ -149,6 +149,12 @@ class OperatingPoint:
     # Convergence
     transport_converged: bool
 
+    # Precipitation sink (screening) — set when precipitation_sink=True
+    precipitation_flux_mol_m2_s: float = 0.0
+    precipitation_fraction: float = 0.0
+    sludge_rate_g_m2_s: float = 0.0
+    deposition_rate_net_um_hr: float = 0.0  # after subtracting Fe lost to Fe(OH)2 sludge
+
 
 @dataclass
 class OperatingWindow:
@@ -421,6 +427,14 @@ class CellPhysics:
         rho = 7874.0  # kg/m³
         dep_rate = mass_flux / rho * 3600.0 * 1e6  # µm/hr
 
+        # Precipitation sink from the reactive film (if available)
+        precip_flux = getattr(transport_result, "precipitation_flux_mol_m2_s", 0.0)
+        precip_frac = getattr(transport_result, "precipitation_fraction", 0.0)
+        sludge_g = getattr(transport_result, "sludge_rate_g_m2_s", 0.0)
+        # Net deposition after subtracting Fe that precipitates as sludge
+        fe_mol_flux_total = j_A_m2 * fe / (Z_FE * FARADAY)
+        fe_mol_flux_net = max(fe_mol_flux_total - precip_flux, 0.0)
+        dep_rate_net = fe_mol_flux_net * (55.845e-3) / 7874.0 * 3600.0 * 1e6
         return OperatingPoint(
             j_mA_cm2=j_mA_cm2,
             current_efficiency=fe,
@@ -432,10 +446,14 @@ class CellPhysics:
             feoh2_supersaturation=supersaturation,
             film_potential_drop_V=film_potential_drop_V,
             precipitation_active=precipitation_active,
+            precipitation_flux_mol_m2_s=float(precip_flux),
+            precipitation_fraction=float(precip_frac),
+            sludge_rate_g_m2_s=float(sludge_g),
             V_cell=V_cell,
             V_decomposition=V_decomp,
             specific_energy_kWh_t=specific_energy_kWh_per_t(V_cell, fe),
             deposition_rate_um_hr=dep_rate,
+            deposition_rate_net_um_hr=float(dep_rate_net),
             free_fe2_activity=self._activity_fe2,
             conductivity_S_m=self._conductivity,
             speciation=self._spec,

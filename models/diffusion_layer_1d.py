@@ -202,6 +202,12 @@ class DiffusionLayerResult:
     temperature_C: float
     converged: bool
     profile: FilmProfile = field(repr=False)
+    # Precipitation sink diagnostics (screening).  Zero when S≤1 everywhere
+    # or when precipitation_sink is disabled.  The volumetric sink
+    # R(x)=k·max(0,[Fe]−Ksp/[OH]²) is integrated over the film:
+    precipitation_flux_mol_m2_s: float = 0.0
+    precipitation_fraction: float = 0.0
+    sludge_rate_g_m2_s: float = 0.0
 
     @property
     def fe_percent(self) -> float:
@@ -297,6 +303,18 @@ class DiffusionLayer1D:
     # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
     fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
     her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
+    # Precipitation sink (Fe(OH)₂).  When ``precipitation_sink=True`` the
+    # film result carries a first-order sludge estimate: at any position
+    # where S=[Fe][OH]²/Ksp>1 the excess Fe is assigned a volumetric
+    # sink  R = k_precip · ( [Fe] − Fe_sat )  with Fe_sat=Ksp/[OH]².
+    # This is a screening diagnostic that closes the iron ledger outside
+    # the ODE (the ODE itself remains precipitation-free) — it gives the
+    # inventory loss and the acidifying 2 H⁺ per Fe precipitated without
+    # yet solving the fully coupled diffusion-reaction film (see
+    # SIM_PHYSICS_UPGRADE.md § next).  Set k_precip=0 to recover the
+    # previous diagnostic-only behaviour.
+    precipitation_sink: bool = True
+    k_precip_s: float = 1.0e1  # 1/s — fast, drives S→1 on the film timescale δ²/D≈3 s
     # Activity-coefficient model for the Fe²⁺/Fe Nernst potential:
     #   "ideal"  — a = [Fe²⁺] (mol/L), the pre-2026-08 default;
     #   "pitzer" — a_Fe²⁺ = γ_Fe²⁺(m, T) · [Fe²⁺], with γ from the
@@ -988,6 +1006,35 @@ class DiffusionLayer1D:
         surf_pH = float(profile.pH[0])
         surf_oh_M = float(profile.oh_M[0])
         supersat = float(np.max(profile.feoh2_supersaturation))
+        # ---- precipitation sink (screening, post-integration) ----
+        precip_flux = 0.0
+        precip_fraction = 0.0
+        sludge_g = 0.0
+        if self.precipitation_sink and self.k_precip_s > 0 and supersat > 1.0:
+            # Local excess Fe above saturation: [Fe]_ex = max(0, [Fe]-Ksp/[OH]²)
+            # R_vol = k · [Fe]_ex  (mol/L/s) → mol/m³/s after ×1000
+            fe_ex_M = np.maximum(0.0, profile.fe_M - profile.Ksp_FeOH2 / np.maximum(profile.oh_M, 1e-30)**2)
+            # Only where S>1 (fe_ex>0) contributes; clamp negative to 0
+            R_vol_M_s = self.k_precip_s * fe_ex_M  # mol/L/s
+            R_vol = R_vol_M_s * 1000.0  # mol/m³/s
+            # Integrate over film thickness: ∫ R dx  (mol/m²/s)
+            # profile.x_m is 0 at cathode, δ at bulk; use trapz sorted by x
+            x = profile.x_m
+            # x is ascending 0→δ, R is same order after flip-back; already 0=cathode
+            precip_flux = float(np.trapezoid(R_vol, x))
+            # Screening cap: precipitation cannot outrun diffusion of Fe to
+            # the precipitation zone. The diffusion-limited Fe supply is
+            # ~ D·(Fe_bulk−Fe_sat)/δ; cap the volumetric estimate there so
+            # the diagnostic does not diverge at S≫1 (k·ΔC·δ ≫ D·ΔC/δ).
+            fe_diff_limit_mol_m2_s = self.diffusion_limit_A_m2 / (Z_FE * FARADAY)
+            precip_flux = float(min(precip_flux, 10.0 * fe_diff_limit_mol_m2_s))
+            # Fraction of the Fe flux that precipitates before reaching the electrode
+            fe_flux_mol_m2_s = i_fe / (Z_FE * FARADAY) if i_fe > 1e-12 else 0.0
+            if fe_flux_mol_m2_s > 0:
+                precip_fraction = float(min(precip_flux / (fe_flux_mol_m2_s + precip_flux), 0.99))
+            # Sludge as Fe(OH)₂ mass (M=89.86 g/mol)
+            M_FEOH2 = 89.86e-3  # kg/mol
+            sludge_g = float(precip_flux * M_FEOH2 * 1000.0)  # g/m²/s
         # Report both the binary diffusion limit and the actual film limit.
         # The latter includes migration and concurrent HER through the same
         # reactive ODE; the previous result object silently reported the
@@ -1016,6 +1063,9 @@ class DiffusionLayer1D:
             temperature_C=self.temperature_C,
             converged=converged,
             profile=profile,
+            precipitation_flux_mol_m2_s=precip_flux,
+            precipitation_fraction=precip_fraction,
+            sludge_rate_g_m2_s=sludge_g,
         )
 
     # ─── Convenience methods ───────────────────────────────────────
