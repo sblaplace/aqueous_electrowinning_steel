@@ -6,7 +6,7 @@ import pytest
 
 from models.anode import AnodeKinetics, AnodeMaterial
 from models.cell_physics import BathRecipe, CellGeometry, CellPhysics, ProcessConditions
-from models.electrochemistry import CellVoltageModel, E0_FE
+from models.electrochemistry import CellVoltageModel
 from models.reference_cell_design import load_reference_cell_config
 from models.speciation import SolutionComposition, solve_speciation
 from models.thermodynamic_constants import buffer_capacity_M_per_pH

@@ -85,6 +85,13 @@ of the consistency fixes (all still `unvalidated (L0)`):
 - the reactive-film transport limit at that point is approximately
   **782 mA/cm²**, versus the 150 mA/cm² operating duty.
 
+Geometry note on the theory-confidence reference point: `models/theory_confidence.py`
+solves a *generic* 20 mm gap / 200 cm² reference cell (its own `reference-divided-cell-v1`
+configuration), not the RC-1 apparatus. RC-1 is the separate 3 mm gap / 10 cm² design driven
+from `processes/reference_cell_rc1.yaml`; at its 300 mA/cm² design duty the RC-1 path reports
+V_cell ≈ 5.67 V / ≈ 5,490 kWh/t Fe (see `outputs/reference_cell_rc1_design_report.json`).
+The two numbers model different cells at different duties and are not interchangeable.
+
 These are updated screens, not experimental validation. The previous report
 numbers were not silently overwritten in prose; the prior-report documents now
 carry regeneration notes and the JSON artifacts were regenerated.
