@@ -584,6 +584,16 @@ from .solutal_convection import (
     solve_solutal_mixed_convection,
 )
 
+from .cross_modal_theory import (
+    SharedScenario,
+    ModalityResult,
+    CrossModalReport,
+    run_all_modalities,
+    find_consistent_cooling,
+    consistent_scenario,
+    cross_modal_summary,
+)
+
 __all__ = [
     "buffer_capacity_M_per_pH",
     "diffusivity_at_temperature",
@@ -1094,4 +1104,12 @@ __all__ = [
     "SolutalChannelParams",
     "MixedConvectionResult",
     "solve_solutal_mixed_convection",
+    # ── Cross-modal bottom-up theory (one shared parameter set) ───────
+    "SharedScenario",
+    "ModalityResult",
+    "CrossModalReport",
+    "run_all_modalities",
+    "find_consistent_cooling",
+    "consistent_scenario",
+    "cross_modal_summary",
 ]
