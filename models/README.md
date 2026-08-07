@@ -36,10 +36,11 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 
 | Module | Contents |
 |--------|----------|
-| `diffusion_layer_1d.py` | **The FE prediction engine.** Full Nernst-Planck film over Fe²⁺/H⁺/OH⁻/HSO₄⁻/SO₄²⁻/borate with fast homogeneous equilibria, Arrhenius diffusivities, computed surface pH and Fe(OH)₂ precipitation criterion. Outputs FE(j, T, C, δ, pH, buffer) and V(j) |
+| `bath_spec.py` | **Unified bath inventory.** One machine-readable sulfate/chloride/mixed Fe²⁺/Fe³⁺ state with borate/ammonium, dissolved O₂, additives and impurities; delegates to sulfate/chloride/ammonium/O₂ chemistry modules and feeds `CellPhysics` rich mode |
+| `diffusion_layer_1d.py` | **The FE prediction engine.** Full Nernst-Planck film over Fe²⁺/H⁺/OH⁻/HSO₄⁻/SO₄²⁻/borate with fast homogeneous equilibria, Arrhenius diffusivities, computed surface pH, optional surface-state HER / FeSO₄⁰ pairing / Fe(OH)₂-film resistance, and Fe(OH)₂ precipitation criterion. Outputs FE(j, T, C, δ, pH, buffer) and V(j) |
 | `speciation.py` | Pitzer/Davies activity coefficients, HSO₄⁻/FeSO₄ diagnostics, conductivity, and bath pH/activity outputs |
 | `thermodynamic_constants.py` | Shared standard potentials, equilibrium/transport anchors, van't Hoff helpers, and acid/base buffer-capacity calculation |
-| `cell_physics.py` | Unified solver chaining Pitzer bath speciation → chemically richer reactive diffusion film → cell voltage into one self-consistent operating point and window sweep; the legacy dilute NP film remains available with `ProcessConditions(transport_model="dilute_np")` |
+| `cell_physics.py` | Unified solver chaining `BathSpec` → Pitzer/chloride/ammonium/O₂ diagnostics → chemically richer reactive diffusion film → ORR/Fe³⁺ current accounting → cell voltage into one self-consistent operating point and window sweep; legacy `BathRecipe` and dilute NP mode remain available |
 | `membrane_transport.py` | Divided-cell membrane: crossover, ohmic drop, transport numbers, acid balance |
 | `membrane_fouling.py` | Hermia fouling laws, flux decline, cleaning cycles, membrane replacement cost |
 | `operating_window.py` | Feasible (j, T, C, pH) region from combined constraints |
