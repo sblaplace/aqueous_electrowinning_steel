@@ -505,6 +505,15 @@ from .gas_holdup import (
     current_density_sweep as gas_holdup_current_sweep,
     height_scaling_screen as gas_holdup_height_screen,
 )
+from .h2_safety import (
+    EnclosureSpec,
+    H2GenerationRate,
+    H2SafetyResult,
+    assess_h2_safety,
+    min_ventilation_for_fe_rate,
+    bench_cell_worst_case,
+    ventilation_sizing,
+)
 from .operating_twin import (
     OperatingTwin,
     TwinConfig,
@@ -937,6 +946,14 @@ __all__ = [
     "departure_diameter_m",
     "gas_holdup_current_sweep",
     "gas_holdup_height_screen",
+    # ── H₂ safety envelope (V2 review §2.1) ────────────────────────
+    "EnclosureSpec",
+    "H2GenerationRate",
+    "H2SafetyResult",
+    "assess_h2_safety",
+    "min_ventilation_for_fe_rate",
+    "bench_cell_worst_case",
+    "ventilation_sizing",
     # ── Surface-state HER (Tier-1.1 chemistry add) ─────────────────
     "AdsorbedAnion",
     "AnionCoverage",
