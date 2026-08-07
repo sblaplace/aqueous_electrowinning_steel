@@ -584,6 +584,33 @@ from .solutal_convection import (
     solve_solutal_mixed_convection,
 )
 
+# ── New physics modules (August 2026 additions) ─────────────────────
+from .mhd_convection import (
+    MHDGeometry,
+    MHDSolution,
+    compute_mhd_solution,
+    effective_mass_transfer_with_mhd,
+    lorentz_velocity_scale,
+    mhd_boundary_layer_reduction,
+)
+from .sonoelectrochemistry import (
+    UltrasonicParameters,
+    SonoelectroResult,
+    compute_sonoelectro_result,
+    effective_delta_with_ultrasound,
+    ultrasonic_enhanced_delta,
+)
+from .bath_rheology import (
+    BathRheologyParams,
+    herschel_bulkley_viscosity,
+    effective_viscosity_for_gas_holdup,
+)
+from .eqcm_metrology import (
+    EQCMResult,
+    simulate_eqcm_run,
+    sauerbrey_mass,
+)
+
 __all__ = [
     "buffer_capacity_M_per_pH",
     "diffusivity_at_temperature",
@@ -1094,4 +1121,10 @@ __all__ = [
     "SolutalChannelParams",
     "MixedConvectionResult",
     "solve_solutal_mixed_convection",
+    # New physics modules (August 2026)
+    "MHDGeometry", "MHDSolution", "compute_mhd_solution", "effective_mass_transfer_with_mhd",
+    "lorentz_velocity_scale", "mhd_boundary_layer_reduction",
+    "UltrasonicParameters", "SonoelectroResult", "compute_sonoelectro_result", "effective_delta_with_ultrasound",
+    "BathRheologyParams", "herschel_bulkley_viscosity", "effective_viscosity_for_gas_holdup",
+    "EQCMResult", "simulate_eqcm_run", "sauerbrey_mass",
 ]
