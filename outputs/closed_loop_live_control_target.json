@@ -1,0 +1,53 @@
+{
+  "deliverable": "D6",
+  "level": "L5",
+  "title": "Wire operating_twin closed-loop to a calibrated + observed cell",
+  "target": {
+    "deliverable": "D6",
+    "level": "L5",
+    "title": "Wire operating_twin closed-loop to a calibrated + observed cell",
+    "cell_id": "RC-1",
+    "cathode_area_cm2": 10.0,
+    "fail_closed_gate": "require calibration AND observability before arming",
+    "qualification": {
+      "cell_id": "RC-1",
+      "qualified": true,
+      "calibration_ok": true,
+      "observability_ok": true,
+      "observability_rank": 7,
+      "bounded_viable_current_density_mA_cm2": 300.0,
+      "reasons": [],
+      "min_fe_floor": 0.8,
+      "operating_current_density_mA_cm2": 300.0
+    },
+    "observed_suite": [
+      "TT-101",
+      "TT-201",
+      "pHAT-101",
+      "CT-201",
+      "VT-201",
+      "THK-101",
+      "CVT-201",
+      "FE2P-101"
+    ],
+    "evidence_gates": {
+      "q1_mass_charge_energy_ledgers": "pending",
+      "q3_rde_volumetric_h2": "pending",
+      "q4_membrane_anode_viability": "pending",
+      "q5_adhesion_release_stress_h2": "pending",
+      "d1_immutable_reference_spec": "pending",
+      "d2_d3_calibration_and_observability_basis": "pending"
+    },
+    "note": "Design / wiring contract demonstrated in-silico. Real Q1-Q5 + D1/D2/D3 evidence must land before hardware actuation is armed."
+  },
+  "dry_run": {
+    "fail_closed_without_calibration": true,
+    "fail_closed_without_observability": true,
+    "qualified_with_both_pillars": true,
+    "observability_rank": 7,
+    "closed_loop_final_current_A": 1.0999999999999999,
+    "closed_loop_final_ce": 0.8645168604737968,
+    "trip_on_over_current": true,
+    "bounded_target_current_A": 3.0
+  }
+}
