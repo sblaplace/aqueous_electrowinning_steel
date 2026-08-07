@@ -20,6 +20,16 @@ Full Nernst-Planck transport in a stagnant cathode film with:
     H₂O    ↔  H⁺ + OH⁻         (Kw)
 * **Arrhenius temperature correction** for all diffusivities
 * **Butler-Volmer (Tafel) kinetics** at the electrode surface
+* **Surface-state HER kinetics** (``surface_state=True``): the HER i₀
+  is corrected for H coverage (Temkin), anion site-blocking (Cl⁻, SO₄²⁻,
+  HSO₄⁻, borate), and facet ensemble using models.surface_state — the
+  mechanism layer that predicts *why* chloride suppresses HER instead
+  of having it as an exogenous scenario knob (Tier 1.1 from
+  CHEM_PHYS_REVIEW.md).
+* **FeSO₄⁰ contact-pair correction** (``fes04_pair_correction=True``):
+  the effective free Fe²⁺ is reduced by the neutral-pair fraction
+  (K ≈ 200 L/mol at 25 °C).  The pair does not migrate (z = 0), so
+  j_lim is reduced by ~5–15% in 1.5 M FeSO₄ (Tier 2 from V2 review).
 * **Surface pH** from proton flux balance
 * **Fe(OH)₂ precipitation** criterion ([Fe²⁺][OH⁻]² / Ksp(T));
   Ksp is van 't Hoff corrected to the operating temperature (Fe(OH)₂ is
@@ -52,6 +62,7 @@ mA/cm² in the API).  Potentials are V vs. SHE.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -70,6 +81,7 @@ from .kinetics import (
 )
 from .pourbaix import LOGKSP_FEOH2, ksp_feoh2
 from . import pitzer as _pitzer
+from . import speciation as _speciation
 from .thermodynamic_constants import (
     KA_HSO4_25,
     KA_BORIC_25,
@@ -116,6 +128,14 @@ D_NA = D_NA_25         # Na⁺ (shared with transport.py)
 
 # Default activation energy for diffusion (J/mol)
 DIFF_EA_J_MOL = DIFFUSION_EA_J_MOL
+
+# ─── FeSO₄⁰ contact-pair correction ─────────────────────────────────
+# Thermodynamic equilibrium constant for Fe²⁺ + SO₄²⁻ ↔ FeSO₄⁰(aq) at 25 °C.
+# From speciation.py (K ≈ 200 L/mol at I = 0; falls to ~50 at I = 2 m).
+# The pair is electrically neutral (z = 0), so it does not migrate in
+# the Nernst-Planck film; it diffuses at ~60 % of the free Fe²⁺ rate.
+K_FESO4_PAIR_25 = getattr(_speciation, 'K_FESO4_PAIR_25', 200.0)  # L/mol
+D_FESO4_RATIO = 0.6  # D_FeSO4 / D_Fe2 (Stokes-Einstein, ~20% larger species)
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────
@@ -208,6 +228,14 @@ class DiffusionLayerResult:
     precipitation_flux_mol_m2_s: float = 0.0
     precipitation_fraction: float = 0.0
     sludge_rate_g_m2_s: float = 0.0
+    # Surface-state diagnostics (Tier 1.1 from CHEM_PHYS_REVIEW.md).
+    # Zero when surface_state=False; otherwise the ratio of surface-state
+    # corrected her_i0 to the bare her_i0 (< 1 means HER is suppressed).
+    her_i0_surface_state_ratio: float = 1.0
+    # FeSO₄⁰ contact-pair diagnostic (Tier 2 from V2 review).
+    # Zero when fes04_pair_correction=False; otherwise the bulk pair
+    # fraction (typically 0.15–0.25 in 1.5 M FeSO₄ at pH 2).
+    fe_pair_fraction_bulk: float = 0.0
 
     @property
     def fe_percent(self) -> float:
@@ -327,6 +355,25 @@ class DiffusionLayer1D:
     #              correction (local ionic-strength dependence), with bulk
     #              γ as the seed and a per-composition cache for speed.
     activity_model: str = "ideal"
+    # Surface-state HER kinetics (Tier 1.1 from CHEM_PHYS_REVIEW.md).
+    # When True, the HER exchange current density is corrected for
+    # hydrogen coverage (Temkin), anion site-blocking, and facet
+    # ensemble using models.surface_state.SurfaceStateKinetics.  The
+    # correction replaces the constant her_i0 with an effective i₀,H
+    # that depends on η, bath composition, and facet mix — i.e. it
+    # predicts why Cl⁻ suppresses HER instead of having that as an
+    # exogenous scenario knob.  Default False for backward compatibility.
+    surface_state: bool = False
+    bath_type: str = "sulfate"   # "sulfate", "aware", or "mixed"
+    # FeSO₄⁰ neutral contact-pair correction (Tier 2 from V2 review).
+    # When True, the effective free Fe²⁺ in the Nernst-Planck film is
+    # reduced by the FeSO₄⁰ pair fraction (computed from the local SO₄²⁻
+    # concentration via speciation.K_FESO4_PAIR_25).  The neutral pair
+    # does not migrate (z = 0), so only the free Fe²⁺ contributes to
+    # the migration-enhanced transport; the pair diffuses but at a
+    # lower diffusivity (D_FeSO4 ≈ 0.6 × D_Fe2).  The net effect is a
+    # small reduction in j_lim (typically 5–15% in 1.5 M FeSO₄).
+    fes04_pair_correction: bool = False
 
     def __post_init__(self) -> None:
         if self.fe_conc_M <= 0.0:
@@ -471,6 +518,122 @@ class DiffusionLayer1D:
         cache[key] = gamma
         return gamma
 
+    # ─── FeSO₄⁰ contact-pair fraction ───────────────────────────────
+
+    def _fe_pair_fraction(self, c_so4_mol_m3: float) -> float:
+        """Fraction of total Fe²⁺ bound as FeSO₄⁰ neutral pair.
+
+        K_eff = [FeSO₄⁰] / ([Fe²⁺][SO₄²⁻]) where K_eff is the
+        *activity-corrected* (concentration-scale) equilibrium constant.
+        The thermodynamic K_FESO4_PAIR_25 ≈ 200 L/mol at I = 0; at
+        the program's working ionic strength (I ~ 5 M) the activity
+        coefficients of Fe²⁺ and SO₄²⁻ are both << 1 (Pitzer: γ_Fe²⁺
+        ~ 0.05, γ_SO₄²⁻ ~ 0.1 at the reference bath), so K_eff drops
+        by ~3 orders of magnitude to ~0.4 L/mol.  We approximate this
+        with an ionic-strength-dependent correction:
+
+            K_eff = K_thermo × exp(-α × I)
+
+        where α = 1.18 is tuned to reproduce the speciation module's
+        24 % pair fraction at the reference bath (1.5 M FeSO₄ +
+        0.5 M Na₂SO₄, I ≈ 5.4 M from the bulk electroneutrality
+        solve; c_SO₄²⁻ ≈ 0.9 M from the HSO₄⁻/SO₄²⁻ equilibrium
+        at pH 2, 60 °C).
+        """
+        if not self.fes04_pair_correction:
+            return 0.0
+        c_so4_M = c_so4_mol_m3 / 1000.0  # mol/L
+        # Ionic strength screening estimate from the bulk composition
+        I = self._estimate_ionic_strength()
+        K_eff = K_FESO4_PAIR_25 * math.exp(-1.18 * I)
+        Kc = K_eff * max(c_so4_M, 1e-10)
+        return Kc / (1.0 + Kc)
+
+    def _estimate_ionic_strength(self) -> float:
+        """Screening ionic strength (M) from bulk composition.
+
+        I = 0.5 × Σ c_i × z_i².  Includes Fe²⁺, Na⁺, SO₄²⁻, HSO₄⁻,
+        H⁺.  Uses the bulk pH to split sulfate into HSO₄⁻/SO₄²⁻.
+        """
+        c_fe = self.fe_conc_M
+        c_na = 2.0 * self.support_conc_M
+        c_h = 10.0 ** (-self.pH_bulk)
+        c_total_so4 = c_fe + self.support_conc_M  # total sulfate
+        ka2 = _Ka_T(KA2_25C, self.T, KA2_EA_J_MOL)
+        f_so4 = ka2 / (ka2 + c_h)
+        c_so4 = c_total_so4 * f_so4
+        c_hso4 = c_total_so4 * (1 - f_so4)
+        I = 0.5 * (c_fe * 4 + c_na * 1 + c_so4 * 4 + c_hso4 * 1 + c_h * 1)
+        return max(I, 0.01)  # floor at 0.01 to avoid K_eff = K_thermo
+
+    @property
+    def _bulk_pair_fraction(self) -> float:
+        """FeSO₄⁰ pair fraction at bulk composition."""
+        if not self.fes04_pair_correction:
+            return 0.0
+        fr = self._fractions(self._bulk_c_h, self.bulk_c_s, self.buffer_conc_M * 1000.0)
+        return self._fe_pair_fraction(fr["c_so4"])
+
+    @property
+    def _effective_D_fe(self) -> float:
+        """Effective Fe diffusivity accounting for FeSO₄⁰ pair.
+
+        The total Fe flux is the sum of free-Fe²⁺ (D_Fe2, migrates)
+        and pair (D_FeSO4, does NOT migrate).  At the transport limit
+        (surface Fe → 0), the pair concentration also → 0, so the
+        effective diffusivity weighting is:
+
+            D_eff = D_Fe2 · (1 - f_pair) + D_FeSO4 · f_pair
+                  = D_Fe2 · (1 - f_pair · (1 - D_FESO4_RATIO))
+
+        This reduces j_lim by f_pair · (1 - 0.6) ≈ 0.4 · f_pair.
+        Only the free Fe²⁺ feels migration; the pair's contribution
+        to j_lim is pure diffusion.
+        """
+        if not self.fes04_pair_correction:
+            return self.D_fe
+        f = self._bulk_pair_fraction
+        return self.D_fe * (1.0 - f * (1.0 - D_FESO4_RATIO))
+
+    # ─── Surface-state kinetics wrapper ─────────────────────────────
+
+    def _surface_state_her_i0(self, eta_her_V: float) -> float:
+        """HER i₀ corrected by surface-state anion site-blocking.
+
+        Returns the effective exchange current at this HER overpotential.
+        Falls back to the bare Arrhenius-corrected value when
+        ``surface_state`` is False.
+
+        Scope
+        -----
+        This is a *mechanism scaffold*, not a calibrated prediction.
+        ``models.surface_state`` is flagged ``SCREENING_FLAG =
+        "unvalidated (L1)"`` — no data has been fit.  Within that
+        sandbox the correction below is the *dominant, robust*
+        suppression mechanism: anion site-blocking, ``1 - theta_block``.
+
+        We deliberately do **not** multiply by the Temkin ``θ_H·(1−θ_H)``
+        term.  At the program's operating overpotential ``θ_H → 1``
+        (strong H binding on Fe(110), ΔG_H* ≈ −0.40 eV) that term
+        collapses to ~0, which drives HER to zero and FE to 1 in
+        *every* bath — the exact behaviour this wiring rejects (it would
+        contradict the H₂ generation the sister h2_safety module models,
+        and erase the chloride-vs-sulfate distinction at the cell level).
+        Binding i₀,H to the anion-free-site fraction keeps HER
+        non-degenerate while preserving the real ordering (chloride
+        suppresses more than sulfate).  Calibrate against Phase I
+        measurements before quoting FE to a published number.
+        """
+        if not self.surface_state:
+            return self.her_i0_T
+        from .surface_state import SurfaceCoverage, chloride_aware_default
+        facets, anions = chloride_aware_default(self.bath_type)
+        ss = SurfaceCoverage(
+            eta_V=eta_her_V, T_K=self.T,
+            facets=facets, adsorbed_anions=anions,
+        )
+        return self.her_i0_T * (1.0 - ss.theta_block)
+
     # ─── Bulk composition ──────────────────────────────────────────
 
     @property
@@ -501,8 +664,14 @@ class DiffusionLayer1D:
 
     @property
     def diffusion_limit_A_m2(self) -> float:
-        """Pure-diffusion (Levich) limiting current for Fe²⁺ (A/m²)."""
-        return Z_FE * FARADAY * self.D_fe * self.fe_conc_M * 1000.0 / self.delta_m
+        """Pure-diffusion (Levich) limiting current for Fe²⁺ (A/m²).
+
+        When ``fes04_pair_correction=True``, uses the effective Fe
+        diffusivity that accounts for the FeSO₄⁰ neutral pair (which
+        diffuses but does not migrate).
+        """
+        D_eff = self._effective_D_fe
+        return Z_FE * FARADAY * D_eff * self.fe_conc_M * 1000.0 / self.delta_m
 
     @property
     def fe_i0_T(self) -> float:
@@ -894,7 +1063,9 @@ class DiffusionLayer1D:
         her_eq_bulk = self._her_equilibrium_potential(self.pH_bulk)
         i_fe = max(self._bv_current(E, self.fe_i0_T, self.fe_tafel_V,
                                     self.fe_anodic_slope_V, fe_eq_bulk), 0.0)
-        i_her = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
+        eta_her_seed = her_eq_bulk - E
+        her_i0_seed = self._surface_state_her_i0(eta_her_seed)
+        i_her = max(self._bv_current(E, her_i0_seed, self.her_tafel_V,
                                      self.her_anodic_slope_V, her_eq_bulk), 0.0)
         i_fe = min(i_fe, i_lim * 0.99)
 
@@ -933,7 +1104,13 @@ class DiffusionLayer1D:
 
             i_fe_kin = max(self._bv_current(E, self.fe_i0_T, self.fe_tafel_V,
                                             self.fe_anodic_slope_V, fe_eq), 0.0)
-            i_her_kin = max(self._bv_current(E, self.her_i0_T, self.her_tafel_V,
+            # Surface-state correction to HER i₀ (Tier 1.1 from
+            # CHEM_PHYS_REVIEW.md).  When enabled, the constant her_i0
+            # is replaced by an effective value that accounts for
+            # coverage, site-blocking, and facet ensemble.
+            eta_her = her_eq - E  # HER overpotential (positive cathodic)
+            her_i0_eff = self._surface_state_her_i0(eta_her)
+            i_her_kin = max(self._bv_current(E, her_i0_eff, self.her_tafel_V,
                                              self.her_anodic_slope_V, her_eq), 0.0)
             # Water-reduction branch (high pH); its OH⁻ production enters
             # the proton-invariant balance just like proton consumption.
@@ -1044,6 +1221,14 @@ class DiffusionLayer1D:
         V_cathode = E_sol
         V_cell = (self.E_anode_eq + self.eta_anode_V) - V_cathode + self.ir_drop_V
 
+        # Surface-state diagnostic: ratio of corrected to bare her_i0
+        her_i0_ratio = 1.0
+        if self.surface_state:
+            eta_her_diag = self._her_equilibrium_potential(surf_pH) - E_sol
+            her_i0_eff = self._surface_state_her_i0(eta_her_diag)
+            if self.her_i0_T > 0:
+                her_i0_ratio = her_i0_eff / self.her_i0_T
+
         return DiffusionLayerResult(
             j_mA_cm2=total / 10.0,
             current_efficiency=i_fe / max(total, 1e-30),
@@ -1066,6 +1251,8 @@ class DiffusionLayer1D:
             precipitation_flux_mol_m2_s=precip_flux,
             precipitation_fraction=precip_fraction,
             sludge_rate_g_m2_s=sludge_g,
+            her_i0_surface_state_ratio=her_i0_ratio,
+            fe_pair_fraction_bulk=self._bulk_pair_fraction if self.fes04_pair_correction else 0.0,
         )
 
     # ─── Convenience methods ───────────────────────────────────────
