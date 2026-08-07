@@ -57,6 +57,7 @@ from scipy.optimize import brentq
 
 from .electrochemistry import FARADAY, R_GAS
 from .pourbaix import oer_line
+from .anode_fe3_boundary import FRACTION_HYDROLYSED, fe3_boundary_analysis
 
 
 T_REF = 298.15          # K  — reference temperature
@@ -467,6 +468,16 @@ class AnodeKinetics:
     fe2_conc_M: float = 1.0
     fe_dissolution_i0: float = 10.0       # A/m² (fast, active dissolution)
     fe_dissolution_tafel_V: float = 0.040  # V/decade
+    # Fe³⁺ boundary layer at the inert OER anode (opt-in; default off → the
+    # bare-OER anode handles the film, byte-identical to pre-fe3 behaviour).
+    # When on and ``anolyte_fe2_M > 0``, anolyte Fe²⁺ oxidised to Fe³⁺ at the
+    # DSA surface hydrolyses, dropping the local pH and raising the OER
+    # overpotential by 10 s of mV; see :mod:`models.anode_fe3_boundary`.
+    # The Fe³⁺ produced is the shuttle source / Fe(OH)₃ sludge story.
+    # Constants are screening fits (SCREENING HONESTY in anode_fe3_boundary).
+    fe3_boundary_layer: bool = False
+    anolyte_fe2_M: float = 0.0
+    fe3_hydrolysis_fraction: float = FRACTION_HYDROLYSED
 
     # ─── Derived properties ─────────────────────────────────────────
 
@@ -491,6 +502,28 @@ class AnodeKinetics:
                 f"anode_chemistry must be 'inert' or 'soluble', got "
                 f"{self.anode_chemistry!r}"
             )
+
+    def _fe3_boundary(self, j_mA_cm2: float):
+        """Fe³⁺ boundary-layer analysis as ``(oer_raise_V, result_or_None)``.
+
+        Returns the additive OER overpotential raise and the full diagnostic
+        (or ``(0.0, None)``) so :meth:`overpotential_at_current` adds no
+        conditional branch and the inert-OER path is byte-identical to the
+        pre-fe³ code.  Active only for an inert OER anode with
+        ``fe3_boundary_layer=True`` and ``anolyte_fe2_M > 0``.
+        """
+        if not self.fe3_boundary_layer:
+            return 0.0, None
+        if self.is_soluble or self.anolyte_fe2_M <= 0.0:
+            return 0.0, None
+        r = fe3_boundary_analysis(
+            self.anolyte_fe2_M,
+            self.pH,
+            boundary_layer_m=self.boundary_layer_m,
+            temperature_C=self.material.temperature_C,
+            fraction_hydrolysed=self.fe3_hydrolysis_fraction,
+        )
+        return r.oer_overpotential_raise_V, r
 
     @property
     def is_soluble(self) -> bool:
@@ -619,6 +652,8 @@ class AnodeKinetics:
                 "i_cer_A_m2": 0.0,
                 "cer_fraction": 0.0,
                 "bubble_fraction": 0.0,
+                "fe3_boundary_oer_raise_V": 0.0,
+                "fe3_boundary_layer": None,
             }
 
         target = j_mA_cm2 * 10.0   # A/m²
@@ -689,8 +724,14 @@ class AnodeKinetics:
             cer_frac = i_cer / max(target, 1e-30)
             fe_frac = 0.0
 
+        # Fe³⁺ boundary layer at the inert anode (opt-in): anolyte Fe²⁺
+        # oxidised to Fe³⁺ hydrolyses, dropping the local pH and raising the
+        # OER overpotential 10 s of mV.  Added on top of the activation term
+        # as an additive surface penalty; zero when the layer is inactive.
+        fe3_raise, fe3_payload = self._fe3_boundary(j_mA_cm2)
+
         return {
-            "total_V": float(eta_act + eta_conc + max(eta_bubble, 0.0)),
+            "total_V": float(eta_act + eta_conc + max(eta_bubble, 0.0) + fe3_raise),
             "eta_activation_V": float(eta_act),
             "eta_concentration_V": float(eta_conc),
             "eta_bubble_V": float(max(eta_bubble, 0.0)),
@@ -703,6 +744,8 @@ class AnodeKinetics:
             "cer_fraction": float(cer_frac),
             "bubble_fraction": float(theta),
             "anode_chemistry": self.anode_chemistry,
+            "fe3_boundary_oer_raise_V": float(fe3_raise),
+            "fe3_boundary_layer": fe3_payload,
         }
 
     # ─── Full anode polarization curve ──────────────────────────────
