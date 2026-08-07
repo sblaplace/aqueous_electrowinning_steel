@@ -1,0 +1,202 @@
+{
+  "title": "Q3 \u2014 RDE + volumetric H2: separate Fe from HER (measure HER Tafel first)",
+  "resolves": "#34 dominant uncertainty: her_tafel_V",
+  "purpose": "Resolve the single dominant L0 unknown (the HER Tafel slope) by measuring the HER branch FIRST in the Fe-free bath, then fitting Fe with HER held fixed on the Fe-bath RDE, then confirming the split by volumetric charge-ledger closure.",
+  "true_parameters": {
+    "b_her": 0.14,
+    "i0_her": 0.002,
+    "b_fe": 0.12,
+    "i0_fe": 50.0,
+    "fe_E_eq": -0.44,
+    "pH": 2.0,
+    "T_C": 25.0,
+    "fe_conc_M": 1.0,
+    "D": 7.2e-10
+  },
+  "self_test": {
+    "true": {
+      "b_her": 0.14,
+      "i0_her": 0.002,
+      "b_fe": 0.12,
+      "i0_fe": 50.0,
+      "fe_E_eq": -0.44,
+      "pH": 2.0,
+      "T_C": 25.0,
+      "fe_conc_M": 1.0,
+      "D": 7.2e-10
+    },
+    "her_fit": {
+      "b_her_V_dec": 0.14046944135259268,
+      "i0_her_A_m2": 0.0020265443160181282,
+      "rmse_log10": 0.007949769858319198,
+      "r_squared": 0.9999446550378478,
+      "n_points": 60,
+      "converged": true,
+      "parameter_std_log10": {
+        "i0_her": 0.003335753814675866,
+        "b_her": 0.00018802640760500145
+      }
+    },
+    "fe_fit": {
+      "fe_i0_A_m2": 49.96377102040172,
+      "fe_tafel_V_dec": 0.11996404011821866,
+      "rmse_log10": 0.0022011459755705933,
+      "r_squared": 0.9999861427542388,
+      "n_points": 320,
+      "converged": true,
+      "parameter_std_log10": {
+        "fe_i0": 0.0005551405861366709,
+        "fe_tafel": 4.5909374205955594e-05
+      },
+      "her_fixed": {
+        "b_her_V_dec": 0.14046944135259268,
+        "i0_her_A_m2": 0.0020265443160181282
+      }
+    },
+    "errors": {
+      "her_tafel_V_pct": 0.3353152518519031,
+      "her_i0_dec": 0.0057261095722282995,
+      "fe_tafel_V_pct": 0.02996656815110882,
+      "fe_i0_dec": 0.0003147949792767779,
+      "her_closure_residual": 0.0
+    },
+    "tolerances": {
+      "her_tafel_V_pct": 8.0,
+      "her_i0_dec": 0.35,
+      "fe_tafel_V_pct": 8.0,
+      "fe_i0_dec": 0.35,
+      "her_closure_residual": 0.08
+    },
+    "verdict": {
+      "her_tafel_V_pct": true,
+      "her_i0_dec": true,
+      "fe_tafel_V_pct": true,
+      "fe_i0_dec": true,
+      "her_closure_residual": true
+    },
+    "closure": {
+      "h2_moles": 1.694707981538279e-06,
+      "q_her_gas_C": 0.32702892489027136,
+      "applied_charge_C": 60.0,
+      "FE_her_gas": 0.005450482081504522,
+      "FE_fe_mass": 0.9945495195195306,
+      "closure": 1.000000001601035,
+      "gas_assumption": "ideal gas; calibrated on real-device saturated-vapour correction at L1",
+      "her_branch_predicted_charge_C": 0.32702892489027136,
+      "her_branch_residual": 0.0
+    },
+    "all_pass": true
+  },
+  "measurement_spec": {
+    "title": "Q3 \u2014 RDE + volumetric H2 (measure HER Tafel FIRST)",
+    "resolves": "#34 dominant uncertainty: her_tafel_V (the single coefficient that can flip the reference-cell pass verdict). Calibrates the cathode model (NEXT_STEPS #2.2/#3.1).",
+    "depends_on": [
+      "reference-cell/beaker + bath (B0 master; FIRST_LAB_DAY)"
+    ],
+    "pairs_with": [
+      "kinetics_fit_pipeline (PR #35)"
+    ],
+    "sequence": [
+      {
+        "step": 1,
+        "title": "HER branch in the Fe-free supporting electrolyte",
+        "why": "No Fe2+ \u21d2 total cathodic current IS the HER branch. Unambiguous b_her and i0_her on the ACTUAL cathode surface.",
+        "bath": "B0 master with FeSO4 omitted (same anion/pH/T/surface prep)",
+        "technique": "RDE or static LSV (0.01-1 V/s), + EIS Rct near E_eq",
+        "outputs": [
+          "b_her",
+          "i0_her"
+        ]
+      },
+      {
+        "step": 2,
+        "title": "Levich transport separation on the Fe bath",
+        "why": "Plateau i_lim vs sqrt(omega) \u21d2 D and the Nernst film thickness (delta) that calibrates diffusion_layer_1d.",
+        "bath": "B0 master, 1 M Fe2+",
+        "technique": "RDE rotation matrix (400-2500 rpm)",
+        "outputs": [
+          "D",
+          "delta",
+          "i_lim(omega)"
+        ]
+      },
+      {
+        "step": 3,
+        "title": "Fe branch fit with HER HELD FIXED (from step 1)",
+        "why": "Two free parameters (i0_fe, b_fe) vs a full polarization curve \u21d2 non-degenerate Fe/HER separation.",
+        "technique": "fit_fe_kinetics_given_her (this module)",
+        "outputs": [
+          "i0_fe",
+          "b_fe"
+        ]
+      },
+      {
+        "step": 4,
+        "title": "Volumetric H2 confirmation at fixed j",
+        "why": "Independent check: FE_HER = 2F\u00b7n_H2/Q vs deposit FE_Fe must close the charge ledger (\u22481).",
+        "technique": "gas burette / manometric cell + gravimetric deposit",
+        "outputs": [
+          "FE_her(gas)",
+          "FE_fe(mass)",
+          "closure residual"
+        ]
+      }
+    ],
+    "gates": [
+      "HER Tafel fit R2 >= 0.98 and slope in 0.06-0.20 V/dec (iron-group HER)",
+      "Levich plot R2 >= 0.995 on the plateau; recovered D within 25% of the Fe2+ literature anchor (7.2e-10 m^2/s at 25 C, Arrhenius-scaled)",
+      "Fe Tafel fit R2 >= 0.98, slope in 0.06-0.18 V/dec, positive i0",
+      "Charge ledger closure |FE_her + FE_fe - 1| <= 0.05 (tolerance to be tightened after metrology is qualified)",
+      "HER-branch residual (gas vs fitted branch) within the stated uncertainty budget"
+    ],
+    "data_contract": {
+      "rde_lsv": [
+        "Voltage_V",
+        "Current_A",
+        "Area_cm2",
+        "pH",
+        "Temp_C",
+        "Fe_M",
+        "Ref_V",
+        "Omega_rpm",
+        "Bath_FeFree"
+      ],
+      "volumetric": [
+        "Charge_Ah",
+        "H2_Volume_mL",
+        "T_K",
+        "P_Pa",
+        "Deposit_Fe_kg",
+        "Run_time_s",
+        "Electrode_area_m2"
+      ]
+    },
+    "scale": "L0 screen \u2192 L1 real-data validation"
+  },
+  "model_scope": {
+    "computes": [
+      "Single-branch HER Tafel fit (b_her, i0_her) on the Fe-free bath \u2014 the #34 first measurement",
+      "Levich transport separation (D, Nernst delta) on the RDE Fe bath",
+      "Fe branch fit (i0_fe, b_fe) with the HER branch HELD FIXED (non-degenerate separation)",
+      "Volumetric H2 charge-ledger closure (FE_her gas vs FE_fe mass) and branch residual",
+      "Synthetic two-bath simulator + L0 self-test proving recoverability",
+      "Machine-readable measurement spec (what to measure, in what order, with gates)"
+    ],
+    "does_not_compute": [
+      "Surface-state drift / site-blocking corrections to HER (see models/surface_state.py)",
+      "Real wet-lab accuracy \u2014 L0 synthetic validation only until real run data exist",
+      "Anodic-branch fitting (module is cathodic-only by design)",
+      "Non-ideal gas / water-vapour correction for the gas burette (L1 task)",
+      "pH or temperature dependence of the fitted branches (fit at one condition)"
+    ],
+    "calibration_required": [
+      "One Fe-free run to fix HER on the actual cathode surface before any Fe-bath fit",
+      "One Fe-bath RDE Levich set to fix D/delta for diffusion_layer_1d",
+      "Volumetric H2 + deposit mass at at least 3 current densities for the closure gate"
+    ],
+    "key_uncertainty": "The single dominant L0 unknown (b_her) is resolved by step 1. Residual levers are D (nu affects it ~nu^(1/4)) and the volumetric H2 gas correction; both are measured, not assumed.",
+    "limitations": "Screening module demonstrating the method on synthetic data. The procedure is validated to RECOVER known kinetics; no wet-lab dataset exists in this repository. It is NOT gate evidence."
+  },
+  "figure": "docs/figures/rde_volumetric_h2_her_first.png",
+  "status": "L0 synthetic validation \u2014 NOT gate evidence"
+}
