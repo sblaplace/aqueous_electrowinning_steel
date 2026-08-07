@@ -67,20 +67,28 @@ from .kinetics import (
     HER_ANODIC_SLOPE_V,
     I0_REF_K,
     arrhenius_i0,
+    arrhenius_diffusivity,
     limiting_current_density,
 )
 from .pourbaix import LOGKSP_FEOH2, her_line
+from .thermodynamic_constants import (
+    D_FE2_25,
+    D_H_25,
+    D_OH_25,
+    D_NA_25,
+    D_SO4_25,
+)
 
 # Water autoprotolysis constant expressed in (mol/m^3)^2:
 # Kw = 1e-14 (mol/L)^2 = 1e-14 * (1000 mol/m^3)^2 = 1e-8 (mol/m^3)^2
 KW_SI = 1.0e-8
 
 # Limiting ionic diffusivities at infinite dilution, 25 C (m^2/s).
-D_FE = 7.2e-10
-D_H = 9.31e-9
-D_OH = 5.27e-9
-D_NA = 1.33e-9
-D_SO4 = 1.07e-9
+D_FE = D_FE2_25
+D_H = D_H_25
+D_OH = D_OH_25
+D_NA = D_NA_25
+D_SO4 = D_SO4_25
 
 
 @dataclass
@@ -185,11 +193,15 @@ class NernstPlanckFilm:
     # Butler-Volmer anodic-branch slopes (cathodic slopes above retained).
     fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
     her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
-    diffusivity_fe_m2_s: float = D_FE
-    diffusivity_h_m2_s: float = D_H
-    diffusivity_oh_m2_s: float = D_OH
-    diffusivity_na_m2_s: float = D_NA
-    diffusivity_so4_m2_s: float = D_SO4
+    # ``None`` means use the shared 25 °C anchor and apply the common
+    # Arrhenius correction to ``temperature_C``.  A numeric value is treated
+    # as an already-resolved coefficient, which preserves an explicit lab
+    # measurement or calibration override.
+    diffusivity_fe_m2_s: Optional[float] = None
+    diffusivity_h_m2_s: Optional[float] = None
+    diffusivity_oh_m2_s: Optional[float] = None
+    diffusivity_na_m2_s: Optional[float] = None
+    diffusivity_so4_m2_s: Optional[float] = None
     grid_points: int = 121
     max_iterations: int = 200
     convergence_tol: float = 1e-9
@@ -205,6 +217,23 @@ class NernstPlanckFilm:
             raise ValueError("boundary_layer_m must be positive")
         if self.grid_points < 3:
             raise ValueError("grid_points must be at least 3")
+
+        # The old implementation left these 25 °C constants untouched while
+        # changing ``temperature_C`` elsewhere in the solver.  That made its
+        # transport limit disagree with the diffusion-layer model and with
+        # the Levich calculation.  Resolve defaults once at construction;
+        # explicit numeric coefficients remain calibration overrides.
+        T_K = self.T
+        if self.diffusivity_fe_m2_s is None:
+            self.diffusivity_fe_m2_s = arrhenius_diffusivity(D_FE, T_K)
+        if self.diffusivity_h_m2_s is None:
+            self.diffusivity_h_m2_s = arrhenius_diffusivity(D_H, T_K)
+        if self.diffusivity_oh_m2_s is None:
+            self.diffusivity_oh_m2_s = arrhenius_diffusivity(D_OH, T_K)
+        if self.diffusivity_na_m2_s is None:
+            self.diffusivity_na_m2_s = arrhenius_diffusivity(D_NA, T_K)
+        if self.diffusivity_so4_m2_s is None:
+            self.diffusivity_so4_m2_s = arrhenius_diffusivity(D_SO4, T_K)
 
     # ─── Bulk composition ─────────────────────────────────────────────
     @property

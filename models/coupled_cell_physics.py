@@ -213,7 +213,8 @@ def _cell_key(cell: CoupledCell) -> Tuple[Any, ...]:
         b.c_FeSO4_M, b.c_Na2SO4_M, b.c_H2SO4_M, b.c_H3BO3_M, b.pH,
         g.interelectrode_gap_m, g.membrane, g.membrane_area_resistance_ohm_m2,
         g.contact_resistance_ohm_m2, g.anode_bubble_fraction,
-        c.temperature_C, c.boundary_layer_m, c.flow_regime,
+        g.anode_chemistry, g.anode_fe2_conc_M, g.anode_fe_dissolution_i0_A_m2,
+        c.temperature_C, c.boundary_layer_m, c.flow_regime, c.transport_model,
         cell.channel.height_m, cell.channel.width_m, cell.channel.depth_m,
         cell.channel.interelectrode_gap_m, cell.channel.liquid_flow_L_min,
     )

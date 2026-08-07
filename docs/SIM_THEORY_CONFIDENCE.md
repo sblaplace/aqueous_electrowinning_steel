@@ -1,5 +1,11 @@
 # Reference-Cell Theory-Confidence Simulation (Chain of Claims)
 
+> **Regeneration note (2026-08-06):** the numeric reference-point tables below
+> were generated before the reactive cathode-film and voltage-bookkeeping
+> upgrade. Re-run `python -m models.run_theory_confidence` for the current
+> Level-0 screen. The document remains an explicit prior-report record and is
+> not gate evidence.
+
 **Date:** 2026-08-01
 **Status:** Level-0 *screening* — **NOT gate evidence**
 **Module:** `models/theory_confidence.py` (+ runner `models/run_theory_confidence.py`, tests `tests/test_theory_confidence.py`)

@@ -31,17 +31,23 @@ from typing import Dict, Tuple
 import numpy as np
 
 from .electrochemistry import FARADAY, R_GAS
+from .thermodynamic_constants import (
+    E0_FE_REDUCTION_V,
+    E0_FE3_FE2_V,
+    LOGKSP_FEOH2_25,
+    DH_FEOH2_DISSOLUTION_J_MOL,
+)
 
 # ─── Standard potentials / equilibrium constants at 298.15 K ──────────
-E0_FE2_FE = -0.440      # Fe2+ + 2e- -> Fe(s)                 V vs. SHE
-E0_FE3_FE2 = 0.771      # Fe3+ + e-  -> Fe2+                  V vs. SHE
+E0_FE2_FE = E0_FE_REDUCTION_V  # Fe2+ + 2e- -> Fe(s), V vs. SHE
+E0_FE3_FE2 = E0_FE3_FE2_V      # Fe3+ + e-  -> Fe2+, V vs. SHE
 E0_FEOH3_FE2 = 1.057    # Fe(OH)3 + 3H+ + e- -> Fe2+ + 3H2O   V vs. SHE
 E0_FEOH2_FE = -0.047    # Fe(OH)2 + 2H+ + 2e- -> Fe + 2H2O    V vs. SHE
 E0_HFEO2_FE = -0.909    # HFeO2- + 3H+ + 2e- -> Fe + 2H2O     V vs. SHE
 E0_FEOH3_FEOH2 = 0.271  # Fe(OH)3 + H+ + e- -> Fe(OH)2 + H2O  V vs. SHE
 
 # Solubility products and hydrolysis constants (log10, 25 °C)
-LOGKSP_FEOH2 = -16.31    # Fe(OH)2 <-> Fe2+ + 2OH-   (Ksp = 4.87e-17)
+LOGKSP_FEOH2 = LOGKSP_FEOH2_25  # Fe(OH)2 <-> Fe2+ + 2OH-
 LOGKSP_FEOH3 = -38.55    # Fe(OH)3 <-> Fe3+ + 3OH-   (Ksp = 2.79e-39)
 LOGK_FEOH2_HFEO2 = -18.30  # Fe(OH)2 <-> HFeO2- + H+
 KW = 14.0                # -log10 Kw at 298 K
@@ -55,7 +61,7 @@ T_REF = 298.15
 # to reproduce the ~5× Ksp rise between 25 and 60 °C reported in the
 # FeSO₄/Fe(OH)₂ solubility literature (Ball & Nordstrom; Kobylin et al.).
 # This is a van 't Hoff screening value, not a fitted thermodynamic model.
-DH_SOL_FEOH2_J_MOL = 22.0e3
+DH_SOL_FEOH2_J_MOL = DH_FEOH2_DISSOLUTION_J_MOL
 
 
 def logksp_feoh2(T: float = T_REF, dH_J_mol: float = DH_SOL_FEOH2_J_MOL) -> float:

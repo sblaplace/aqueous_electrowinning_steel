@@ -1,5 +1,12 @@
 # Coupled operating point: does the #40 reachability verdict survive the gas correction?
 
+> **Regeneration note (2026-08-06):** the numeric tables below predate the
+> reactive cathode-film, shared-constant, and single-temperature conductivity
+> corrections. Re-run `python -m models.run_coupled_cell_physics` before using
+> any number as the current Level-0 screen. The document is retained as a
+> prior-report record; the tests pin coupling closure and the updated
+> implementation separately.
+
 ## Scope and status
 
 This report is a transparent, bottom-up **Level-0 → Level-1 boundary

@@ -70,7 +70,10 @@ def test_speciation_charge_balance_and_ka2_residual():
     mH = res["c_H_free_M"] / kw
 
     T_K = REF.T_C + 273.15
-    Ka2_T = 1.05e-2 * math.exp((-22400.0 / 8.314462618) * (1.0 / T_K - 1.0 / 298.15))
+    from models.thermodynamic_constants import (
+        KA_HSO4_25, DH_HSO4_J_MOL, vanthoff_constant
+    )
+    Ka2_T = vanthoff_constant(KA_HSO4_25, T_K, DH_HSO4_J_MOL)
     resid = (res["gamma_H"] * mH * res["gamma_SO4"] * mS
              - Ka2_T * res["gamma_HSO4"] * mHSO4)
     assert abs(resid) < 1e-10
