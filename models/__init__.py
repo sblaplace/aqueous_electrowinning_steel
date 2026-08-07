@@ -27,6 +27,7 @@ from .fe_chloride_speciation import (
     fe2_diffusivity_in_chloride_bath,
     log10_k_fecl_species,
 )
+from .anchors import Anchor, ANCHORS, get_anchor, audit_anchors
 from .electrochemistry import (
     CellVoltageModel,
     specific_energy_kWh_per_kg,
@@ -955,6 +956,8 @@ __all__ = [
     "historical_chinese_iron_bath",
     "fe2_diffusivity_in_chloride_bath",
     "log10_k_fecl_species",
+    # ── Literature anchors (Tier-3.2 cross-cutting add) ───────────
+    "Anchor", "ANCHORS", "get_anchor", "audit_anchors",
     # ── Operating twin (safety + environmental safe-state) ────────────
     "OperatingTwin",
     "TwinConfig",
