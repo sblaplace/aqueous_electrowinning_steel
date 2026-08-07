@@ -193,7 +193,7 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
-    print(f"\nfigure: docs/figures/closed_loop_live_control_target.png")
+    print("\nfigure: docs/figures/closed_loop_live_control_target.png")
 
 
 if __name__ == "__main__":

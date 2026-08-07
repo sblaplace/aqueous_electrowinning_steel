@@ -54,9 +54,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
-import numpy as np
 
 # Physical constants
 FARADAY = 96485.33212      # C/mol

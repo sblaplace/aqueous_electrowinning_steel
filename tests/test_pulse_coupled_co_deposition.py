@@ -11,7 +11,6 @@ from models.co_deposition import (
 
 def test_surface_pH_pulse_recovery():
     bulk = 3.5
-    pH_dc = surface_pH_from_current(100, bulk)
     pH_pe = surface_pH_from_pulse(50, 100, 0.5, bulk, waveform="pe")
     pH_pre = surface_pH_from_pulse(50, 100, 0.5, bulk, waveform="pre")
     # Pulse off-time should lower surface pH vs DC at peak
@@ -33,7 +32,6 @@ def test_mass_transport_enhancement():
 
 def test_kinetics_pulsed_methods():
     kin = AnomalousFeNiKinetics(pH=3.5, temperature_C=60)
-    pH_avg = kin.surface_pH(50)
     pH_pulsed = kin.surface_pH_pulsed(50, 100, 0.5, "pe")
     assert pH_pulsed >= kin.pH
     delta_eff = kin.effective_boundary_layer_pulsed(50, 100, 0.5, "pe")

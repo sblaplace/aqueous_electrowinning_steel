@@ -228,7 +228,6 @@ class PulseOptimizationSweep:
             waveform=waveform,  # type: ignore[arg-type]
         )
 
-        ce_raw = codep_result["alloy_kinetics"]["current_efficiency_percent"]
         carbon_raw = codep_result["carbon_incorporation"]["predicted_carbon_wt_percent"]
         ni_wt = codep_result["alloy_kinetics"]["ni_wt_percent"]
         adjusted_ce = codep_result["integrated_metrics"]["adjusted_overall_current_efficiency_percent"]

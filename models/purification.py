@@ -252,7 +252,6 @@ class CementationModel:
     def _effective_rate(self, k_ref: float, temperature_C: float, pH: float) -> float:
         """Arrhenius + pH-adjusted rate constant."""
         p = self.params
-        dT = temperature_C - p.reference_temperature_C
         arrhenius = math.exp(p.activation_energy_kJ_mol * 1000.0 / R_GAS
                              * (1.0 / (p.reference_temperature_C + 273.15)
                                 - 1.0 / (temperature_C + 273.15)))

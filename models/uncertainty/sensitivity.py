@@ -444,7 +444,6 @@ def tornado_chart(
             continue
 
         # Split into low / high halves at median
-        median_val = np.median(col)
         low_mask = col <= np.percentile(col, low_q * 100)
         high_mask = col >= np.percentile(col, high_q * 100)
 

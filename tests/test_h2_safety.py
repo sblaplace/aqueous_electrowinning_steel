@@ -7,7 +7,6 @@ infinite ventilation, zero HER).
 
 import math
 import pytest
-import numpy as np
 
 from models.h2_safety import (
     LEL_H2_VOLUME_PERCENT,
@@ -15,7 +14,6 @@ from models.h2_safety import (
     VENTILATION_SAFETY_FACTOR,
     EnclosureSpec,
     H2GenerationRate,
-    H2SafetyResult,
     assess_h2_safety,
     min_ventilation_for_fe_rate,
     bench_cell_worst_case,

@@ -326,7 +326,6 @@ def test_CER_makes_significant_contribution_in_concentrated_chloride():
         pH=0.0,
         a_Cl_molar=12.0,
     )
-    r = anode.overpotential_at_current(100.0)
     # At high current, OER dominates even in conc. chloride on DSA;
     # but at low current the CER fraction should be non-trivial
     r_low = anode.overpotential_at_current(5.0)

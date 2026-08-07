@@ -387,7 +387,6 @@ def robust_optimum(
     reg = registry or REGISTRY
 
     param_names = sorted(ranges.keys())
-    D = len(param_names)
 
     # Build search space
     space = [Real(ranges[n][0], ranges[n][1], name=n) for n in param_names]

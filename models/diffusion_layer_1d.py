@@ -813,7 +813,6 @@ class DiffusionLayer1D:
 
         # 5.  Electroneutrality (differentiated)
         #     2·c_fe + c_h + c_na = c_hso4 + 2·c_so4 + c_h2bo3 + c_oh
-        c_na = fr["c_na"]
         A[4, 0] = 2.0
         A[4, 1] = 1.0 + c_s * g1 + c_b * g2 + kw_c2
         A[4, 2] = fr["f_hso4"] - 2.0  # = −(f_hso4 + 2·f_so4) + f_hso4  ... = -(2 - f_hso4)

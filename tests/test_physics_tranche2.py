@@ -89,7 +89,6 @@ class TestPrecipitationSink:
         assert pt.deposition_rate_net_um_hr == pytest.approx(0.0, abs=1e-6)  # all Fe to sludge at this S
 
     def test_disabled_sink_gives_zero_flux(self):
-        cp = CellPhysics(BathRecipe(c_FeSO4_M=1.0, pH=5.5), conditions=ProcessConditions(her_i0=1e-2, temperature_C=60))
         # Disable via the underlying DiffusionLayer1D flag — construct manually
         dl = DiffusionLayer1D(fe_conc_M=1.0, pH_bulk=5.5, temperature_C=60, delta_m=50e-6, activity_model="pitzer", her_i0=1e-2, precipitation_sink=False)
         r = dl.solve(50.0)

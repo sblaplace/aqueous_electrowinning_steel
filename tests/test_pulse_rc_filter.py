@@ -2,7 +2,6 @@
 Unit tests for pulse RC double-layer filtering and frequency cutoff model.
 """
 
-import pytest
 from models.pulse_rc_filter import (
     PulseCircuitParams,
     simulate_pulse_rc_response,

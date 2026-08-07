@@ -547,7 +547,6 @@ def optimize_geometry(
     def energy_for_gap(gap: float) -> float:
         """Specific energy for a given gap, using thermal + uniformity penalty."""
         # R_cell = gap / (kappa * area)
-        R_cell = gap / (kappa * area_m2)
         V_eff = V_cell  # cell voltage is the driving potential
         energy = specific_energy_kWh_per_kg(V_eff, current_efficiency)
         return energy

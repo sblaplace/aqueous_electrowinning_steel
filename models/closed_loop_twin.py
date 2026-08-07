@@ -35,19 +35,17 @@ and the gate's fail-closed behaviour before any hardware evidence lands.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 from .operating_twin import (
     OperatingTwin,
-    TwinConfig,
     SensorSnapshot,
     TwinMode,
 )
 from .kinetics import DepositionKinetics
 from .g0_co_location import (
     G0ContractResult,
-    N_STATES,
     evaluate_co_location_contract,
 )
 

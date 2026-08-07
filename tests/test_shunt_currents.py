@@ -2,7 +2,6 @@
 Unit tests for multi-cell stack manifold shunt current network solver.
 """
 
-import pytest
 from models.shunt_currents import (
     StackManifoldGeometry,
     solve_stack_shunt_currents,

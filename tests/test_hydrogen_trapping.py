@@ -2,9 +2,7 @@
 Unit tests for hierarchical hydrogen trapping and McNabb–Foster bakeout model.
 """
 
-import pytest
 from models.hydrogen_trapping import (
-    default_trap_hierarchy,
     lattice_diffusivity_m2_s,
     effective_trapped_diffusivity_m2_s,
     compute_bakeout_schedule,

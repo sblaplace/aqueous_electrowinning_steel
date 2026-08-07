@@ -234,8 +234,6 @@ def _run_single_sample(
         from ..electrochemistry import FARADAY, M_FE, Z_FE
         from ..surface_state import volmer_coverage
 
-        ni_i0 = sample.get("ni_i0", 5.0e-3)
-
         # DFT dG_H* anchors theta_H(eta) -> i0,H_eff -> FE at the gate
         # (CHEM_PHYS_IMPROVEMENTS §3.1). The +/-0.15 eV band is drawn by the
         # Sobol/MC sampler through the registry "dG_Hstar_eV" parameter.
@@ -418,7 +416,6 @@ def _compute_correlations(
 ) -> Dict[str, Dict[str, float]]:
     """Compute pairwise Pearson correlations between all outputs."""
     keys = sorted(output_distributions.keys())
-    n = len(keys)
     corr: Dict[str, Dict[str, float]] = {}
     for i, ki in enumerate(keys):
         corr[ki] = {}

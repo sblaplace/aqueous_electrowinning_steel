@@ -7,7 +7,6 @@ comparison; its characteristic failure mode (≈97 % of iron forced into
 FeSO4⁰ pairs) is pinned explicitly as regression archaeology.
 """
 
-import math
 
 import pytest
 

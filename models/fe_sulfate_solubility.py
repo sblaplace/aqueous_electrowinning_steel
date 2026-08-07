@@ -46,9 +46,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, Tuple
 
-import numpy as np
 
 # Phase transition temperature (Celsius) from melanterite (7H2O) to szomolnokite (1H2O)
 T_TRANSITION_C = 56.7

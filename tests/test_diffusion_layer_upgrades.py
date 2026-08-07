@@ -4,9 +4,7 @@ Validates the Tier-1.1 (surface_state) and Tier-2 (FeSO₄⁰ neutral pair)
 additions from CHEM_PHYS_REVIEW.md and docs/CHEM_PHYS_IMPROVEMENTS_V2.md.
 """
 
-import math
 import pytest
-import numpy as np
 
 from models.diffusion_layer_1d import (
     DiffusionLayer1D,

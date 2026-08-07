@@ -165,19 +165,13 @@ def surface_pH_from_current(
     if j_mA_cm2 <= 0:
         return bulk_pH
 
-    j_A_m2 = j_mA_cm2 * 10.0
-    T_K = temperature_C + 273.15
     # Proton consumption rate (mol/m²/s) from HER fraction + metal reduction
     # Approximate: ~0.3 mol H⁺ consumed per mol e⁻ at pH 2-4
     # A more exact formulation would solve the full Nernst-Planck system;
     # here we use a closed-form approximation for speed.
-    proton_consumption_mol_m2_s = 0.35 * j_A_m2 / FARADAY
 
     # Diffusive supply of H⁺ through the boundary layer
     # C_bulk ≈ 10^(-bulk_pH) in mol/L → mol/m³
-    C_bulk_H = 1000.0 * 10.0 ** (-bulk_pH)
-    diffusion_supply = z_H_plus * FARADAY * diffusivity_H_plus_m2_s * max(C_bulk_H, 1e-9) / boundary_layer_m
-    diffusion_supply_mol_m2_s = diffusion_supply / FARADAY
 
     # Simplified empirical model for surface pH rise (screening-level)
     # At high current densities, proton consumption exceeds diffusion supply,
@@ -907,7 +901,6 @@ class GuglielmiCarbonIncorporation:
         current_density_mA_cm2: float,
     ) -> float:
         """Mass incorporation rate of carbon per cathode area (kg/m²/s)."""
-        rate_mol_m2_s = self.strong_adsorption_rate_mol_m2_s(current_density_mA_cm2)
         # Convert to mass rate: multiply by Avogadro's number and particle mass,
         # but the rate is already in mol particles (not mol atoms).
         # Actually: rate_mol_m2_s is in mol of particles incorporated per m² per s.
@@ -917,7 +910,6 @@ class GuglielmiCarbonIncorporation:
         # Let's redefine: rate_strong is effectively in particles/m²/s / N_A.
         # For simplicity, we treat the rate as an effective mass rate by multiplying
         # by particle mass directly (the rate constant absorbs the N_A factor).
-        mass_rate_kg_m2_s = rate_mol_m2_s * self.particle_mass_kg * 6.022e23  # if rate is in mol
         # Actually, the rate constant calibration is ambiguous without explicit units.
         # Let's use a simpler empirical formula calibrated to typical incorporation levels:
         # At j = 100 mA/cm² and C_p = 1 g/L, literature reports ~0.5–2 wt% carbon.

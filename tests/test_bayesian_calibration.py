@@ -85,7 +85,6 @@ def test_default_priors_covers_all_targets():
 def test_enkf_converges_on_synthetic_data():
     """EnKF posterior should be closer to true values than the prior."""
     priors = default_priors()
-    param_names = sorted(priors.keys())
     rng = np.random.default_rng(42)
 
     true_params = {

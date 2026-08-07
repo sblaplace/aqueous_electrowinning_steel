@@ -40,13 +40,13 @@ def _plot_experiment_sequence(plan: ValidationPlan, ax):
     x = np.arange(len(names))
     width = 0.35
 
-    bars_cost = ax.bar(x - width / 2, costs, width, label="Cost (USD)",
+    ax.bar(x - width / 2, costs, width, label="Cost (USD)",
                        color="steelblue", alpha=0.7)
     ax.set_ylabel("Cost (USD)", color="steelblue")
     ax.tick_params(axis="y", labelcolor="steelblue")
 
     ax2 = ax.twinx()
-    bars_gain = ax2.bar(x + width / 2, gains, width, label="Gain / $",
+    ax2.bar(x + width / 2, gains, width, label="Gain / $",
                         color="coral", alpha=0.7)
     ax2.set_ylabel("Information gain / dollar", color="coral")
     ax2.tick_params(axis="y", labelcolor="coral")

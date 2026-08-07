@@ -42,9 +42,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, Tuple
+from typing import Literal, Optional
 
-import numpy as np
 
 # Physical and chemical constants
 R_GAS = 8.314462618        # J/(mol·K)
@@ -164,13 +163,6 @@ def simulate_ore_leaching(
     # Dimensionless time parameter for chemical reaction control:
     # tau_chem = (rho_m * r0) / (k_chem * C_acid)
     tau_chem = (rho_m * r0) / max(k_chem * c_acid, 1e-15)
-
-    # Chemical reaction control conversion: 1 - (1 - X)^(1/3) = t / tau_chem
-    ratio_chem = t_sec / max(tau_chem, 1e-12)
-    if ratio_chem >= 1.0:
-        x_chem = 1.0
-    else:
-        x_chem = 1.0 - ((1.0 - ratio_chem) ** 3)
 
     # Product layer pore diffusion control: tau_diff = (rho_m * r0^2) / (6 * D_e * C_acid)
     d_e = 5.0e-11 * (t_k / T_REF) * math.exp(-15e3 / (R_GAS * t_k))
