@@ -620,6 +620,32 @@ from .solutal_convection import (
     solve_solutal_mixed_convection,
 )
 
+# ── New physics modules (August 2026 additions) ─────────────────────
+from .mhd_convection import (
+    MHDGeometry,
+    MHDSolution,
+    compute_mhd_solution,
+    effective_mass_transfer_with_mhd,
+    lorentz_velocity_scale,
+    mhd_boundary_layer_reduction,
+)
+from .sonoelectrochemistry import (
+    UltrasonicParameters,
+    SonoelectroResult,
+    compute_sonoelectro_result,
+    effective_delta_with_ultrasound,
+    ultrasonic_enhanced_delta,
+)
+from .bath_rheology import (
+    BathRheologyParams,
+    herschel_bulkley_viscosity,
+    effective_viscosity_for_gas_holdup,
+)
+from .eqcm_metrology import (
+    EQCMResult,
+    simulate_eqcm_run,
+    sauerbrey_mass,
+)
 from .cross_modal_theory import (
     SharedScenario,
     ModalityResult,
@@ -1150,6 +1176,12 @@ __all__ = [
     "SolutalChannelParams",
     "MixedConvectionResult",
     "solve_solutal_mixed_convection",
+    # New physics modules (August 2026)
+    "MHDGeometry", "MHDSolution", "compute_mhd_solution", "effective_mass_transfer_with_mhd",
+    "lorentz_velocity_scale", "mhd_boundary_layer_reduction",
+    "UltrasonicParameters", "SonoelectroResult", "compute_sonoelectro_result", "effective_delta_with_ultrasound",
+    "BathRheologyParams", "herschel_bulkley_viscosity", "effective_viscosity_for_gas_holdup",
+    "EQCMResult", "simulate_eqcm_run", "sauerbrey_mass",
     # ── Cross-modal bottom-up theory (one shared parameter set) ───────
     "SharedScenario",
     "ModalityResult",
