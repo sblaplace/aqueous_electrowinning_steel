@@ -130,6 +130,31 @@ from .impurity_codeposition import (
     CHLORIDE_KINETICS,
     CU_HOT_SHORTNESS_WT,
 )
+from .oxygen_in_iron import (
+    OxygenInIronModel,
+    OxygenInIronParams,
+    SCREENING_FLAG as OXYGEN_SCREENING_FLAG,
+    oxygen_mass_rate_kg_m2_s,
+    oxygen_wt_percent,
+    oxygen_ppm,
+    deposit_density_kg_m3,
+    oxygen_strengthening_MPa,
+    cold_rollability,
+    precipitation_flux_from_pulse,
+    INC_CAPTURE_FRACTION,
+    COLD_ROLL_FREE_O_PPM,
+    COLD_ROLL_FORBIDDEN_O_PPM,
+)
+from .bath_impurity_codeposition import (
+    BathImpurityCoDeposition,
+    BathImpurityKinetics,
+    SULFATE_IMPURITY_KINETICS,
+    CHLORIDE_IMPURITY_KINETICS,
+    IMPURITY_KINETICS,
+    langmuir_coverage,
+    route_steel_grade,
+    SCREENING_FLAG as IMPURITY_SCREENING_FLAG,
+)
 from .closed_loop import (
     AnodeDurabilityParams,
     ClosedLoopParams,
