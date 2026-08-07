@@ -165,13 +165,13 @@ class TestSurfaceStateIntegration:
         )
 
     def test_aware_bath_gives_higher_fe(self):
-        """AWARE (chloride) bath should give stronger HER suppression.
+        """AWARE (chloride) bath gives stronger HER suppression than sulfate.
 
-        Note: both baths drive HER i₀_eff to near-zero at the operating
-        point because θ_H(1-θ_H) → 0 as θ_H → 1 (the model's known
-        degenerate limit at high H coverage on Fe(110)).  The chloride
-        bath suppresses *more* than sulfate, but both are near zero.
-        We assert the ordering and that both are strongly suppressed.
+        Unlike the earlier degenerate-limit behaviour (where the Temkin
+        θ_H(1-θ_H) term collapsed to ~0 and drove HER i₀→0 for *every*
+        bath), the wiring now binds i₀,H to anion site-blocking only:
+        chloride (10 M) suppresses more than sulfate, and HER survives
+        in both so the differentiation is real at the cell level.
         """
         model_sulfate = DiffusionLayer1D(
             fe_conc_M=1.0, pH_bulk=2.0,
@@ -183,36 +183,40 @@ class TestSurfaceStateIntegration:
         )
         r_sulfate = model_sulfate.solve(200.0)
         r_aware = model_aware.solve(200.0)
-        # Chloride suppresses HER more than sulfate
+        # Chloride suppresses HER more than sulfate.
         assert r_aware.her_i0_surface_state_ratio < r_sulfate.her_i0_surface_state_ratio
-        # Both are strongly suppressed (the known degenerate limit)
-        assert r_sulfate.her_i0_surface_state_ratio < 0.01
-        assert r_aware.her_i0_surface_state_ratio < 0.01
+        # And it translates to higher FE than sulfate.
+        assert r_aware.current_efficiency > r_sulfate.current_efficiency
 
-    def test_surface_state_known_degenerate_limit(self):
-        """Surface state is a mechanism scaffold, not a calibrated model.
+    def test_surface_state_differentiates_not_vanished(self):
+        """Chloride suppresses HER more than sulfate, without FE→1.
 
-        At the program's operating point, θ_H → 1 on Fe(110)
-        (ΔG_H* = -0.40 eV), so θ_H(1-θ_H) → 0 and HER i₀_eff → 0
-        for ALL bath types.  This is the model's known degenerate
-        limit (documented in the module docstring and surface_state.py's
-        SCREENING_FLAG = "unvalidated (L1)").
-
-        This test asserts the degenerate behaviour explicitly so that
-        future calibrations (Phase I data) will break it in the right
-        direction — when data is fit, FE should drop below 1.0.
+        Regression guard: the original wiring folded in the Temkin
+        θ_H·(1−θ_H) term, which collapses to ~0 at operating η, driving
+        FE to 1.000 in *every* bath — the chloride-vs-sulfate
+        differentiation was unmeasurable at cell level, and contradicted
+        the H₂-safety sister module.  Site-blocking alone must give a
+        real FE separation while leaving HER non-degenerate.
         """
-        for bath in ("sulfate", "aware", "mixed"):
-            model = DiffusionLayer1D(
-                fe_conc_M=1.5, pH_bulk=2.0,
-                surface_state=True, bath_type=bath,
-            )
-            result = model.solve(200.0)
-            # HER i₀ is suppressed to < 1% of bare value
-            assert result.her_i0_surface_state_ratio < 0.01, (
-                f"bath={bath}: her_i0 ratio {result.her_i0_surface_state_ratio} "
-                f"should be < 0.01 at the degenerate limit"
-            )
+        model_sulfate = DiffusionLayer1D(
+            fe_conc_M=1.5, support_conc_M=0.5, pH_bulk=2.0,
+            surface_state=True, bath_type="sulfate",
+        )
+        model_aware = DiffusionLayer1D(
+            fe_conc_M=1.5, support_conc_M=0.5, pH_bulk=2.0,
+            surface_state=True, bath_type="aware",
+        )
+        r_sulfate = model_sulfate.solve(200.0)
+        r_aware = model_aware.solve(200.0)
+        # HER survives (not degenerately suppressed to zero) in both.
+        assert r_sulfate.her_i0_surface_state_ratio > 0.05
+        assert r_aware.her_i0_surface_state_ratio > 0.001
+        # Neither bath runs FE = 1.0 (some HER persists, as the H₂ module
+        # assumes).
+        assert r_sulfate.current_efficiency < 0.995
+        assert r_aware.current_efficiency < 0.9995
+        # Chloride bath suppresses HER more ⇒ higher FE than sulfate.
+        assert r_aware.current_efficiency > r_sulfate.current_efficiency + 0.005
 
     def test_invalid_bath_type_raises(self):
         """Invalid bath_type should raise when surface_state=True."""

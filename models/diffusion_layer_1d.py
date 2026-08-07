@@ -598,63 +598,41 @@ class DiffusionLayer1D:
     # ─── Surface-state kinetics wrapper ─────────────────────────────
 
     def _surface_state_her_i0(self, eta_her_V: float) -> float:
-        """HER i₀ corrected by surface-state model (coverage + blocking).
+        """HER i₀ corrected by surface-state anion site-blocking.
 
         Returns the effective exchange current at this HER overpotential.
         Falls back to the bare Arrhenius-corrected value when
-        surface_state is False.
+        ``surface_state`` is False.
 
         Scope
         -----
         This is a *mechanism scaffold*, not a calibrated prediction.
-        The ``SurfaceStateKinetics`` module is flagged
-        ``SCREENING_FLAG = "unvalidated (L1)"`` — no data has been fit.
-        At the program's operating point the θ_H(1-θ_H) term collapses
-        as θ_H → 1 (strong H binding on Fe(110), ΔG_H* ≈ -0.40 eV),
-        which drives HER i₀_eff to near zero for *all* bath types.
-        The differentiation between sulfate and chloride is real
-        (chloride suppresses more) but both are near the model's
-        degenerate limit.  Use with this caveat; calibrate against
-        Phase I measurements before quoting FE numbers.
+        ``models.surface_state`` is flagged ``SCREENING_FLAG =
+        "unvalidated (L1)"`` — no data has been fit.  Within that
+        sandbox the correction below is the *dominant, robust*
+        suppression mechanism: anion site-blocking, ``1 - theta_block``.
+
+        We deliberately do **not** multiply by the Temkin ``θ_H·(1−θ_H)``
+        term.  At the program's operating overpotential ``θ_H → 1``
+        (strong H binding on Fe(110), ΔG_H* ≈ −0.40 eV) that term
+        collapses to ~0, which drives HER to zero and FE to 1 in
+        *every* bath — the exact behaviour this wiring rejects (it would
+        contradict the H₂ generation the sister h2_safety module models,
+        and erase the chloride-vs-sulfate distinction at the cell level).
+        Binding i₀,H to the anion-free-site fraction keeps HER
+        non-degenerate while preserving the real ordering (chloride
+        suppresses more than sulfate).  Calibrate against Phase I
+        measurements before quoting FE to a published number.
         """
         if not self.surface_state:
             return self.her_i0_T
-        from dataclasses import dataclass as _dc
-        from .surface_state import SurfaceStateKinetics, chloride_aware_default
-        from .kinetics import ButlerVolmerBranch, HER_ANODIC_SLOPE_V
-
+        from .surface_state import SurfaceCoverage, chloride_aware_default
         facets, anions = chloride_aware_default(self.bath_type)
-
-        @_dc
-        class _KineticsBase:
-            """Adapter carrying the attributes SurfaceStateKinetics reads."""
-            her_i0_T: float
-            fe_i0_T: float
-            fe_tafel_V: float
-            fe_E_eq: float
-            i_lim: float
-            her_tafel_V: float
-            her_branch: object
-            T: float
-
-        base = _KineticsBase(
-            her_i0_T=self.her_i0_T,
-            fe_i0_T=self.fe_i0_T,
-            fe_tafel_V=self.fe_tafel_V,
-            fe_E_eq=self._fe_equilibrium_potential(self.fe_conc_M),
-            i_lim=self._cached_transport_limit(0.0),
-            her_tafel_V=self.her_tafel_V,
-            her_branch=ButlerVolmerBranch(
-                self.her_i0_T, self.her_tafel_V,
-                self._her_equilibrium_potential(self.pH_bulk),
-                float('inf'), HER_ANODIC_SLOPE_V,
-            ),
-            T=self.T,
+        ss = SurfaceCoverage(
+            eta_V=eta_her_V, T_K=self.T,
+            facets=facets, adsorbed_anions=anions,
         )
-        wrapper = SurfaceStateKinetics(
-            base=base, facets=facets, anion_coverages=anions,
-        )
-        return wrapper.her_i0_corrected(eta_her_V)
+        return self.her_i0_T * (1.0 - ss.theta_block)
 
     # ─── Bulk composition ──────────────────────────────────────────
 
