@@ -182,7 +182,7 @@ class H2SafetyResult:
         Same as above, in air changes per hour.
     alarm_triggers : bool
         True if steady-state exceeds 25 % LEL alarm setpoint.
-   危险_危险 : bool
+    immediate_danger : bool
         True if steady-state exceeds 100 % LEL (immediate danger).
     """
     generation: H2GenerationRate

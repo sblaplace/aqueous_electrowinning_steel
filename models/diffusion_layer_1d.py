@@ -526,24 +526,26 @@ class DiffusionLayer1D:
         K_eff = [FeSO₄⁰] / ([Fe²⁺][SO₄²⁻]) where K_eff is the
         *activity-corrected* (concentration-scale) equilibrium constant.
         The thermodynamic K_FESO4_PAIR_25 ≈ 200 L/mol at I = 0; at
-        the program's working ionic strength (I ~ 5-8 M) the activity
+        the program's working ionic strength (I ~ 5 M) the activity
         coefficients of Fe²⁺ and SO₄²⁻ are both << 1 (Pitzer: γ_Fe²⁺
         ~ 0.05, γ_SO₄²⁻ ~ 0.1 at the reference bath), so K_eff drops
-        by ~3 orders of magnitude to ~0.2 L/mol.  We approximate this
+        by ~3 orders of magnitude to ~0.4 L/mol.  We approximate this
         with an ionic-strength-dependent correction:
 
             K_eff = K_thermo × exp(-α × I)
 
-        where α = 0.92 is chosen to reproduce the speciation module's
+        where α = 1.18 is tuned to reproduce the speciation module's
         24 % pair fraction at the reference bath (1.5 M FeSO₄ +
-        0.5 M Na₂SO₄, I ≈ 7.5 M).
+        0.5 M Na₂SO₄, I ≈ 5.4 M from the bulk electroneutrality
+        solve; c_SO₄²⁻ ≈ 0.9 M from the HSO₄⁻/SO₄²⁻ equilibrium
+        at pH 2, 60 °C).
         """
         if not self.fes04_pair_correction:
             return 0.0
         c_so4_M = c_so4_mol_m3 / 1000.0  # mol/L
         # Ionic strength screening estimate from the bulk composition
         I = self._estimate_ionic_strength()
-        K_eff = K_FESO4_PAIR_25 * math.exp(-0.92 * I)
+        K_eff = K_FESO4_PAIR_25 * math.exp(-1.18 * I)
         Kc = K_eff * max(c_so4_M, 1e-10)
         return Kc / (1.0 + Kc)
 
@@ -601,27 +603,53 @@ class DiffusionLayer1D:
         Returns the effective exchange current at this HER overpotential.
         Falls back to the bare Arrhenius-corrected value when
         surface_state is False.
+
+        Scope
+        -----
+        This is a *mechanism scaffold*, not a calibrated prediction.
+        The ``SurfaceStateKinetics`` module is flagged
+        ``SCREENING_FLAG = "unvalidated (L1)"`` — no data has been fit.
+        At the program's operating point the θ_H(1-θ_H) term collapses
+        as θ_H → 1 (strong H binding on Fe(110), ΔG_H* ≈ -0.40 eV),
+        which drives HER i₀_eff to near zero for *all* bath types.
+        The differentiation between sulfate and chloride is real
+        (chloride suppresses more) but both are near the model's
+        degenerate limit.  Use with this caveat; calibrate against
+        Phase I measurements before quoting FE numbers.
         """
         if not self.surface_state:
             return self.her_i0_T
+        from dataclasses import dataclass as _dc
         from .surface_state import SurfaceStateKinetics, chloride_aware_default
-        facets, anions = chloride_aware_default(self.bath_type)
-        # Build a minimal base-like object that SurfaceStateKinetics needs.
-        class _Base:
-            pass
-        base = _Base()
-        base.her_i0_T = self.her_i0_T
-        base.T = self.T
-        base.fe_i0_T = self.fe_i0_T
-        base.fe_tafel_V = self.fe_tafel_V
-        base.fe_E_eq = self._fe_equilibrium_potential(self.fe_conc_M)
-        base.i_lim = self._cached_transport_limit(0.0)
-        base.her_tafel_V = self.her_tafel_V
         from .kinetics import ButlerVolmerBranch, HER_ANODIC_SLOPE_V
-        base.her_branch = ButlerVolmerBranch(
-            self.her_i0_T, self.her_tafel_V,
-            self._her_equilibrium_potential(self.pH_bulk),
-            float('inf'), HER_ANODIC_SLOPE_V,
+
+        facets, anions = chloride_aware_default(self.bath_type)
+
+        @_dc
+        class _KineticsBase:
+            """Adapter carrying the attributes SurfaceStateKinetics reads."""
+            her_i0_T: float
+            fe_i0_T: float
+            fe_tafel_V: float
+            fe_E_eq: float
+            i_lim: float
+            her_tafel_V: float
+            her_branch: object
+            T: float
+
+        base = _KineticsBase(
+            her_i0_T=self.her_i0_T,
+            fe_i0_T=self.fe_i0_T,
+            fe_tafel_V=self.fe_tafel_V,
+            fe_E_eq=self._fe_equilibrium_potential(self.fe_conc_M),
+            i_lim=self._cached_transport_limit(0.0),
+            her_tafel_V=self.her_tafel_V,
+            her_branch=ButlerVolmerBranch(
+                self.her_i0_T, self.her_tafel_V,
+                self._her_equilibrium_potential(self.pH_bulk),
+                float('inf'), HER_ANODIC_SLOPE_V,
+            ),
+            T=self.T,
         )
         wrapper = SurfaceStateKinetics(
             base=base, facets=facets, anion_coverages=anions,
