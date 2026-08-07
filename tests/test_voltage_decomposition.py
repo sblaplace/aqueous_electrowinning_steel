@@ -76,7 +76,11 @@ def test_single_lever_scenarios_reduce_voltage_and_energy(sensitivities, decompo
         "membrane area resistance": (3.0e-4, 1.5e-4),
         "electrode gap": (3.0e-3, 1.5e-3),
         "anode bubble fraction": (0.10, 0.05),
-        "anode overpotential": (0.40, 0.30),
+        # The anode lever is modeled within the DSA kinetics: current_value is
+        # the DSA's effective overpotential at the reference point, proposed_value
+        # is the derived overpotential of the preferred-OER-catalyst anode
+        # (100x the DSA exchange current density, 0.1 A/m2).
+        "anode overpotential": (0.680616297488156, 0.560616297486031),
     }
     assert len(sensitivities) == len(expected_levers)
     for row in sensitivities:

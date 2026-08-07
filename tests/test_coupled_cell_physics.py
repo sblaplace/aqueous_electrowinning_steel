@@ -40,10 +40,10 @@ J_REF = 150.0
 GAP_REF = 1.5e-3
 CONTACT_REF = 1.0e-4
 #: The coupled screen's current uncoupled minimum-energy result, kWh/t Fe.
-# The reactive cathode film, single-temperature conductivity bookkeeping, and
-# shared Fe standard state are now the default.  This is a Level-0 regression
-# pin for the current implementation, not a universal physical constant.
-UNCOUPLED_MIN_ENERGY_40 = 3448.0
+# The DSA IrO2-Ta2O5 first-principles anode (Trasatti) and the per-surface
+# Pitzer gamma are now the default.  This is a Level-0 regression pin for
+# the current implementation, not a universal physical constant.
+UNCOUPLED_MIN_ENERGY_40 = 3385.13
 
 
 @pytest.fixture(scope="module")

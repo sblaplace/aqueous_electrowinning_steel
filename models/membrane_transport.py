@@ -148,6 +148,68 @@ FUMASEP_FKE50 = MembraneSpec(
 )
 
 
+# ─── Donnan exclusion (optional correction) ───────────────────────────
+# Cation-exchange membranes carry a fixed negative charge (sulfonate,
+# ~1 M for Nafion).  At equilibrium the Donnan potential between the
+# membrane phase and the external electrolyte is
+#
+#   φ_D = (RT/F) · asinh( X / 2c_s )
+#
+# where X is the fixed charge concentration and c_s the external salt
+# concentration.  This partitions co-ions (anions) and enriches counter-
+# ions.  For Fe³⁺ the Donnan partition coefficient is
+#
+#   K_D = exp(-z·F·φ_D / RT)
+#
+# At low external concentration K_D >> 1 for cations (enrichment) but
+# the product D·K_D still suppresses Fe³⁺ because the membrane-phase
+# diffusivity is 10²× lower.  The function below gives the correction
+# so that a caller can estimate the *effective* bulk driving concentration
+# C_mem = K_D · C_ext.  It is not yet wired into the default flux path
+# (which uses the fitted effective D that already folds in the mean
+# exclusion) — it is an explicit physics diagnostic and an opt-in
+# correction for sensitivity studies.
+
+def donnan_potential_V(
+    fixed_charge_M: float = 1.0,
+    external_salt_M: float = 1.0,
+    temperature_C: float = 60.0,
+) -> float:
+    """Donnan potential φ_D (V) for a cation-exchange membrane.
+
+    φ_D = (RT/F) · asinh(X / 2c_s)   (>0, membrane positive vs solution
+    for a cation exchanger with X>0 defined as positive counter-charge).
+
+    The sign convention here returns the membrane-minus-solution
+    potential.  Its magnitude is ~15–40 mV for Nafion at 0.5–2 M salt.
+    """
+    import math
+    R = 8.314462618
+    F = 96485.33212
+    T = temperature_C + 273.15
+    return float((R * T / F) * math.asinh(fixed_charge_M / (2.0 * max(external_salt_M, 1e-6))))
+
+
+def donnan_partition_coefficient(
+    z: int,
+    fixed_charge_M: float = 1.0,
+    external_salt_M: float = 1.0,
+    temperature_C: float = 60.0,
+) -> float:
+    """Partition coefficient K_D = C_mem / C_ext for ion of charge z.
+
+    K_D = exp(-z·F·φ_D / RT).  For Fe³⁺ (z=+3) in Nafion at 1 M salt,
+    K_D ≈ 0.3–0.5 (electrostatic enrichment is overwhelmed by the
+    low membrane diffusivity in the net flux).
+    """
+    import math
+    R = 8.314462618
+    F = 96485.33212
+    T = temperature_C + 273.15
+    phi_d = donnan_potential_V(fixed_charge_M, external_salt_M, temperature_C)
+    return float(math.exp(-z * F * phi_d / (R * T)))
+
+
 # ─── Anolyte / catholyte state ────────────────────────────────────────
 @dataclass
 class AnolyteState:

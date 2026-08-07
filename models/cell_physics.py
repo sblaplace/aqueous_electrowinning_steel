@@ -39,7 +39,7 @@ from .electrochemistry import (
     E0_FE,
 )
 from .kinetics import DepositionKinetics
-from .anode import AnodeKinetics, AnodeMaterial
+from .anode import AnodeKinetics, AnodeMaterial, DSA_IRO2_TA2O5
 
 
 # ─── Inputs ───────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ class CellGeometry:
     membrane_area_resistance_ohm_m2: float = 3.0e-4  # configured comparator
     contact_resistance_ohm_m2: float = 5.0e-4
     anode_bubble_fraction: float = 0.10
-    anode_chemistry: Literal["inert", "soluble"] = "inert"
+    anode_chemistry: Literal["inert", "soluble", "fixed"] = "inert"
     anode_fe2_conc_M: float = 1.0
     anode_fe_dissolution_i0_A_m2: float = 10.0
 
@@ -89,8 +89,8 @@ class CellGeometry:
             raise ValueError("contact_resistance_ohm_m2 must be non-negative")
         if not 0.0 <= self.anode_bubble_fraction < 1.0:
             raise ValueError("anode_bubble_fraction must lie in [0, 1)")
-        if self.anode_chemistry not in ("inert", "soluble"):
-            raise ValueError("anode_chemistry must be 'inert' or 'soluble'")
+        if self.anode_chemistry not in ("inert", "soluble", "fixed"):
+            raise ValueError("anode_chemistry must be 'inert', 'soluble', or 'fixed'")
         if self.anode_fe2_conc_M <= 0.0:
             raise ValueError("anode_fe2_conc_M must be positive")
         if self.anode_fe_dissolution_i0_A_m2 <= 0.0:
@@ -148,6 +148,15 @@ class OperatingPoint:
 
     # Convergence
     transport_converged: bool
+
+    # Precipitation sink (screening) — set when precipitation_sink=True
+    precipitation_flux_mol_m2_s: float = 0.0
+    precipitation_fraction: float = 0.0
+    sludge_rate_g_m2_s: float = 0.0
+    deposition_rate_net_um_hr: float = 0.0  # after subtracting Fe lost to Fe(OH)2 sludge
+    # NOTE: specific_energy_kWh_t still uses gross FE (V/FE); net rate is for
+    # mass-balance diagnostics. At RC-1 (S~1e-8) gross==net; they diverge only
+    # when precipitation is active, which RC-1 never reaches.
 
 
 @dataclass
@@ -280,19 +289,57 @@ class CellPhysics:
     def _build_anode(self) -> Optional[AnodeKinetics]:
         """Build a first-principles anode object for explicit anode modes.
 
-        The inert/OER branch deliberately retains the legacy fixed-anode
-        fallback until an anode material is selected and calibrated.  A
-        soluble Fe anode, however, has unambiguous stoichiometry and must not
-        be represented as OER with a different overpotential.
+        Both branches now use a first-principles AnodeKinetics object so
+        the cell voltage is computed from material-specific Tafel kinetics
+        plus concentration and bubble terms, not a fixed 0.40 V.  The
+        inert/OER branch uses the DSA IrO₂–Ta₂O₅ screening catalogue
+        entry (Trasatti 2000) at the operating T/pH; the soluble branch
+        uses the Fe → Fe²⁺ dissolution stoichiometry.  Pass
+        ``anode_chemistry="soluble"`` for the latter.  The fixed-η
+        fallback is retained only when ``CellGeometry`` explicitly asks
+        for it via ``anode_chemistry="fixed"`` (tests / legacy A/B).
+
+        At the coupled-screen optimum (150 mA/cm², 1.5 mm, low contact)
+        the DSA correction is <1 mV; at the theory-confidence reference
+        (96.7 mA/cm², 20 mm gap, divided cell) the pH-corrected DSA
+        (E_eq≈1.10 V at pH 2) lowers V_cell by ~0.14 V (5.388→5.246 V)
+        relative to the fixed 1.229 V / 0.40 V fallback — the honest,
+        material-specific cost that the energy number is most sensitive to.
         """
-        if self.geometry.anode_chemistry != "soluble":
+        if self.geometry.anode_chemistry == "soluble":
+            material = AnodeMaterial(
+                name="Soluble Fe anode",
+                oer_i0=1.0,
+                oer_tafel_V=0.060,
+                temperature_C=self.conditions.temperature_C,
+                references="screening soluble-Fe branch; calibrate dissolution i0/Tafel",
+            )
+            return AnodeKinetics(
+                material=material,
+                electrolyte_type="acidic",
+                pH=self.bath.pH,
+                boundary_layer_m=self.conditions.boundary_layer_m,
+                electrolyte_conductivity_S_m=self._conductivity,
+                anode_chemistry="soluble",
+                fe2_conc_M=self.geometry.anode_fe2_conc_M,
+                fe_dissolution_i0=self.geometry.anode_fe_dissolution_i0_A_m2,
+            )
+        if self.geometry.anode_chemistry == "fixed":
             return None
+        # Default: inert DSA — first-principles OER kinetics
+        base = DSA_IRO2_TA2O5
         material = AnodeMaterial(
-            name="Soluble Fe anode",
-            oer_i0=1.0,
-            oer_tafel_V=0.060,
+            name=base.name,
+            oer_i0=base.oer_i0,
+            oer_tafel_V=base.oer_tafel_V,
+            cer_i0=base.cer_i0,
+            cer_tafel_V=base.cer_tafel_V,
+            cer_n=base.cer_n,
+            oer_n=base.oer_n,
+            max_bubble_fraction=base.max_bubble_fraction,
             temperature_C=self.conditions.temperature_C,
-            references="screening soluble-Fe branch; calibrate dissolution i0/Tafel",
+            oer_ea_kj_mol=base.oer_ea_kj_mol,
+            references=base.references,
         )
         return AnodeKinetics(
             material=material,
@@ -300,9 +347,7 @@ class CellPhysics:
             pH=self.bath.pH,
             boundary_layer_m=self.conditions.boundary_layer_m,
             electrolyte_conductivity_S_m=self._conductivity,
-            anode_chemistry="soluble",
-            fe2_conc_M=self.geometry.anode_fe2_conc_M,
-            fe_dissolution_i0=self.geometry.anode_fe_dissolution_i0_A_m2,
+            anode_chemistry="inert",
         )
 
     def _build_voltage_model(
@@ -387,6 +432,14 @@ class CellPhysics:
         rho = 7874.0  # kg/m³
         dep_rate = mass_flux / rho * 3600.0 * 1e6  # µm/hr
 
+        # Precipitation sink from the reactive film (if available)
+        precip_flux = getattr(transport_result, "precipitation_flux_mol_m2_s", 0.0)
+        precip_frac = getattr(transport_result, "precipitation_fraction", 0.0)
+        sludge_g = getattr(transport_result, "sludge_rate_g_m2_s", 0.0)
+        # Net deposition after subtracting Fe that precipitates as sludge
+        fe_mol_flux_total = j_A_m2 * fe / (Z_FE * FARADAY)
+        fe_mol_flux_net = max(fe_mol_flux_total - precip_flux, 0.0)
+        dep_rate_net = fe_mol_flux_net * (55.845e-3) / 7874.0 * 3600.0 * 1e6
         return OperatingPoint(
             j_mA_cm2=j_mA_cm2,
             current_efficiency=fe,
@@ -398,10 +451,14 @@ class CellPhysics:
             feoh2_supersaturation=supersaturation,
             film_potential_drop_V=film_potential_drop_V,
             precipitation_active=precipitation_active,
+            precipitation_flux_mol_m2_s=float(precip_flux),
+            precipitation_fraction=float(precip_frac),
+            sludge_rate_g_m2_s=float(sludge_g),
             V_cell=V_cell,
             V_decomposition=V_decomp,
             specific_energy_kWh_t=specific_energy_kWh_per_t(V_cell, fe),
             deposition_rate_um_hr=dep_rate,
+            deposition_rate_net_um_hr=float(dep_rate_net),
             free_fe2_activity=self._activity_fe2,
             conductivity_S_m=self._conductivity,
             speciation=self._spec,

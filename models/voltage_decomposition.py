@@ -13,6 +13,7 @@ from dataclasses import replace
 from typing import Any
 
 from .cell_physics import CellPhysics
+from .anode import AnodeKinetics, AnodeMaterial, DSA_IRO2_TA2O5
 from .economics_from_physics import ReferenceCell
 from .economics_from_physics import reference_cell as _economics_reference_cell
 from .electrochemistry import specific_energy_kWh_per_t
@@ -27,7 +28,43 @@ _CONTACT_RESISTANCE_PROPOSED = 1.0e-4
 _MEMBRANE_RESISTANCE_PROPOSED = 1.5e-4
 _GAP_PROPOSED_M = 1.5e-3
 _BUBBLE_FRACTION_PROPOSED = 0.05
-_ETA_ANODE_PROPOSED_V = 0.30
+# Preferred OER catalyst: 100x the DSA IrO2-Ta2O5 exchange current density
+# (0.1 A/m2 matches the repo's own "very active" OER catalogue entries).  This
+# is modeled within the first-principles DSA framework — a more active catalyst
+# lowers the anode overpotential through the kinetics, not a fixed-eta knob.
+_IMPROVED_CATALYST_OER_I0 = 1e-1
+
+
+def _improved_anode(cell: ReferenceCell) -> AnodeKinetics:
+    """Build the preferred-OER-catalyst anode (higher exchange current density).
+
+    Reuses the DSA IrO2-Ta2O5 screening material and raises its OER exchange
+    current density to ``_IMPROVED_CATALYST_OER_I0``, representing a more
+    active catalyst.  The lever is computed entirely within AnodeKinetics (no
+    fixed-overpotential shortcut), so the reported overpotential is derived.
+    """
+    base = DSA_IRO2_TA2O5
+    material = AnodeMaterial(
+        name=base.name + " (improved catalyst)",
+        oer_i0=_IMPROVED_CATALYST_OER_I0,
+        oer_tafel_V=base.oer_tafel_V,
+        cer_i0=base.cer_i0,
+        cer_tafel_V=base.cer_tafel_V,
+        cer_n=base.cer_n,
+        oer_n=base.oer_n,
+        max_bubble_fraction=base.max_bubble_fraction,
+        temperature_C=cell.conditions.temperature_C,
+        oer_ea_kj_mol=base.oer_ea_kj_mol,
+        references="preferred OER catalyst: higher exchange current density (screening)",
+    )
+    return AnodeKinetics(
+        material=material,
+        electrolyte_type="acidic",
+        pH=cell.bath.pH,
+        boundary_layer_m=cell.conditions.boundary_layer_m,
+        electrolyte_conductivity_S_m=10.0,
+        anode_chemistry="inert",
+    )
 _SENSITIVITY_CACHE: dict[tuple[Any, ...], list[dict[str, float | bool | str]]] = {}
 
 
@@ -45,7 +82,7 @@ def _voltage_model_at(
     cell: ReferenceCell,
     j_mA_cm2: float,
     *,
-    eta_anode_override_V: float | None = None,
+    anode_override: AnodeKinetics | None = None,
 ) -> tuple[CellPhysics, Any, Any]:
     """Solve the cell and rebuild the exact voltage model used by the solve.
 
@@ -78,11 +115,14 @@ def _voltage_model_at(
     )
     voltage_model.eta_cathode = eta_cathode_exact
 
-    if eta_anode_override_V is not None:
-        # The RC-1 model uses CellVoltageModel's fixed-OER fallback rather than
-        # an AnodeKinetics object.  Setting that existing model input is the
-        # explicit catalyst-improvement scenario; no FE is changed.
-        voltage_model.eta_anode = eta_anode_override_V
+    if anode_override is not None:
+        # The default anode is a first-principles DSA AnodeKinetics object.  An
+        # "improve the anode" lever is modeled by swapping in a more active
+        # catalyst (higher exchange current density), whose kinetics drive both
+        # E_anode and the overpotential.  This is the explicit catalyst-
+        # improvement scenario; no FE is changed.
+        voltage_model.anode = anode_override
+        voltage_model.fe_shuttle = None
 
     # Read the rounded summary as an audit of the model interface.  The
     # returned values below use the model's unrounded properties so closure is
@@ -227,6 +267,8 @@ def lever_sensitivity(
     baseline = decompose_at(cell, j_mA_cm2)
     baseline_fe = float(baseline["FE"])
     baseline_v = float(baseline["V_cell"])
+    improved_anode = _improved_anode(cell)
+    improved_eta = float(improved_anode.eta_anode(j_mA_cm2))
 
     # The order here is descriptive only; rank_levers performs the numerical
     # sort.  Current values are read from the supplied RC-1 object.
@@ -241,7 +283,6 @@ def lever_sensitivity(
             "cell": _scenario_cell(
                 cell, contact_resistance_ohm_m2=_CONTACT_RESISTANCE_PROPOSED
             ),
-            "eta_anode_override_V": None,
         },
         {
             "lever": "membrane area resistance",
@@ -253,7 +294,6 @@ def lever_sensitivity(
             "cell": _scenario_cell(
                 cell, membrane_area_resistance_ohm_m2=_MEMBRANE_RESISTANCE_PROPOSED
             ),
-            "eta_anode_override_V": None,
         },
         {
             "lever": "electrode gap",
@@ -263,7 +303,6 @@ def lever_sensitivity(
             "basis": "halve the electrolyte path, subject to the RC-1 geometry constraint",
             "unit": "m",
             "cell": _scenario_cell(cell, interelectrode_gap_m=_GAP_PROPOSED_M),
-            "eta_anode_override_V": None,
         },
         {
             "lever": "anode bubble fraction",
@@ -275,17 +314,16 @@ def lever_sensitivity(
             "cell": _scenario_cell(
                 cell, anode_bubble_fraction=_BUBBLE_FRACTION_PROPOSED
             ),
-            "eta_anode_override_V": None,
         },
         {
             "lever": "anode overpotential",
-            "parameter": "eta_anode",
+            "parameter": "oer_i0 (exchange current density)",
             "current_value": float(baseline["eta_anode"]),
-            "proposed_value": _ETA_ANODE_PROPOSED_V,
-            "basis": "preferred OER catalyst with lower fixed-model overpotential",
+            "proposed_value": improved_eta,
+            "basis": "preferred OER catalyst: higher exchange current density lowers the DSA overpotential",
             "unit": "V",
             "cell": cell,
-            "eta_anode_override_V": _ETA_ANODE_PROPOSED_V,
+            "anode_override": improved_anode,
         },
     )
 
@@ -294,7 +332,7 @@ def lever_sensitivity(
         _, scenario_point, scenario_model = _voltage_model_at(
             scenario["cell"],
             j_mA_cm2,
-            eta_anode_override_V=scenario["eta_anode_override_V"],
+            anode_override=scenario.get("anode_override"),
         )
         scenario_v = float(scenario_model.V_cell)
         delta_v = baseline_v - scenario_v
