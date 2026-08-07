@@ -335,6 +335,15 @@ PITZER_BINARY: Dict[Tuple[str, str], PitzerPair] = {
     # chloride-route baths.  MgSO4: canonical 2–2 test electrolyte with
     # well-tabulated γ±; Mg²⁺ is also a plausible waste-feed contaminant.
     ("Na+", "Cl-"): PitzerPair(0.0765, 0.2664, 0.0, 0.00127, ref="Harvie et al. 1984 / PHREEQC pitzer.dat"),
+    # LiCl: canonical 1–1 electrolyte, the AWARE supporting salt.  Pitzer
+    # 1991 tabulation (p. 105) of the Holmes-Couture 25 °C fit.
+    ("Li+", "Cl-"): PitzerPair(0.1494, 0.3074, 0.0, 0.00359, ref="Pitzer (1991, p.105) / Holmes-Couture 25 °C"),
+    # HCl: the AWARE pH-adjustment acid.  Pitzer 1991 p. 105.
+    ("H+", "Cl-"): PitzerPair(0.1775, 0.2945, 0.0, 0.0008, ref="Pitzer (1991, p.105) / Holmes 25 °C"),
+    # Li2SO4: the Li+ analogue of Na2SO4 — used when the AWARE feed
+    # is delivered as Li2SO4 before chloride exchange.  Pitzer 1991
+    # tabulation.
+    ("Li+", "SO4-2"): PitzerPair(-0.0624, 0.1503, 0.0, -0.00319, ref="Pitzer (1991) / Filippov 25 °C"),
     ("Mg2+", "SO4-2"): PitzerPair(0.2210, 3.343, -37.23, 0.025, alpha1=1.4,
                                     ref="Pitzer 1991 tabulation (test electrolyte)"),
 }
@@ -544,6 +553,7 @@ PITZER_CHARGES: Dict[str, int] = {
     "Na+": 1,
     "H+": 1,
     "Mg2+": 2,
+    "Li+": 1,   # AWARE supporting cation; registered for the chloride-bath solver
     "SO4-2": -2,
     "HSO4-": -1,
     "Cl-": -1,
