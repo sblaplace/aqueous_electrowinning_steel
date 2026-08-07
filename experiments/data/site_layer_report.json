@@ -1,0 +1,280 @@
+{
+  "note": "Screening-grade L3 site design (L0) \u2014 reuses dark_mill SiteDefinition + D4 crate verdict; no soil/hydraulic/wind survey yet. Superseded at the named-beachhead stage.",
+  "sites": {
+    "pickle_liquor_us_midwest": {
+      "site": "US Midwest \u2014 Pickle Liquor at Steel Mill",
+      "site_key": "pickle_liquor_us_midwest",
+      "crate_verdict": {
+        "fs_overturn": 57.43,
+        "net_bearing_kPa": 1.98,
+        "fs_slide": 6.1,
+        "ingress_risk": "medium",
+        "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+      },
+      "site_layer": {
+        "will_sink": false,
+        "will_flood": false,
+        "will_get_wind_exposed": false,
+        "foundation": {
+          "pad_length_m": 13.39,
+          "pad_width_m": 3.64,
+          "pad_area_m2": 48.74,
+          "pad_bearing_kPa": 1.21,
+          "bearing_ok": true,
+          "ballast_kg": 0.0,
+          "ballast_ok": true,
+          "footer_depth_m": 1.4,
+          "frost_ok": true,
+          "foundation_type": "concrete slab"
+        },
+        "drainage": {
+          "freeboard_m": 0.3,
+          "flood_depth_m": 0.0,
+          "flood_clearance_m": 0.3,
+          "min_grade_pct": 2.0,
+          "roof_runoff_m3_hr": 1.41,
+          "drainage_verdict": "low",
+          "spec": "drain away at \u22652% grade, perimeter swale"
+        },
+        "wind": {
+          "exposure_category": "suburban",
+          "terrain_multiplier": 0.88,
+          "design_gust_m_s": 18.42,
+          "geo_gust_m_s": 35.0,
+          "gust_pressure_Pa": 207.9
+        },
+        "layout": {
+          "feedstock_ok": true,
+          "power_ok": true,
+          "water_ok": true,
+          "product_ok": true,
+          "layout_fit": true,
+          "footprint_total_m2": 134.0,
+          "available_area_m2": 300.0,
+          "spec": "layout fits; direct feed/power/water/product access"
+        }
+      },
+      "summary": "SITE LAYER: sink=no flood=no wind-exposed=no\n  foundation: concrete slab, pad 49 m\u00b2 @ 1 kPa (ok=True), ballast 0 kg (ok=True)\n  drainage: low (drain away at \u22652% grade, perimeter swale); flood clearance +0.30 m\n  wind: suburban, design gust 18 m/s @ 208 Pa\n  layout: feed=True power=True water=True product=True fit=True (134 of 300 m\u00b2)\n  => layout fits; direct feed/power/water/product access"
+    },
+    "acid_mine_drainage_appalachia": {
+      "site": "Appalachia \u2014 Acid Mine Drainage Remediation",
+      "site_key": "acid_mine_drainage_appalachia",
+      "crate_verdict": {
+        "fs_overturn": 43.03,
+        "net_bearing_kPa": 2.28,
+        "fs_slide": 3.66,
+        "ingress_risk": "high",
+        "mounting_spec": "no ballast required, high-grade sealing + drainage, elevate above flood level"
+      },
+      "site_layer": {
+        "will_sink": false,
+        "will_flood": false,
+        "will_get_wind_exposed": false,
+        "foundation": {
+          "pad_length_m": 13.39,
+          "pad_width_m": 3.64,
+          "pad_area_m2": 48.74,
+          "pad_bearing_kPa": 1.39,
+          "bearing_ok": true,
+          "ballast_kg": 0.0,
+          "ballast_ok": true,
+          "footer_depth_m": 1.1,
+          "frost_ok": true,
+          "foundation_type": "concrete slab"
+        },
+        "drainage": {
+          "freeboard_m": 0.3,
+          "flood_depth_m": 0.1,
+          "flood_clearance_m": 0.2,
+          "min_grade_pct": 2.0,
+          "roof_runoff_m3_hr": 1.41,
+          "drainage_verdict": "low",
+          "spec": "drain away at \u22652% grade, perimeter swale"
+        },
+        "wind": {
+          "exposure_category": "open",
+          "terrain_multiplier": 1.0,
+          "design_gust_m_s": 30.72,
+          "geo_gust_m_s": 40.0,
+          "gust_pressure_Pa": 578.2
+        },
+        "layout": {
+          "feedstock_ok": true,
+          "power_ok": true,
+          "water_ok": true,
+          "product_ok": true,
+          "layout_fit": true,
+          "footprint_total_m2": 134.0,
+          "available_area_m2": 200.0,
+          "spec": "layout fits; direct feed/power/water/product access"
+        }
+      },
+      "summary": "SITE LAYER: sink=no flood=no wind-exposed=no\n  foundation: concrete slab, pad 49 m\u00b2 @ 1 kPa (ok=True), ballast 0 kg (ok=True)\n  drainage: low (drain away at \u22652% grade, perimeter swale); flood clearance +0.20 m\n  wind: open, design gust 31 m/s @ 578 Pa\n  layout: feed=True power=True water=True product=True fit=True (134 of 200 m\u00b2)\n  => layout fits; direct feed/power/water/product access"
+    },
+    "red_mud_alumina_refinery": {
+      "site": "Red Mud \u2014 Alumina Refinery Co-Location",
+      "site_key": "red_mud_alumina_refinery",
+      "crate_verdict": {
+        "fs_overturn": 22.09,
+        "net_bearing_kPa": 1.48,
+        "fs_slide": 2.11,
+        "ingress_risk": "high",
+        "mounting_spec": "no ballast required, high-grade sealing + drainage, elevate above flood level"
+      },
+      "site_layer": {
+        "will_sink": false,
+        "will_flood": false,
+        "will_get_wind_exposed": false,
+        "foundation": {
+          "pad_length_m": 13.39,
+          "pad_width_m": 3.64,
+          "pad_area_m2": 48.74,
+          "pad_bearing_kPa": 0.91,
+          "bearing_ok": true,
+          "ballast_kg": 0.0,
+          "ballast_ok": true,
+          "footer_depth_m": 0.5,
+          "frost_ok": true,
+          "foundation_type": "concrete slab"
+        },
+        "drainage": {
+          "freeboard_m": 0.3,
+          "flood_depth_m": 0.2,
+          "flood_clearance_m": 0.1,
+          "min_grade_pct": 2.0,
+          "roof_runoff_m3_hr": 1.41,
+          "drainage_verdict": "medium",
+          "spec": "marginal freeboard (0.10 m) \u2014 monitor + storm drain"
+        },
+        "wind": {
+          "exposure_category": "open",
+          "terrain_multiplier": 1.0,
+          "design_gust_m_s": 34.57,
+          "geo_gust_m_s": 45.0,
+          "gust_pressure_Pa": 731.8
+        },
+        "layout": {
+          "feedstock_ok": true,
+          "power_ok": true,
+          "water_ok": true,
+          "product_ok": true,
+          "layout_fit": true,
+          "footprint_total_m2": 134.0,
+          "available_area_m2": 1000.0,
+          "spec": "layout fits; direct feed/power/water/product access"
+        }
+      },
+      "summary": "SITE LAYER: sink=no flood=no wind-exposed=no\n  foundation: concrete slab, pad 49 m\u00b2 @ 1 kPa (ok=True), ballast 0 kg (ok=True)\n  drainage: medium (marginal freeboard (0.10 m) \u2014 monitor + storm drain); flood clearance +0.10 m\n  wind: open, design gust 35 m/s @ 732 Pa\n  layout: feed=True power=True water=True product=True fit=True (134 of 1000 m\u00b2)\n  => layout fits; direct feed/power/water/product access"
+    },
+    "wind_farm_ore": {
+      "site": "Wind Farm \u2014 High-Grade Ore",
+      "site_key": "wind_farm_ore",
+      "crate_verdict": {
+        "fs_overturn": 16.78,
+        "net_bearing_kPa": 1.68,
+        "fs_slide": 1.78,
+        "ingress_risk": "low",
+        "mounting_spec": "no ballast required"
+      },
+      "site_layer": {
+        "will_sink": false,
+        "will_flood": false,
+        "will_get_wind_exposed": false,
+        "foundation": {
+          "pad_length_m": 13.39,
+          "pad_width_m": 3.64,
+          "pad_area_m2": 48.74,
+          "pad_bearing_kPa": 1.03,
+          "bearing_ok": true,
+          "ballast_kg": 0.0,
+          "ballast_ok": true,
+          "footer_depth_m": 0.5,
+          "frost_ok": true,
+          "foundation_type": "concrete slab"
+        },
+        "drainage": {
+          "freeboard_m": 0.3,
+          "flood_depth_m": 0.0,
+          "flood_clearance_m": 0.3,
+          "min_grade_pct": 2.0,
+          "roof_runoff_m3_hr": 1.41,
+          "drainage_verdict": "low",
+          "spec": "drain away at \u22652% grade, perimeter swale"
+        },
+        "wind": {
+          "exposure_category": "open",
+          "terrain_multiplier": 1.0,
+          "design_gust_m_s": 42.25,
+          "geo_gust_m_s": 55.0,
+          "gust_pressure_Pa": 1093.2
+        },
+        "layout": {
+          "feedstock_ok": true,
+          "power_ok": true,
+          "water_ok": false,
+          "product_ok": true,
+          "layout_fit": true,
+          "footprint_total_m2": 59.0,
+          "available_area_m2": 2000.0,
+          "spec": "secure water supply / truck-in make-up"
+        }
+      },
+      "summary": "SITE LAYER: sink=no flood=no wind-exposed=no\n  foundation: concrete slab, pad 49 m\u00b2 @ 1 kPa (ok=True), ballast 0 kg (ok=True)\n  drainage: low (drain away at \u22652% grade, perimeter swale); flood clearance +0.30 m\n  wind: open, design gust 42 m/s @ 1093 Pa\n  layout: feed=True power=True water=False product=True fit=True (59 of 2000 m\u00b2)\n  => secure water supply / truck-in make-up"
+    },
+    "copperas_tio2_plant": {
+      "site": "TiO2 Plant \u2014 Copperas Byproduct",
+      "site_key": "copperas_tio2_plant",
+      "crate_verdict": {
+        "fs_overturn": 43.81,
+        "net_bearing_kPa": 1.78,
+        "fs_slide": 4.65,
+        "ingress_risk": "medium",
+        "mounting_spec": "no ballast required, medium-grade sealing + drainage"
+      },
+      "site_layer": {
+        "will_sink": false,
+        "will_flood": false,
+        "will_get_wind_exposed": false,
+        "foundation": {
+          "pad_length_m": 13.39,
+          "pad_width_m": 3.64,
+          "pad_area_m2": 48.74,
+          "pad_bearing_kPa": 1.09,
+          "bearing_ok": true,
+          "ballast_kg": 0.0,
+          "ballast_ok": true,
+          "footer_depth_m": 0.7,
+          "frost_ok": true,
+          "foundation_type": "concrete slab"
+        },
+        "drainage": {
+          "freeboard_m": 0.3,
+          "flood_depth_m": 0.0,
+          "flood_clearance_m": 0.3,
+          "min_grade_pct": 2.0,
+          "roof_runoff_m3_hr": 1.41,
+          "drainage_verdict": "low",
+          "spec": "drain away at \u22652% grade, perimeter swale"
+        },
+        "wind": {
+          "exposure_category": "suburban",
+          "terrain_multiplier": 0.88,
+          "design_gust_m_s": 20.0,
+          "geo_gust_m_s": 38.0,
+          "gust_pressure_Pa": 245.1
+        },
+        "layout": {
+          "feedstock_ok": true,
+          "power_ok": true,
+          "water_ok": true,
+          "product_ok": true,
+          "layout_fit": true,
+          "footprint_total_m2": 134.0,
+          "available_area_m2": 400.0,
+          "spec": "layout fits; direct feed/power/water/product access"
+        }
+      },
+      "summary": "SITE LAYER: sink=no flood=no wind-exposed=no\n  foundation: concrete slab, pad 49 m\u00b2 @ 1 kPa (ok=True), ballast 0 kg (ok=True)\n  drainage: low (drain away at \u22652% grade, perimeter swale); flood clearance +0.30 m\n  wind: suburban, design gust 20 m/s @ 245 Pa\n  layout: feed=True power=True water=True product=True fit=True (134 of 400 m\u00b2)\n  => layout fits; direct feed/power/water/product access"
+    }
+  }
+}

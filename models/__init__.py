@@ -466,6 +466,17 @@ from .crate import (
     CrateVerdict,
     evaluate_crate,
 )
+from .site_layer import (
+    SiteLayer,
+    SiteLayerSpec,
+    SiteLayerVerdict,
+    SiteAccess,
+    FoundationDesign,
+    DrainageDesign,
+    WindExposureDesign,
+    LayoutDesign,
+    evaluate_site_layer,
+)
 from .system_twin import (
     CredibilityVector,
     SystemTwinReport,
@@ -609,6 +620,15 @@ from .eqcm_metrology import (
     EQCMResult,
     simulate_eqcm_run,
     sauerbrey_mass,
+)
+from .cross_modal_theory import (
+    SharedScenario,
+    ModalityResult,
+    CrossModalReport,
+    run_all_modalities,
+    find_consistent_cooling,
+    consistent_scenario,
+    cross_modal_summary,
 )
 
 __all__ = [
@@ -997,6 +1017,16 @@ __all__ = [
     "EnvironmentalLoads",
     "CrateVerdict",
     "evaluate_crate",
+    # ── Site layer L3 (design: foundation/drainage/wind/layout) ───────
+    "SiteLayer",
+    "SiteLayerSpec",
+    "SiteLayerVerdict",
+    "SiteAccess",
+    "FoundationDesign",
+    "DrainageDesign",
+    "WindExposureDesign",
+    "LayoutDesign",
+    "evaluate_site_layer",
     # ── Whole-system twin (process + crate + site) ────────────────────
     "CredibilityVector",
     "SystemTwinReport",
@@ -1127,4 +1157,12 @@ __all__ = [
     "UltrasonicParameters", "SonoelectroResult", "compute_sonoelectro_result", "effective_delta_with_ultrasound",
     "BathRheologyParams", "herschel_bulkley_viscosity", "effective_viscosity_for_gas_holdup",
     "EQCMResult", "simulate_eqcm_run", "sauerbrey_mass",
+    # ── Cross-modal bottom-up theory (one shared parameter set) ───────
+    "SharedScenario",
+    "ModalityResult",
+    "CrossModalReport",
+    "run_all_modalities",
+    "find_consistent_cooling",
+    "consistent_scenario",
+    "cross_modal_summary",
 ]

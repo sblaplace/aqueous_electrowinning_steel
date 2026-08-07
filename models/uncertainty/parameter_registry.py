@@ -292,8 +292,8 @@ REGISTRY["fe_i0"] = _p(
     "Fe2+/Fe exchange current density (screening)", module="kinetics")
 
 REGISTRY["her_i0"] = _p(
-    "her_i0", 1.0e-3, 5.0e-4, (1.0e-7, 1.0e-1), "lognormal",
-    "HER exchange current density (screening)", module="kinetics")
+    "her_i0", 1.0e-6, 5.0e-4, (1.0e-7, 1.0e-1), "lognormal",
+    "HER exchange current density (screening) — nominal 1e-6 per ProcessConditions.her_i0 / SCREENING_SENSITIVITY_BUDGET; 1e-3 in the registry was a 1000x regression that collapsed nominal FE to ~11%", module="kinetics")
 
 REGISTRY["fe_tafel_V"] = _p(
     "fe_tafel_V", 0.120, 0.020, (0.060, 0.200), "normal",
@@ -477,6 +477,89 @@ REGISTRY["fe_shuttle_tafel_V"] = _p(
 REGISTRY["oer_tafel_V"] = _p(
     "oer_tafel_V", 0.060, 0.015, (0.030, 0.120), "normal",
     "OER anodic Tafel slope V/decade (Trasatti 2000)", module="electrochemistry")
+
+# ---------------------------------------------------------------------------
+# thermal_balance.py — cell heat-transfer / thermal-management properties
+# These are the thermal/transport props that must be shared *with* the
+# electrochem and envelope layers so a single parameterization closes the
+# thermal transient (Q_gen from V_cell/I vs ambient + jacket losses).
+# ---------------------------------------------------------------------------
+_therm_src = "Incropera et al.; Danly 1981; screening electrolysis cell design"
+
+REGISTRY["thermoneutral_V"] = _p(
+    "thermoneutral_V", 1.28, 0.05, (1.20, 1.40), "normal",
+    "Thermoneutral potential Fe deposit + OER at 25C, V (Danly 1981)", module="thermal")
+
+REGISTRY["volume_L"] = _p(
+    "volume_L", 40.0, 10.0, (2.0, 500.0), "triangular",
+    "Single-cell electrolyte volume L (screening)", module="thermal")
+
+REGISTRY["hardware_C_J_K"] = _p(
+    "hardware_C_J_K", 500.0, 100.0, (100.0, 2000.0), "triangular",
+    "Cell body/electrode thermal mass J/K (screening)", module="thermal")
+
+REGISTRY["UA_amb_W_K"] = _p(
+    "UA_amb_W_K", 3.0, 1.0, (0.5, 50.0), "triangular",
+    "Ambient overall heat-transfer coeff x area W/K (Incropera screening)", module="thermal")
+
+REGISTRY["A_surface_m2"] = _p(
+    "A_surface_m2", 0.04, 0.02, (0.005, 2.0), "triangular",
+    "Open-top electrolyte surface area for evaporation m2 (cell design)", module="thermal")
+
+REGISTRY["relative_humidity"] = _p(
+    "relative_humidity", 0.50, 0.20, (0.0, 1.0), "uniform",
+    "Ambient relative humidity (site climatology)", module="thermal")
+
+REGISTRY["T_ambient_C"] = _p(
+    "T_ambient_C", 25.0, 8.0, (-20.0, 45.0), "uniform",
+    "Ambient air temperature C (shared site input)", module="thermal")
+
+REGISTRY["UA_jacket_W_K"] = _p(
+    "UA_jacket_W_K", 25.0, 10.0, (0.0, 1000.0), "triangular",
+    "Active cooling-jacket UA W/K (heat-exchanger screening)", module="thermal")
+
+REGISTRY["electrode_area_m2"] = _p(
+    "electrode_area_m2", 0.05, 0.02, (0.001, 2.0), "triangular",
+    "Geometric cathode area m2 (cell architecture)", module="thermal")
+
+# ---------------------------------------------------------------------------
+# crate.py — envelope / site structural-environmental properties
+# Shared with env_coupling.py: the same wind gust, ambient T and rain drive
+# both the crate stability verdict and the thermal ambient-loss disturbance.
+# ---------------------------------------------------------------------------
+_crate_src = "screening container/civil design; ASCE 7; site climatology"
+
+REGISTRY["crate_mass_kg"] = _p(
+    "crate_mass_kg", 4500.0, 1000.0, (500.0, 20000.0), "triangular",
+    "Crate self-mass excluding ballast kg (container spec)", module="crate")
+
+REGISTRY["crate_length_m"] = _p(
+    "crate_length_m", 12.19, 0.0, (6.0, 15.0), "uniform",
+    "Envelope length m (40-ft container nominal)", module="crate")
+
+REGISTRY["crate_width_m"] = _p(
+    "crate_width_m", 2.44, 0.0, (2.0, 3.0), "uniform",
+    "Envelope width m (container nominal)", module="crate")
+
+REGISTRY["crate_height_m"] = _p(
+    "crate_height_m", 2.59, 0.0, (2.0, 4.0), "uniform",
+    "Envelope height m (container nominal)", module="crate")
+
+REGISTRY["drag_coefficient"] = _p(
+    "drag_coefficient", 1.2, 0.1, (0.8, 2.0), "triangular",
+    "Envelope drag coefficient (box/container shape)", module="crate")
+
+REGISTRY["design_gust_m_s"] = _p(
+    "design_gust_m_s", 40.0, 10.0, (10.0, 80.0), "triangular",
+    "Design 3-s wind gust m/s at site (ASCE 7 / site survey)", module="crate")
+
+REGISTRY["soil_bearing_kPa"] = _p(
+    "soil_bearing_kPa", 100.0, 30.0, (30.0, 300.0), "triangular",
+    "Allowable soil bearing pressure kPa (geotech screening)", module="crate")
+
+REGISTRY["rain_design_mm_hr"] = _p(
+    "rain_design_mm_hr", 50.0, 25.0, (0.0, 200.0), "triangular",
+    "Design rainfall intensity mm/hr (site climatology)", module="crate")
 
 # ---------------------------------------------------------------------------
 # Total count check: len(REGISTRY) >= 40
