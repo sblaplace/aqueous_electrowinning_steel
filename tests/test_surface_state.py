@@ -21,6 +21,7 @@ constants).
 """
 from __future__ import annotations
 
+import dataclasses
 import math
 
 import numpy as np
@@ -40,6 +41,7 @@ from models.surface_state import (
     AnionCoverage,
     chloride_aware_default,
     diagnostic_table,
+    frumkin_sensitivity_sweep,
     volmer_coverage,
 )
 
@@ -312,3 +314,152 @@ class TestChlorideAwareDefault:
         f, _ = chloride_aware_default("sulfate")
         s = f.summary
         assert s["f_110"] + s["f_100"] + s["f_211"] == pytest.approx(1.0)
+
+
+# ─── eta_screening propagation (regression for the SurfaceStateKinetics bug) ──
+class TestEtaScreeningPropagation:
+    """Regression tests for the bug where ``SurfaceStateKinetics.surface_state``
+    rebuilt the AnionCoverages with the default eta_screening, silently
+    dropping any patched value the consumer passed in.  The Frumkin
+    sensitivity sweep depends on this propagation working."""
+
+    def test_eta_screening_propagates_through_surface_state(self):
+        """The same SurfaceStateKinetics built with two different
+        eta_screening values must produce different psi_1_V."""
+        base = DepositionKinetics(pH=2.0, temperature_C=60.0,
+                                    fe_i0=1.0e-2, her_i0=1.0e-3)
+        _, a_so4_default = chloride_aware_default("sulfate")
+        _, a_so4_high = chloride_aware_default("sulfate")
+        a_so4_high = tuple(
+            dataclasses.replace(a, eta_screening=0.20) for a in a_so4_high
+        )
+        w1 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_default)
+        w2 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_high)
+        ss1 = w1.surface_state(0.2)
+        ss2 = w2.surface_state(0.2)
+        # 4x higher eta_screening → 4x more negative psi_1.
+        assert ss2.psi_1_V < ss1.psi_1_V
+        assert ss2.psi_1_V / ss1.psi_1_V == pytest.approx(4.0, rel=0.01)
+        # Frumkin factor must reflect the change too.
+        assert ss2.frumkin_factor < ss1.frumkin_factor
+
+    def test_her_i0_corrected_propagates_eta_screening(self):
+        """The user-facing entry point must also propagate the change."""
+        base = DepositionKinetics(pH=2.0, temperature_C=60.0,
+                                    fe_i0=1.0e-2, her_i0=1.0e-3)
+        _, a_so4_default = chloride_aware_default("sulfate")
+        _, a_so4_high = chloride_aware_default("sulfate")
+        a_so4_high = tuple(
+            dataclasses.replace(a, eta_screening=0.20) for a in a_so4_high
+        )
+        w1 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_default)
+        w2 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_high)
+        i0_1 = w1.her_i0_corrected(0.2)
+        i0_2 = w2.her_i0_corrected(0.2)
+        # Higher eta_screening → larger |psi_1| → smaller i0 (text-book sign).
+        assert i0_2 < i0_1
+
+
+# ─── Frumkin sensitivity sweep ─────────────────────────────────
+class TestFrumkinSensitivitySweep:
+    """The 14x site-blocking / Frumkin-amplification decomposition."""
+
+    def _base(self) -> DepositionKinetics:
+        return DepositionKinetics(pH=2.0, temperature_C=60.0,
+                                    fe_i0=1.0e-2, her_i0=1.0e-3)
+
+    def test_returns_expected_keys(self):
+        sweep = frumkin_sensitivity_sweep(self._base(), "sulfate", "aware")
+        for k in ("eta_screening", "ratio_total", "ratio_site_blocking_only",
+                  "ratio_frumkin_only", "psi_1_bath_a", "psi_1_bath_b",
+                  "bath_a", "bath_b", "eta_V"):
+            assert k in sweep
+
+    def test_site_blocking_only_ratio_is_robust(self):
+        """With Frumkin disabled (eta_screening=0), the ratio
+        reflects only site-blocking + theta*(1-theta).  This is
+        the *robust* mechanism prediction."""
+        sweep = frumkin_sensitivity_sweep(
+            self._base(), "sulfate", "aware",
+            eta_screening_values=(0.0,),
+        )
+        # The site-blocking ratio must be ~14x at eta=0.2.
+        assert sweep["ratio_site_blocking_only"][0] == pytest.approx(14.0, rel=0.05)
+        # And the Frumkin factor ratio is exactly 1.0 when eta_screening=0.
+        assert sweep["ratio_frumkin_only"][0] == pytest.approx(1.0, rel=1e-6)
+
+    def test_total_ratio_grows_with_eta_screening(self):
+        """Larger eta_screening → larger Frumkin amplification →
+        larger total ratio.  This is the sensitivity band."""
+        sweep = frumkin_sensitivity_sweep(
+            self._base(), "sulfate", "aware",
+            eta_screening_values=(0.01, 0.02, 0.05, 0.10),
+        )
+        assert sweep["ratio_total"][0] < sweep["ratio_total"][1]
+        assert sweep["ratio_total"][1] < sweep["ratio_total"][2]
+        assert sweep["ratio_total"][2] < sweep["ratio_total"][3]
+
+    def test_total_ratio_at_central_eta_screening(self):
+        """At eta_screening=0.05 (the screening central value) the
+        total ratio is ~238x.  This is the headline number, but
+        the *robust* prediction is the ~14x site-blocking."""
+        sweep = frumkin_sensitivity_sweep(
+            self._base(), "sulfate", "aware",
+            eta_screening_values=(0.05,),
+        )
+        assert sweep["ratio_total"][0] == pytest.approx(238.0, rel=0.05)
+
+    def test_psi_1_propagates_through_sweep(self):
+        """The eta_screening change must propagate all the way through
+        the surface_state and into the Frumkin factor — this is
+        the regression that originally made the headline invariant
+        in eta_screening (the bug fix)."""
+        sweep = frumkin_sensitivity_sweep(
+            self._base(), "sulfate", "aware",
+            eta_screening_values=(0.01, 0.05, 0.20),
+        )
+        # Both psi_1 values must become more negative as eta_screening grows.
+        for arr_key in ("psi_1_bath_a", "psi_1_bath_b"):
+            arr = sweep[arr_key]
+            assert arr[0] > arr[1] > arr[2]
+            # And the ratio between successive entries should be 5x (and 4x).
+            assert arr[1] / arr[0] == pytest.approx(5.0, rel=0.01)
+            assert arr[2] / arr[1] == pytest.approx(4.0, rel=0.01)
+
+    def test_cited_psi_1_range(self):
+        """At eta_screening=0.02 (the lower end of the cited
+        experimental range) the sulfate-bath psi_1 should be in
+        the -0.05 to -0.3 V range quoted in the docstring."""
+        sweep = frumkin_sensitivity_sweep(
+            self._base(), "sulfate", "aware",
+            eta_screening_values=(0.02,),
+        )
+        psi_so4 = sweep["psi_1_bath_a"][0]
+        # At eta_screening=0.02, sulfate total psi_1 is ~-0.14 V — within range.
+        assert -0.30 <= psi_so4 <= -0.05
+
+
+# ─── Bug-fix regression: the headline ratio is no longer invariant ──
+class TestHeadlineRatioIsNotInvariant:
+    """Regression test for the original headline invariance bug.
+
+    Before the bug fix, the surface_state() method rebuilt
+    AnionCoverage objects with the default eta_screening,
+    silently dropping any patched value.  As a result, the
+    total suppression ratio was invariant in eta_screening
+    (always 238.65x at eta=0.2 V).  After the fix, the ratio
+    varies with eta_screening as the physics requires.
+    """
+
+    def test_ratio_varies_with_eta_screening(self):
+        base = DepositionKinetics(pH=2.0, temperature_C=60.0,
+                                    fe_i0=1.0e-2, her_i0=1.0e-3)
+        sweep = frumkin_sensitivity_sweep(
+            base, "sulfate", "aware",
+            eta_screening_values=(0.01, 0.02, 0.05, 0.10),
+        )
+        # Must NOT be invariant.  The spread should be at least 10x
+        # between the lowest and highest screening value.
+        rmin = float(sweep["ratio_total"].min())
+        rmax = float(sweep["ratio_total"].max())
+        assert rmax / rmin > 10.0

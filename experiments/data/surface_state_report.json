@@ -11,6 +11,14 @@
     "fe_i0_A_m2": 0.01,
     "her_i0_A_m2": 0.001
   },
+  "headline": {
+    "site_blocking_ratio": 14.056267956843431,
+    "total_ratio_at_eta_screening_0p05": 238.6533873721322,
+    "total_ratio_at_eta_screening_0p02": 43.63440494552457,
+    "frumkin_amplification_band_2_to_17x": true,
+    "robust_prediction": "Site-blocking component is the robust prediction: i0,H(sulfate) / i0,H(AWARE) ~ 14x, independent of the Frumkin screening parameter.",
+    "calibration_caveat": "Total ratio is the site-blocking component times the Frumkin amplification exp(alpha*F*Delta_psi/RT), where Delta_psi is the difference in psi_1 between the two baths.  The cited experimental range for psi_1 on Fe(110) is -0.05 to -0.3 V; the screening central value (eta_screening=0.05) sits at the upper end of this range.  See the sensitivity figure for the full band."
+  },
   "bath_comparison": {
     "sulfate": {
       "eta_V": [
@@ -1266,6 +1274,51 @@
         "dg_hstar_eff_eV": -0.4
       }
     }
+  },
+  "frumkin_sensitivity": {
+    "eta_screening": [
+      0.0,
+      0.01,
+      0.02,
+      0.05,
+      0.1
+    ],
+    "ratio_total": [
+      14.05626795684343,
+      24.765639261923113,
+      43.63440494552457,
+      238.6533873721322,
+      4051.960269899642
+    ],
+    "ratio_site_blocking_only": [
+      14.05626795684343,
+      14.05626795684343,
+      14.05626795684343,
+      14.05626795684343,
+      14.05626795684343
+    ],
+    "ratio_frumkin_only": [
+      1.0,
+      1.7618929390048885,
+      3.1042667285152845,
+      16.978431835880126,
+      288.2671476056278
+    ],
+    "psi_1_sulfate": [
+      0.0,
+      -0.06886378905821171,
+      -0.13772757811642342,
+      -0.34431894529105855,
+      -0.6886378905821171
+    ],
+    "psi_1_aware": [
+      0.0,
+      -0.10138429787284829,
+      -0.20276859574569658,
+      -0.5069214893642415,
+      -1.013842978728483
+    ],
+    "eta_V": 0.2
   },
   "screening_flag": "unvalidated (L1)"
 }

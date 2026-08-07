@@ -499,7 +499,10 @@ class SurfaceStateKinetics:
             T_K=self.T_K,
             facets=self.facets,
             adsorbed_anions=tuple(
-                AnionCoverage(a.anion, a.c_bulk_M, self.T_K)
+                AnionCoverage(
+                    a.anion, a.c_bulk_M, self.T_K,
+                    eta_screening=a.eta_screening,
+                )
                 for a in self.anion_coverages
             ),
         )
@@ -597,6 +600,89 @@ def diagnostic_table(
     }
 
 
+def frumkin_sensitivity_sweep(
+    base: "object",
+    bath_a: str = "sulfate",
+    bath_b: str = "aware",
+    eta: float = 0.2,
+    eta_screening_values: Tuple[float, ...] = (0.0, 0.01, 0.02, 0.05, 0.10, 0.20),
+) -> Dict[str, np.ndarray]:
+    """Decompose the i0,H suppression ratio into site-blocking and
+    Frumkin components across an ``eta_screening`` sweep.
+
+    Returns a dict with:
+
+    * ``eta_screening``: the screening values
+    * ``ratio_total``: total i₀,H(bath_a) / i₀,H(bath_b)
+    * ``ratio_site_blocking_only``: same ratio with the Frumkin
+      factor set to 1 (i.e. only the (1-theta_block) and
+      theta*(1-theta) terms active)
+    * ``ratio_frumkin_only``: ratio of Frumkin factors alone
+      (bath_a / bath_b)
+    * ``psi_1_bath_a`` and ``psi_1_bath_b``: the IHP potentials
+      in each bath at each screening value
+
+    This is the honesty instrument: the *robust* prediction is
+    the site-blocking ratio (essentially constant across
+    eta_screening), and the *Frumkin amplification* is a
+    sensitivity band that should not be quoted as a single
+    number.  See ``run_surface_state.py`` and the PR discussion
+    at https://github.com/sblaplace/aqueous_electrowinning_steel/pull/50
+    for the motivation.
+    """
+    import dataclasses
+    facets_a, anions_a = chloride_aware_default(bath_a)
+    facets_b, anions_b = chloride_aware_default(bath_b)
+    eta_arr = np.asarray(eta_screening_values, dtype=float)
+    ratio_total = np.empty_like(eta_arr)
+    ratio_site_blocking_only = np.empty_like(eta_arr)
+    ratio_frumkin_only = np.empty_like(eta_arr)
+    psi_a_arr = np.empty_like(eta_arr)
+    psi_b_arr = np.empty_like(eta_arr)
+    for idx, es in enumerate(eta_arr):
+        anions_a_p = tuple(
+            dataclasses.replace(a, eta_screening=float(es)) for a in anions_a
+        )
+        anions_b_p = tuple(
+            dataclasses.replace(a, eta_screening=float(es)) for a in anions_b
+        )
+        w_a = SurfaceStateKinetics(
+            base=base, facets=facets_a, anion_coverages=anions_a_p
+        )
+        w_b = SurfaceStateKinetics(
+            base=base, facets=facets_b, anion_coverages=anions_b_p
+        )
+        ss_a = w_a.surface_state(eta)
+        ss_b = w_b.surface_state(eta)
+        # Site-blocking-only: set psi_1 = 0 (Frumkin factor = 1)
+        sb_a = ss_a.theta_H * (1.0 - ss_a.theta_H) * (1.0 - ss_a.theta_block)
+        sb_b = ss_b.theta_H * (1.0 - ss_b.theta_H) * (1.0 - ss_b.theta_block)
+        ratio_site_blocking_only[idx] = (
+            sb_a / sb_b if sb_b > 0 else float("inf")
+        )
+        ratio_frumkin_only[idx] = (
+            ss_a.frumkin_factor / ss_b.frumkin_factor
+            if ss_b.frumkin_factor > 0 else float("inf")
+        )
+        ratio_total[idx] = (
+            ss_a.i0_H_effective_ratio / ss_b.i0_H_effective_ratio
+            if ss_b.i0_H_effective_ratio > 0 else float("inf")
+        )
+        psi_a_arr[idx] = ss_a.psi_1_V
+        psi_b_arr[idx] = ss_b.psi_1_V
+    return {
+        "eta_screening": eta_arr,
+        "ratio_total": ratio_total,
+        "ratio_site_blocking_only": ratio_site_blocking_only,
+        "ratio_frumkin_only": ratio_frumkin_only,
+        "psi_1_bath_a": psi_a_arr,
+        "psi_1_bath_b": psi_b_arr,
+        "bath_a": bath_a,
+        "bath_b": bath_b,
+        "eta_V": float(eta),
+    }
+
+
 def chloride_aware_default(bath_type: str = "sulfate",
                             c_total_M: float = 1.5) -> Tuple[FacetDistribution,
                                                               Tuple[AnionCoverage, ...]]:
@@ -652,4 +738,5 @@ __all__ = [
     "SurfaceStateKinetics",
     "diagnostic_table",
     "chloride_aware_default",
+    "frumkin_sensitivity_sweep",
 ]
