@@ -48,10 +48,23 @@ US_POWER_W = 100.0
 US_TRANSDUCER_AREA_M2 = 0.001     # ~3 cm diameter horn
 
 # Acoustic streaming velocity scaling (screening)
-STREAMING_VELOCITY_FACTOR = 0.8   # 0.5–1.5 literature range
+# Calibrated so the default bench horn (100 W on 10 cm²) produces a streaming
+# velocity on the order of 10-20 mm/s and a δ-reduction factor of ~0.2-0.3
+# (i.e. 3-5× thinning), matching the module's stated 2-5× band.
+STREAMING_VELOCITY_FACTOR = 0.05   # screening; replaced by measurement_protocol()
 
 # Cavitation threshold pressure (Pa) for aqueous sulfate ~60 °C
 CAVITATION_THRESHOLD_PA = 1.5e5
+
+# Speed of sound in the bath (m/s)
+SPEED_OF_SOUND_M_S = 1480.0
+
+# Micro-jet velocity scaling (screening).  Local jet speeds from inertial
+# (Rayleigh) bubble collapse near a wall are far higher than the acoustic
+# particle velocity because of the large collapse-pressure amplification;
+# the result is capped at a subsonic physical ceiling (~300 m/s).
+MICROJET_GAIN = 450.0          # collapse amplification of particle velocity (screening)
+MICROJET_VELOCITY_CAP_M_S = 300.0
 
 
 @dataclass
@@ -84,13 +97,12 @@ def acoustic_streaming_velocity(
     """Screening acoustic streaming velocity (m/s).
 
     u_ac ≈ factor * sqrt( (2 * I) / (rho * c) )   (simplified)
-    where I = power / area is acoustic intensity.
+    where I = power / area is acoustic intensity and c the speed of sound.
     """
     if power_w <= 0 or transducer_area_m2 <= 0:
         return 0.0
     intensity = power_w / transducer_area_m2
-    # Speed of sound in water ~1480 m/s; screening value
-    c = 1480.0
+    c = SPEED_OF_SOUND_M_S
     u = factor * math.sqrt(2 * intensity / (rho * c))
     return float(max(u, 0.0))
 
@@ -99,19 +111,25 @@ def cavitation_microjet_velocity(
     power_w: float,
     transducer_area_m2: float,
     threshold_pa: float = CAVITATION_THRESHOLD_PA,
+    rho: float = RHO,
 ) -> float:
-    """Rough estimate of cavitation micro-jet velocity (m/s)."""
-    if power_w <= 0:
+    """Screening estimate of cavitation micro-jet velocity (m/s).
+
+    Cavitation is gated on the acoustic pressure amplitude
+    p_a = sqrt(2 * rho * c * I) exceeding the threshold.  When active, local
+    micro-jet speeds from inertial (Rayleigh) bubble collapse scale with the
+    collapse amplification (MICROJET_GAIN) of the acoustic particle velocity
+    p_a/(rho*c), capped at a subsonic ceiling.  Returns 0 when not cavitating.
+    """
+    if power_w <= 0 or transducer_area_m2 <= 0:
         return 0.0
     intensity = power_w / transducer_area_m2
-    # Corrected screening: compare intensity directly to a threshold intensity
-    threshold_intensity = 15.0   # W/m² screening value
-    if intensity < threshold_intensity:
+    p_a = math.sqrt(2.0 * rho * SPEED_OF_SOUND_M_S * intensity)
+    if p_a < threshold_pa:
         return 0.0
-    excess = intensity - threshold_intensity
-    delta_p = excess * 1e4   # screening Pa conversion
-    u_jet = math.sqrt(2 * max(delta_p, 0) / RHO)
-    return float(min(u_jet, 300.0))  # cap below supersonic for screening
+    u_particle = p_a / (rho * SPEED_OF_SOUND_M_S)
+    u_jet = MICROJET_GAIN * u_particle
+    return float(min(u_jet, MICROJET_VELOCITY_CAP_M_S))
 
 
 def ultrasonic_delta_reduction(

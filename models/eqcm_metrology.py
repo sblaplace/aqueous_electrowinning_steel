@@ -33,6 +33,9 @@ C_SENSITIVITY_HZ_CM2_NG = 56.6   # Sauerbrey sensitivity (Hz cm² / ng) for 5 MH
 RHO_Q = 2.648e3              # kg/m³ quartz
 MU_Q = 2.947e10              # Pa quartz shear modulus
 
+# Trapped-H ceiling from dissipation (screening; calibration target ~200 ppm)
+H_TRAP_MAX_PPM = 300.0
+
 @dataclass
 class EQCMResult:
     """Result of an EQCM measurement / simulation."""
@@ -71,13 +74,23 @@ def viscoelastic_correction(
 def trapped_hydrogen_from_dissipation(
     dissipation: float,
     deposit_mass_ug_cm2: float,
+    max_h_ppm: float = H_TRAP_MAX_PPM,
+    ref_dissipation: float = 5e-5,
 ) -> float:
-    """Estimate trapped H (ppm) from dissipation increase."""
+    """Estimate trapped H concentration (ppm by mass) from dissipation.
+
+    Dissipation is a proxy for deposit disorder / internal defects that trap
+    diffusible hydrogen, so trapped H scales with dissipation relative to a
+    reference level, saturating at a physical ceiling (H_TRAP_MAX_PPM).  It is
+    a *concentration*, so it is independent of total deposit mass — the deposit
+    must merely exist (mass > 0).
+    """
     if deposit_mass_ug_cm2 <= 0:
         return 0.0
-    # Very rough scaling: higher dissipation → more trapped H
-    h_ppm = 50.0 * (dissipation / 5e-5) * (10.0 / max(deposit_mass_ug_cm2, 1.0))
-    return float(max(h_ppm, 0.0))
+    if ref_dissipation <= 0:
+        return 0.0
+    h_ppm = max_h_ppm * (dissipation / ref_dissipation)
+    return float(min(max(h_ppm, 0.0), max_h_ppm))
 
 
 def simulate_eqcm_run(

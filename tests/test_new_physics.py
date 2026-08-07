@@ -65,6 +65,11 @@ class TestSonoelectrochemistry:
     def test_sonoelectro_result(self):
         res = compute_sonoelectro_result()
         assert res.acoustic_streaming_velocity_m_s > 0
+        # δ-reduction should sit in the module's claimed 2-5× band (0.2-0.5),
+        # not collapse toward ~0 (which would overstate the benefit ~70×).
+        assert 0.15 < res.effective_delta_reduction_factor < 0.5
+        # Micro-jet velocity must stay subsonic (physical), not ~1.3 km/s.
+        assert 0 < res.microjet_velocity_m_s < 600
         assert res.effective_delta_reduction_factor > 0.01
         assert res.degassing_factor > 1.0
 
@@ -97,6 +102,7 @@ class TestEQCMMetrology:
         assert eq.mass_gain_ug_cm2 > 400_000   # realistic ~468k µg/cm²
         assert eq.trapped_h_ppm > 100
         assert eq.frequency_shift_Hz < 0
+        assert eq.frequency_shift_Hz < -1e6   # consistent with ~4.7e5 µg/cm² mass gain
 
 
 @pytest.mark.skipif(not NEW_MODULES_AVAILABLE, reason="new physics modules not importable")
