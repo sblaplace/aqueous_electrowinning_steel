@@ -31,7 +31,6 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 
 from .fe_chloride_speciation import (
     aware_default_bath,

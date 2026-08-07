@@ -70,16 +70,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 
-import numpy as np
 
 from .electrochemistry import FARADAY, R_GAS
 from .thermodynamic_constants import (
-    D_NA_25,
     D_FE2_25,
-    D_CL_25,
-    D_H_25,
     diffusivity_at_temperature,
 )
 from .pitzer import PITZER_BINARY, PITZER_THETA, PitzerPair, solve_pitzer

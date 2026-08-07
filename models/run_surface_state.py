@@ -30,8 +30,6 @@ import numpy as np
 
 from .kinetics import DepositionKinetics
 from .surface_state import (
-    AnionCoverage,
-    FacetDistribution,
     SurfaceStateKinetics,
     chloride_aware_default,
     diagnostic_table,
@@ -144,7 +142,6 @@ def _plot_site_blocking(base: DepositionKinetics, path: Path) -> None:
     isotherm for each of the three screening bath recipes.
     """
     fig, ax = plt.subplots(figsize=(8, 5))
-    from .surface_state import N_SITES_FE_M2
     # Get the union of all anion short-names so the x-axis is the same
     # across the three bath sub-figures (use the 'mixed' bath — it
     # has all four anions).

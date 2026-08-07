@@ -36,7 +36,6 @@ from models.surface_state import (
     HSO4_AWARE,
     SCREENING_FLAG,
     SO4_AWARE,
-    SurfaceCoverage,
     SurfaceStateKinetics,
     AnionCoverage,
     chloride_aware_default,

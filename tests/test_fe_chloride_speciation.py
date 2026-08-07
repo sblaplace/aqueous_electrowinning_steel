@@ -25,7 +25,6 @@ import pytest
 
 from models.pitzer import PITZER_BINARY
 from models.fe_chloride_speciation import (
-    FECL_HIGH_ORDER_MIN_CL_M,
     FECL2_PITZER,
     LOG10_K_FECL_PLUS_25,
     LOG10_K_FECL2_AQ_25,
