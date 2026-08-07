@@ -26,7 +26,7 @@ Modules to wire into when built: ``bath_dynamics.py``, ``leveler_kinetics.py``,
 from __future__ import annotations
 
 import math
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 # Screening rate constants (first-order, 60 °C, ~200 mA/cm², acidic sulfate)
 # Source: literature on additive degradation in Fe-plating baths (e.g.
@@ -97,7 +97,7 @@ def decay_rate_per_hour(
         "k_eff_h": k_eff,
         "primary_channel": primary,
         "half_life_h": math.log(2) / max(k_eff, 1e-9),
-        "note": f"additive_aging v0 — untracked #2; connects queued leveler_kinetics to bath_dynamics",
+        "note": "additive_aging v0 — untracked #2; connects queued leveler_kinetics to bath_dynamics",
     }
 
 

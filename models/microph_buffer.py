@@ -49,6 +49,30 @@ def van_t_hoff_constant(log_k_25: float, dH_j: float, T_c: float) -> float:
     return ln_k / math.log(10)
 
 
+def _buffer_capacity_M_per_pH(pH: float, buffer_molar: Dict[str, float]) -> float:
+    """Buffer capacity β = Σ 2.303 · C_acid · C_base / (C_acid + C_base)."""
+    beta = 0.0
+    # Borate (H₃BO₃ / B(OH)₄⁻, pKa 9.24)
+    c_bor = buffer_molar.get("borate", 0.01)
+    pka_bor = PBUFF_BORATE
+    c_acid_bor = c_bor / (1 + 10 ** (pH - pka_bor))
+    c_base_bor = c_bor / (1 + 10 ** (pka_bor - pH))
+    beta += 2.303 * c_acid_bor * c_base_bor / max(c_acid_bor + c_base_bor, 1e-12)
+    # Acetate (HAc / Ac⁻, pKa 4.76)
+    c_ac = buffer_molar.get("acetate", 0.02)
+    pka_ac = PBUFF_ACETATE
+    c_acid_ac = c_ac / (1 + 10 ** (pH - pka_ac))
+    c_base_ac = c_ac / (1 + 10 ** (pka_ac - pH))
+    beta += 2.303 * c_acid_ac * c_base_ac / max(c_acid_ac + c_base_ac, 1e-12)
+    # Sulfate (HSO₄⁻ / SO₄²⁻, pKa 1.99)
+    c_sulf = buffer_molar.get("sulfate", 0.5)
+    pka_sulf = PBUFF_SULFATE
+    c_acid_sulf = c_sulf / (1 + 10 ** (pH - pka_sulf))
+    c_base_sulf = c_sulf / (1 + 10 ** (pka_sulf - pH))
+    beta += 2.303 * c_acid_sulf * c_base_sulf / max(c_acid_sulf + c_base_sulf, 1e-12)
+    return float(beta)
+
+
 def compute_surface_pH(
     pH_bulk: float,
     C_fe2_bulk_M: float,
@@ -65,97 +89,56 @@ def compute_surface_pH(
 
     pH_surface is estimated from:
       - Bulk hydrolysis equilibrium (adjusted to T)
-      - H⁺ consumption by HER (Faraday + ideal-gas approximation)
-      - OH⁻ production by BDD crystallization step (proportional to j_local / F)
-      - Buffer attenuation (sum of β for each buffer pair)
+      - Net acid-equivalent removal at the surface: Fe-deposition OH⁻ release +
+        HER H⁺ consumption (both raise surface pH), converted to a film acid
+        deficit via a diffusion-layer flux relation
+      - Buffer attenuation: ΔpH = ΔC_acid / β (buffer capacity resists the shift,
+        so surface pH rises with current but is bounded rather than hard-clamped)
     """
     if buffer_molar is None:
         buffer_molar = {}
 
-    # 1) Temperature-corrected hydrolysis at bulk conditions
-    log_khyd = van_t_hoff_constant(LOG_KHYD_25, DH_KHYD_J, T_C)
-    khyd = 10 ** log_khyd
-
-    # Bulk [FeOH⁺] from equilibrium with bulk [H⁺]
-    h_bulk = 10 ** (-pH_bulk)
-    # FeOH⁺ = khyd * C_fe2 * (H2O / H⁺) ≈ khyd * C_fe2 / h_bulk  (activity coeffs = 1 screening)
-    feoh_bulk = khyd * C_fe2_bulk_M / max(h_bulk, 1e-12)
-
-    # 2) Surface reaction rates (screening — Faradaic equivalents per unit area)
-    # HER current fraction: assume α_HER ~ 0.5, Tafel from kinetics; simplify to
-    # H⁺ flux to surface ≈ j_local / (2 F)  (mole m⁻² s⁻¹)
+    # 1) Surface reaction fluxes (screening — Faradaic equivalents per unit area)
+    # HER: 2 H⁺ + 2 e⁻ → H₂ → consumes 1 H⁺ per electron → flux = j_her / F
+    # Fe deposition: (FeOH)ads + e⁻ → Fe + OH⁻ → releases 1 OH⁻ per electron.
+    # Both act as *acid removal*; net H⁺-equivalent removal ≈ j / F at moderate η.
     F = 96485.0
-    j_local_A_cm2 = j_local_A_m2 / 1e4  # convert for intuition
+    # Net acid-equivalent removal flux (mol H⁺ equiv / m² / s)
+    acid_removal_flux = j_local_A_m2 / F
 
-    # H⁺ consumption by HER: 2 H⁺ + 2e⁻ → H₂  →  consumption rate = j / (2F)  (mol/m²/s)
-    her_h_consumption = j_local_A_m2 / (2 * F)  # mol H⁺ / m² / s
-
-    # BDD OH⁻ release: (FeOH)ads + e⁻ → Fe + OH⁻  →  rate ≈ j / F  (mol OH⁻ / m² / s)
-    # We approximate that ~50 % of total j goes through BDD route at moderate η.
-    bdd_oh_release = 0.5 * j_local_A_m2 / F  # mol OH⁻ / m² / s
-
-    # 3) Net pH shift in film (screening layer diffusion approximation)
-    # Diffusion layer δ ≈ 50 µm; D_H⁺ ≈ 9.3e-9 m²/s; characteristic time τ = δ²/D
-    # For steady-state: surface concentration ≈ bulk + (generation - consumption) · δ / D
-    delta = film_thickness_m
+    # 3) Steady-state film acid deficit via diffusion-layer flux relation
+    # ΔC ≈ flux · δ / D_H  (mol/m³) → divide by 1000 for M (mol/L)
     D_h = 9.3e-9  # m²/s, approximate
-    D_oh = 5.3e-9
+    dC_acid_M = (acid_removal_flux * film_thickness_m / D_h) / 1000.0
 
-    # Net moles consumed/produced per m², scaled to film volume
-    # Volume per m² = δ (m³/m² = m); divide by δ to get concentration change (M = mol/L, need /1000)
-    h_shift = (her_h_consumption / D_h) * delta / 1000.0  # approximate M change from consumption
-    oh_shift = (bdd_oh_release / D_oh) * delta / 1000.0  # M increase from OH⁻ release
+    # 4) Surface pH: attenuated by buffer capacity at the bulk pH (screening).
+    #    ΔpH = ΔC_acid / β ; cap the shift so it stays physically bounded.
+    beta = _buffer_capacity_M_per_pH(pH_bulk, buffer_molar)
+    MAX_DPH = 3.0
+    if beta > 1e-9 and dC_acid_M > 0:
+        dph = min(dC_acid_M / beta, MAX_DPH)
+    else:
+        dph = 0.0
+    # Hydrolysis equilibrium already accounts for a small floor of alkalinity;
+    # keep the surface pH at least 0.1 above bulk (hyd + FeOH⁺ residual buffer).
+    pH_surf = pH_bulk + max(0.1, dph)
 
-    # Net pH change: consumption of H⁺ raises pH; production of OH⁻ also raises pH
-    # Approximate: ΔpH ≈ log10( (h_bulk + h_shift + oh_shift) / h_bulk ) ... rough screening
-    # Better screening approximation: pH_surf = pH_bulk + ΔpH_from_H_her + ΔpH_from_OH_bdd
-    delta_ph_her = -math.log10(max(h_bulk - h_shift, 1e-14)) + math.log10(h_bulk) if h_bulk > 1e-12 else 0.0
-    delta_ph_oh = math.log10(h_bulk + oh_shift) - math.log10(h_bulk) if h_bulk > 1e-14 else 0.0
-    # Simplified additive screening estimate:
-    pH_surf = pH_bulk + max(0.3, min(1.8, delta_ph_her + delta_ph_oh + 0.2))
+    # 5) Buffer capacity at the *surface* pH for reporting
+    beta_surf = _buffer_capacity_M_per_pH(pH_surf, buffer_molar)
 
-    # 4) Buffer capacity β = Σ 2.303 · C_acid · C_base / (C_acid + C_base)
-    beta = 0.0
-    # Borate
-    c_bor = buffer_molar.get("borate", 0.01)
-    # Approximate half-base at local pH: split by pKa
-    pka_bor = PBUFF_BORATE
-    c_acid_bor = c_bor / (1 + 10 ** (pH_surf - pka_bor))
-    c_base_bor = c_bor / (1 + 10 ** (pka_bor - pH_surf))
-    beta += 2.303 * c_acid_bor * c_base_bor / max(c_acid_bor + c_base_bor, 1e-12)
-
-    # Acetate
-    c_ac = buffer_molar.get("acetate", 0.02)
-    pka_ac = PBUFF_ACETATE
-    c_acid_ac = c_ac / (1 + 10 ** (pH_surf - pka_ac))
-    c_base_ac = c_ac / (1 + 10 ** (pka_ac - pH_surf))
-    beta += 2.303 * c_acid_ac * c_base_ac / max(c_acid_ac + c_base_ac, 1e-12)
-
-    # Sulfate (HSO₄⁻ / SO₄²⁻) — low pH only relevant
-    c_sulf = buffer_molar.get("sulfate", 0.5)
-    pka_sulf = PBUFF_SULFATE
-    c_acid_sulf = c_sulf / (1 + 10 ** (pH_surf - pka_sulf))
-    c_base_sulf = c_sulf / (1 + 10 ** (pka_sulf - pH_surf))
-    beta += 2.303 * c_acid_sulf * c_base_sulf / max(c_acid_sulf + c_base_sulf, 1e-12)
-
-    # 5) Precipitation check: Fe(OH)₂(s) from Fe²⁺ + 2 OH⁻ ⇌ Fe(OH)₂(s)
-    # At surface: [OH⁻] = 10^(pH_surf - 14) (approx at 25 C, adjust slightly for T)
+    # 6) Precipitation check: Fe(OH)₂(s) from Fe²⁺ + 2 OH⁻ ⇌ Fe(OH)₂(s)
     pOH_surf = 14.0 - pH_surf  # screening approximation
     oh_surf = 10 ** (-pOH_surf)
     # Temperature-corrected Ksp
     log_ksp = -PKSP_FE_OH2_25  # log Ksp = -14.87 → Ksp = 10^-14.87
-    # Adjust log Ksp to T_C (exothermic, so Ksp increases at lower T?)
     log_ksp_T = log_ksp + (DH_KSP_J / (2.303 * 8.314)) * (1 / (T_C + 273.15) - 1 / 298.15)
     ksp = 10 ** log_ksp_T
 
-    # Ion product Q = [Fe²⁺][OH⁻]²; use surface Fe²⁺ ≈ bulk (depletion is film-level, use C_fe2_bulk as screening)
     Q = C_fe2_bulk_M * (oh_surf ** 2)
     precip_now = Q > ksp
-
-    # Risk index: log10(Q/Ksp) — positive means supersaturated
     risk_idx = math.log10(Q / max(ksp, 1e-30))
 
-    return float(pH_surf), float(beta), float(risk_idx), bool(precip_now)
+    return float(pH_surf), float(beta_surf), float(risk_idx), bool(precip_now)
 
 
 def feed_to_diffusion_layer(

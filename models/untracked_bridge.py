@@ -9,7 +9,7 @@ Usage pattern: import bridge, call at timestep / calibration step.
 """
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict
 
 # Untracked modules (drafted this session)
 from . import microph_buffer, additive_aging, substrate_passivation
