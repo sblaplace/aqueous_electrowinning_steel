@@ -447,3 +447,51 @@ def test_na_zero_flux_conservation():
     Nna = -m.D_na * (cs_na(x, 1) + r.profile.na_mol_m3 * f * cs_phi(x, 1))
     # Zero flux to within numerical tolerance.
     assert np.max(np.abs(Nna)) < 1e-6
+
+
+# ─── 12. Fe(OH)₂ passivation film (CHEM_PHYS_REVIEW 1.3) ──────────────
+
+def test_feoh2_film_off_by_default_unchanged():
+    """feoh2_film=False (default) leaves the solve byte-identical & film zero."""
+    m = _default()
+    s = m.solve(300.0)
+    assert s.feoh2_film_thickness_m == 0.0
+    assert s.feoh2_film_overpotential_V == 0.0
+    # The default result reports no film even in a precipitating configuration.
+    mp = DiffusionLayer1D(fe_conc_M=1.0, pH_bulk=6.0, buffer_conc_M=0.0)
+    sp = mp.solve(300.0)
+    assert sp.feoh2_film_thickness_m == 0.0
+    assert sp.precipitation_flux_mol_m2_s > 0.0  # the sink is real
+
+
+def test_feoh2_film_on_adds_thickness_and_overpotential_at_precipitation():
+    """When the film is ON, a precipitating point gains a sub-µm film + 10 s-mV.
+
+    The resulting V_cell exceeds the bare-OER (film-free) value by the ohmic
+    film overpotential; thickness stays in the plausible 0.1–1 µm band.
+    """
+    kw = dict(fe_conc_M=1.0, pH_bulk=6.0, buffer_conc_M=0.0)
+    off = DiffusionLayer1D(**kw)
+    on = DiffusionLayer1D(**kw, feoh2_film=True)
+    s_off = off.solve(300.0)
+    s_on = on.solve(300.0)
+    # Must be a genuinely precipitating point for the film to engage.
+    assert s_off.precipitation_flux_mol_m2_s > 0.0
+    assert s_on.feoh2_film_thickness_m > 0.0
+    # Sub-µm coherent passivation film.
+    assert 0.01e-6 <= s_on.feoh2_film_thickness_m <= 5e-6
+    # V_cell rises by a 10 s-of-mV ohmic film term.
+    eta = s_on.feoh2_film_overpotential_V
+    assert eta > 0.0
+    dV = s_on.V_cell - s_off.V_cell
+    assert dV == pytest.approx(eta, rel=1e-6)
+    assert 0.005 <= eta <= 0.30
+
+
+def test_diffusion_layer_exports_film_constants():
+    """The film knobs are configurable on the model."""
+    from models.feoh2_film import FEOH2_KAPPA_S_M, FILM_K_ACID_S, FILM_K_RED_S
+    m = _default()
+    assert m.film_kappa_S_m == FEOH2_KAPPA_S_M
+    assert m.film_k_acid_s == FILM_K_ACID_S
+    assert m.film_k_red_s == FILM_K_RED_S

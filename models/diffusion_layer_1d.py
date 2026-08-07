@@ -80,6 +80,13 @@ from .kinetics import (
     arrhenius_i0,
 )
 from .pourbaix import LOGKSP_FEOH2, ksp_feoh2
+from .feoh2_film import (
+    FEOH2_KAPPA_S_M,
+    FILM_K_ACID_S,
+    FILM_K_RED_S,
+    FILM_DEPOSITION_FRACTION,
+    film_diagnostics,
+)
 from . import pitzer as _pitzer
 from . import speciation as _speciation
 from .thermodynamic_constants import (
@@ -236,6 +243,12 @@ class DiffusionLayerResult:
     # Zero when fes04_pair_correction=False; otherwise the bulk pair
     # fraction (typically 0.15–0.25 in 1.5 M FeSO₄ at pH 2).
     fe_pair_fraction_bulk: float = 0.0
+    # Fe(OH)₂ passivation film (active only when feoh2_film=True).  Zero when
+    # the film is disabled or no film forms at this operating point.
+    feoh2_film_thickness_m: float = 0.0
+    feoh2_film_overpotential_V: float = 0.0
+    film_growth_rate_m_s: float = 0.0
+    film_dissolution_rate_m_s: float = 0.0
 
     @property
     def fe_percent(self) -> float:
@@ -343,6 +356,20 @@ class DiffusionLayer1D:
     # previous diagnostic-only behaviour.
     precipitation_sink: bool = True
     k_precip_s: float = 1.0e1  # 1/s — fast, drives S→1 on the film timescale δ²/D≈3 s
+    # Fe(OH)₂ passivation film.  When ``feoh2_film=True`` the precipitation-sink
+    # flux (above) is fed into a coupled film-thickness ODE (growth from
+    # precipitation minus Fe²⁺-promoted reductive + acid dissolution, see
+    # :mod:`models.feoh2_film`), and the resulting ohmic film overpotential
+    # (10 s of mV) is added to the cell voltage.  OFF by default → the default
+    # solve is byte-identical to the pre-film code.  Constants are screening
+    # fits (SCREENING HONESTY in feoh2_film.py), not gate evidence.
+    feoh2_film: bool = False
+    film_kappa_S_m: float = FEOH2_KAPPA_S_M
+    film_k_acid_s: float = FILM_K_ACID_S
+    film_k_red_s: float = FILM_K_RED_S
+    # Fraction of the precipitation flux that deposits as coherent film (the
+    # rest is bulk sludge).  Screening fit; see feoh2_film.SCREENING HONESTY.
+    film_deposition_fraction: float = FILM_DEPOSITION_FRACTION
     # Activity-coefficient model for the Fe²⁺/Fe Nernst potential:
     #   "ideal"  — a = [Fe²⁺] (mol/L), the pre-2026-08 default;
     #   "pitzer" — a_Fe²⁺ = γ_Fe²⁺(m, T) · [Fe²⁺], with γ from the
@@ -1141,6 +1168,33 @@ class DiffusionLayer1D:
         )
         return i_fe, i_her, profile, converged
 
+    def _feoh2_film_analysis(self, precip_flux, profile, target):
+        """Fe(OH)₂ film picture at this operating point, or all zeros.
+
+        Returns ``(thickness_m, eta_V, growth_m_s, diss_m_s)``.  All zeros when
+        the film is off (``feoh2_film=False``) or there is no precipitation —
+        so :meth:`solve` adds no conditional branch and the default result is
+        byte-identical to the pre-film code.
+        """
+        if not (self.feoh2_film and precip_flux > 0.0):
+            return 0.0, 0.0, 0.0, 0.0
+        diag = film_diagnostics(
+            precip_flux,
+            c_h_surf_mol_m3=float(profile.h_mol_m3[0]),
+            c_fe2_surf_mol_m3=float(profile.fe_mol_m3[0]),
+            current_density_A_m2=target,
+            kappa_S_m=self.film_kappa_S_m,
+            k_acid_s=self.film_k_acid_s,
+            k_red_s=self.film_k_red_s,
+            deposition_fraction=self.film_deposition_fraction,
+        )
+        return (
+            diag.thickness_m,
+            diag.film_overpotential_V,
+            diag.growth_rate_m_s,
+            diag.dissolution_rate_m_s,
+        )
+
     def solve(self, j_mA_cm2: float) -> DiffusionLayerResult:
         """Solve at an applied current density (mA/cm²).
 
@@ -1212,6 +1266,12 @@ class DiffusionLayer1D:
             # Sludge as Fe(OH)₂ mass (M=89.86 g/mol)
             M_FEOH2 = 89.86e-3  # kg/mol
             sludge_g = float(precip_flux * M_FEOH2 * 1000.0)  # g/m²/s
+        # ---- Fe(OH)₂ passivation film (opt-in; default off) ----
+        # Feed the precipitation-sink flux (above) into the coupled film ODE
+        # and add the resulting ohmic overpotential to the cell voltage.
+        film_thickness, film_eta, film_growth, film_diss = self._feoh2_film_analysis(
+            precip_flux, profile, target
+        )
         # Report both the binary diffusion limit and the actual film limit.
         # The latter includes migration and concurrent HER through the same
         # reactive ODE; the previous result object silently reported the
@@ -1220,6 +1280,10 @@ class DiffusionLayer1D:
 
         V_cathode = E_sol
         V_cell = (self.E_anode_eq + self.eta_anode_V) - V_cathode + self.ir_drop_V
+        # Film adds a resistive drop on the cathode: to hold the same faradaic
+        # current the metal must sit η_film more negative, so V_cell rises.
+        # (film_eta is 0 when the film is off → default solve unchanged.)
+        V_cell = V_cell + film_eta
 
         # Surface-state diagnostic: ratio of corrected to bare her_i0
         her_i0_ratio = 1.0
@@ -1253,6 +1317,10 @@ class DiffusionLayer1D:
             sludge_rate_g_m2_s=sludge_g,
             her_i0_surface_state_ratio=her_i0_ratio,
             fe_pair_fraction_bulk=self._bulk_pair_fraction if self.fes04_pair_correction else 0.0,
+            feoh2_film_thickness_m=film_thickness,
+            feoh2_film_overpotential_V=film_eta,
+            film_growth_rate_m_s=film_growth,
+            film_dissolution_rate_m_s=film_diss,
         )
 
     # ─── Convenience methods ───────────────────────────────────────
@@ -1278,6 +1346,8 @@ class DiffusionLayer1D:
             "i_lim transport (A/m²)": round(s.transport_limit_A_m2, 1),
             "Film Δφ (mV)": round(s.film_potential_drop_V * 1000, 2),
             "Fe(OH)₂ supersaturation": float(f"{s.feoh2_supersaturation:.3g}"),
+            "Fe(OH)₂ film thickness (µm)": float(f"{s.feoh2_film_thickness_m * 1e6:.4g}"),
+            "Fe(OH)₂ film η (mV)": round(s.feoh2_film_overpotential_V * 1000, 3),
             "V_cell (V)": round(s.V_cell, 3),
         }
 
