@@ -466,6 +466,17 @@ from .crate import (
     CrateVerdict,
     evaluate_crate,
 )
+from .site_layer import (
+    SiteLayer,
+    SiteLayerSpec,
+    SiteLayerVerdict,
+    SiteAccess,
+    FoundationDesign,
+    DrainageDesign,
+    WindExposureDesign,
+    LayoutDesign,
+    evaluate_site_layer,
+)
 from .system_twin import (
     CredibilityVector,
     SystemTwinReport,
@@ -980,6 +991,16 @@ __all__ = [
     "EnvironmentalLoads",
     "CrateVerdict",
     "evaluate_crate",
+    # ── Site layer L3 (design: foundation/drainage/wind/layout) ───────
+    "SiteLayer",
+    "SiteLayerSpec",
+    "SiteLayerVerdict",
+    "SiteAccess",
+    "FoundationDesign",
+    "DrainageDesign",
+    "WindExposureDesign",
+    "LayoutDesign",
+    "evaluate_site_layer",
     # ── Whole-system twin (process + crate + site) ────────────────────
     "CredibilityVector",
     "SystemTwinReport",
