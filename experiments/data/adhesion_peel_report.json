@@ -292,11 +292,11 @@
       "deposition_time_s": 900.0
     },
     "derived": {
-      "thickness_um": 28.116355658290008,
+      "thickness_um": 28.116355652461902,
       "grain_size_um": 3.5,
       "C_H_diffusible_ppm": 239.92074923042284,
       "foil_yield_strength_MPa": 347.1571295295718,
-      "deposition_rate_um_hr": 112.46542263316003
+      "deposition_rate_um_hr": 112.46542260984761
     },
     "sources": {
       "grain_size": "mechanical_properties.estimate_grain_size_um",

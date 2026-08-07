@@ -523,6 +523,66 @@ from .operating_twin import (
     ControlCommand,
     ShutdownRequest,
 )
+from .fe_sulfate_solubility import (
+    SolidHydratePhase,
+    MELANTERITE,
+    SZOMOLNOKITE,
+    ROZENITE,
+    stable_solid_phase,
+    feso4_binary_solubility_mol_L,
+    feso4_solubility_with_common_ion,
+    HeatExchangerScalingAssessment,
+    assess_heat_exchanger_scaling,
+)
+from .pulse_rc_filter import (
+    PulseCircuitParams,
+    FilteredPulseResult,
+    simulate_pulse_rc_response,
+    max_practical_frequency_Hz,
+)
+from .bdd_kinetics import (
+    BDDKineticParams,
+    BDDStateResult,
+    hydrolysis_equilibrium_constant,
+    feoh_plus_concentration_mol_L,
+    solve_bdd_kinetics,
+)
+from .shunt_currents import (
+    StackManifoldGeometry,
+    ShuntCurrentResult,
+    solve_stack_shunt_currents,
+)
+from .hydrogen_trapping import (
+    TrapSiteCategory,
+    default_trap_hierarchy,
+    lattice_diffusivity_m2_s,
+    effective_trapped_diffusivity_m2_s,
+    BakeoutScheduleResult,
+    compute_bakeout_schedule,
+)
+from .ore_leaching import (
+    OreSpec,
+    LeachingResult,
+    simulate_ore_leaching,
+)
+from .chemical_osmosis import (
+    MembraneWaterParams,
+    TransmembraneWaterResult,
+    estimate_water_activity,
+    solve_transmembrane_water_flux,
+)
+from .tempering_kinetics import (
+    SteelMicrostructureSpec,
+    TemperingKineticsResult,
+    carbon_diffusivity_ferrite,
+    lsw_coarsening_rate_constant,
+    simulate_tempering_kinetics,
+)
+from .solutal_convection import (
+    SolutalChannelParams,
+    MixedConvectionResult,
+    solve_solutal_mixed_convection,
+)
 
 __all__ = [
     "buffer_capacity_M_per_pH",
@@ -983,4 +1043,55 @@ __all__ = [
     "OperatingTwinState",
     "ControlCommand",
     "ShutdownRequest",
+    # ── FeSO4 solubility & retrograde scaling ─────────────────────────
+    "SolidHydratePhase",
+    "MELANTERITE",
+    "SZOMOLNOKITE",
+    "ROZENITE",
+    "stable_solid_phase",
+    "feso4_binary_solubility_mol_L",
+    "feso4_solubility_with_common_ion",
+    "HeatExchangerScalingAssessment",
+    "assess_heat_exchanger_scaling",
+    # ── Pulse RC double-layer filtering ──────────────────────────────
+    "PulseCircuitParams",
+    "FilteredPulseResult",
+    "simulate_pulse_rc_response",
+    "max_practical_frequency_Hz",
+    # ── BDD multi-step iron deposition kinetics ───────────────────────
+    "BDDKineticParams",
+    "BDDStateResult",
+    "hydrolysis_equilibrium_constant",
+    "feoh_plus_concentration_mol_L",
+    "solve_bdd_kinetics",
+    # ── Manifold shunt currents in crate stacks ──────────────────────
+    "StackManifoldGeometry",
+    "ShuntCurrentResult",
+    "solve_stack_shunt_currents",
+    # ── Hierarchical hydrogen trapping & McNabb-Foster bakeout ────────
+    "TrapSiteCategory",
+    "default_trap_hierarchy",
+    "lattice_diffusivity_m2_s",
+    "effective_trapped_diffusivity_m2_s",
+    "BakeoutScheduleResult",
+    "compute_bakeout_schedule",
+    # ── Upstream ore leaching kinetics ────────────────────────────────
+    "OreSpec",
+    "LeachingResult",
+    "simulate_ore_leaching",
+    # ── Chemical osmosis & transmembrane water flux ───────────────────
+    "MembraneWaterParams",
+    "TransmembraneWaterResult",
+    "estimate_water_activity",
+    "solve_transmembrane_water_flux",
+    # ── 4-Stage tempering kinetics & LSW coarsening ───────────────────
+    "SteelMicrostructureSpec",
+    "TemperingKineticsResult",
+    "carbon_diffusivity_ferrite",
+    "lsw_coarsening_rate_constant",
+    "simulate_tempering_kinetics",
+    # ── Solutal mixed convection & buoyancy ───────────────────────────
+    "SolutalChannelParams",
+    "MixedConvectionResult",
+    "solve_solutal_mixed_convection",
 ]

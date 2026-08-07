@@ -1,0 +1,62 @@
+{
+  "title": "Round 3 Advanced Physical & Chemical Modeling Report",
+  "solubility_and_scaling": {
+    "wall_supersaturation_ratio": 1.916,
+    "max_safe_wall_temp_C": 66.9,
+    "stable_solid_phase_wall": "szomolnokite",
+    "scaling_risk": "critical fouling (spontaneous crystallization on wall)"
+  },
+  "pulse_rc_filtering": {
+    "peak_attenuation_ratio": 1.0,
+    "actual_peak_faradaic_mA_cm2": 200.0,
+    "waveform_fidelity": "high fidelity (clean rectangular pulses)",
+    "max_practical_frequency_Hz": 2928.4
+  },
+  "bdd_microkinetics": {
+    "intermediate_coverage_theta": 0.69,
+    "cathodic_current_density_mA_cm2": 1.57,
+    "apparent_tafel_slope_mV_dec": 112.8,
+    "reaction_order_oh_minus": 0.286,
+    "rate_determining_step": "Mixed intermediate coverage regime"
+  },
+  "stack_shunt_currents": {
+    "stack_voltage_V": 130.0,
+    "total_shunt_current_A": 7.61,
+    "faradaic_efficiency_loss_percent": 0.0508,
+    "max_port_current_density_mA_cm2": 282.3,
+    "is_corrosion_threat": true,
+    "recommended_port_length_m": 1.355
+  },
+  "hydrogen_trapping_and_bakeout": {
+    "foil_thickness_um": 100.0,
+    "bake_temperature_C": 190.0,
+    "required_bake_time_hours": 1.0,
+    "astm_f519_compliance": "Standard ASTM F519 bakeout (1-4 hr)"
+  },
+  "ore_leaching": {
+    "mineral": "hematite",
+    "direct_acid_recovery_4h": 85.2,
+    "reductive_recovery_4h": 99.8,
+    "reductive_fe2_ratio": 0.95
+  },
+  "chemical_osmosis": {
+    "net_water_flux_L_m2_h": 3.122,
+    "zero_net_flux_current_density_mA_cm2": 14.2,
+    "transport_regime": "EOD-dominated (catholyte water depletion / anolyte accumulation)"
+  },
+  "tempering_lsw_kinetics": {
+    "tempering_stage": "Stage 4 (Spheroidization & LSW Ostwald ripening)",
+    "mean_carbide_radius_nm": 614.5,
+    "yield_strength_MPa": 469.0,
+    "charpy_energy_J": 141.2,
+    "dbtt_C": -19.7
+  },
+  "solutal_mixed_convection": {
+    "density_depletion_kg_m3": 72.6,
+    "grashof_number_Gr_H": "3.80e+11",
+    "upward_effective_boundary_layer_um": 71.7,
+    "downward_effective_boundary_layer_um": 148.1,
+    "critical_antireversal_velocity_m_s": 0.06,
+    "is_downward_reversal_threat": true
+  }
+}
