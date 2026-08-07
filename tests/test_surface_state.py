@@ -254,7 +254,7 @@ class TestSurfaceStateKinetics:
         suppresses HER (textbook sign, Bockris & Reddy §7.7)."""
         base = self._make_base()
         _, anions = chloride_aware_default("aware")
-        w = SurfaceStateKinetics(base=base, anion_coverages=anions)
+        w = SurfaceStateKinetics(base=base, anion_coverages=anions, use_frumkin=True)
         eta = 0.3
         eta_eff = w.eta_effective_V(eta)
         assert eta_eff > eta
@@ -352,8 +352,8 @@ class TestEtaScreeningPropagation:
         a_so4_high = tuple(
             dataclasses.replace(a, eta_screening=0.20) for a in a_so4_high
         )
-        w1 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_default)
-        w2 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_high)
+        w1 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_default, use_frumkin=True)
+        w2 = SurfaceStateKinetics(base=base, anion_coverages=a_so4_high, use_frumkin=True)
         i0_1 = w1.her_i0_corrected(0.2)
         i0_2 = w2.her_i0_corrected(0.2)
         # Higher eta_screening → larger |psi_1| → smaller i0 (text-book sign).
@@ -437,6 +437,64 @@ class TestFrumkinSensitivitySweep:
         psi_so4 = sweep["psi_1_bath_a"][0]
         # At eta_screening=0.02, sulfate total psi_1 is ~-0.14 V — within range.
         assert -0.30 <= psi_so4 <= -0.05
+
+
+# ─── use_frumkin opt-in / default-OFF behavior ────────────────────
+class TestUseFrumkinOptIn:
+    """The Frumkin ψ₁ term is opt-in (`use_frumkin=True`) and
+    flagged OFF by default (`use_frumkin=False`).  When OFF,
+    the adapter uses only site-blocking + Temkin coverage +
+    facet ensemble — the ~14× robust mechanism prediction.
+    When ON, the full Frumkin amplification applies.
+    """
+
+    def _base(self) -> DepositionKinetics:
+        return DepositionKinetics(pH=2.0, temperature_C=60.0,
+                                    fe_i0=1.0e-2, her_i0=1.0e-3)
+
+    def test_default_is_frumkin_off(self):
+        base = self._base()
+        _, anions = chloride_aware_default("sulfate")
+        w = SurfaceStateKinetics(base=base, anion_coverages=anions)
+        assert w.use_frumkin is False
+
+    def test_frumkin_off_does_not_shift_eta_eff(self):
+        base = self._base()
+        _, anions = chloride_aware_default("sulfate")
+        w = SurfaceStateKinetics(base=base, anion_coverages=anions, use_frumkin=False)
+        assert w.eta_effective_V(0.3) == pytest.approx(0.3)
+
+    def test_frumkin_off_ignores_psi_1_in_i0(self):
+        """With use_frumkin=False, her_i0_corrected must not include
+        the Frumkin factor, so it should be larger than with
+        use_frumkin=True (where the factor < 1 suppresses i0)."""
+        base = self._base()
+        _, anions = chloride_aware_default("sulfate")
+        w_off = SurfaceStateKinetics(base=base, anion_coverages=anions, use_frumkin=False)
+        w_on = SurfaceStateKinetics(base=base, anion_coverages=anions, use_frumkin=True)
+        eta = 0.2
+        assert w_off.her_i0_corrected(eta) > w_on.her_i0_corrected(eta)
+
+    def test_frumkin_on_includes_psi_1_in_eta_eff(self):
+        base = self._base()
+        _, anions = chloride_aware_default("aware")
+        w = SurfaceStateKinetics(base=base, anion_coverages=anions, use_frumkin=True)
+        eta = 0.3
+        assert w.eta_effective_V(eta) > eta  # ψ₁ < 0 → η_eff > η
+
+    def test_frumkin_off_site_blocking_only_is_constant_across_screening(self):
+        """The robust core claim: without Frumkin, changing
+        eta_screening should not change her_i0_corrected."""
+        base = self._base()
+        _, a_default = chloride_aware_default("sulfate")
+        _, a_high = chloride_aware_default("sulfate")
+        a_high = tuple(
+            dataclasses.replace(a, eta_screening=0.20) for a in a_high
+        )
+        w1 = SurfaceStateKinetics(base=base, anion_coverages=a_default, use_frumkin=False)
+        w2 = SurfaceStateKinetics(base=base, anion_coverages=a_high, use_frumkin=False)
+        # Site-blocking ratio must be invariant in eta_screening.
+        assert w1.her_i0_corrected(0.2) == pytest.approx(w2.her_i0_corrected(0.2), rel=1e-9)
 
 
 # ─── Bug-fix regression: the headline ratio is no longer invariant ──
