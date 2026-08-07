@@ -318,6 +318,27 @@ REGISTRY["fe_E_eq"] = _p(
     "Fe2+/Fe standard potential V vs SHE (CRC)", module="kinetics")
 
 # ---------------------------------------------------------------------------
+# surface_state.py — DFT-anchored hydrogen adsorption free energy
+# ---------------------------------------------------------------------------
+# The single largest *untracked* economics uncertainty (CHEM_PHYS_IMPROVEMENTS
+# §3.1). dG_H* anchors the Volmer/Heyrovsky hydrogen coverage theta_H(eta)
+# (models/surface_state.py volmer_coverage) which sets the effective HER
+# exchange current i0,H_eff; that propagates to FE at the gate and thence to
+# V_cell/kWh and LCOFe. The +/-0.15 eV DFT band (Norskov-family CHE volcano
+# scatter across Fe(110)/(100)/(211) low-index facets) swings i0,H by ~2-3x
+# and FE by ~10-15% — the dominant economics lever.
+#
+# Units: eV (registry mean/std/bounds). Converted to J/mol (x F) where it
+# enters volmer_coverage (surface_state.py DG_HSTAR_FE110_J = -0.40*F anchors
+# the nominal). Bounds span the full +/-0.15 eV declared DFT band so the
+# MC/Sobol sweep exercises it end-to-end.
+REGISTRY["dG_Hstar_eV"] = _p(
+    "dG_Hstar_eV", -0.40, 0.15, (-0.55, -0.25), "normal",
+    "DFT hydrogen-adsorption free energy DeltaG_H* on Fe (Norskov CHE volcano, "
+    "Fe(110)/(100)/(211) low-index facets; surface_state.py)",
+    module="surface_state")
+
+# ---------------------------------------------------------------------------
 # co_deposition.py — Guglielmi and Ni kinetics
 # ---------------------------------------------------------------------------
 REGISTRY["guglielmi_k_ref"] = _p(

@@ -59,6 +59,48 @@ DEFAULT_DESIGN_POINT: Dict[str, Any] = {
 
 
 # ---------------------------------------------------------------------------
+# DFT dG_H* -> theta_H -> i0,H_eff -> FE chain constants
+# ---------------------------------------------------------------------------
+# Nominal DFT anchor and the operating HER overpotential at which theta_H is
+# evaluated at the gate (matches the program's reference HER state, cf.
+# her_microkinetics.consistency_report and surface_state.frumkin_sensitivity_sweep,
+# both of which use eta_ref = 0.20 V). These hold the MC operating point fixed
+# so the dG_H* sweep is the only thing moving i0,H_eff.
+DG_HSTAR_NOMINAL_EV = -0.40      # Fe(110) CHE volcano anchor (surface_state.py)
+HER_ETA_REF_V = 0.20             # operating cathodic HER overpotential (V)
+FE_I0_NOMINAL = 1.0e-2           # registry fe_i0 mean (A/m2)
+HER_I0_NOMINAL = 1.0e-6          # registry her_i0 mean (A/m2); see her_i0 default fix #56
+
+
+def _her_i0_swing(dg_hstar_eV: float, eta_her_V: float, T_K: float,
+                  dg_nominal_eV: float = DG_HSTAR_NOMINAL_EV) -> float:
+    """i0,H_eff ratio vs the nominal dG_H* anchor, from surface-state physics.
+
+    The surface-state i0,H_eff (models/surface_state.py SurfaceCoverage) is
+    ``i0,H_intrinsic * theta_H(1-theta_H) * (1-theta_block) * f_Frumkin``.
+    Only the ``theta_H(1-theta_H)`` factor depends on dG_H* — the anion
+    site-blocking and Frumkin terms are dG-independent, so they cancel in the
+    ratio. The dominant theta_H(1-theta_H) factor swings by ~2-3x across the
+    +-0.15 eV DFT band, which is the mechanism being propagated to FE.
+
+    Returns the multiplier to apply to the registry ``her_i0`` (1.0 at the
+    nominal anchor).
+    """
+    from ..electrochemistry import FARADAY
+    from ..surface_state import volmer_coverage
+
+    dg = dg_hstar_eV * FARADAY
+    dg_nom = dg_nominal_eV * FARADAY
+    th = volmer_coverage(dg, eta_her_V, T_K)
+    th_nom = volmer_coverage(dg_nom, eta_her_V, T_K)
+    r = th * (1.0 - th)
+    r_nom = th_nom * (1.0 - th_nom)
+    if r_nom <= 0.0:
+        return 1.0
+    return r / r_nom
+
+
+# ---------------------------------------------------------------------------
 # Single-sample pipeline
 # ---------------------------------------------------------------------------
 
@@ -187,33 +229,45 @@ def _run_single_sample(
     except Exception:
         _fill_nan(outputs, ["Ms_C", "f_RA", "hv_tempered", "ys_tempered_MPa"])
 
-    # ── 4. Faradaic efficiency & energy (from co-deposition model) ────
+    # ── 4. Faradaic efficiency & energy (surface-state HER chain) ─────
     try:
+        from ..electrochemistry import FARADAY, M_FE, Z_FE
+        from ..surface_state import volmer_coverage
 
         ni_i0 = sample.get("ni_i0", 5.0e-3)
-        ni_tafel = sample.get("ni_tafel_V", 0.100)
 
-        # Use a simplified CE estimate based on parameters
-        # Higher ni_i0 means more Ni competing → slightly lower Fe CE
-        # This is a screening approximation
-        base_ce = 93.0  # baseline for hydroxide_suppression at 150 mA/cm2
-        # Adjust for registry parameters that affect CE
-        fe_i0 = sample.get("fe_i0", 1.0e-2)
-        her_i0 = sample.get("her_i0", 1.0e-3)
-        fe_tafel = sample.get("fe_tafel_V", 0.120)
-        her_tafel = sample.get("her_tafel_V", 0.140)
+        # DFT dG_H* anchors theta_H(eta) -> i0,H_eff -> FE at the gate
+        # (CHEM_PHYS_IMPROVEMENTS §3.1). The +/-0.15 eV band is drawn by the
+        # Sobol/MC sampler through the registry "dG_Hstar_eV" parameter.
+        dg_hstar_eV = sample.get("dG_Hstar_eV", DG_HSTAR_NOMINAL_EV)
+        eta_her_V = HER_ETA_REF_V        # operating HER overpotential (V)
+        T_K = dp.get("temperature_C", 60.0) + 273.15
 
-        # HER competition: higher her_i0 → more HER → lower CE
-        her_factor = (her_i0 / 1.0e-3) ** 0.1
-        # Fe kinetics: higher fe_i0 → better Fe deposition → higher CE
-        fe_factor = (fe_i0 / 1.0e-2) ** 0.05
-        ce_pct = base_ce * fe_factor / her_factor
+        # theta_H(eta) at the sampled dG_H* (dominant facet anchor).
+        theta_H = volmer_coverage(dg_hstar_eV * FARADAY, eta_her_V, T_K)
+
+        # i0,H_eff swing relative to the nominal -0.40 eV anchor (~2-3x band).
+        swing = _her_i0_swing(dg_hstar_eV, eta_her_V, T_K)
+
+        fe_i0 = sample.get("fe_i0", FE_I0_NOMINAL)
+        her_i0 = sample.get("her_i0", HER_I0_NOMINAL)
+        her_i0_eff = her_i0 * swing
+
+        # Galvanostatic split of the fixed total current between Fe deposition
+        # and HER (equal-Tafel-slope approximation): FE = i0_fe/(i0_fe+i0_H_eff),
+        # normalized so the nominal anchor reproduces the program's base 93 %.
+        # FE -> specific_energy_kWh_per_kg -> energy_cost -> LCOFe downstream.
+        ce_nominal_ratio = FE_I0_NOMINAL / (FE_I0_NOMINAL + HER_I0_NOMINAL)
+        ce_ratio = fe_i0 / (fe_i0 + her_i0_eff)
+        base_ce = 93.0
+        ce_pct = base_ce * (ce_ratio / ce_nominal_ratio)
         ce_pct = float(np.clip(ce_pct, 50.0, 99.5))
 
         outputs["current_efficiency_percent"] = ce_pct
+        outputs["theta_H"] = theta_H
+        outputs["her_i0_eff_A_m2"] = her_i0_eff
 
         # Specific energy: kWh/kg = (V * F * z) / (M * CE * 3600)
-        from ..electrochemistry import FARADAY, M_FE, Z_FE
         V_cell = dp.get("cell_voltage_V", 2.5)
         # Use sampled cell voltage parameters
         eta_cath = sample.get("fe_tafel_V", 0.120) * 1.5  # rough overpotential
@@ -233,6 +287,7 @@ def _run_single_sample(
         _fill_nan(outputs, [
             "current_efficiency_percent", "specific_energy_kWh_per_kg",
             "ni_wt_percent", "carbon_wt_percent",
+            "theta_H", "her_i0_eff_A_m2",
         ])
 
     # ── 5. Derived metrics ────────────────────────────────────────────
