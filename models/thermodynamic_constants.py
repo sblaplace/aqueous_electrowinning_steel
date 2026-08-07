@@ -46,6 +46,8 @@ D_OH_25 = 5.27e-9
 D_HSO4_25 = 1.33e-9
 D_SO4_25 = 1.07e-9
 D_NA_25 = 1.33e-9
+D_CL_25 = 2.03e-9          # Cl- in H2O at 25 C (Lobo & Quaresma 1989)
+D_LI_25 = 1.03e-9          # Li+ in H2O at 25 C
 D_H3BO3_25 = 0.92e-9
 D_H2BO3_25 = 1.00e-9
 DIFFUSION_EA_J_MOL = 18.0e3
@@ -116,7 +118,8 @@ __all__ = [
     "KA_HSO4_25", "KA_BORIC_25", "KW_25", "KSP_FEOH2_25",
     "LOGKSP_FEOH2_25", "DH_HSO4_J_MOL", "DH_BORIC_J_MOL",
     "DH_FEOH2_DISSOLUTION_J_MOL", "D_FE2_25", "D_H_25", "D_OH_25",
-    "D_HSO4_25", "D_SO4_25", "D_NA_25", "D_H3BO3_25", "D_H2BO3_25",
+    "D_HSO4_25", "D_SO4_25", "D_NA_25", "D_CL_25", "D_LI_25",
+    "D_H3BO3_25", "D_H2BO3_25",
     "DIFFUSION_EA_J_MOL", "vanthoff_constant", "ksp_feoh2", "kw_water",
     "diffusivity_at_temperature", "buffer_capacity_M_per_pH",
 ]

@@ -169,7 +169,7 @@ class TestPlumbing:
                 "Fe2+", "SO4-2", t.t_coeffs, (10.0, 60.0), "x", t_form="bogus"))
         with pytest.raises(KeyError):  # unknown pair
             register_t_coeff_table("nopair", TCoeffTable(
-                "Fe2+", "Cl-", t.t_coeffs, (10.0, 60.0), "x"))  # Fe-Cl not in set
+                "Fe2+", "NO3-", t.t_coeffs, (10.0, 60.0), "x"))  # Fe-NO3 not in set
         with pytest.raises(ValueError):  # malformed rows
             register_t_coeff_table("badrows", TCoeffTable(
                 "Fe2+", "SO4-2", ((0.0, 0.0, 0.0, 0.0),), (10.0, 60.0), "x"))
