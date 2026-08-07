@@ -1,0 +1,32 @@
+#!/bin/sh
+# pre-commit: enforce the canonical GitHub identity so every commit in this
+# repo is attributed to the sblaplace account (Sarah Laplace) — not a stray
+# machine-local "laplace" identity (which lands commits under a phantom
+# "@laplace" contributor on GitHub).
+#
+# Install on a clone with:  git config core.hooksPath .githooks
+#
+# Allowed author emails (both resolve to the sblaplace account):
+#   - sblaplace@gmail.com
+#   - 76440705+sblaplace@users.noreply.github.com
+# Anything else (notably laplace@users.noreply.github.com) is rejected.
+
+email="$(git config user.email)"
+name="$(git config user.name)"
+
+case "$email" in
+  *sblaplace*) exit 0 ;;   # canonical account marker present
+esac
+
+printf '%s\n' \
+  "BLOCKED: git author identity is not the canonical sblaplace account." \
+  "  current:  $name <$email>" \
+  "  want:     Sarah Laplace <sblaplace@gmail.com>" \
+  "            (or 76440705+sblaplace@users.noreply.github.com)" \
+  "" \
+  "Fix with:" \
+  "  git config user.name  'Sarah Laplace'" \
+  "  git config user.email 'sblaplace@gmail.com'" \
+  "" \
+  "(If this identity was set intentionally, bypass with:  git commit --no-verify)"
+exit 1
