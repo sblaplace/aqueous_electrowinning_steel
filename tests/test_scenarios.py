@@ -17,6 +17,12 @@ from models.scenarios import (
     OPTIMIZED_ALKALINE,
     SOLUBLE_FE_ACIDIC,
     Scenario,
+    AWARE_BASE_HER_I0_ACID,
+    chloride_theta_block,
+    derive_aware_current_efficiency,
+    derive_aware_her_suppression,
+    derive_aware_ir_drop_V,
+    aware_bath_conductivity_S_m,
 )
 
 
@@ -74,7 +80,10 @@ class TestCellVoltage:
         so the table voltages are the physically corrected values.
         """
         assert OPTIMIZED_ALKALINE.V_cell == pytest.approx(1.268, abs=0.005)
-        assert AWARE_ACIDIC.V_cell == pytest.approx(2.350, abs=0.005)
+        # AWARE V_cell is now derived from the computed chloride-bath
+        # conductivity (Tier 1.4): the high-κ 10 M LiCl bath lowers the
+        # ohmic / anode-bubble terms vs the previous input resistivity.
+        assert AWARE_ACIDIC.V_cell == pytest.approx(2.3065, abs=0.005)
         assert FUTURE_TARGET.V_cell == pytest.approx(2.309, abs=0.005)
 
     def test_more_ir_drop_raises_voltage(self):
@@ -97,7 +106,7 @@ class TestSpecificEnergy:
         # test_matches_program_summary_table): E = 959.9 × V_cell/FE.
         for scenario, expected in (
             (OPTIMIZED_ALKALINE, 1309),
-            (AWARE_ACIDIC, 2278),
+            (AWARE_ACIDIC, 2234),   # derived FE 0.9911 & V_cell 2.307 (Tier 1.4)
             (FUTURE_TARGET, 2284),
         ):
             e = specific_energy_kWh_per_t(scenario.V_cell, scenario.current_efficiency)
@@ -146,3 +155,81 @@ class TestScenarioOrdering:
     def test_future_target_assumes_cheaper_capital_and_power(self):
         assert FUTURE_TARGET.capex_modifier <= CONSERVATIVE_ALKALINE.capex_modifier
         assert FUTURE_TARGET.electricity_price_kWh <= CONSERVATIVE_ALKALINE.electricity_price_kWh
+
+
+class TestAWAREPhysicsDerivation:
+    """Tier 1.4: the AWARE scenario's headline numbers are *derived* from
+    the chloride-bath physics (Cl⁻ site-blocking HER suppression + computed
+    conductivity), not preset parameters."""
+
+    def test_aware_fe_is_derived_not_assumed(self):
+        """current_efficiency must come from the derivation, and its
+        provenance must be recorded for audit."""
+        assert AWARE_ACIDIC.physical_derivation["fe_source"] == "derived"
+        assert AWARE_ACIDIC.current_efficiency == pytest.approx(
+            AWARE_ACIDIC.physical_derivation["current_efficiency_derived"],
+            abs=1e-12,
+        )
+        # Exactly matches a clean re-run of the derivation.
+        assert AWARE_ACIDIC.current_efficiency == pytest.approx(
+            derive_aware_current_efficiency(500.0, 60.0, 1.0, 10.0), abs=1e-9
+        )
+
+    def test_aware_fe_is_near_unity(self):
+        """Chloride suppression pushes FE to near-unity (> 95 %)."""
+        assert 0.95 < AWARE_ACIDIC.current_efficiency <= 1.0
+
+    def test_fe_rises_monotonically_with_chloride(self):
+        """FE is a *function* of chloride concentration: more Cl⁻ → more
+        site blocking → less HER → higher FE (the mechanism, not a knob)."""
+        fes = [derive_aware_current_efficiency(500.0, 60.0, 1.0, cl)
+               for cl in (0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 12.0)]
+        for a, b in zip(fes, fes[1:]):
+            assert b > a
+
+    def test_theta_block_near_unity_at_aware(self):
+        """At 10-12 M Cl⁻ the Langmuir site-blocking coverage is near 1
+        (> 99 %), the physical source of the near-unity FE."""
+        tb = AWARE_ACIDIC.physical_derivation["theta_block"]
+        assert 0.985 < tb < 1.0
+
+    def test_her_exchange_suppressed_by_chloride(self):
+        """The derived her_i0 must be well below the no-chloride base."""
+        supp = derive_aware_her_suppression(c_FeCl2=1.0, c_LiCl=10.0, T_C=60.0)
+        assert supp["her_i0_A_m2"] < AWARE_BASE_HER_I0_ACID
+        assert supp["her_i0_A_m2"] < 0.01 * AWARE_BASE_HER_I0_ACID
+
+    def test_conductivity_computed_not_input(self):
+        """10 M LiCl conductivity is a model output (Onsager + pairing),
+        plausibly ~20-50 S/m, and is what feeds ir-drop."""
+        kappa = aware_bath_conductivity_S_m(c_FeCl2=1.0, c_LiCl=10.0, T_C=60.0)
+        assert 20.0 < kappa < 50.0
+        # The scenario anode carries the computed conductivity, and ir-drop
+        # is derived from it (not a hardcoded input).
+        assert AWARE_ACIDIC.anode.electrolyte_conductivity_S_m == pytest.approx(
+            kappa, rel=1e-9)
+        assert AWARE_ACIDIC.ir_drop == pytest.approx(
+            derive_aware_ir_drop_V(500.0, 60.0, 1.0, 10.0), rel=1e-9)
+
+    def test_conductivity_rises_with_licl(self):
+        assert aware_bath_conductivity_S_m(1.0, 12.0, 60.0) > \
+            aware_bath_conductivity_S_m(1.0, 10.0, 60.0)
+
+    def test_aware_fe_is_highest_in_set(self):
+        """Even derived, AWARE keeps the highest FE claim of the set."""
+        assert AWARE_ACIDIC.current_efficiency == max(
+            s.current_efficiency for s in ALL_SCENARIOS)
+
+    def test_sulfate_default_unaffected(self):
+        """Opt-in chloride chemistry: the default sulfate kinetics and the
+        non-chloride scenario parameters are untouched."""
+        from models.kinetics import DepositionKinetics
+        assert DepositionKinetics().her_i0 == 1e-3   # default unchanged
+        # Only AWARE carries a physics derivation; the others stay parameter
+        # scenarios (empty provenance).
+        for s in ALL_SCENARIOS:
+            if s is AWARE_ACIDIC:
+                assert s.physical_derivation
+            else:
+                assert s.physical_derivation == {} or s.physical_derivation is None
+

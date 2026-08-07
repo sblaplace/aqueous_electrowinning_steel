@@ -14,6 +14,13 @@ Scenarios:
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional
 
+import math
+
+from .electrochemistry import R_GAS
+from .kinetics import DepositionKinetics
+from .surface_state import CL_NA_AWARE
+from .fe_chloride_speciation import aware_default_bath, solve_chloride_speciation
+
 if TYPE_CHECKING:
     from .anode import AnodeKinetics
 
@@ -53,6 +60,14 @@ class Scenario:
 
     # Optional first-principles anode model (overrides eta_anode / E_anode_eq)
     anode: Optional["AnodeKinetics"] = field(default=None, repr=False)
+
+    # Physics provenance for scenario numbers that are *derived* rather than
+    # assumed (Tier 1.4 chloride-bath wiring).  When populated it records the
+    # mechanism that produced ``current_efficiency``, ``ir_drop`` /
+    # ``conductivity_S_m``, so a reader can audit that a headline number is a
+    # consequence of physics, not a preset knob.  Empty for scenarios whose
+    # values are still inputs.
+    physical_derivation: dict = field(default_factory=dict, repr=False)
 
     # Economic modifiers (relative to base CAPEX/OPEX models)
     capex_modifier: float = 1.0
@@ -99,6 +114,128 @@ class Scenario:
         if self.anode is not None:
             return self.anode.overpotential_at_current(self.current_density_mA_cm2)
         return {}
+
+
+# ─── Chloride-bath physics derivation (CHEM_PHYS_REVIEW §1.4) ──────
+#
+# These helpers turn the AWARE / concentrated-chloride route's headline
+# numbers — near-unity FE and the bath conductivity — into *derivations*
+# from the chloride physics in models/surface_state (Cl-site-blocking HER
+# suppression) and models/fe_chloride_speciation (Pitzer Fe-Cl-water +
+# FeCl⁺/FeCl₂(aq) pairing + Onsager conductivity).  Before this wiring the
+# scenario carried ``current_efficiency=0.99`` and an input electrolyte
+# resistivity as preset knobs; now they are computed and auditable via
+# ``Scenario.physical_derivation``.  The sulfate (default) path is
+# untouched — this is opt-in chloride chemistry.
+
+# Screening base HER exchange current density on Fe in uninhibited acid
+# (A/m², anchored at the kinetics reference temperature), before any
+# chloride site blocking.  Cl⁻ suppresses this by blocking H-adsorption
+# sites, which is the *robust* mechanism: the Frumkin IHP-shift
+# amplification is a wide sensitivity band (see models/surface_state,
+# frumkin_sensitivity_sweep) and is deliberately excluded here so the
+# FE derivation stays a single defensible number.
+AWARE_BASE_HER_I0_ACID = 1e-4      # A/m²
+# Screening inter-electrode gap for turning conductivity into ir-drop.
+AWARE_ELECTRODE_GAP_M = 1.0e-3     # 1 mm
+
+
+def chloride_theta_block(c_cl_M: float, T_C: float = 60.0) -> float:
+    """Fraction of Fe surface sites blocked by specifically adsorbed Cl⁻.
+
+    Competitive-Langmuir coverage θ = K·c / (1 + K·c) at bulk chloride
+    molality, with K = exp(−ΔG_ads/RT) using the screening ΔG_ads of
+    ``CL_NA_AWARE``.  This is the chloride-induced HER-suppression term:
+    a Cl-covered site cannot form H*, so the effective HER exchange
+    current scales as (1 − θ_block).  Monotone in c_Cl.
+    """
+    T_K = T_C + 273.15
+    K = math.exp(-CL_NA_AWARE.DG_ads_J_mol / (R_GAS * T_K))
+    return float(K * c_cl_M / (1.0 + K * c_cl_M))
+
+
+def derive_aware_her_suppression(
+    c_FeCl2: float = 1.0,
+    c_LiCl: float = 10.0,
+    T_C: float = 60.0,
+    base_her_i0: float = AWARE_BASE_HER_I0_ACID,
+) -> dict:
+    """Chloride site-blocking HER suppression for the AWARE bath.
+
+    Returns ``{"theta_block", "c_Cl_M", "base_her_i0_A_m2",
+    "her_i0_A_m2"}`` where ``her_i0_A_m2`` is the base HER exchange
+    current reduced by the chloride blocking coverage.
+    """
+    c_cl = 2.0 * c_FeCl2 + c_LiCl
+    tb = chloride_theta_block(c_cl, T_C)
+    return {
+        "theta_block": tb,
+        "c_Cl_M": c_cl,
+        "base_her_i0_A_m2": base_her_i0,
+        "her_i0_A_m2": base_her_i0 * (1.0 - tb),
+    }
+
+
+def derive_aware_current_efficiency(
+    current_density_mA_cm2: float = 500.0,
+    T_C: float = 60.0,
+    c_FeCl2: float = 1.0,
+    c_LiCl: float = 10.0,
+    pH: float = 2.0,
+    fe_i0: float = 1e-2,
+    base_her_i0: float = AWARE_BASE_HER_I0_ACID,
+    boundary_layer_m: float = 5e-5,
+) -> float:
+    """FE for the chloride bath, *derived* from chloride-induced HER suppression.
+
+    The HER exchange current is reduced by the chloride site-blocking
+    coverage, then the competing Fe/HER Butler–Volmer kinetics are solved
+    at the scenario current density.  Near-unity FE is therefore a
+    consequence of Cl⁻ displacing H-adsorption sites, not a preset
+    ``current_efficiency`` parameter.  Rises monotonically with ``c_LiCl``.
+    """
+    supp = derive_aware_her_suppression(c_FeCl2, c_LiCl, T_C, base_her_i0)
+    dk = DepositionKinetics(
+        pH=pH, temperature_C=T_C, fe_i0=fe_i0,
+        her_i0=supp["her_i0_A_m2"], fe_conc_M=c_FeCl2,
+        boundary_layer_m=boundary_layer_m,
+    )
+    return float(dk.efficiency_at_current(current_density_mA_cm2))
+
+
+def aware_bath_conductivity_S_m(
+    c_FeCl2: float = 1.0,
+    c_LiCl: float = 10.0,
+    T_C: float = 60.0,
+) -> float:
+    """Computed ionic conductivity of the concentrated-LiCl AWARE bath (S/m).
+
+    Delegates to ``fe_chloride_speciation.solve_chloride_speciation``
+    (Pitzer Fe-Cl-water activities, FeCl⁺/FeCl₂(aq) pairing, and the
+    Onsager √I ionic-mobility sum) — the conductivity is asserted by the
+    model, not supplied as an input.
+    """
+    sol = solve_chloride_speciation(
+        aware_default_bath(c_FeCl2=c_FeCl2, c_LiCl=c_LiCl, c_HCl=0.01, T_C=T_C)
+    )
+    return float(sol["conductivity_S_m"])
+
+
+def derive_aware_ir_drop_V(
+    current_density_mA_cm2: float = 500.0,
+    T_C: float = 60.0,
+    c_FeCl2: float = 1.0,
+    c_LiCl: float = 10.0,
+    gap_m: float = AWARE_ELECTRODE_GAP_M,
+) -> float:
+    """Ohmic ir-drop (V) from the *computed* conductivity.
+
+    ir = j · d_gap / κ, with κ from :func:`aware_bath_conductivity_S_m`.
+    The electrode gap is a documented screening input; the conductivity
+    that dominates it is computed.
+    """
+    kappa = aware_bath_conductivity_S_m(c_FeCl2, c_LiCl, T_C)
+    return current_density_mA_cm2 * 10.0 * gap_m / kappa
 
 
 # ─── Factory helpers ────────────────────────────────────────────────────
@@ -165,7 +302,14 @@ def _build_aware_acidic(
     temperature_C: float,
     j_mA_cm2: float,
 ) -> "AnodeKinetics":
-    """AWARE process: concentrated LiCl acidic bath (very high conductivity)."""
+    """AWARE process: concentrated LiCl acidic bath (very high conductivity).
+
+    The electrolyte conductivity and therefore the cell's ohmic behaviour
+    are *computed* (Tier 1.4) from the chloride-bath physics
+    (:func:`aware_bath_conductivity_S_m`) rather than supplied as an
+    input resistivity — the high-κ concentrated-LiCl bath is why the
+    ohmic term is small.
+    """
     from .anode import AnodeKinetics, DSA_IRO2_TA2O5
     mat = DSA_IRO2_TA2O5
     mat = mat.__class__(
@@ -181,12 +325,14 @@ def _build_aware_acidic(
         oer_ea_kj_mol=mat.oer_ea_kj_mol,
         references=mat.references,
     )
+    kappa = aware_bath_conductivity_S_m(c_FeCl2=1.0, c_LiCl=10.0, T_C=temperature_C)
     return AnodeKinetics(
         material=mat,
         electrolyte_type="acidic_chloride",
         pH=0.0,
         a_Cl_molar=12.0,   # concentrated LiCl (≥10 M Cl⁻)
-        electrolyte_resistivity_ohm_m2=0.0002,  # 0.002 Ω·cm² (conc. LiCl)
+        electrolyte_conductivity_S_m=kappa,
+        electrolyte_resistivity_ohm_m2=AWARE_ELECTRODE_GAP_M / kappa,  # computed, not input
     )
 
 
@@ -282,6 +428,16 @@ OPTIMIZED_ALKALINE = Scenario(
     references="Yuan & Haarberg (2009); Kempler et al. (2025) ACS Nano",
 )
 
+# Physics-derived AWARE headline values (Tier 1.4): computed once at
+# import so the scenario dataclass and its provenance dict share them.
+# The near-unity FE is *derived* from chloride-induced HER suppression
+# (site blocking), and the conductivity / ir-drop come from the
+# chloride-bath Pitzer + Onsager model — neither is a preset knob.
+_AWARE_FE_PHYSICS = derive_aware_current_efficiency(
+    current_density_mA_cm2=500.0, T_C=60.0, c_FeCl2=1.0, c_LiCl=10.0, pH=2.0)
+_AWARE_KAPPA_S_M = aware_bath_conductivity_S_m(c_FeCl2=1.0, c_LiCl=10.0, T_C=60.0)
+_AWARE_IR_DROP_V = derive_aware_ir_drop_V(500.0, 60.0, 1.0, 10.0)
+
 AWARE_ACIDIC = Scenario(
     name="AWARE Acidic",
     description=(
@@ -294,19 +450,29 @@ AWARE_ACIDIC = Scenario(
     electrolyte_type="acidic_anion_rich",
     electrolyte_composition="Concentrated LiCl (≥10 M), acidic pH < 2",
     current_density_mA_cm2=500.0,
-    current_efficiency=0.99,
+    current_efficiency=_AWARE_FE_PHYSICS,   # derived from Cl⁻ HER suppression, not assumed
     temperature_C=60.0,
     E_cathode_eq=-0.440,
     E_anode_eq=1.360,          # CER dominates in conc. Cl⁻ (legacy reference)
     eta_cathode=0.12,
-    eta_anode=0.25,            # legacy fallback
-    ir_drop=0.10,
+    eta_anode=0.25,            # legacy fallback (overridden by the anode model)
+    ir_drop=_AWARE_IR_DROP_V,  # from computed conductivity κ = d_gap/κ, not input
     anode_type="DSA_IrO2_Ta2O5",
     anode=_build_aware_acidic(temperature_C=60.0, j_mA_cm2=500.0),
     capex_modifier=1.20,
     electricity_price_kWh=0.04,
     electrolyte_makeup_per_t_Fe=20.0,
     ore_cost_per_t_Fe=40.0,
+    physical_derivation={
+        "activity_model": "pitzer_fecl2 + surface_state",
+        "fe_source": "derived",
+        "current_efficiency_derived": _AWARE_FE_PHYSICS,
+        **derive_aware_her_suppression(c_FeCl2=1.0, c_LiCl=10.0, T_C=60.0),
+        "conductivity_S_m_computed": _AWARE_KAPPA_S_M,
+        "ir_drop_derived_V": _AWARE_IR_DROP_V,
+        "electrode_gap_m": AWARE_ELECTRODE_GAP_M,
+        "screening_flag": "unvalidated (L1)",
+    },
     references="AWARE process (2024–2025), ChemRxiv; follow-up publications",
 )
 
