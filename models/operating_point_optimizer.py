@@ -56,6 +56,7 @@ def _cell_cache_key(cell: ReferenceCell, contact_resistance_ohm_m2: float | None
         conditions.temperature_C,
         conditions.boundary_layer_m,
         conditions.flow_regime,
+        conditions.transport_model,
         cell.targets.fe_min,
         cell.targets.specific_energy_max_kWh_t,
         cell.targets.transport_limit_margin_min,

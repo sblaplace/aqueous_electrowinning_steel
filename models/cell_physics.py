@@ -28,15 +28,18 @@ References
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Literal
 import numpy as np
 
 from .speciation import SolutionComposition, solve_speciation
 from .transport import NernstPlanckFilm, NernstPlanckState
+from .diffusion_layer_1d import DiffusionLayer1D, DiffusionLayerResult
 from .electrochemistry import (
     CellVoltageModel, MembraneModel, specific_energy_kWh_per_t, FARADAY, M_FE, Z_FE,
+    E0_FE,
 )
 from .kinetics import DepositionKinetics
+from .anode import AnodeKinetics, AnodeMaterial
 
 
 # ─── Inputs ───────────────────────────────────────────────────────
@@ -47,8 +50,8 @@ class BathRecipe:
     c_FeSO4_M: float = 1.0          # mol/L FeSO4
     c_Na2SO4_M: float = 0.5         # mol/L supporting electrolyte
     c_H2SO4_M: float = 0.01         # mol/L (pH adjustment)
-    c_H3BO3_M: float = 0.4          # mol/L boric acid buffer
-    pH: float = 2.0                 # bulk pH (sets H2SO4 if not overridden)
+    c_H3BO3_M: float = 0.4          # mol/L boric acid additive; capacity is derived
+    pH: float = 2.0                 # declared/measured bulk electrolyte pH boundary
 
     def to_speciation(self, T_C: float) -> SolutionComposition:
         return SolutionComposition(
@@ -62,12 +65,36 @@ class BathRecipe:
 
 @dataclass
 class CellGeometry:
-    """Physical cell configuration."""
+    """Physical cell configuration.
+
+    ``anode_chemistry`` is explicit because soluble Fe and inert OER anodes
+    have different thermodynamics, gas production, acid balances, and
+    voltage.  The default remains the historical inert/OER screening branch.
+    """
     interelectrode_gap_m: float = 0.02     # 2 cm default
     membrane: bool = True                  # divided cell
-    membrane_area_resistance_ohm_m2: float = 3.0e-4  # Nafion N117 at 50°C
+    membrane_area_resistance_ohm_m2: float = 3.0e-4  # configured comparator
     contact_resistance_ohm_m2: float = 5.0e-4
     anode_bubble_fraction: float = 0.10
+    anode_chemistry: Literal["inert", "soluble"] = "inert"
+    anode_fe2_conc_M: float = 1.0
+    anode_fe_dissolution_i0_A_m2: float = 10.0
+
+    def __post_init__(self) -> None:
+        if self.interelectrode_gap_m <= 0.0:
+            raise ValueError("interelectrode_gap_m must be positive")
+        if self.membrane_area_resistance_ohm_m2 < 0.0:
+            raise ValueError("membrane_area_resistance_ohm_m2 must be non-negative")
+        if self.contact_resistance_ohm_m2 < 0.0:
+            raise ValueError("contact_resistance_ohm_m2 must be non-negative")
+        if not 0.0 <= self.anode_bubble_fraction < 1.0:
+            raise ValueError("anode_bubble_fraction must lie in [0, 1)")
+        if self.anode_chemistry not in ("inert", "soluble"):
+            raise ValueError("anode_chemistry must be 'inert' or 'soluble'")
+        if self.anode_fe2_conc_M <= 0.0:
+            raise ValueError("anode_fe2_conc_M must be positive")
+        if self.anode_fe_dissolution_i0_A_m2 <= 0.0:
+            raise ValueError("anode_fe_dissolution_i0_A_m2 must be positive")
 
 
 @dataclass
@@ -76,6 +103,10 @@ class ProcessConditions:
     temperature_C: float = 50.0
     boundary_layer_m: float = 50e-6        # 50 µm (moderate agitation)
     flow_regime: str = "moderate"           # "still", "moderate", "vigorous"
+    # The reactive film path carries bisulfate/borate chemistry and the
+    # activity correction into the cathode film.  ``dilute_np`` remains as an
+    # A/B fallback for legacy comparisons.
+    transport_model: Literal["reactive", "dilute_np"] = "reactive"
 
     # Kinetic parameters (literature defaults for Fe/FeSO4 on Fe cathode)
     fe_i0: float = 1.0e-2                  # A/m² exchange current density
@@ -186,6 +217,17 @@ class CellPhysics:
 
         # Run speciation once (depends on T and composition, not j)
         self._spec = solve_speciation(bath.to_speciation(conditions.temperature_C))
+        # A recipe can specify both acid loading and a measured/setpoint pH.
+        # Keep the declared pH as the transport boundary condition, but expose
+        # the activity-pH mismatch instead of silently pretending the two are
+        # the same state.  The calibration pipeline can later choose which
+        # quantity is authoritative for a run.
+        pH_activity = self._spec.get("pH_activity")
+        if pH_activity is not None:
+            self._spec["recipe_pH"] = float(bath.pH)
+            self._spec["pH_activity_delta_from_recipe"] = float(pH_activity - bath.pH)
+            self._spec["pH_consistency_warning"] = bool(abs(pH_activity - bath.pH) > 0.25)
+            self._spec["pH_boundary_source"] = "BathRecipe.pH (declared/measured setpoint)"
 
         # Cache derived quantities
         self._free_fe2_M = self._spec.get("c_Fe2_free_M", bath.c_FeSO4_M)
@@ -193,25 +235,74 @@ class CellPhysics:
         self._conductivity = self._spec.get("conductivity_S_m", 10.0)
         self._gamma2 = self._spec.get("gamma_Fe2", 1.0)
 
-    def _build_transport(self) -> NernstPlanckFilm:
-        """Build the Nernst-Planck film model.
+    def _build_transport(self) -> DiffusionLayer1D | NernstPlanckFilm:
+        """Build the selected cathode-film model.
 
-        Uses NOMINAL Fe concentration for transport (FeSO4(aq) pairs
-        dissociate at the cathode as Fe²⁺ is consumed — the transport
-        limit is set by total Fe(II), not free Fe²⁺).
-        Uses speciation-corrected conductivity for the voltage model.
+        The default reactive path transports conserved Fe/sulfate/borate
+        components and applies the Pitzer activity correction to the Fe
+        interfacial equilibrium.  The dilute NP path remains available for
+        controlled A/B comparisons with the pre-upgrade implementation.
         """
-        return NernstPlanckFilm(
-            bulk_pH=self.bath.pH,
-            fe_conc_M=self.bath.c_FeSO4_M,   # total Fe(II), not free
+        common = dict(
+            pH_bulk=self.bath.pH,
+            fe_conc_M=self.bath.c_FeSO4_M,
             support_conc_M=self.bath.c_Na2SO4_M,
-            boundary_layer_m=self.conditions.boundary_layer_m,
+            delta_m=self.conditions.boundary_layer_m,
             temperature_C=self.conditions.temperature_C,
             fe_i0=self.conditions.fe_i0,
             her_i0=self.conditions.her_i0,
             fe_tafel_V=self.conditions.fe_tafel_V,
             her_tafel_V=self.conditions.her_tafel_V,
-            grid_points=61,                    # faster than default 121
+        )
+        if self.conditions.transport_model == "reactive":
+            return DiffusionLayer1D(
+                **common,
+                buffer_conc_M=self.bath.c_H3BO3_M,
+                activity_model="pitzer",
+                grid_points=61,
+                fast_mode=True,
+            )
+        if self.conditions.transport_model == "dilute_np":
+            return NernstPlanckFilm(
+                bulk_pH=self.bath.pH,
+                fe_conc_M=self.bath.c_FeSO4_M,
+                support_conc_M=self.bath.c_Na2SO4_M,
+                boundary_layer_m=self.conditions.boundary_layer_m,
+                temperature_C=self.conditions.temperature_C,
+                fe_i0=self.conditions.fe_i0,
+                her_i0=self.conditions.her_i0,
+                fe_tafel_V=self.conditions.fe_tafel_V,
+                her_tafel_V=self.conditions.her_tafel_V,
+                grid_points=61,
+            )
+        raise ValueError(f"unknown transport_model: {self.conditions.transport_model!r}")
+
+    def _build_anode(self) -> Optional[AnodeKinetics]:
+        """Build a first-principles anode object for explicit anode modes.
+
+        The inert/OER branch deliberately retains the legacy fixed-anode
+        fallback until an anode material is selected and calibrated.  A
+        soluble Fe anode, however, has unambiguous stoichiometry and must not
+        be represented as OER with a different overpotential.
+        """
+        if self.geometry.anode_chemistry != "soluble":
+            return None
+        material = AnodeMaterial(
+            name="Soluble Fe anode",
+            oer_i0=1.0,
+            oer_tafel_V=0.060,
+            temperature_C=self.conditions.temperature_C,
+            references="screening soluble-Fe branch; calibrate dissolution i0/Tafel",
+        )
+        return AnodeKinetics(
+            material=material,
+            electrolyte_type="acidic",
+            pH=self.bath.pH,
+            boundary_layer_m=self.conditions.boundary_layer_m,
+            electrolyte_conductivity_S_m=self._conductivity,
+            anode_chemistry="soluble",
+            fe2_conc_M=self.geometry.anode_fe2_conc_M,
+            fe_dissolution_i0=self.geometry.anode_fe_dissolution_i0_A_m2,
         )
 
     def _build_voltage_model(
@@ -220,7 +311,10 @@ class CellPhysics:
         """Build the cell voltage model with transport-corrected parameters."""
         g = self.geometry
         return CellVoltageModel(
-            E_cathode_eq=self._spec.get("E_rev_Fe_V_SHE", -0.440),
+            # ``E_cathode_eq`` is the shared standard-state potential;
+            # ``fe2_conc_M`` carries the Pitzer activity correction exactly
+            # once inside CellVoltageModel.
+            E_cathode_eq=E0_FE,
             eta_cathode=cathode_overpotential_V,
             temperature_C=self.conditions.temperature_C,
             # fe2_conc_M drives the Nernst term (γ≡1 inside CellVoltageModel),
@@ -230,11 +324,13 @@ class CellPhysics:
             # Davies path smuggled the same effect in via "free" [Fe²⁺].
             fe2_conc_M=self._activity_fe2,
             electrolyte_conductivity_S_m=self._conductivity,
+            electrolyte_conductivity_at_temperature=True,
             interelectrode_gap_m=g.interelectrode_gap_m,
             contact_resistance_ohm_m2=g.contact_resistance_ohm_m2,
             bubble_fraction=g.anode_bubble_fraction,
             divided_cell=g.membrane,
             membrane=MembraneModel(R_membrane_ohm_m2=g.membrane_area_resistance_ohm_m2) if g.membrane else None,
+            anode=self._build_anode(),
             j_operating_mA_cm2=j_mA_cm2,
         )
 
@@ -246,12 +342,39 @@ class CellPhysics:
         transport limits, and surface chemistry all computed from physics.
         """
         transport = self._build_transport()
-        np_state: NernstPlanckState = transport.solve(j_mA_cm2)
+        transport_result = transport.solve(j_mA_cm2)
 
-        # Cathode overpotential from transport model
-        # (the transport solver finds E_cathode that gives the target j)
-        E_cathode_eq = self._spec.get("E_rev_Fe_V_SHE", -0.440)
-        eta_cathode = max(E_cathode_eq - np_state.potential_V, 0.0)
+        if isinstance(transport_result, DiffusionLayerResult):
+            # The reactive film solver carries the activity-corrected
+            # equilibrium and the richer local chemistry itself.
+            potential_V = transport_result.V_cathode_V
+            fe = transport_result.current_efficiency
+            surface_pH = transport_result.surface_pH
+            surface_fe_M = transport_result.surface_fe_M
+            transport_limit_A_m2 = transport_result.transport_limit_A_m2
+            diffusion_limit_A_m2 = transport_result.diffusion_limit_A_m2
+            film_potential_drop_V = transport_result.film_potential_drop_V
+            supersaturation = transport_result.feoh2_supersaturation
+            precipitation_active = transport_result.precipitation_active
+            converged = transport_result.converged
+        else:
+            np_state: NernstPlanckState = transport_result
+            potential_V = np_state.potential_V
+            fe = np_state.current_efficiency
+            surface_pH = np_state.surface_pH
+            surface_fe_M = np_state.surface_fe_M
+            transport_limit_A_m2 = np_state.transport_limit_A_m2
+            diffusion_limit_A_m2 = np_state.diffusion_limit_A_m2
+            film_potential_drop_V = np_state.film_potential_drop_V
+            supersaturation = np_state.feoh2_supersaturation
+            precipitation_active = np_state.precipitation_active
+            converged = np_state.converged
+
+        # Cathode overpotential from the same bulk activity used by the
+        # voltage model.  The reactive path and the dilute A/B path therefore
+        # share one voltage reference even though their film closures differ.
+        E_cathode_eq = self._spec.get("E_rev_Fe_V_SHE", E0_FE)
+        eta_cathode = max(E_cathode_eq - potential_V, 0.0)
 
         # Build voltage model with physics-derived overpotential
         vm = self._build_voltage_model(j_mA_cm2, eta_cathode)
@@ -259,7 +382,6 @@ class CellPhysics:
         V_decomp = vm.V_decomposition
 
         # Deposition rate
-        fe = np_state.current_efficiency
         j_A_m2 = j_mA_cm2 * 10.0
         mass_flux = j_A_m2 * fe * M_FE / (Z_FE * FARADAY)  # kg/(m²·s)
         rho = 7874.0  # kg/m³
@@ -268,14 +390,14 @@ class CellPhysics:
         return OperatingPoint(
             j_mA_cm2=j_mA_cm2,
             current_efficiency=fe,
-            surface_pH=np_state.surface_pH,
-            surface_fe_M=np_state.surface_fe_M,
-            transport_limit_mA_cm2=np_state.transport_limit_A_m2 / 10.0,
-            diffusion_limit_mA_cm2=np_state.diffusion_limit_A_m2 / 10.0,
-            migration_enhancement=np_state.migration_enhancement,
-            feoh2_supersaturation=np_state.feoh2_supersaturation,
-            film_potential_drop_V=np_state.film_potential_drop_V,
-            precipitation_active=np_state.precipitation_active,
+            surface_pH=surface_pH,
+            surface_fe_M=surface_fe_M,
+            transport_limit_mA_cm2=transport_limit_A_m2 / 10.0,
+            diffusion_limit_mA_cm2=diffusion_limit_A_m2 / 10.0,
+            migration_enhancement=transport_limit_A_m2 / max(diffusion_limit_A_m2, 1e-30),
+            feoh2_supersaturation=supersaturation,
+            film_potential_drop_V=film_potential_drop_V,
+            precipitation_active=precipitation_active,
             V_cell=V_cell,
             V_decomposition=V_decomp,
             specific_energy_kWh_t=specific_energy_kWh_per_t(V_cell, fe),
@@ -283,7 +405,7 @@ class CellPhysics:
             free_fe2_activity=self._activity_fe2,
             conductivity_S_m=self._conductivity,
             speciation=self._spec,
-            transport_converged=np_state.converged,
+            transport_converged=converged,
         )
 
     def sweep(
@@ -320,10 +442,11 @@ class CellPhysics:
         Find the optimal current density: max j with FE ≥ min_FE
         and no Fe(OH)₂ precipitation.
 
-        Uses a fast kinetics model (DepositionKinetics) for the sweep,
-        then validates with the full Nernst-Planck transport solver at
-        the optimal point.  This avoids running the expensive ODE solver
-        at every sweep point.
+        Uses a fast kinetics model (DepositionKinetics) for the coarse
+        pre-screen, then validates with the configured reactive/dilute film
+        solver at the optimal point.  The coarse model is intentionally a
+        search acceleration only; reported operating points always come from
+        the configured film model.
         """
         # Fast sweep with DepositionKinetics (no ODE, instant)
         dk = DepositionKinetics(

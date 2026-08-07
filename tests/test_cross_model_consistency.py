@@ -50,18 +50,13 @@ def test_np_diffusion_limit_vs_levich():
     result = film.solve(100.0)  # solve at moderate j to get diffusion_limit
     np_diff = result.diffusion_limit_A_m2
 
-    # Document the ratio — multi-ion coupling can reduce the effective
-    # Fe²⁺ diffusion limit below the binary Levich value.
+    # The transport film now resolves its default diffusivity at the same
+    # temperature as this Levich reference.  Before that fix it silently used
+    # the 25 °C coefficient, producing a misleading ~0.47 ratio at 60 °C.
     ratio = np_diff / levich
-    assert 0.3 < ratio < 1.5, (
+    assert 0.95 < ratio < 1.05, (
         f"NP diffusion limit ({np_diff:.1f} A/m²) vs Levich ({levich:.1f} A/m²): "
-        f"ratio={ratio:.3f} — outside plausible range, check constants"
-    )
-    # If this ratio drifts from its current value (~0.47), something changed
-    # in the multi-ion coupling or the Fe²⁺ diffusivity.
-    assert 0.40 < ratio < 0.55, (
-        f"NP/Levich ratio changed to {ratio:.3f} (was ~0.47). "
-        f"Verify this is intentional before accepting."
+        f"ratio={ratio:.3f} — temperature/transport constants are inconsistent"
     )
 
 

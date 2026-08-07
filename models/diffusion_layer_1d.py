@@ -70,6 +70,21 @@ from .kinetics import (
 )
 from .pourbaix import LOGKSP_FEOH2, ksp_feoh2
 from . import pitzer as _pitzer
+from .thermodynamic_constants import (
+    KA_HSO4_25,
+    KA_BORIC_25,
+    DH_HSO4_J_MOL,
+    DH_BORIC_J_MOL,
+    D_FE2_25,
+    D_H_25,
+    D_OH_25,
+    D_HSO4_25,
+    D_SO4_25,
+    D_H3BO3_25,
+    D_H2BO3_25,
+    D_NA_25,
+    DIFFUSION_EA_J_MOL,
+)
 
 # ─── Reference temperature ────────────────────────────────────────────
 T_REF = 298.15  # K
@@ -79,28 +94,28 @@ T_REF = 298.15  # K
 KW_SI = 1.0e-8
 
 # ─── Bisulfate dissociation: HSO₄⁻ ↔ H⁺ + SO₄²⁻ ────────────────────
-KA2_25C = 1.2e-2        # mol/L at 25 °C  (pKa ≈ 1.92)
-KA2_EA_J_MOL = -22.0e3  # J/mol (exothermic; Ka₂ decreases with T)
+KA2_25C = KA_HSO4_25       # mol/L at 25 °C  (pKa ≈ 1.98)
+KA2_EA_J_MOL = DH_HSO4_J_MOL  # J/mol (exothermic; Ka₂ decreases with T)
 
 # ─── Boric acid: H₃BO₃ ↔ H⁺ + H₂BO₃⁻ ──────────────────────────────
-KAB_25C = 5.8e-10       # mol/L at 25 °C  (pKa ≈ 9.24)
-KAB_EA_J_MOL = 14.0e3   # J/mol (endothermic; Ka_b increases with T)
+KAB_25C = KA_BORIC_25      # mol/L at 25 °C  (pKa ≈ 9.24)
+KAB_EA_J_MOL = DH_BORIC_J_MOL  # J/mol (endothermic; Ka_b increases with T)
 
 # ─── Fe(OH)₂ solubility product ──────────────────────────────────────
 KSP_FEOH2 = 10.0 ** LOGKSP_FEOH2  # (mol/L)³ at 25 °C; see Ksp property for T
 
 # ─── Limiting ionic diffusivities at 25 °C (m²/s) ────────────────────
-D_FE2 = 7.2e-10
-D_H = 9.31e-9
-D_OH = 5.27e-9
-D_HSO4 = 1.33e-9
-D_SO4 = 1.07e-9
-D_H3BO3 = 0.92e-9
-D_H2BO3 = 1.00e-9
-D_NA = 1.33e-9         # Na⁺ (matches transport.py)
+D_FE2 = D_FE2_25
+D_H = D_H_25
+D_OH = D_OH_25
+D_HSO4 = D_HSO4_25
+D_SO4 = D_SO4_25
+D_H3BO3 = D_H3BO3_25
+D_H2BO3 = D_H2BO3_25
+D_NA = D_NA_25         # Na⁺ (shared with transport.py)
 
 # Default activation energy for diffusion (J/mol)
-DIFF_EA_J_MOL = 18.0e3
+DIFF_EA_J_MOL = DIFFUSION_EA_J_MOL
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────
@@ -273,6 +288,7 @@ class DiffusionLayer1D:
     max_iterations: int = 200
     convergence_tol: float = 1e-9
     fast_mode: bool = False
+    _transport_limit_cache: dict = field(default_factory=dict, repr=False, compare=False)
     # Exchange-current densities are anchored at kinetics_ref_K and
     # Arrhenius-scaled to the operating temperature; see models/kinetics.py.
     fe_i0_Ea_J_mol: float = EA_FE_DEPOSITION_J_MOL
@@ -781,6 +797,13 @@ class DiffusionLayer1D:
 
     # ─── Transport limit ───────────────────────────────────────────
 
+    def _cached_transport_limit(self, i_her_A_m2: float = 0.0) -> float:
+        """Return the migration-aware film limit without repeated bisection."""
+        key = round(float(np.log10(max(i_her_A_m2, 1e-12))), 1)
+        if key not in self._transport_limit_cache:
+            self._transport_limit_cache[key] = self.transport_limit_A_m2(i_her_A_m2)
+        return float(self._transport_limit_cache[key])
+
     def transport_limit_A_m2(self, i_her_A_m2: float = 0.0) -> float:
         """Largest Fe deposition current the film can sustain (A/m²).
 
@@ -815,7 +838,10 @@ class DiffusionLayer1D:
 
         Returns ``(i_fe, i_her, profile, converged)``.
         """
-        i_lim = self.diffusion_limit_A_m2
+        # Migration is part of the same film closure, so do not cap the
+        # cathodic branch with the binary diffusion-only limit.  The cached
+        # limit avoids rerunning the bisection at every potential evaluation.
+        i_lim = self._cached_transport_limit(0.0)
 
         # Seed from bulk BV (no transport correction)
         fe_eq_bulk = self._fe_equilibrium_potential(self.fe_conc_M)
@@ -934,6 +960,11 @@ class DiffusionLayer1D:
         surf_pH = float(profile.pH[0])
         surf_oh_M = float(profile.oh_M[0])
         supersat = float(np.max(profile.feoh2_supersaturation))
+        # Report both the binary diffusion limit and the actual film limit.
+        # The latter includes migration and concurrent HER through the same
+        # reactive ODE; the previous result object silently reported the
+        # diffusion value in both fields.
+        transport_limit = self.transport_limit_A_m2(i_her_A_m2=i_her)
 
         V_cathode = E_sol
         V_cell = (self.E_anode_eq + self.eta_anode_V) - V_cathode + self.ir_drop_V
@@ -950,7 +981,7 @@ class DiffusionLayer1D:
             film_potential_drop_V=profile.film_potential_drop_V,
             precipitation_active=supersat >= 1.0,
             feoh2_supersaturation=supersat,
-            transport_limit_A_m2=self.diffusion_limit_A_m2,
+            transport_limit_A_m2=transport_limit,
             diffusion_limit_A_m2=self.diffusion_limit_A_m2,
             V_cathode_V=V_cathode,
             V_cell=V_cell,

@@ -2,6 +2,10 @@
 models — Electrochemical, transport, transient pulse, and techno-economic modeling for aqueous electrowinning.
 """
 
+from .thermodynamic_constants import (
+    buffer_capacity_M_per_pH,
+    diffusivity_at_temperature,
+)
 from .electrochemistry import (
     CellVoltageModel,
     specific_energy_kWh_per_kg,
@@ -490,6 +494,8 @@ from .operating_twin import (
 )
 
 __all__ = [
+    "buffer_capacity_M_per_pH",
+    "diffusivity_at_temperature",
     "CellVoltageModel",
     "specific_energy_kWh_per_kg",
     "specific_energy_kWh_per_t",

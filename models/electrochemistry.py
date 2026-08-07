@@ -16,27 +16,35 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
 
+from .thermodynamic_constants import (
+    E0_FE_REDUCTION_V,
+    E0_OER_V,
+    E0_FE3_FE2_V,
+    FARADAY as FARADAY_CANONICAL,
+    R_GAS as R_GAS_CANONICAL,
+)
+
 if TYPE_CHECKING:
     from .anode import AnodeKinetics
 
 # ─── Physical Constants ────────────────────────────────────────────────
-FARADAY = 96485.3321  # C/mol (Faraday constant)
-R_GAS = 8.314462      # J/(mol·K) (universal gas constant)
+FARADAY = FARADAY_CANONICAL  # C/mol (Faraday constant)
+R_GAS = R_GAS_CANONICAL      # J/(mol·K) (universal gas constant)
 AVOGADRO = 6.022e23   # 1/mol
 
 # ─── Iron-specific Constants ──────────────────────────────────────────
 M_FE = 55.845e-3      # kg/mol (molar mass of iron)
 M_FE_G = 55.845        # g/mol  (molar mass of iron, for gravimetric calculations)
 Z_FE = 2              # electrons per Fe²⁺ → Fe
-E0_FE = -0.440        # V vs. SHE (standard reduction potential)
+E0_FE = E0_FE_REDUCTION_V  # V vs. SHE, shared Fe²⁺/Fe standard state
 RHO_FE = 7874.0       # kg/m³ (density of iron)
 
 # ─── Oxygen Evolution (Anode) ─────────────────────────────────────────
-E0_OER = 1.229        # V vs. SHE (standard OER potential)
+E0_OER = E0_OER_V     # V vs. SHE, shared OER standard state
 Z_OER = 4             # electrons per O₂
 
 # ─── Fe²⁺/Fe³⁺ Shuttle (Anode alternative) ────────────────────────────
-E0_FE3_FE2 = 0.771    # V vs. SHE (Fe³⁺ + e⁻ → Fe²⁺)
+E0_FE3_FE2 = E0_FE3_FE2_V  # V vs. SHE (Fe³⁺ + e⁻ → Fe²⁺)
 Z_FE3_FE2 = 1         # electrons for the redox shuttle
 
 T_REF = 298.15         # K — reference temperature
@@ -247,7 +255,8 @@ class CellVoltageModel:
     Parameters
     ----------
     E_cathode_eq : float
-        Equilibrium cathode potential (V vs. SHE). Default is E°(Fe²⁺/Fe).
+        Standard-state cathode potential (V vs. SHE). The Nernst activity
+        correction is applied separately. Default is E°(Fe²⁺/Fe).
     E_anode_eq : float
         Equilibrium anode potential (V vs. SHE). Default is E°(OER).
         Ignored when ``anode`` is supplied (overridden by AnodeKinetics).
@@ -264,7 +273,9 @@ class CellVoltageModel:
     fe2_conc_M : float
         Bulk Fe²⁺ concentration (mol/L). Default 1.0.
     electrolyte_conductivity_S_m : float
-        Reference electrolyte conductivity at 25 °C (S/m). Default 10.
+        Electrolyte conductivity (S/m). By default this is a 25 °C reference;
+        set ``electrolyte_conductivity_at_temperature=True`` when it has
+        already been evaluated at the operating temperature.
     interelectrode_gap_m : float
         Distance between electrodes (m). Default 0.02 (2 cm).
     contact_resistance_ohm_m2 : float
@@ -305,6 +316,11 @@ class CellVoltageModel:
     fe_shuttle: Optional[FeShuttleAnode] = field(default=None, repr=False)
     anode: Optional["AnodeKinetics"] = field(default=None, repr=False)
     j_operating_mA_cm2: float = 100.0
+    # ``False`` means the value is a 25 °C reference and this class applies
+    # its temperature correlation.  Coupled speciation solvers commonly
+    # return conductivity already evaluated at the operating temperature;
+    # they must set this flag to avoid a second temperature correction.
+    electrolyte_conductivity_at_temperature: bool = False
 
     def __post_init__(self):
         if self.divided_cell and self.membrane is None:
@@ -326,7 +342,10 @@ class CellVoltageModel:
         E = E° + (RT/2F) · ln(a_Fe2+)
         """
         a_fe2 = max(self.fe2_conc_M, 1e-10)
-        return E0_FE + (R_GAS * self.T / (Z_FE * FARADAY)) * np.log(a_fe2)
+        # ``E_cathode_eq`` is the standard-state potential.  Earlier code
+        # silently ignored this field and always used the module constant,
+        # making alternate/reference-state thermodynamics impossible.
+        return self.E_cathode_eq + (R_GAS * self.T / (Z_FE * FARADAY)) * np.log(a_fe2)
 
     @property
     def E_anode_nernst(self) -> float:
@@ -337,6 +356,8 @@ class CellVoltageModel:
         or falls back to fixed E_anode_eq (OER).
         """
         if self.anode is not None:
+            if getattr(self.anode, "is_soluble", False):
+                return self.anode.fe_dissolution_equilibrium()
             return self.anode.oer_equilibrium()
         if self.fe_shuttle is not None:
             return self.fe_shuttle.equilibrium(self.T)
@@ -369,11 +390,19 @@ class CellVoltageModel:
         IR = j · L / (κ(T) · (1 − θ_bubble))
         """
         j_A_m2 = self.j_operating_mA_cm2 * 10.0  # mA/cm² → A/m²
-        kappa_T = conductivity_S_m(
-            self.T, kappa_ref=self.electrolyte_conductivity_S_m
-        )
+        if self.electrolyte_conductivity_at_temperature:
+            kappa_T = self.electrolyte_conductivity_S_m
+        else:
+            kappa_T = conductivity_S_m(
+                self.T, kappa_ref=self.electrolyte_conductivity_S_m
+            )
+        # A soluble Fe anode does not evolve gas; do not apply an OER bubble
+        # penalty when the first-principles anode object says otherwise.
+        bubble_fraction = self.bubble_fraction
+        if self.anode is not None and getattr(self.anode, "is_soluble", False):
+            bubble_fraction = 0.0
         # Effective conductivity reduced by bubble coverage
-        kappa_eff = kappa_T * max(1.0 - self.bubble_fraction, 0.01)
+        kappa_eff = kappa_T * max(1.0 - bubble_fraction, 0.01)
         return j_A_m2 * self.interelectrode_gap_m / kappa_eff
 
     @property

@@ -1,5 +1,11 @@
 # Physics-derived economics (Level-0 screening)
 
+> **Regeneration note (2026-08-06):** the numeric tables below predate the
+> reactive cathode-film, shared thermodynamic constants, temperature-resolved
+> transport, and single-temperature conductivity corrections. Re-run the
+> physics-derived economics driver before treating them as the current screen.
+> They remain a prior-report record and are not gate evidence.
+
 ## Status and boundary
 
 This report is a transparent, bottom-up **Level-0** prediction. Every number

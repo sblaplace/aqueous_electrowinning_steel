@@ -18,56 +18,56 @@
     "flag": "unvalidated (L0)",
     "current_density_mA_cm2": 96.66666666666667,
     "current_A": 19.333333333333336,
-    "current_efficiency": 0.9954395735385426,
-    "surface_pH": 1.9809787983631937,
-    "surface_fe_M": 0.7737600078386946,
-    "transport_limit_mA_cm2": 370.8862234988579,
-    "diffusion_limit_mA_cm2": 277.877756448,
-    "migration_enhancement": 1.3347100114804,
-    "feoh2_supersaturation": 2.041737944669523e-08,
+    "current_efficiency": 0.9925907838587946,
+    "surface_pH": 1.9803503696422533,
+    "surface_fe_M": 0.8948235264347255,
+    "transport_limit_mA_cm2": 781.4008775819182,
+    "diffusion_limit_mA_cm2": 487.3226709199277,
+    "migration_enhancement": 1.6034568556124298,
+    "feoh2_supersaturation": 1.0335892018666655e-08,
     "precipitation_active": false,
-    "film_potential_drop_V": -0.0018888500019089431,
-    "V_cell": 4.631596646334953,
-    "specific_energy_kWh_t": 4466.016511357022,
-    "deposition_rate_um_hr": 127.31856619489253,
-    "free_fe2_activity": 0.05224353745192281,
-    "conductivity_S_m": 11.40858961633695,
+    "film_potential_drop_V": -0.001350330707657718,
+    "V_cell": 5.38841782509065,
+    "specific_energy_kWh_t": 5210.693418896932,
+    "deposition_rate_um_hr": 126.9542006891866,
+    "free_fe2_activity": 0.05249384067887071,
+    "conductivity_S_m": 11.309780864422013,
     "transport_converged": true,
     "V_decomposition": {
-      "E_cathode (V)": -0.4811,
+      "E_cathode (V)": -0.481,
       "E_anode (V)": 1.229,
-      "E_thermodynamic (V)": 1.7101,
-      "\u03b7_cathode (V)": 0.5691,
+      "E_thermodynamic (V)": 1.71,
+      "\u03b7_cathode (V)": 0.6057,
       "\u03b7_anode (V)": 0.4,
-      "IR_electrolyte (V)": 1.179,
+      "IR_electrolyte (V)": 1.8994,
       "IR_membrane (V)": 0.29,
       "IR_contacts (V)": 0.4833,
-      "IR_total (V)": 1.9524,
-      "V_cell (V)": 4.6316
+      "IR_total (V)": 2.6727,
+      "V_cell (V)": 5.3884
     },
     "verdicts": {
       "fe": {
-        "value": 0.9954395735385426,
+        "value": 0.9925907838587946,
         "acceptance": "FE >= 0.80",
         "pass": true
       },
       "v_cell": {
-        "value": 4.631596646334953,
+        "value": 5.38841782509065,
         "acceptance": "2.5 V <= V_cell <= 6.0 V",
         "pass": true
       },
       "specific_energy": {
-        "value": 4466.016511357022,
+        "value": 5210.693418896932,
         "acceptance": "specific energy <= 6000 kWh/t",
         "pass": true
       },
       "transport_limit": {
-        "value": 370.8862234988579,
+        "value": 781.4008775819182,
         "acceptance": "transport limit / j >= 1.2 (not binding)",
         "pass": true
       },
       "deposition_rate": {
-        "value": 127.31856619489253,
+        "value": 126.9542006891866,
         "acceptance": "20 <= rate <= 300 \u00b5m/hr",
         "pass": true
       }
@@ -76,14 +76,14 @@
   },
   "thermal": {
     "flag": "unvalidated (L0)",
-    "steady_state_T_C": 21.548067397370726,
+    "steady_state_T_C": 22.000446841557064,
     "max_T_C": 50.0,
-    "steady_state_uncooled_T_C": 34.0651070430797,
-    "heat_gen_power_W": 64.79753516247575,
+    "steady_state_uncooled_T_C": 36.83992655765035,
+    "heat_gen_power_W": 79.4294112850859,
     "cooling_duty_50C_W": 0.0,
     "thermal_mass_kJ_K": 13.352,
-    "joule_heat_W": 37.7464,
-    "activation_heat_W": 18.735933333333335,
+    "joule_heat_W": 51.672200000000004,
+    "activation_heat_W": 19.443533333333338,
     "thermal_limit_C": 60.0,
     "verdict": {
       "pass": true,
@@ -96,19 +96,19 @@
       "charge": {
         "status": "partial_with_fe_deposit",
         "applied_cathodic_charge_C": 139200.00000000003,
-        "apparent_fe_from_total_mass": 0.9954395735385426,
-        "apparent_fe_percent_from_total_mass": 99.54395735385427,
-        "measured_fe_deposition_charge_C": 138565.18863656517,
-        "unresolved_charge_C": 634.8113634348556,
+        "apparent_fe_from_total_mass": 0.9925907838587946,
+        "apparent_fe_percent_from_total_mass": 99.25907838587946,
+        "measured_fe_deposition_charge_C": 138168.63711314427,
+        "unresolved_charge_C": 1031.362886855757,
         "missing": [],
         "note": "Apparent FE uses total dry mass; it is not an Fe-specific charge closure without composition."
       },
       "iron": {
         "status": "closed",
         "initial_fe_inventory_mol": 3.0,
-        "deposit_fe_mass_g": 40.10025560874336,
-        "deposit_fe_mol": 0.7180634901735762,
-        "post_run_fe_inventory_mol": 2.2819365098264237,
+        "deposit_fe_mass_g": 39.98549504906622,
+        "deposit_fe_mol": 0.7160085065639936,
+        "post_run_fe_inventory_mol": 2.283991493436006,
         "solids_fe_mol": 0.0,
         "other_fe_mol": 0.0,
         "unaccounted_fe_mol": 0.0,
@@ -118,7 +118,7 @@
       },
       "energy": {
         "status": "closed",
-        "stack_electrical_Wh": 179.08840365828485,
+        "stack_electrical_Wh": 208.35215590350515,
         "auxiliary_energy_Wh": {
           "cooling": 1.0,
           "drying": 0.5,
@@ -128,15 +128,15 @@
           "pumps": 3.0
         },
         "auxiliary_energy_uncertainty_Wh": 0.4387482193696061,
-        "total_measured_energy_Wh": 185.18840365828484,
+        "total_measured_energy_Wh": 214.45215590350514,
         "missing_components": [],
         "note": "Stack energy is integrated from measured V\u00d7I; auxiliary loads are included only when logged."
       }
     },
     "charge": {
       "status": "partial_with_fe_deposit",
-      "unresolved_charge_C": 634.8113634348556,
-      "residual_fraction": 0.004560426461457295,
+      "unresolved_charge_C": 1031.362886855757,
+      "residual_fraction": 0.00740921614120515,
       "tolerance": 0.02,
       "missing": [],
       "pass": true
@@ -152,8 +152,8 @@
     "energy": {
       "status": "closed",
       "missing_components": [],
-      "stack_Wh": 179.08840365828485,
-      "total_Wh": 185.18840365828484,
+      "stack_Wh": 208.35215590350515,
+      "total_Wh": 214.45215590350514,
       "pass": true
     },
     "all_pass": true
@@ -163,7 +163,7 @@
       "claim": 1,
       "claim_text": "the feed and electrolyte are what we think they are",
       "substantiated_by": "reference_cell() recipe + speciation (CellPhysics __init__)",
-      "predicted_value": "a(Fe\u00b2\u207a)=0.052 (dimensionless), conductivity=11.4 S/m, pH=2.0 @ 50 \u00b0C (unvalidated (L0))",
+      "predicted_value": "a(Fe\u00b2\u207a)=0.052 (dimensionless), conductivity=11.3 S/m, pH=2.0 @ 50 \u00b0C (unvalidated (L0))",
       "acceptance": "reference recipe reproduces the intended bath",
       "verdict": "PASS (L0 \u2014 reference recipe assumed; real feed identity is L1, unvalidated)"
     },
@@ -171,7 +171,7 @@
       "claim": 2,
       "claim_text": "the cell produces the predicted local current, voltage, temperature, gas and flow fields",
       "substantiated_by": "CellPhysics.solve_at_j \u2192 V_cell + thermal_balance.simulate_thermal_transient",
-      "predicted_value": "V_cell=4.63 V, j=97 mA/cm\u00b2, T_ss=21.5 \u00b0C (cooled), transport limit=371 mA/cm\u00b2 (unvalidated (L0))",
+      "predicted_value": "V_cell=5.39 V, j=97 mA/cm\u00b2, T_ss=22.0 \u00b0C (cooled), transport limit=781 mA/cm\u00b2 (unvalidated (L0))",
       "acceptance": "2.5\u2264V\u22646.0 V and T_ss\u226460 \u00b0C",
       "verdict": "PASS (L0 \u2014 gas/flow fields only partially modeled; see robustness)"
     },
@@ -179,7 +179,7 @@
       "claim": 3,
       "claim_text": "the electrochemistry produces the predicted Fe/HER split and deposit rate",
       "substantiated_by": "CellPhysics.solve_at_j \u2192 FE, HER, deposition_rate",
-      "predicted_value": "FE=0.995 (HER \u2248 0.5 %), deposit rate=127 \u00b5m/hr (unvalidated (L0))",
+      "predicted_value": "FE=0.993 (HER \u2248 0.7 %), deposit rate=127 \u00b5m/hr (unvalidated (L0))",
       "acceptance": "FE\u22650.80 and 20\u2264rate\u2264300 \u00b5m/hr",
       "verdict": "PASS (L0)"
     },
@@ -203,7 +203,7 @@
       "claim": 6,
       "claim_text": "the balance of plant closes on mass, charge, heat, gas, waste and energy",
       "substantiated_by": "compute_ledgers (charge/iron/energy)",
-      "predicted_value": "unresolved_charge=635 C (0.5 %), unaccounted_Fe=0.000 mol (0.0 %), energy missing=0 (unvalidated (L0))",
+      "predicted_value": "unresolved_charge=1031 C (0.7 %), unaccounted_Fe=0.000 mol (0.0 %), energy missing=0 (unvalidated (L0))",
       "acceptance": "charge \u22642%, iron \u22645%, no missing energy components",
       "verdict": "PASS (L0)"
     }

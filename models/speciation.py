@@ -47,16 +47,28 @@ from typing import Dict, Any
 import numpy as np
 
 from . import pitzer as _pitzer
+from .pourbaix import ksp_feoh2
+from .thermodynamic_constants import (
+    E0_FE_REDUCTION_V,
+    FARADAY,
+    R_GAS,
+    KA_HSO4_25,
+    KA_BORIC_25,
+    KSP_FEOH2_25,
+    DH_HSO4_J_MOL,
+    DH_BORIC_J_MOL,
+    kw_water,
+    vanthoff_constant,
+)
 
-# Physical constants
-R = 8.314462618  # J/(mol*K)
-F = 96485.33212  # C/mol
-E0_FE2_FE = -0.447  # V vs SHE for Fe2+ + 2e- -> Fe at 25 °C (molar std state)
-KW_25 = 1.0e-14
-KSP_FE_OH2_25 = 4.87e-17  # Ksp for Fe(OH)2 at 25 °C
-K_HSO4_25 = 1.05e-2  # Ka2 for HSO4- -> H+ + SO4(2-) at 25 °C
+# Physical constants.  These aliases preserve the public names used by older
+# callers while making the shared values explicit.
+R = R_GAS
+F = FARADAY
+E0_FE2_FE = E0_FE_REDUCTION_V
+K_HSO4_25 = KA_HSO4_25
+KSP_FE_OH2_25 = KSP_FEOH2_25
 K_FESO4_PAIR_25 = 200.0  # Thermodynamic K for FeSO4(aq) contact pair (25 °C)
-KA_BORIC_25 = 5.8e-10  # B(OH)3 + H2O -> H+ + B(OH)4-, pKa ≈ 9.24 at 25 °C
 
 # Molar masses (g/mol) for density/molality conversion
 M_FESO4 = 151.908
@@ -185,8 +197,8 @@ def _conductivity_S_m(
 def _nernst_and_precip(a_Fe2: float, T_K: float) -> Dict[str, float]:
     """Nernst potential and Fe(OH)2 precipitation pH from Fe2+ activity."""
     E_rev_Fe = E0_FE2_FE + (R * T_K / (2.0 * F)) * math.log(max(1e-12, a_Fe2))
-    Kw_T = KW_25 * math.exp((-55800.0 / R) * (1.0 / T_K - 1.0 / 298.15))
-    Ksp_T = KSP_FE_OH2_25 * math.exp((-25000.0 / R) * (1.0 / T_K - 1.0 / 298.15))
+    Kw_T = kw_water(T_K)
+    Ksp_T = ksp_feoh2(T_K)
     a_OH_precip = math.sqrt(max(1e-30, Ksp_T / max(1e-12, a_Fe2)))
     a_H_precip = Kw_T / max(1e-30, a_OH_precip)
     pH_precip = -math.log10(max(1e-14, a_H_precip))
@@ -218,7 +230,7 @@ def _solve_speciation_pitzer(comp: SolutionComposition) -> Dict[str, Any]:
     m_SO4_tot = mm["m_SO4_tot"]
 
     # Ka2 at temperature (van't Hoff, dH0 ≈ −22.4 kJ/mol)
-    Ka2_T = K_HSO4_25 * math.exp((-22400.0 / R) * (1.0 / T_K - 1.0 / 298.15))
+    Ka2_T = vanthoff_constant(K_HSO4_25, T_K, DH_HSO4_J_MOL)
 
     # ── Solve bisulfate dissociation with Pitzer activities ──────────
     #   Ka2 = a_H · a_SO4 / a_HSO4 ;  h = m_HSO4
@@ -272,7 +284,7 @@ def _solve_speciation_pitzer(comp: SolutionComposition) -> Dict[str, Any]:
     a_H = g["H+"] * m_H
     if comp.c_H2SO4 <= 0.0:
         # B(OH)3 + H2O ⇌ H+ + B(OH)4−;  a_H ≈ sqrt(Ka_b · a_H3BO3)
-        Kab_T = KA_BORIC_25 * math.exp((-13800.0 / R) * (1.0 / T_K - 1.0 / 298.15))
+        Kab_T = vanthoff_constant(KA_BORIC_25, T_K, DH_BORIC_J_MOL)
         m_H3BO3 = comp.c_H3BO3 / kw
         a_H = math.sqrt(max(Kab_T, 1e-30) * max(m_H3BO3, 1e-12))
         m_H = a_H / max(g["H+"], 1e-6)
@@ -352,7 +364,7 @@ def _solve_speciation_davies(comp: SolutionComposition, max_iter: int = 200, tol
     T_K = comp.T_C + 273.15
     A_dh = davies_A(comp.T_C)
 
-    Ka2_T = K_HSO4_25 * math.exp((-22400.0 / R) * (1.0 / T_K - 1.0 / 298.15))
+    Ka2_T = vanthoff_constant(K_HSO4_25, T_K, DH_HSO4_J_MOL)
     K_pair_T = K_FESO4_PAIR_25 * math.exp((8000.0 / R) * (1.0 / T_K - 1.0 / 298.15))
 
     c_Fe2 = comp.c_FeSO4
@@ -403,7 +415,7 @@ def _solve_speciation_davies(comp: SolutionComposition, max_iter: int = 200, tol
     pH_conc = -math.log10(max(1e-14, c_H)) if c_H > 0 else float("nan")
     if c_H <= 0.0:
         # Boric-acid-only pH fallback (no sulfuric acid dosed).
-        Kab_T = KA_BORIC_25 * math.exp((-13800.0 / R) * (1.0 / T_K - 1.0 / 298.15))
+        Kab_T = vanthoff_constant(KA_BORIC_25, T_K, DH_BORIC_J_MOL)
         a_H = math.sqrt(Kab_T * max(comp.c_H3BO3, 1e-12))
         pH_act = -math.log10(a_H)
         pH_conc = pH_act

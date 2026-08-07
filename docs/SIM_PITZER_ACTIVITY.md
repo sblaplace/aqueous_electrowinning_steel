@@ -1,5 +1,10 @@
 # Pitzer Activity Model + Arrhenius Kinetics — Physics Upgrade Note
 
+> **Regeneration note (2026-08-06):** this prior note describes the Pitzer
+> upgrade before the reactive cathode-film path became the `CellPhysics`
+> default. Use `docs/SIM_PHYSICS_UPGRADE.md` for the current integration
+> boundary and regenerate numeric reports before comparing headline values.
+
 **Date:** 2026-08-05
 **Status:** Level-0 *screening* — model change, **not gate evidence**
 **Modules:** `models/pitzer.py` (new), `models/speciation.py` (rework),

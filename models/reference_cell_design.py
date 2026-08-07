@@ -21,6 +21,7 @@ import yaml
 
 from .cell_physics import BathRecipe, CellGeometry, CellPhysics, ProcessConditions
 from .electrochemistry import FARADAY
+from .thermodynamic_constants import buffer_capacity_M_per_pH
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG_PATH = ROOT / "processes" / "reference_cell_rc1.yaml"
@@ -131,7 +132,11 @@ def load_reference_cell_config(path: str | Path = DEFAULT_CONFIG_PATH) -> Refere
         fe_tafel_V=float(kinetics["fe_tafel_V_dec"]),
         her_tafel_V=float(kinetics["her_tafel_V_dec"]),
     )
-    geometry = CellGeometry(interelectrode_gap_m=float(channels["depth_mm"]) * 1e-3)
+    anode_chemistry = raw["cell_stack"]["anode"].get("chemistry", "inert")
+    geometry = CellGeometry(
+        interelectrode_gap_m=float(channels["depth_mm"]) * 1e-3,
+        anode_chemistry=anode_chemistry,
+    )
 
     return ReferenceCellConfig(
         configuration_id=raw["configuration_id"],
@@ -384,7 +389,19 @@ def build_reference_cell_digital_twin(config: ReferenceCellConfig, model=None):
         "fe2_reservoir_M": config.bath.c_FeSO4_M,
         "pH_reservoir": config.bath.pH,
         "T_reservoir_C": config.target_temperature_C,
-        "buffer_capacity_beta": config.bath.c_H3BO3_M,
+        # Do not equate boric-acid concentration with buffer capacity.  At
+        # RC-1's pH 2 it is almost entirely undissociated; derive the
+        # acid-equivalent capacity from the sulfate/borate equilibria instead.
+        "buffer_capacity_beta": buffer_capacity_M_per_pH(
+            config.bath.pH,
+            config.target_temperature_C,
+            total_sulfate_M=(
+                config.bath.c_FeSO4_M
+                + config.bath.c_Na2SO4_M
+                + config.bath.c_H2SO4_M
+            ),
+            total_borate_M=config.bath.c_H3BO3_M,
+        ),
     }
     return DigitalTwin(design_point=design_point, model=model)
 

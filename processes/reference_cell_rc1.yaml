@@ -31,6 +31,10 @@ cell_stack:
     active_area_cm2: 10.0
     surface_preparation: "controlled and recorded per run; not yet frozen"
   anode:
+    # Explicit mode prevents a soluble-Fe experiment from silently using the
+    # inert/OER voltage and gas assumptions.  Material remains campaign-
+    # controlled until the first anode comparison is complete.
+    chemistry: "inert"
     material: "specified OER-capable or experimental anode; controlled per campaign"
     minimum_exposed_area_cm2: 10.0
   membrane:
