@@ -2,7 +2,7 @@
   "title": "Aqueous Electrowinning Techno-Economic Analysis",
   "date": "2026-07-29",
   "base_case": {
-    "cell_voltage_V": 4.0458132775603675,
+    "cell_voltage_V": 4.04581333316518,
     "current_density_mA_cm2": 100.0,
     "current_efficiency": 0.9,
     "n_stacks": 10,

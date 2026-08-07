@@ -6,7 +6,7 @@ RUN-004,100.0,3.0,35.0,1.0,2.0,99.7,3.64,2.078,263.9,7.27,False,V_cell (3.64 V) 
 RUN-005,100.0,3.0,50.0,1.0,2.0,99.7,3.48,2.077,263.8,6.96,True,PASS
 RUN-006,100.0,3.0,65.0,1.0,2.0,99.6,3.36,2.076,263.7,6.73,True,PASS
 RUN-007,250.0,2.0,35.0,2.5,2.0,99.1,5.14,5.161,655.5,25.69,False,V_cell (5.14 V) or energy (4977 kWh/t) exceeds threshold
-RUN-008,250.0,2.0,50.0,2.5,2.0,99.0,4.81,5.158,655.1,24.06,False,V_cell (4.81 V) or energy (4665 kWh/t) exceeds threshold
+RUN-008,250.0,2.0,50.0,2.5,2.0,99.0,4.81,5.158,655.1,24.06,False,V_cell (4.81 V) or energy (4664 kWh/t) exceeds threshold
 RUN-009,250.0,2.0,65.0,2.5,2.0,98.9,4.58,5.154,654.5,22.88,False,V_cell (4.58 V) or energy (4441 kWh/t) exceeds threshold
 RUN-010,250.0,3.0,35.0,2.5,2.0,99.7,5.14,5.191,659.3,25.69,False,V_cell (5.14 V) or energy (4949 kWh/t) exceeds threshold
 RUN-011,250.0,3.0,50.0,2.5,2.0,99.7,4.81,5.191,659.3,24.06,False,V_cell (4.81 V) or energy (4636 kWh/t) exceeds threshold
@@ -15,5 +15,5 @@ RUN-013,400.0,2.0,35.0,4.0,2.0,98.6,6.63,8.218,1043.7,53.01,False,V_cell (6.63 V
 RUN-014,400.0,2.0,50.0,4.0,2.0,98.8,6.12,8.236,1046.0,48.99,False,V_cell (6.12 V) or energy (5949 kWh/t) exceeds threshold
 RUN-015,400.0,2.0,65.0,4.0,2.0,98.8,5.77,8.237,1046.0,46.15,False,V_cell (5.77 V) or energy (5603 kWh/t) exceeds threshold
 RUN-016,400.0,3.0,35.0,4.0,2.0,99.5,6.63,8.291,1053.0,53.02,False,V_cell (6.63 V) or energy (6395 kWh/t) exceeds threshold
-RUN-017,400.0,3.0,50.0,4.0,2.0,99.6,6.13,8.3,1054.1,49.0,False,V_cell (6.13 V) or energy (5904 kWh/t) exceeds threshold
+RUN-017,400.0,3.0,50.0,4.0,2.0,99.6,6.12,8.3,1054.1,49.0,False,V_cell (6.12 V) or energy (5904 kWh/t) exceeds threshold
 RUN-018,400.0,3.0,65.0,4.0,2.0,99.6,5.77,8.302,1054.3,46.15,False,V_cell (5.77 V) or energy (5560 kWh/t) exceeds threshold

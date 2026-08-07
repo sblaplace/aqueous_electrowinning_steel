@@ -94,6 +94,7 @@ from models.run_adhesion_peel import main as run_adhesion_peel_main
 from models.run_internal_stress import main as run_internal_stress_main
 from models.run_gas_holdup import main as run_gas_holdup_main
 from models.run_rde_levich import main as run_rde_levich_main
+from models.run_physics_tranche3 import run_physics_tranche3
 
 from models.mechanical_properties import MechanicalPropertiesModel, build_mechanical_model_from_phase3_result
 from models.process_flow import generate_process_flow_diagram, generate_detailed_flow_with_composition
@@ -877,6 +878,19 @@ def main(
                 import traceback; traceback.print_exc()
     master["steps"]["reference_cell_pipeline"] = _load_json(
         DATA_DIR / "reference_cell_pipeline_report.json")
+
+    # 23 Advanced Physics & Chemistry Suite (Round 3)
+    print("\n[23/23] Round 3 Advanced Physics & Chemistry Suite...")
+    with cache.step("physics_tranche3", "models.run_physics_tranche3",
+                    _step_outputs("physics_tranche3_report.json")) as hit:
+        if not hit:
+            try:
+                run_physics_tranche3()
+                print("  ✅ physics_tranche3")
+            except Exception as e:
+                print(f"  ❌ physics_tranche3: {e}")
+                import traceback; traceback.print_exc()
+    master["steps"]["physics_tranche3"] = _load_json(DATA_DIR / "physics_tranche3_report.json")
 
     # Dashboard — always regenerate (cheap, depends on everything above)
     print("\n[Dashboard] Generating master dashboard...")

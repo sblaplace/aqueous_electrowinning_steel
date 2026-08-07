@@ -1,0 +1,217 @@
+{
+  "contract": "aqueous-electrowinning.reference-cell-state",
+  "schema_version": "1.0",
+  "state_id": "screening-RC-1-100",
+  "inputs": {
+    "configuration_id": "RC-1",
+    "active_area_cm2": 10.0,
+    "current_density_mA_cm2": 100.0,
+    "flow_L_min": 0.25,
+    "temperature_C": 60.0,
+    "ambient_temperature_C": 25.0,
+    "initial_temperature_C": null,
+    "relative_humidity": 0.5,
+    "thermal_duration_hr": 1.0,
+    "thermal_dt_s": 10.0,
+    "cooling_active": false,
+    "current_A": 1.0
+  },
+  "predicted": {
+    "status": "screening_prediction",
+    "operating": {
+      "current_A": 1.0,
+      "j_mA_cm2": 100.0,
+      "FE_uncoupled": 0.9912167662523482,
+      "FE_coupled": 0.9912247639200029,
+      "FE_shift_percentage_points": 0.0007997667654691121,
+      "V_cell_uncoupled": 3.670255083050243,
+      "V_cell_coupled": 3.670310929908453,
+      "gas_ohmic_penalty_V": 5.584685820986257e-05,
+      "specific_energy_uncoupled_kWh_t": 3554.1201474265977,
+      "specific_energy_coupled_kWh_t": 3554.1742271675,
+      "specific_energy_with_coupled_fe_kWh_t": 3554.1455504179967,
+      "transport_limit_mA_cm2": 1397.1926228675788,
+      "transport_margin": 13.97192622867579,
+      "surface_pH": 1.980204704379138,
+      "surface_fe_M": 0.9302170426537044,
+      "feoh2_supersaturation": 8.084009086365424e-09,
+      "precipitation_active": false,
+      "deposition_rate_um_hr": 131.1501323700434,
+      "conductivity_S_m": 9.901808061200441,
+      "V_decomposition": {
+        "E_cathode (V)": -0.4865,
+        "E_anode (V)": 1.0968,
+        "E_thermodynamic (V)": 1.5833,
+        "\u03b7_cathode (V)": 0.576,
+        "\u03b7_anode (V)": 0.3743,
+        "IR_electrolyte (V)": 0.3366,
+        "IR_membrane (V)": 0.3,
+        "IR_contacts (V)": 0.5,
+        "IR_total (V)": 1.1366,
+        "V_cell (V)": 3.6703,
+        "gas_ohmic_penalty_V": 5.584685820986257e-05,
+        "V_cell_coupled": 3.670310929908453
+      },
+      "transport_converged": true
+    },
+    "gas": {
+      "j_mean_mA_cm2": 100.0,
+      "area_average_FE": 0.99122,
+      "FE_no_bubbles": 0.99122,
+      "FE_shift_percentage_points": 0.0008,
+      "segment_FE": [
+        0.99122,
+        0.99122,
+        0.99122,
+        0.99122
+      ],
+      "delta_forced_um": 50.0,
+      "ohmic_penalty_V": 6e-05,
+      "ohmic_gas_free_V": 0.30297,
+      "hydrogen_flow_L_h_wet_at_T": 0.0056,
+      "converged": true,
+      "iterations": 2,
+      "profile": {
+        "y_mm": [
+          6.25,
+          18.75,
+          31.25,
+          43.75
+        ],
+        "j_mA_cm2": [
+          100.003,
+          100.001,
+          99.999,
+          99.997
+        ],
+        "void_fraction": [
+          3e-05,
+          9e-05,
+          0.00015,
+          0.00021
+        ],
+        "kappa_eff_S_m": [
+          9.9014,
+          9.9004,
+          9.8995,
+          9.8986
+        ],
+        "surface_coverage": [
+          0.00176,
+          0.00176,
+          0.00176,
+          0.00175
+        ],
+        "delta_eff_um": [
+          49.371,
+          49.371,
+          49.371,
+          49.371
+        ],
+        "bubble_diameter_um": 152.19,
+        "rise_velocity_mm_s": 21.632,
+        "outlet_void_fraction": 0.00021,
+        "mean_void_fraction": 0.00012,
+        "conductivity_penalty": 1.0002,
+        "current_uniformity": 0.9999
+      }
+    },
+    "thermal": {
+      "T_ss_C": 28.88059255838941,
+      "T_max_C": 60.0,
+      "T_target_C": 60.0,
+      "cooling_duty_target_W": 0.0,
+      "cooling_duty_50C_W": 0.0,
+      "thermal_mass_kJ_K": 8.868,
+      "heat_gen_power_W": 2.390310929908453,
+      "time_hr_points": 360,
+      "temperature_C_points": 360
+    },
+    "ledgers": {
+      "charge": {
+        "duration_s": 3600.0,
+        "applied_cathodic_charge_C": 3600.0,
+        "predicted_fe_mass_g": 1.032684474465823,
+        "predicted_fe_mass_uncoupled_g": 1.0326761422817217,
+        "predicted_her_fraction": 0.008775236079997084,
+        "hydrogen_flow_L_h_wet": 0.00557220533326748,
+        "status": "model_projection_only"
+      },
+      "energy": {
+        "stack_energy_Wh": 3.6703109299084535,
+        "specific_energy_kWh_t": 3554.1742271675,
+        "specific_energy_with_coupled_fe_kWh_t": 3554.1455504179967,
+        "auxiliary_energy_Wh": null,
+        "status": "model_projection_only"
+      }
+    },
+    "provenance": {
+      "level": "L0",
+      "status": "screening_prediction",
+      "configuration_id": "RC-1",
+      "config_source": "/home/user/aqueous_electrowinning_steel/processes/reference_cell_rc1.yaml",
+      "models": [
+        "cell_physics.CellPhysics",
+        "gas_holdup.solve_coupled",
+        "thermal_balance.simulate_thermal_transient"
+      ],
+      "gate_evidence": false,
+      "note": "No model output is experimental gate evidence."
+    },
+    "uncertainty": {
+      "status": "not_calibrated",
+      "parameter_uncertainty": "not yet estimated from RC-1 measurements",
+      "dominant_unknowns": [
+        "Fe/HER kinetics and Tafel parameters on the actual cathode",
+        "membrane resistance and crossover",
+        "bubble departure/coverage and bubbly-electrolyte conductivity",
+        "thermal loss coefficients and auxiliary loads"
+      ]
+    }
+  },
+  "observed": null,
+  "safety": {
+    "mode": "advisory",
+    "snapshot_count": 1,
+    "final_state": {
+      "mode": "advisory",
+      "last_timestamp_s": 0.0,
+      "charge_cathodic_C": 0.0,
+      "theoretical_fe_mass_g": 0.0,
+      "trip_reasons": [],
+      "update_count": 1,
+      "last_current_A": 1.0,
+      "last_voltage_V": 3.670310929908453,
+      "last_temperature_C": 60.0,
+      "last_pH": 2.0,
+      "last_fe2_M": 1.0
+    },
+    "command": {
+      "timestamp_s": 0.0,
+      "mode": "advisory",
+      "current_A": 0.0,
+      "temperature_setpoint_C": 60.0,
+      "reasons": [
+        "actuation_not_armed"
+      ],
+      "source_run_id": "screening-RC-1"
+    },
+    "shutdown_request": null,
+    "trip_reasons": [],
+    "advisory_only": true
+  },
+  "gates": {
+    "status": "not_evidence",
+    "evidence_count": 0,
+    "candidate_verdicts": [],
+    "note": "Simulation output is deliberately excluded from process-gate evidence."
+  },
+  "calibration": {
+    "status": "not_applied",
+    "next_step": "ingest replicated RC-1 run records and fit only declared parameters"
+  },
+  "notes": [
+    "All integrated outputs are L0 screening predictions.",
+    "Safety assessment is advisory; independent shutdown remains required."
+  ]
+}

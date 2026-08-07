@@ -85,7 +85,8 @@ class MixedConvectionResult:
     bulk_fe2_mol_L: float
     surface_fe2_mol_L: float
     density_depletion_kg_m3: float
-    grashof_number_Gr_m: float
+    grashof_number_Gr_H: float          # Plate-scale Grashof number (H-based, ~10^10 - 10^11)
+    grashof_number_Gr_dh: float         # Channel-gap Grashof number (d_h-based, ~10^4 - 10^5)
     reynolds_number_Re: float
     richardson_number_Ri_m: float
     buoyancy_velocity_m_s: float
@@ -141,29 +142,33 @@ def solve_solutal_mixed_convection(
     # Solutal density reduction: Δρ = ρ₀ * β_c * ΔC
     delta_rho = params.electrolyte_density_kg_m3 * (params.solutal_expansion_coeff_L_mol * delta_c)
 
-    # Solutal Grashof number based on hydraulic diameter:
-    # Gr_m = (g * β_c * ΔC * d_h³) / ν²
+    # Plate-scale Solutal Grashof number (height-based, characterizes turbulent vertical buoyant plume):
+    # Gr_H = (g * β_c * ΔC * H³) / ν²
     beta_c_m3_mol = params.solutal_expansion_coeff_L_mol * 1e-3
     delta_c_mol_m3 = delta_c * 1e3
-    gr_m = (G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * (d_h ** 3)) / max(nu ** 2, 1e-18)
+    gr_h = (G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * (h ** 3)) / max(nu ** 2, 1e-18)
+
+    # Channel-gap Solutal Grashof number (gap-based, characterizes lateral slot confinement):
+    # Gr_dh = (g * β_c * ΔC * d_h³) / ν²
+    gr_dh = (G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * (d_h ** 3)) / max(nu ** 2, 1e-18)
 
     # Reynolds number in channel slot: Re = u₀ * d_h / ν
     re = (u0 * d_h) / max(nu, 1e-12)
 
-    # Solutal Richardson number in duct: Ri_m = Gr_m / Re²
-    ri_m = gr_m / max(re ** 2, 1e-6)
+    # Solutal Richardson number in duct: Ri_m = Gr_dh / Re²
+    ri_m = gr_dh / max(re ** 2, 1e-6)
 
-    # Characteristic natural convection buoyancy velocity: u_buoy = √(g * β_c * ΔC * d_h)
-    u_buoy = math.sqrt(max(G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * d_h, 1e-9))
-    u_crit = u_buoy  # Minimum downward velocity to overcome buoyant plume
+    # Characteristic natural convection buoyancy velocity: u_buoy = √(g * β_c * ΔC * H)
+    u_buoy = math.sqrt(max(G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * h, 1e-9))
+    u_crit = math.sqrt(max(G_GRAVITY * beta_c_m3_mol * delta_c_mol_m3 * d_h, 1e-9))  # Slot critical velocity
 
     # Natural convection Sherwood number (Ibl & Muller correlation for vertical plate):
-    # Sh_nat = 0.67 * (Gr_m * Sc)^(1/4) for laminar, or 0.15 * (Gr_m * Sc)^(1/3) for turbulent
-    ra_m = gr_m * sc
-    if ra_m < 1e9:
-        sh_nat = 0.67 * (ra_m ** 0.25)
+    # Sh_nat = 0.67 * (Gr_h * Sc)^(1/4) for laminar, or 0.15 * (Gr_h * Sc)^(1/3) for turbulent
+    ra_h = gr_h * sc
+    if ra_h < 1e9:
+        sh_nat = 0.67 * (ra_h ** 0.25)
     else:
-        sh_nat = 0.15 * (ra_m ** (1.0 / 3.0))
+        sh_nat = 0.15 * (ra_h ** (1.0 / 3.0))
 
     # Forced convection Sherwood number (Graetz/Leveque or turbulent duct):
     # Sh_forced = 1.85 * (Re * Sc * d_h / H)^(1/3)
@@ -201,7 +206,8 @@ def solve_solutal_mixed_convection(
         bulk_fe2_mol_L=c_bulk,
         surface_fe2_mol_L=c_surf,
         density_depletion_kg_m3=delta_rho,
-        grashof_number_Gr_m=gr_m,
+        grashof_number_Gr_H=gr_h,
+        grashof_number_Gr_dh=gr_dh,
         reynolds_number_Re=re,
         richardson_number_Ri_m=ri_m,
         buoyancy_velocity_m_s=u_buoy,

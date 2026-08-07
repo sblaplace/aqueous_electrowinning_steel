@@ -12,16 +12,16 @@ it transforms through **four distinct metallurgical stages**:
    - Martensite loses its initial c/a tetragonality, relaxing into low-tetragonality/cubic ferrite.
    - High hardness is maintained with slight relaxation of as-quenched transformation stress.
 
-2. **Stage 2 (200–300 °C)**:
+2. **Stage 2 (200–250 °C)**:
    - Decomposition of metastable retained austenite (γ_ret) into lower bainite (ferrite + Fe₃C).
    - Volume expansion during austenite transformation can cause dimensional distortion.
 
-3. **Stage 3 (250–350 °C)**:
+3. **Stage 3 (250–380 °C)**:
    - Transition ε-carbides dissolve and transform into **plate-like orthorhombic cementite** (Fe₃C).
    - This temperature window corresponds to **Tempered Martensite Embrittlement (TME)**:
      interlath carbide films degrade Charpy impact toughness.
 
-4. **Stage 4 (400–700 °C)**:
+4. **Stage 4 (380–700 °C)**:
    - Cementite precipitates spheroidize and coarsen via **Lifshitz–Slyozov–Wagner (LSW) Ostwald ripening**:
        r̄(t)³ - r̄₀³ = K_LSW(T) · t
      where the LSW coarsening rate constant is:
@@ -204,7 +204,7 @@ def simulate_tempering_kinetics(
     # Matrix friction + Hall-Petch base strength
     d_um = max(spec.grain_size_um, 0.1)
     sigma_base = 120.0 + 500.0 / math.sqrt(d_um)  # Hall-Petch base
-    yield_strength_mpa = sigma_base + orowan_mpa
+    yield_strength_mpa = min(sigma_base + orowan_mpa, 2200.0)  # Capped at realistic martensite capacity (2.2 GPa)
 
     # Charpy upper-shelf energy (J) and DBTT (°C)
     # Coarser carbides lower upper-shelf energy and raise DBTT (Griffith-Orowan crack initiation)

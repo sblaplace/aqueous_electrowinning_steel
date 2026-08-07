@@ -9,14 +9,14 @@
     "reasons": [
       "V_cell (4.44 V) or energy (4341 kWh/t) exceeds threshold"
     ],
-    "FE": 0.9823817309944289,
-    "pH_surface": 13.077027612991257,
-    "pH_precip": 5.89915807018206,
-    "feoh2_supersaturation": 0.2911087275736815,
-    "V_cell": 4.442813416520892,
-    "specific_energy_kWh_t": 4341.139970306093,
-    "j_lim_mA_cm2": 243.66134558318873,
-    "j_ratio_lim": 0.8208113581631591
+    "FE": 0.9823817317637723,
+    "pH_surface": 13.077027612696392,
+    "pH_precip": 5.878365518026838,
+    "feoh2_supersaturation": 0.29276979200262904,
+    "V_cell": 4.442785531588203,
+    "specific_energy_kWh_t": 4341.11272011826,
+    "j_lim_mA_cm2": 243.6613354599639,
+    "j_ratio_lim": 0.8208113922648268
   },
   "pass_fraction_pct": 13.333333333333334,
   "x_vals_j_mA_cm2": [

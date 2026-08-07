@@ -40,8 +40,8 @@
   },
   "warburg_chi_squared_improvement_factor": 511.2253982758336,
   "derived_properties": {
-    "exchange_current_A_from_rct": 0.0011958905289436985,
-    "exchange_current_density_mA_cm2": 1.1958905289436985,
+    "exchange_current_A_from_rct": 0.0011958906175843428,
+    "exchange_current_density_mA_cm2": 1.195890617584343,
     "n_electrons": 2,
     "temperature_K": 333.15,
     "dc_bias_V_vs_Ag_AgCl": -0.7

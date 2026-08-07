@@ -2,7 +2,7 @@
   "pourbaix": {
     "activity_M": 1.0,
     "temperature_C": 60.0,
-    "pH_Fe2_to_FeOH2": 5.85,
+    "pH_Fe2_to_FeOH2": 5.84,
     "pH_Fe3_to_FeOH3": 1.15,
     "pH_FeOH2_to_HFeO2": 18.3,
     "by_pH": {

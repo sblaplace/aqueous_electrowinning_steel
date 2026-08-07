@@ -1,12 +1,12 @@
 {
   "title": "Post-deposition gaseous carburization screening",
-  "date": "2026-08-06T19:17:28.781268",
+  "date": "2026-08-07T16:54:16.610888",
   "params": {
     "temperature_C": 900.0,
     "surface_c_wt": 1.1,
     "initial_c_wt": 0.02,
     "thickness_um": 1000.0,
-    "D_m2_s": 5.917507558419529e-12,
+    "D_m2_s": 5.917514232130204e-12,
     "phase": "austenite",
     "duration_hr": 4.0
   },
@@ -14,9 +14,9 @@
     "final_time_hr": 4.0,
     "final_case_depth_035_um": 500.0,
     "final_case_depth_050_um": 500.0,
-    "final_carbon_uptake_g_m2": 55.653235276043404,
+    "final_carbon_uptake_g_m2": 55.65326509547044,
     "final_surface_hv": 842.4649249139632,
-    "final_core_c_wt": 0.5078033245166326,
+    "final_core_c_wt": 0.5078038897812148,
     "sheet_thickness_um": 1000.0,
     "temperature_C": 900.0,
     "surface_carbon_wt": 1.1
@@ -51,5 +51,5 @@
     "Does NOT model carbide precipitation, retained austenite, or decarburization on quench",
     "Energy is only heating, not soak or atmosphere \u2014 screening only"
   ],
-  "time_estimate_500um_case": 5.589416040929389
+  "time_estimate_500um_case": 5.589409737244423
 }

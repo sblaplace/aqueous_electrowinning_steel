@@ -1,0 +1,50 @@
+{
+  "dc_at_50": {
+    "E_op_V_vs_SHE": -0.766,
+    "fe_wt_percent": 1.22,
+    "ni_wt_percent": 98.78,
+    "bulk_fe_ref_wt_percent": 48.76,
+    "current_efficiency_percent": 98.7,
+    "partial_currents_A_m2": {
+      "i_fe": 6.32,
+      "i_ni": 487.05,
+      "i_her": 6.63
+    },
+    "is_anomalous": false,
+    "mechanism": "hydroxide_suppression"
+  },
+  "pe_avg50_peak100": {
+    "E_op_V_vs_SHE": -0.77,
+    "fe_wt_percent": 1.32,
+    "ni_wt_percent": 98.68,
+    "bulk_fe_ref_wt_percent": 48.76,
+    "current_efficiency_percent": 98.6,
+    "partial_currents_A_m2": {
+      "i_fe": 6.82,
+      "i_ni": 486.11,
+      "i_her": 7.07
+    },
+    "is_anomalous": false,
+    "mechanism": "hydroxide_suppression",
+    "pulsed_surface_pH": 5.962117847357043,
+    "effective_boundary_layer_m": 4.5825189021202955e-05
+  },
+  "pre_avg50_peak100": {
+    "E_op_V_vs_SHE": -0.765,
+    "fe_wt_percent": 1.19,
+    "ni_wt_percent": 98.81,
+    "bulk_fe_ref_wt_percent": 48.76,
+    "current_efficiency_percent": 98.7,
+    "partial_currents_A_m2": {
+      "i_fe": 6.18,
+      "i_ni": 487.32,
+      "i_her": 6.5
+    },
+    "is_anomalous": false,
+    "mechanism": "hydroxide_suppression",
+    "pulsed_surface_pH": 5.773027093513818,
+    "effective_boundary_layer_m": 4.403598431600422e-05
+  },
+  "note": "PE/PRE surface pH lower (recovery) \u2192 less hydroxide suppression, higher Ni expected (if mechanism is hydroxide-driven)",
+  "figure": "/home/user/aqueous_electrowinning_steel/docs/figures/pulse_coupled_co_deposition.png"
+}

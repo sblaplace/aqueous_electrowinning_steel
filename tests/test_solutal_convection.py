@@ -22,7 +22,8 @@ def test_solutal_density_depletion_and_grashof():
 
     # 1.2 M Fe2+ depletion gives ~25-80 kg/m3 density drop
     assert 20.0 <= res.density_depletion_kg_m3 <= 90.0
-    assert res.grashof_number_Gr_m > 1e4
+    assert res.grashof_number_Gr_H > 1e10  # Height-scale Grashof (~4e11)
+    assert res.grashof_number_Gr_dh > 1e4  # Gap-scale Grashof (~8.9e4)
     assert res.buoyancy_velocity_m_s > 0.05
     assert not res.is_flow_reversal_threat
 

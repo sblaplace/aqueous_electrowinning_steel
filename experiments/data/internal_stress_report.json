@@ -42,8 +42,8 @@
     "derived": {
       "grain_size_um": 3.5,
       "C_H_diffusible_ppm": 239.92074923042284,
-      "thickness_um": 28.116355658290008,
-      "deposition_rate_um_hr": 112.46542263316003
+      "thickness_um": 28.116355652461902,
+      "deposition_rate_um_hr": 112.46542260984761
     },
     "corrections": {
       "saccharin_g_L": 0.0,
@@ -88,8 +88,8 @@
         "derived": {
           "grain_size_um": 3.5,
           "C_H_diffusible_ppm": 239.92074923042284,
-          "thickness_um": 28.116355658290008,
-          "deposition_rate_um_hr": 112.46542263316003
+          "thickness_um": 28.116355652461902,
+          "deposition_rate_um_hr": 112.46542260984761
         },
         "corrections": {
           "saccharin_g_L": 0.0,
@@ -173,8 +173,8 @@
         "derived": {
           "grain_size_um": 1.3880567524446104,
           "C_H_diffusible_ppm": 123.93743450474437,
-          "thickness_um": 31.424162206324134,
-          "deposition_rate_um_hr": 125.69664882529653
+          "thickness_um": 31.42416219981036,
+          "deposition_rate_um_hr": 125.69664879924144
         },
         "corrections": {
           "saccharin_g_L": 0.0,
@@ -258,8 +258,8 @@
         "derived": {
           "grain_size_um": 3.5,
           "C_H_diffusible_ppm": 239.92074923042284,
-          "thickness_um": 28.116355658290008,
-          "deposition_rate_um_hr": 112.46542263316003
+          "thickness_um": 28.116355652461902,
+          "deposition_rate_um_hr": 112.46542260984761
         },
         "corrections": {
           "saccharin_g_L": 1.5,
@@ -398,12 +398,12 @@
     ],
     "uncertainty_budget": {
       "reference_stress_MPa": 413.08450300126094,
-      "reference_thickness_um": 56.232711316580016,
-      "deflection_at_reference_um": 5768.0994429917055,
+      "reference_thickness_um": 56.232711304923804,
+      "deflection_at_reference_um": 5768.099441796064,
       "small_deflection_valid": true,
-      "u_sigma_dial_gauge_MPa": 16.349796164188632,
-      "stress_resolution_dial_gauge_MPa": 0.7161535737792495,
-      "stress_resolution_profilometer_MPa": 0.07161535737792496,
+      "u_sigma_dial_gauge_MPa": 16.34979616487929,
+      "stress_resolution_dial_gauge_MPa": 0.7161535739276975,
+      "stress_resolution_profilometer_MPa": 0.07161535739276975,
       "dominant_uncertainty": "substrate_modulus",
       "note": "If the reference deflection is below the instrument floor, thin the shim (\u03b4 \u221d h_s\u207b\u00b2) or lengthen the gauge (\u03b4 \u221d L\u00b2)."
     },
