@@ -53,6 +53,11 @@ import numpy as np
 from .bath_startup import dissolved_o2_saturation_mol_L, fe2_oxidation_rate
 from .electrochemistry import FARADAY, Z_FE
 from .fe3_shuttle import D_FE3_REF_M2_S, fe3_solubility_cap_M
+from .ferric_hydroxide_phases import (
+    age_inventory,
+    blended_cap_M,
+    initial_phase_for_bath,
+)
 from .twin_physics import CellProcessModel
 from .env_coupling import DisturbanceInputs
 
@@ -108,6 +113,18 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, Any] = {
     "fe3_k_ox_ref": 1.0e-4,                # autoxidation k_ref, M⁻¹ s⁻¹ (bath_startup screening value)
     "fe3_Ea_ox_J_mol": 50_000.0,           # autoxidation apparent activation energy
 
+    # --- Fe(III) phase-specific sludge (Ostwald aging; OFF by default) ---
+    # With ``ferric_phase_aging_enabled`` on, the Fe(III) sludge inventory is
+    # aged along the ferrihydrite -> goethite -> hematite (sulfate) or
+    # akaganeite -> goethite -> hematite (chloride) ladder instead of being
+    # lumped as Fe(OH)3, so the [Fe3+] cap (and hence the H+ release schedule
+    # and the sludge bleed) follows the phase actually present.  When off
+    # everything above is byte-identical to the legacy Fe(OH)3 model.
+    "ferric_phase_aging_enabled": False,
+    "bath_anion": "sulfate",               # "sulfate" -> ferrihydrite, "chloride" -> akaganeite
+    "ferric_aging_t12_fh_gh_hr": 720.0,    # ferrihydrite/akaganeite -> goethite t1/2 @25C
+    "ferric_aging_t12_gh_hem_hr": 8760.0,  # goethite -> hematite t1/2 @25C
+
     # --- Electrical relaxation ---
     "electrolyte_conductivity_S_m": 10.0,  # S/m — electrolyte conductivity
     "electrode_gap_m": 0.02,              # m — inter-electrode gap
@@ -146,8 +163,14 @@ class BathAux:
     fe3_catholyte_M: float = 0.0
     fe3_reservoir_M: float = 0.0
     fe3_sludge_cumulative_mol: float = 0.0
+    # Fe(III) phase-specific sludge ledger (Ostwald aging; only touched while
+    # ``ferric_phase_aging_enabled`` is on).  ``ferric_phase_inventory`` maps
+    # phase name -> mol of Fe held as that solid; ``ferric_phase_initial`` is
+    # the phase fresh precipitation lands in for this bath's anion.
+    ferric_phase_inventory: Dict[str, float] = None  # type: ignore[assignment]
+    ferric_phase_initial: str = "ferrihydrite_2line"
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "T_reservoir_C": self.T_reservoir_C,
             "fe2_reservoir_M": self.fe2_reservoir_M,
@@ -155,10 +178,14 @@ class BathAux:
             "fe3_catholyte_M": self.fe3_catholyte_M,
             "fe3_reservoir_M": self.fe3_reservoir_M,
             "fe3_sludge_cumulative_mol": self.fe3_sludge_cumulative_mol,
+            "ferric_phase_inventory": dict(self.ferric_phase_inventory or {}),
+            "ferric_phase_initial": self.ferric_phase_initial,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, float]) -> "BathAux":
+    def from_dict(cls, d: Dict[str, Any]) -> "BathAux":
+        inv = d.get("ferric_phase_inventory")
+        inv_dict = dict(inv) if isinstance(inv, dict) else {}
         return cls(
             T_reservoir_C=d.get("T_reservoir_C", 55.0),
             fe2_reservoir_M=d.get("fe2_reservoir_M", 1.0),
@@ -166,6 +193,9 @@ class BathAux:
             fe3_catholyte_M=d.get("fe3_catholyte_M", 0.0),
             fe3_reservoir_M=d.get("fe3_reservoir_M", 0.0),
             fe3_sludge_cumulative_mol=d.get("fe3_sludge_cumulative_mol", 0.0),
+            ferric_phase_inventory=inv_dict,
+            ferric_phase_initial=str(
+                d.get("ferric_phase_initial", "ferrihydrite_2line")),
         )
 
 
@@ -187,6 +217,9 @@ def get_aux(design_point: Dict[str, Any]) -> BathAux:
         fe3_catholyte_M=design_point.get("fe3_catholyte_M", 0.0),
         fe3_reservoir_M=design_point.get("fe3_reservoir_M", 0.0),
         fe3_sludge_cumulative_mol=design_point.get("fe3_sludge_cumulative_mol", 0.0),
+        ferric_phase_inventory=dict(design_point.get("ferric_phase_inventory") or {}),
+        ferric_phase_initial=str(design_point.get("ferric_phase_initial",
+            initial_phase_for_bath(design_point.get("bath_anion", "sulfate")))),
     )
 
 
@@ -257,6 +290,8 @@ def step(
             fe3_catholyte_M=aux.fe3_catholyte_M,
             fe3_reservoir_M=aux.fe3_reservoir_M,
             fe3_sludge_cumulative_mol=aux.fe3_sludge_cumulative_mol,
+            ferric_phase_inventory=dict(aux.ferric_phase_inventory or {}),
+            ferric_phase_initial=aux.ferric_phase_initial,
         )
 
     dp = design_point
@@ -307,6 +342,18 @@ def step(
     shuttle_return_M_hr = 0.0   # shuttle flux Fe3+→Fe2+ returned to fe2 (M/hr)
     precip_rate_M_hr = 0.0      # Fe(OH)3 precipitation in catholyte (M/hr)
 
+    # Fe(III) phase-specific sludge (Ostwald aging; untouched while
+    # ``ferric_phase_aging_enabled`` is off).  ``phase_inv`` maps phase name ->
+    # mol of Fe held as that solid; ``ferric_initial`` is where fresh
+    # precipitation lands for this bath's anion.
+    ferric_aging_enabled = bool(_dp(dp, "ferric_phase_aging_enabled"))
+    bath_anion = str(_dp(dp, "bath_anion"))
+    ferric_initial = str(
+        dp.get("ferric_phase_initial") or initial_phase_for_bath(bath_anion))
+    phase_inv = dict(aux.ferric_phase_inventory or {})
+    if ferric_initial not in phase_inv:
+        phase_inv[ferric_initial] = 0.0
+
     fe3_enabled = bool(_dp(dp, "fe3_shuttle_enabled"))
     if fe3_enabled:
         # Shuttle sink mass-transfer coefficient (m/s) and area/volume (1/m),
@@ -351,12 +398,34 @@ def step(
                              + (fe3 - fe3_star) * (1.0 - decay) / k_tot_1_hr)
         shuttle_return_M_hr = k_shuttle_1_hr * integral_fe3_M_hr / dt_hr
 
-        # Fe(OH)3 hydrolysis cap, operator-split (instant precipitation of the
+        # Hydrolysis cap, operator-split (instant precipitation of the
         # above-cap excess — the dynamic analogue of fe3_shuttle's min(cap, ·)).
-        precip_M = max(0.0, fe3_tent - fe3_solubility_cap_M(pH))
+        # With Fe(III) phase aging on, the cap is the inventory-weighted,
+        # Ostwald-aged phase cap (ferrihydrite -> goethite -> hematite /
+        # akaganeite on the chloride path) instead of the single Fe(OH)3 solid,
+        # so the H+ release follows the phase's aging schedule.
+        if ferric_aging_enabled:
+            cap_cath = blended_cap_M(pH, phase_inv, ferric_initial)
+        else:
+            cap_cath = fe3_solubility_cap_M(pH)
+        precip_M = max(0.0, fe3_tent - cap_cath)
         fe3_next = fe3_tent - precip_M
         sludge_cum_next += precip_M * V_cath_L
         precip_rate_M_hr = precip_M / dt_hr
+        if ferric_aging_enabled:
+            # Fresh precipitate lands in the initial phase, then Ostwald-ages
+            # toward the less-soluble tail; the blended cap for the NEXT step
+            # drops as the inventory matures, pulling further Fe3+ out (and
+            # releasing 3 H+/Fe) on the aging schedule.
+            phase_inv[ferric_initial] += precip_M * V_cath_L
+            phase_inv = age_inventory(
+                phase_inv,
+                bath_anion=bath_anion,
+                dt_hr=dt_hr,
+                temperature_C=max(T_cath, 0.0),
+                t12_fh_gh_hr=_dp(dp, "ferric_aging_t12_fh_gh_hr"),
+                t12_gh_hem_hr=_dp(dp, "ferric_aging_t12_gh_hem_hr"),
+            )
 
         # Reservoir Fe3+: passive mixer fed by the catholyte return; the same
         # hydrolysis cap applies at the reservoir pH (a pH ~3.5 balance tank
@@ -588,6 +657,11 @@ def step(
         fe3_catholyte_M=fe3_next,
         fe3_reservoir_M=fe3_res_next,
         fe3_sludge_cumulative_mol=sludge_cum_next,
+        ferric_phase_inventory=(
+            dict(phase_inv) if (fe3_enabled and ferric_aging_enabled)
+            else dict(aux.ferric_phase_inventory or {})),
+        ferric_phase_initial=(ferric_initial if (fe3_enabled and ferric_aging_enabled)
+                              else aux.ferric_phase_initial),
     )
 
     return x_next, aux_next

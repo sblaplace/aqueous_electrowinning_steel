@@ -41,8 +41,10 @@ References
 """
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Optional
 from .bath_startup import dissolved_o2_saturation_mol_L, fe2_oxidation_rate
 from .electrochemistry import FARADAY, M_FE
+from .ferric_hydroxide_phases import solubility_cap_M as _phase_cap
 # Fe(OH)3 solubility product (25 °C): [Fe³⁺][OH⁻]³ ≈ 10^-38.7.
 # Screening value; the literature spread is ~1 decade.
 LOGKSP_FEOH3 = -38.7
@@ -93,6 +95,13 @@ class ShuttleParams:
     d_fe3_m2_s: float = D_FE3_REF_M2_S
     k_ox_ref: float = 1.0e-4            # M⁻¹ s⁻¹ (bath_startup screening value)
     Ea_ox_J_mol: float = 50_000.0
+    # Optional Fe(III) controlling phase.  ``None`` (default) keeps the legacy
+    # Fe(OH)3 (log Ksp -38.7) cap — byte-identical to before.  Set to a phase
+    # name from ferric_hydroxide_phases (e.g. ``"ferrihydrite_2line"`` for the
+    # fresh sulfate precipitate, ``"akaganeite"`` for the chloride path, or the
+    # aged ``"goethite"``/``"hematite"``) to size the sludge bleed against that
+    # phase's ~1-2-decade-lower cap.
+    ferric_phase: Optional[str] = None
 def _km_fe3(p: ShuttleParams) -> float:
     """Mass-transfer coefficient for Fe³⁺→cathode (m/s)."""
     return p.d_fe3_m2_s / p.boundary_layer_m
@@ -118,7 +127,12 @@ def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
     r_prod = _production_rate_M_s(p, s)          # mol/L/s
     area_per_vol_m = p.cathode_area_m2 / (p.catholyte_volume_L / 1000.0)
     km = _km_fe3(p)
-    cap = fe3_solubility_cap_M(p.pH)
+    if p.ferric_phase is None:
+        cap = fe3_solubility_cap_M(p.pH)
+        ferric_phase = "feoh3_amorphous"
+    else:
+        cap = _phase_cap(p.ferric_phase, p.pH)
+        ferric_phase = p.ferric_phase
     fe3_uncapped = r_prod / (km * area_per_vol_m)
     fe3_ss = min(fe3_uncapped, cap)
     precipitated = fe3_uncapped > cap
@@ -138,6 +152,7 @@ def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
         "fe3_production_M_s": r_prod,
         "fe3_ss_M": fe3_ss,
         "fe3_solubility_cap_M": cap,
+        "ferric_phase": ferric_phase,
         "feoh3_precipitation_active": precipitated,
         "i_shuttle_A_m2": i_shuttle,
         "iron_sludge_loss_mol_m2_s": sludge_flux,
