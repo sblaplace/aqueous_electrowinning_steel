@@ -158,7 +158,10 @@ GATE_REGISTRY: Dict[str, GateRef] = {
         GateRef("g_product_ox", "post-harvest oxidation & passivation spec",
                 "product_oxidation", "V6 §1.2 proposal — UNMODELLED."),
         GateRef("g_rinse", "rinse carryover → charge sulfur",
-                "rinse_carryover", "V6 §1.3 proposal — UNMODELLED."),
+                "rinse_carryover",
+                "V6 §1.3 implemented (L1) — Landau–Levich film / cake "
+                "liquor + counter-current cascade → charge S/Na/B budgets, "
+                "conductivity endpoint; feeds melt_balance live."),
         GateRef("g_briquet", "densification / briquetting product-form gate",
                 "briquetting", "V6 §1.4 proposal — UNMODELLED."),
         GateRef("g_melt_balance", "melt-shop remelt verdict (yield/boil/slag)",

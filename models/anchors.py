@@ -556,10 +556,10 @@ ANCHORS: Dict[str, Anchor] = {
         value=0.010,
         paper_value=0.010,
         uncertainty=0.010,
-        ref="Well-rinsed counter-current wash screening (V6 §1.3 target "
-            "window)",
-        notes="Sulfate-film carryover after a proper rinse train; "
-              "rinse_carryover.py will compute it.",
+        ref="Well-rinsed counter-current wash screening band; "
+            "rinse_carryover.py defaults land at or below it",
+        notes="Fallback only; melt_balance calls rinse_carryover live "
+              "(V6 §1.3).",
     ),
     "LIME_PER_S_KG": Anchor(
         key="LIME_PER_S_KG",
@@ -761,6 +761,128 @@ ANCHORS: Dict[str, Anchor] = {
               "idle-with-access ≈ 0.05 central; open headspace ≈ 1.0.  "
               "O₂ mass transfer is the dominant idle-corrosion driver, so "
               "this knob moves the answer most.",
+    ),
+    # ─── Rinse carryover — bath liquor becomes melt-shop sulfur ────
+    #     (rinse_carryover.py; V6 §1.3)
+    "BATH_SURFACE_TENSION_N_M": Anchor(
+        key="BATH_SURFACE_TENSION_N_M",
+        value=0.060,
+        paper_value=0.060,
+        uncertainty=0.015,
+        ref="Concentrated sulfate electrolyte ± plating additives "
+            "(water 0.072; electrolyte/surfactant shifts down), screening",
+        notes="Landau–Levich film: l_c = √(σ/ρg), Ca = μv/σ.",
+    ),
+    "DRAIN_RETENTION_FRAC": Anchor(
+        key="DRAIN_RETENTION_FRAC",
+        value=0.30,
+        paper_value=0.30,
+        uncertainty=0.20,
+        ref="Gravity-drain + wiper/air-knife practice on withdrawn webs "
+            "(tankhouse/film-coating practice), screening",
+        notes="Fraction of the Landau–Levich film that survives drainage "
+              "to the rinse train; without wipers the full film carries.",
+    ),
+    "POWDER_CAKE_LIQUOR_FRAC": Anchor(
+        key="POWDER_CAKE_LIQUOR_FRAC",
+        value=0.08,
+        paper_value=0.08,
+        uncertainty=0.04,
+        ref="Drained filter-cake liquor hold-up (industrial filtration / "
+            "centrifuge practice for fine powders), screening",
+        notes="Interstitial liquor per kg of powder cake at the rinse-"
+              "train inlet; the powder column's carryover mechanism "
+              "(vs the web's Landau–Levich film).",
+    ),
+    "RINSE_RATIO": Anchor(
+        key="RINSE_RATIO",
+        value=5.0,
+        paper_value=5.0,
+        uncertainty=3.0,
+        ref="Tankhouse rinse practice — fresh-water : drag-out volume "
+            "ratio for a counter-current rinse train, screening",
+        notes="Cu/Ni tankhouses run r ≈ 2–20 per train depending on "
+              "water cost and drag-out value; counter-flow staging is "
+              "what makes low r effective (c_n = c_0/(Σ r^k)).",
+    ),
+    "RINSE_STAGES": Anchor(
+        key="RINSE_STAGES",
+        value=3.0,
+        paper_value=3.0,
+        uncertainty=1.0,
+        ref="Tankhouse cascade practice — counter-current rinse stages "
+            "before drying, screening",
+        notes="The V6 §1.3 steel-grade knob: stage count × rinse ratio "
+              "sets charge S on the product.",
+    ),
+    "PRODUCT_FOIL_THICKNESS_UM": Anchor(
+        key="PRODUCT_FOIL_THICKNESS_UM",
+        value=15.0,
+        paper_value=15.0,
+        uncertainty=10.0,
+        ref="Drum/harvested foil-flake thickness band (electrofoil "
+            "practice, cell_architecture drum_and_strip family), screening",
+        notes="Sets web area per tonne — and therefore the liquor film "
+              "mass per tonne — for the web carryover mechanism.",
+    ),
+    "WEB_SPEED_M_S": Anchor(
+        key="WEB_SPEED_M_S",
+        value=0.25,
+        paper_value=0.25,
+        uncertainty=0.15,
+        ref="Fallback only — live default from cell_architecture default "
+            "velocities (drum/belt 0.25–1.0 m/s, Cu-foil practice 5–30 "
+            "m/min band)",
+        notes="Fallback for the withdrawal speed when cell_architecture "
+              "is unavailable.",
+    ),
+    "BATH_CONDUCTIVITY_MS_CM": Anchor(
+        key="BATH_CONDUCTIVITY_MS_CM",
+        value=100.0,
+        paper_value=100.0,
+        uncertainty=50.0,
+        ref="1–1.5 M sulfate electrolyte conductivity, screening "
+            "(order 50–150 mS/cm)",
+        notes="Final-rinse endpoint baseline: rinse-water conductivity ≈ "
+              "bath conductivity × the cascade dilution factor.",
+    ),
+    "RINSE_ENDPOINT_US_CM": Anchor(
+        key="RINSE_ENDPOINT_US_CM",
+        value=500.0,
+        paper_value=500.0,
+        uncertainty=400.0,
+        ref="Tankhouse final-rinse conductivity acceptance practice, "
+            "screening",
+        notes="The metrology consumable: a cheap conductivity pen on the "
+              "last stage accepts/rejects the rinse train endpoint.",
+    ),
+    "RINSE_BATH_FE2_M": Anchor(
+        key="RINSE_BATH_FE2_M",
+        value=1.0,
+        paper_value=1.0,
+        uncertainty=0.5,
+        ref="docs/BATH_SPEC.md §1.1 (1.0 M Fe²⁺ operating target; "
+            "chemical_osmosis catholyte variant 1.5 M)",
+        notes="Sulfate speciation screening: total SO₄²⁻ ≈ [Fe²⁺] + "
+              "[Na₂SO₄] + [H⁺] (pH 2 → 0.01 M).",
+    ),
+    "RINSE_BATH_NA2SO4_M": Anchor(
+        key="RINSE_BATH_NA2SO4_M",
+        value=0.0,
+        paper_value=0.0,
+        uncertainty=0.5,
+        ref="docs/BATH_SPEC.md §1 (Na₂SO₄ optional, 0 for first runs); "
+            "chemical_osmosis.py divided-cell catholyte runs 0.5 M",
+        notes="Supporting-electrolyte sodium: the Na budget channel.",
+    ),
+    "RINSE_BATH_H3BO3_M": Anchor(
+        key="RINSE_BATH_H3BO3_M",
+        value=0.40,
+        paper_value=0.40,
+        uncertainty=0.10,
+        ref="docs/BATH_SPEC.md §1.2 (0.40 M boric-acid buffer)",
+        notes="Borate carryover → charge boron: ppm-B is boron-steel "
+              "territory; tracked, not gated here.",
     ),
 }
 

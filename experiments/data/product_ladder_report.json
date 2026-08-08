@@ -94,11 +94,11 @@
           "gate_id": "g_rinse",
           "name": "rinse carryover \u2192 charge sulfur",
           "module": "rinse_carryover",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.3 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.3 implemented (L1) \u2014 Landau\u2013Levich film / cake liquor + counter-current cascade \u2192 charge S/Na/B budgets, conductivity endpoint; feeds melt_balance live."
         },
         {
           "gate_id": "g_briquet",
@@ -131,8 +131,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 2,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 3,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -230,11 +230,11 @@
           "gate_id": "g_rinse",
           "name": "rinse carryover \u2192 charge sulfur",
           "module": "rinse_carryover",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.3 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.3 implemented (L1) \u2014 Landau\u2013Levich film / cake liquor + counter-current cascade \u2192 charge S/Na/B budgets, conductivity endpoint; feeds melt_balance live."
         },
         {
           "gate_id": "g_briquet",
@@ -287,8 +287,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 4,
-      "n_l1_gates": 3,
+      "n_unmodelled_gates": 3,
+      "n_l1_gates": 4,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "408db9edbaae45de",
+      "models/product_ladder.py": "241f6c904afe97cb",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "df009136da232bfe",
+      "models/anchors.py": "c831fa21e4cc71e0",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

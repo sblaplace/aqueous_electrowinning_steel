@@ -20,10 +20,10 @@
 > (junction potentials, deposit aging) that the Q3/RDE calibration campaign will
 > silently inherit if they are not bounded first.
 >
-> Items **§1.1** (`models/deposit_corrosion.py`) and **§1.5**
-> (`models/melt_balance.py`) have since been implemented at screening (L1) scope
-> with named anchors, per repo convention; everything else below remains a
-> proposal.
+> Items **§1.1** (`models/deposit_corrosion.py`), **§1.3**
+> (`models/rinse_carryover.py`) and **§1.5** (`models/melt_balance.py`) have
+> since been implemented at screening (L1) scope with named anchors, per repo
+> convention; everything else below remains a proposal.
 
 ---
 
@@ -119,6 +119,14 @@ output into §1.5. Anchors: Mott–Cabrera oxidation theory; Semenov (1928);
 NFPA/industrial PM handling practice for iron powder.
 
 ### 1.3 Rinse chemistry — electrolyte carryover becomes melt-shop sulfur
+
+> **Status: implemented (L1)** — `models/rinse_carryover.py`
+> (`python -m models.rinse_carryover`, CLI `aq-steel-rinse-carryover`),
+> feeding `melt_balance.py` charge S live.  *Implementation erratum:* the
+> cascade formula printed below, `c_n = c_0·(r/(1+r))^n`, uses
+> drag-out:water as "r"; with the standard tankhouse definition (r =
+> water:drag-out) the exact counter-current result is
+> `c_n/c_0 = 1/(1 + r + r² + … + r^n)` — implemented as the latter.
 
 **The gap.** `hot_shortness.py` (Round 5, E1) caps S (via Cu/Sn synergy) in the
 *finished steel*, and `bath_impurity_codeposition.py` puts bath S into the
@@ -679,7 +687,7 @@ Baird's strain-aging reviews; ammoniacal iron plating literature.
   no N-in-metal or Cottrell/Lüders physics anywhere.
 
 All items above are **proposals (status: proposed) unless marked "Status:
-implemented" in their section headers** (currently §1.1, §1.5). Each
+implemented" in their section headers** (currently §1.1, §1.3, §1.5). Each
 should ship with the repo's conventions: a standalone `models/*.py` with CLI,
 `tests/test_*.py`, `pyproject.toml` entry point, `SCREENING_FLAG = "unvalidated
 (L1)"` header, and one row per numeric claim in `references/anchors.md`.

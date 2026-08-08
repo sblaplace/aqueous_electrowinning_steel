@@ -47,6 +47,9 @@ Live derivations
   post-harvest pickup is an anchor add-on (``models/product_oxidation.py``
   will replace it — V6 §1.2).
 * the H verdict is a live call to ``models/melt_hydrogen.py``.
+* charge S comes live from ``models/rinse_carryover.py`` (counter-current
+  rinse-train carryover, V6 §1.3); anchor ``CHARGE_S_WT_PCT`` is the
+  fallback.
 
 Screening flag
 --------------
@@ -158,6 +161,22 @@ def _live_as_deposited_o_wt_pct() -> float:
     return as_deposited + pickup
 
 
+def _live_charge_s_wt_pct() -> float:
+    """Charge S (wt%) from the rinse-train physics + anchored fallback.
+
+    try/except with anchor fallback, same pattern as the oxygen link:
+    ``rinse_carryover.default_charge_s_wt_pct`` computes the well-rinsed
+    counter-current train's carryover (V6 §1.3); the anchor row documents
+    the screening band it replaced.
+    """
+    try:
+        from .rinse_carryover import default_charge_s_wt_pct
+
+        return float(default_charge_s_wt_pct())
+    except Exception:  # pragma: no cover - defensive
+        return get_anchor("CHARGE_S_WT_PCT").value
+
+
 def _resolved_state(state: ChargeState) -> Dict[str, float]:
     return {
         "o_wt_pct": (
@@ -166,7 +185,7 @@ def _resolved_state(state: ChargeState) -> Dict[str, float]:
         ),
         "s_wt_pct": (
             state.s_wt_pct if state.s_wt_pct is not None
-            else get_anchor("CHARGE_S_WT_PCT").value
+            else _live_charge_s_wt_pct()
         ),
         "fines_fraction": (
             state.fines_fraction if state.fines_fraction is not None
@@ -407,6 +426,7 @@ def model_scope() -> Dict[str, Any]:
         "live_derivations": [
             "oxygen_in_iron.OxygenInIronModel.predict (as-deposited O)",
             "melt_hydrogen.melt_hydrogen_budget (H boil-off verdict)",
+            "rinse_carryover.default_charge_s_wt_pct (charge sulfur, V6 §1.3)",
         ],
         "exact": [
             "C / CO / FeO stoichiometry of carboreduction",
