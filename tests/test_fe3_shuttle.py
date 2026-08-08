@@ -126,3 +126,31 @@ def test_scenario_table_is_finite_and_flagged():
     for row in table["rows"]:
         assert isfinite(row["i_shuttle_A_m2"]) and row["i_shuttle_A_m2"] >= 0.0
         assert isfinite(row["ce_loss_fraction_at_j"]) and row["ce_loss_fraction_at_j"] >= 0.0
+
+
+def test_anodic_fe3_source_adds_flux_scaled_to_area_over_volume():
+    """§2.5 closure: pulse-reverse anodic Fe³⁺ enters production as flux·A/V_L
+    (1:1, already Fe³⁺ — no ×4), default 0 → unchanged legacy behaviour."""
+    p = ShuttleParams(pH=2.0, k_ox_ref=0.0)          # zero autoxidation background
+    s = sealed_divided_cell()                         # zero crossover too
+    base = steady_state(p, s)
+    assert base["fe3_production_M_s"] == 0.0
+    # optional param is genuinely optional / backward compatible
+    assert steady_state(p, s, anodic_fe3_source_mol_m2_s=0.0)["fe3_production_M_s"] == 0.0
+    flux = 1.0e-5  # mol Fe³⁺/m²/s of cathode
+    ss = steady_state(p, s, anodic_fe3_source_mol_m2_s=flux)
+    expected = flux * p.cathode_area_m2 / p.catholyte_volume_L
+    assert ss["anodic_fe3_source_mol_m2_s"] == pytest.approx(flux)
+    assert ss["fe3_production_M_s"] == pytest.approx(expected, rel=1e-12)
+
+
+def test_anodic_fe3_source_can_seed_feoh3_sludge():
+    """A strong reverse-pulse Fe³⁺ source pushes the bath past the Fe(OH)₃
+    cap → sludge precipitation during electrolysis (the restart/H₂ coupling)."""
+    p = ShuttleParams(pH=2.0, k_ox_ref=0.0)
+    s = sealed_divided_cell()
+    ss = steady_state(p, s, anodic_fe3_source_mol_m2_s=1.0e-2)
+    assert ss["feoh3_precipitation_active"]
+    assert ss["fe3_ss_M"] == pytest.approx(ss["fe3_solubility_cap_M"])
+    assert ss["iron_sludge_loss_mol_m2_s"] > 0.0
+    assert ss["iron_sludge_loss_g_L_day"] > 0.0

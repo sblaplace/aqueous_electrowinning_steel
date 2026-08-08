@@ -63,11 +63,91 @@ from .kinetics import (
     arrhenius_diffusivity,
     surface_bv_branches,
 )
+from .pourbaix import E0_FE3_FE2, LOGKSP_FEOH3
 
 # Standard diffusivities (m^2/s), 25 °C anchors (Arrhenius-scaled to the
 # model temperature at construction; kinetics.py conventions)
 DIFFUSIVITY_FE2 = 7.2e-10   # Fe²⁺ infinite-dilution, 25°C (CRC); consistent with transport.py D_FE
 DIFFUSIVITY_H = 9.31e-9
+
+# ─── Fe²⁺/Fe³⁺ anodic-dissolution split (CHEM_PHYS_REVIEW §2.5, L0) ─────
+# Equilibrium potential of the Fe²⁺/Fe³⁺ couple (V vs SHE) — the
+# thermodynamic anchor of the reverse-pulse oxidation-state split
+# (porbaix.py; pH-independent, no H⁺ in the couple).
+E0_FE3_FE2_V = E0_FE3_FE2
+# Canonical Fe/Fe²⁺ equilibrium potential (V vs SHE) — the reference for the
+# reverse-pulse anodic overpotential η = E − E_eq(Fe) that the BV branch spans
+# (surface_bv_branches default), not the fixed Fe²⁺/Fe³⁺ couple above.
+E_EQ_FE_V = -0.440
+# Fe³⁺ hydrolysis precipitation pH (Pourbaix construction, a_Fe = 0.1): above
+# this, aqueous Fe³⁺ is hydrolysed to Fe(OH)₃ sludge, so the effective
+# Fe²⁺/Fe³⁺ split collapses toward Fe²⁺.  (≈ 1.48 at 25 °C.)
+PH_FE3_PPT = 14.0 + (LOGKSP_FEOH3 - math.log10(0.1)) / 3.0
+# Anodic overpotential (η = E − E_eq(Fe)) at which the Fe³⁺ fraction reaches
+# half its ceiling (V).  Fitted screening value, NOT gate evidence.
+FE3_CHAR_V = 0.5
+# Strength of the pH suppression of Fe³⁺: the aqueous Fe³⁺ split falls by 10×
+# per pH unit above the Fe³⁺ precipitation boundary.
+PH_SUPPRESS_PER_UNIT = 1.0
+
+
+def fe3_fraction_on_anodic(
+    anodic_overpotential_V: float,
+    ph: float,
+    temperature_C: float = 50.0,
+    fe3_char_v: float = FE3_CHAR_V,
+    ph_ppt: Optional[float] = None,
+    ph_suppress_per_unit: float = PH_SUPPRESS_PER_UNIT,
+) -> float:
+    """Fraction of anodic Fe dissolution released as Fe³⁺ (screening, L0).
+
+    Real reverse-pulse dissolution is not all Fe²⁺: an anodic flux oxidises
+    freshly-dissolved iron toward Fe³⁺ (the E0_Fe3/Fe2 = 0.771 V line of
+    porbaix.py).  That Fe³⁺ seeds Fe(OH)₃ sludge and the H₂ problem at
+    restart.  The aqueous Fe³⁺ fraction
+
+        f_Fe3 = [1 + (η_char/η)²]⁻¹ · 10^(−κ·max(pH − pH_ppt, 0))
+
+    rises monotonically with anodic overpotential η = E − E_eq(Fe) (the
+    driving force the resolved BV anodic branch actually spans — the model's
+    reverse-pulse E tops out well anodic of E_eq but short of 0.771 V, so η
+    is the live signal, referenced to the 0.771 V couple as its asymptotic
+    anchor) and FALLS with rising pH as Fe³⁺ is hydrolysed to Fe(OH)₃ sludge.
+
+    It returns 0 at η = 0 and decays to 0 at high pH, so it reproduces the
+    legacy 100 %-Fe²⁺ anodic branch at the reference operating point.  Charge
+    is NOT conserved here — the caller must apply the charge-weighted split
+    (2 e⁻/Fe²⁺ vs 3 e⁻/Fe³⁺) to keep the current balance exact.
+    """
+    eta = max(float(anodic_overpotential_V), 0.0)
+    f_eta = 1.0 / (1.0 + (fe3_char_v / eta) ** 2) if eta > 0.0 else 0.0
+    ppt = PH_FE3_PPT if ph_ppt is None else float(ph_ppt)
+    excess = max(float(ph) - ppt, 0.0)
+    f_ph = 10.0 ** (-ph_suppress_per_unit * excess)
+    return min(float(f_eta * f_ph), 1.0)
+
+
+def fe3_charge_split(fe_total_current_A_m2: float, fe3_fraction: float) -> Tuple[float, float]:
+    """Charge-weighted Fe²⁺/Fe³⁺ partial currents for a total Fe-branch current.
+
+    ``fe_total_current_A_m2`` is the resolved Fe-branch current (signed;
+    negative on a reverse-pulse anodic branch).  With Fe-atom flux ``N``,
+    ``i_total = F·N·(2 + f)``; the Fe²⁺ path (2 e⁻) and the Fe³⁺ path
+    (3 e⁻) carry
+
+        i_Fe2 = i_total·2(1−f)/(2+f),   i_Fe3 = i_total·3f/(2+f),
+
+    which conserves charge (``i_Fe2 + i_Fe3 == i_total``) while the Fe³⁺ path
+    strips fewer Fe atoms per coulomb (3 e⁻/Fe vs 2 e⁻/Fe).  Returns
+    ``(fe2_current, fe3_current)``, both signed like the input.
+    """
+    f = max(min(float(fe3_fraction), 1.0), 0.0)
+    if f <= 0.0:
+        return float(fe_total_current_A_m2), 0.0
+    d = 2.0 + f
+    fe2 = float(fe_total_current_A_m2) * 2.0 * (1.0 - f) / d
+    fe3 = float(fe_total_current_A_m2) * 3.0 * f / d
+    return fe2, fe3
 
 
 @dataclass(frozen=True)
@@ -155,6 +235,15 @@ class PulseResult:
     waveform: PulseWaveform
     cathode_potential_V: Optional[np.ndarray] = None
     proton_limited_steps_fraction: float = 0.0
+    # Fe²⁺/Fe³⁺ anodic-dissolution split (CHEM_PHYS_REVIEW §2.5, L0).
+    # fe3_current_A_m2 is the Fe³⁺-path partial current (negative on a
+    # reverse pulse, signed like fe_current); all-zero when fe3_split is off.
+    fe3_current_A_m2: Optional[np.ndarray] = None
+    # Cycle-and-run-averaged Fe³⁺ production flux from the anodic branch
+    # (mol Fe³⁺/m²/s of cathode) — the coupling handle into fe3_shuttle.
+    cycle_avg_anodic_fe3_flux_mol_m2_s: float = 0.0
+    # Same, as a fraction of the total anodic Fe dissolution charge.
+    cycle_avg_anodic_fe3_fraction: float = 0.0
 
     def summary(self) -> Dict[str, Any]:
         """Return unit-labelled summary dictionary."""
@@ -213,6 +302,7 @@ class PulseDepositionModel:
         temperature_C: float = 50.0,
         kinetics: str = "bv",
         grid_points: int = 51,
+        fe3_split: bool = False,
     ) -> None:
         if boundary_layer_m <= 0.0:
             raise ValueError("boundary_layer_m must be positive")
@@ -235,6 +325,7 @@ class PulseDepositionModel:
         self.c_h_bulk_mol_m3 = (10.0 ** (-bulk_pH)) * 1000.0
         self.temperature_C = temperature_C
         self.kinetics = kinetics
+        self.fe3_split = bool(fe3_split)
         T_K = temperature_C + 273.15
         self.diffusivity_fe = arrhenius_diffusivity(
             diffusivity_fe_m2_s, T_K, EA_DIFFUSION_J_MOL)
@@ -279,8 +370,11 @@ class PulseDepositionModel:
         surf_ph = np.zeros(n_steps + 1)
         j_fe = np.zeros(n_steps + 1)
         j_her = np.zeros(n_steps + 1)
+        j_fe3 = np.zeros(n_steps + 1)
         inst_eff = np.zeros(n_steps + 1)
         n_proton_limited = 0
+        fe3_flux_sum = 0.0      # mol Fe³⁺/m² of anode flux, summed over steps
+        anodic_i_sum = 0.0      # Σ of anodic Fe-dissolution current magnitude (A/m²)
 
         # Record initial state
         applied_j[0] = waveform.evaluate_current_A_m2(0.0)
@@ -305,11 +399,22 @@ class PulseDepositionModel:
             c_h_surf = max(c_h[0], 1e-12)
 
             i_fe_step, i_her_step, eff_step, pot_step = self._kinetic_split(j_app, c_fe_surf, c_h_surf)
-            j_fe[step] = i_fe_step
+            # Fe²⁺/Fe³⁺ anodic-dissolution split (opt-in, §2.5).  On an anodic
+            # Fe branch (reverse pulse OR open-circuit rest corrosion) the total
+            # i_fe is apportioned charge-consistently between the Fe²⁺ path
+            # (2 e⁻/Fe) and the Fe³⁺ path (3 e⁻/Fe); the Fe³⁺ produced is
+            # reported for fe3_shuttle closure and subtracted from the Fe²⁺
+            # released back to the film.
+            fe2_current, fe3_current, fe3_flux = self._split_anodic_fe3(
+                i_fe_step, pot_step, c_h_surf)
+            j_fe[step] = fe2_current
+            j_fe3[step] = fe3_current
             j_her[step] = i_her_step
             inst_eff[step] = eff_step
             if pot_arr is not None:
                 pot_arr[step] = pot_step
+            fe3_flux_sum += fe3_flux
+            anodic_i_sum += max(-i_fe_step, 0.0)   # anodic Fe-dissolution current
 
             # Envelope diagnostic (counted, never rescaled — see helper).
             n_proton_limited += self._proton_limited_step(i_her_step, c_h_surf)
@@ -317,7 +422,7 @@ class PulseDepositionModel:
             # Surface fluxes (mol / m^2 s)
             # Positive current -> cathodic (depletion of Fe2+, consumption of H+)
             # Negative current -> anodic (dissolution of Fe, no HER)
-            flux_fe = -i_fe_step / (2.0 * FARADAY)
+            flux_fe = -fe2_current / (2.0 * FARADAY)
             flux_h = -i_her_step / FARADAY
 
             # Advance 1D profiles using Crank-Nicolson step
@@ -331,7 +436,9 @@ class PulseDepositionModel:
         j_last = waveform.evaluate_current_A_m2(time_arr[-1])
         applied_j[-1] = j_last
         i_fe_last, i_her_last, eff_last, pot_last = self._kinetic_split(j_last, c_fe[0], c_h[0])
-        j_fe[-1] = i_fe_last
+        fe2_last, fe3_last, _ = self._split_anodic_fe3(i_fe_last, pot_last, c_h[0])
+        j_fe[-1] = fe2_last
+        j_fe3[-1] = fe3_last
         j_her[-1] = i_her_last
         inst_eff[-1] = eff_last
         if pot_arr is not None:
@@ -361,6 +468,15 @@ class PulseDepositionModel:
         peak_depletion = float(np.min(surf_fe) / self.fe_bulk_M)
         max_ph = float(np.max(surf_ph))
 
+        # Cycle-and-run-averaged Fe³⁺ production from the anodic branch.
+        cycle_avg_fe3_flux = fe3_flux_sum / max(n_steps, 1)     # mol Fe³⁺/m²/s
+        # Charge-weighted Fe³⁺ fraction of total anodic Fe dissolution:
+        # Σ(-i_Fe3)·dt / Σ(-i_Fe)·dt = fe3_flux_sum·3F / anodic_i_sum (dt cancels,
+        # since each step's Fe³⁺ charge is fe3_flux·3F·dt and its 3F·fe3_flux = -i_Fe3).
+        cycle_avg_fe3_frac = 0.0
+        if anodic_i_sum > 0.0:
+            cycle_avg_fe3_frac = fe3_flux_sum * 3.0 * FARADAY / anodic_i_sum
+
         return PulseResult(
             time_s=time_arr,
             applied_current_A_m2=applied_j,
@@ -377,6 +493,9 @@ class PulseDepositionModel:
             waveform=waveform,
             cathode_potential_V=pot_arr,
             proton_limited_steps_fraction=n_proton_limited / max(n_steps, 1),
+            fe3_current_A_m2=j_fe3,
+            cycle_avg_anodic_fe3_flux_mol_m2_s=float(cycle_avg_fe3_flux),
+            cycle_avg_anodic_fe3_fraction=float(cycle_avg_fe3_frac),
         )
 
     def _kinetic_split(self, j_app: float, c_fe_surf_mol_m3: float, c_h_surf_mol_m3: float) -> Tuple[float, float, float, Optional[float]]:
@@ -391,6 +510,47 @@ class PulseDepositionModel:
                 j_app, c_fe_surf_mol_m3, c_h_surf_mol_m3)
             return i_fe, i_her, eff, None
         return self._kinetic_split_bv(j_app, c_fe_surf_mol_m3, c_h_surf_mol_m3)
+
+    def _split_anodic_fe3(
+        self, i_fe_step: float, pot_step: Optional[float], c_h_surf_mol_m3: float
+    ) -> Tuple[float, float, float]:
+        """Apportion a resolved Fe-branch current into Fe²⁺/Fe³⁺ partial currents.
+
+        Opt-in (``self.fe3_split``) and only meaningful when the resolved Fe
+        branch is actually anodic (``i_fe_step < 0``): the total is split
+        charge-consistently — Fe²⁺ at 2 e⁻/Fe, Fe³⁺ at 3 e⁻/Fe — keyed on the
+        anodic overpotential (pot − E_eq(Fe)) and surface pH.  Returns
+        ``(fe2_current, fe3_current, fe3_flux_mol_m2_s)``; with the flag off,
+        or on a non-anodic step, the whole current stays Fe²⁺ and the Fe³⁺
+        flux is 0 (legacy behaviour).
+        """
+        if not (self.fe3_split and pot_step is not None and i_fe_step < 0.0):
+            return float(i_fe_step), 0.0, 0.0
+        ph_surf = -math.log10(max(c_h_surf_mol_m3 / 1000.0, 1e-14))
+        f_fe3 = fe3_fraction_on_anodic(
+            pot_step - E_EQ_FE_V, ph_surf, self.temperature_C)
+        fe2, fe3 = fe3_charge_split(i_fe_step, f_fe3)
+        return fe2, fe3, -fe3 / (3.0 * FARADAY)   # mol Fe³⁺/m²/s
+
+    def fe3_shuttle_closure(self, result: PulseResult, shuttle_params=None, scenario=None) -> Dict[str, Any]:
+        """Close the pulse-reverse Fe³⁺ production through fe3_shuttle.
+
+        Feeds the run-averaged anodic Fe³⁺ flux carried by ``result`` into
+        ``fe3_shuttle.steady_state`` as an extra Fe³⁺ source term, so the
+        Fe(OH)₃ sludge and shuttle CE-leak that the CHEM_PHYS_REVIEW §2.5
+        split seeds are reported by the same Fe³⁺ triangle the bath dynamics
+        already close (models/fe3_shuttle.py).  Defaults to the RC-1
+        catholyte and the sealed divided cell; both can be overridden.
+        """
+        from .fe3_shuttle import ShuttleParams, sealed_divided_cell, steady_state
+
+        p = shuttle_params if shuttle_params is not None else ShuttleParams(
+            pH=self.bulk_pH, temperature_C=self.temperature_C)
+        s = scenario if scenario is not None else sealed_divided_cell()
+        return steady_state(
+            p, s,
+            anodic_fe3_source_mol_m2_s=result.cycle_avg_anodic_fe3_flux_mol_m2_s,
+        )
 
     def _proton_limited_step(self, i_her_step: float, c_h_surf_mol_m3: float) -> int:
         """Return 1 when this step is outside the two-species film's envelope.

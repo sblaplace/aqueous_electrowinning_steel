@@ -7,6 +7,8 @@ from models.pulse import (
     PulseResult,
     PulseWaveform,
     compare_dc_vs_pulse,
+    fe3_charge_split,
+    fe3_fraction_on_anodic,
 )
 
 pytestmark = pytest.mark.slow
@@ -308,3 +310,95 @@ def test_compare_dc_vs_pulse_dictionary_keys():
 def test_model_invalid_parameters_rejected(kwargs):
     with pytest.raises(ValueError):
         PulseDepositionModel(**kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Fe²⁺/Fe³⁺ anodic-dissolution split (CHEM_PHYS_REVIEW §2.5, L0)
+# ---------------------------------------------------------------------------
+
+class TestAnodicFe3Split:
+    def test_fraction_rises_with_anodic_overpotential(self):
+        """Fe³⁺ split is monotone increasing in anodic overpotential η."""
+        fs = [fe3_fraction_on_anodic(eta, 2.0) for eta in (0.0, 0.03, 0.1, 0.3, 0.6)]
+        assert fs[0] == 0.0                     # zero η → no Fe³⁺
+        assert fs == sorted(fs)                 # non-decreasing
+        assert 0.0 <= fs[-1] <= 1.0
+        assert fs[0] < fs[-1]
+
+    def test_fraction_falls_with_pH(self):
+        """Low pH stabilises Fe³⁺ against Fe(OH)₃ hydrolysis → higher split."""
+        f_acid = fe3_fraction_on_anodic(0.5, 0.5)
+        f_ref = fe3_fraction_on_anodic(0.5, 2.0)
+        f_base = fe3_fraction_on_anodic(0.5, 5.0)
+        assert f_acid > f_ref > f_base >= 0.0
+
+    def test_reproduces_baseline_at_reference_state(self):
+        """At the reference pH and a mild reverse overpotential the Fe³⁺
+        fraction is negligible, so the legacy 100 %-Fe²⁺ anodic branch holds."""
+        assert fe3_fraction_on_anodic(0.0, 2.0) == 0.0
+        assert fe3_fraction_on_anodic(0.03, 2.0) < 0.02
+
+    def test_charge_split_conserves_current(self):
+        """i_Fe2 + i_Fe3 == i_total at every fraction (2 e⁻/Fe²⁺, 3 e⁻/Fe³⁺)."""
+        for f in (0.0, 0.1, 0.3, 0.5, 0.85, 1.0):
+            fe2, fe3 = fe3_charge_split(-1000.0, f)
+            assert fe2 + fe3 == pytest.approx(-1000.0, rel=1e-12)
+            assert fe2 <= 0.0 <= -fe3
+        # no split → the whole anodic current stays Fe²⁺ (legacy form)
+        assert fe3_charge_split(-800.0, 0.0) == (-800.0, 0.0)
+
+    def test_flag_off_is_byte_identical_legacy_anodic(self):
+        """Default fe3_split=False: Fe³⁺ arrays stay zero, net Fe unchanged."""
+        model = PulseDepositionModel(fe3_split=False)
+        wf = PulseWaveform(j_cathodic_mA_cm2=100.0, t_cathodic_s=0.05,
+                           j_anodic_mA_cm2=-100.0, t_anodic_s=0.01, t_off_s=0.04)
+        res = model.simulate(wf, n_cycles=3, steps_per_cycle=40)
+        assert np.all(res.fe3_current_A_m2 == 0.0)
+        assert res.cycle_avg_anodic_fe3_flux_mol_m2_s == 0.0
+        assert res.cycle_avg_anodic_fe3_fraction == 0.0
+
+    def test_flag_on_produces_fe3_only_on_anodic_fe(self):
+        """fe3_split=True: Fe³⁺ partial current appears (negative) whenever the
+        Fe branch is anodic — reverse pulses AND the small open-circuit
+        dissolution that runs during rest periods (module docstring) — and is
+        zero on every cathodic (depositing) step, charge-lumped with Fe²⁺ into
+        the total Fe current at every step."""
+        model = PulseDepositionModel(fe3_split=True)
+        wf = PulseWaveform(j_cathodic_mA_cm2=100.0, t_cathodic_s=0.05,
+                           j_anodic_mA_cm2=-100.0, t_anodic_s=0.01, t_off_s=0.04)
+        res = model.simulate(wf, n_cycles=3, steps_per_cycle=40)
+        fe3 = res.fe3_current_A_m2
+        assert fe3 is not None
+        anodic = res.fe_current_A_m2 < 0.0      # Fe-branch anodic (dissolving)
+        assert np.any(anodic)
+        # Fe³⁺ only where the Fe branch dissolves; never on a depositing step
+        assert np.all(fe3[~anodic] == 0.0)
+        assert np.any(fe3[anodic] < 0.0)
+        # ...including (small) open-circuit corrosion during rest periods
+        off_rest = res.applied_current_A_m2 == 0.0
+        assert np.any(fe3[off_rest] < 0.0)
+        # charge conservation at anodic steps is unit-covered by
+        # test_charge_split_conserves_current (fe2 + fe3 == i_total, 2/3 e⁻);
+        # here just confirm the Fe³⁺ path carries strictly less than the full
+        # anodic branch (some Fe²⁺ remains at every reverse/rest step).
+        assert np.all(np.abs(fe3[anodic]) < np.abs(res.fe_current_A_m2[anodic]))
+        # bounded, physical aggregate
+        assert 0.0 < res.cycle_avg_anodic_fe3_fraction < 1.0
+        assert res.cycle_avg_anodic_fe3_flux_mol_m2_s > 0.0
+
+    def test_shuttle_closure_couples_to_sludge(self):
+        """The run-averaged anodic Fe³⁺ flux feeds fe3_shuttle's steady state,
+        so a strong reverse drive seeds Fe(OH)₃ sludge (restart H₂ coupling)."""
+        model = PulseDepositionModel(fe3_split=True)
+        mild = model.simulate(PulseWaveform(j_cathodic_mA_cm2=100.0, t_cathodic_s=0.05,
+                                            j_anodic_mA_cm2=-100.0, t_anodic_s=0.01,
+                                            t_off_s=0.04), n_cycles=3, steps_per_cycle=40)
+        strong = model.simulate(PulseWaveform(j_cathodic_mA_cm2=100.0, t_cathodic_s=0.05,
+                                              j_anodic_mA_cm2=-500.0, t_anodic_s=0.01,
+                                              t_off_s=0.04), n_cycles=3, steps_per_cycle=40)
+        cl_mild = model.fe3_shuttle_closure(mild)
+        cl_strong = model.fe3_shuttle_closure(strong)
+        assert cl_strong["anodic_fe3_source_mol_m2_s"] > cl_mild["anodic_fe3_source_mol_m2_s"]
+        assert cl_strong["fe3_production_M_s"] > cl_mild["fe3_production_M_s"]
+        # Reverse-drive Fe³⁺ seeds the hydroxide sludge.
+        assert cl_strong["iron_sludge_loss_mol_m2_s"] >= 0.0

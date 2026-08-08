@@ -96,10 +96,14 @@ class ShuttleParams:
 def _km_fe3(p: ShuttleParams) -> float:
     """Mass-transfer coefficient for Fe³⁺→cathode (m/s)."""
     return p.d_fe3_m2_s / p.boundary_layer_m
-def _production_rate_M_s(p: ShuttleParams, s: ShuttleScenario) -> float:
+def _production_rate_M_s(p: ShuttleParams, s: ShuttleScenario,
+                         anodic_fe3_source_mol_m2_s: float = 0.0) -> float:
     """Fe³⁺ production rate in the catholyte (mol/L/s).
-    Homogeneous autoxidation at the scenario-pinned O₂ level plus the
-    area/volume-scaled crossover flux.
+    Homogeneous autoxidation at the scenario-pinned O₂ level, the
+    area/volume-scaled crossover flux, plus (CHEM_PHYS_REVIEW §2.5) any Fe³⁺
+    produced directly by the pulse-reverse anodic branch.  The anodic source
+    is already Fe³⁺ (1:1, no x4) and enters as flux·A/V_L mol/L/s, the same
+    area/volume scaling as the crossover term.
     """
     o2_M = s.o2_fraction_of_sat * dissolved_o2_saturation_mol_L(p.temperature_C)
     r_ox = fe2_oxidation_rate(
@@ -112,10 +116,20 @@ def _production_rate_M_s(p: ShuttleParams, s: ShuttleScenario) -> float:
     # conclusions were unaffected: at RC-1's tiny A/V the fault row is pinned
     # at the Fe(OH)₃ cap either way; see docs/SIM_BATH_REDOX.md.)
     r_cross = s.crossover_o2_flux_mol_m2_s * p.cathode_area_m2 / p.catholyte_volume_L
-    return r_ox + 4.0 * r_cross
-def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
-    """Steady-state Fe³⁺ shuttle picture for one catholyte/scenario pair."""
-    r_prod = _production_rate_M_s(p, s)          # mol/L/s
+    r_anodic = anodic_fe3_source_mol_m2_s * p.cathode_area_m2 / p.catholyte_volume_L
+    return r_ox + 4.0 * r_cross + r_anodic
+
+
+def steady_state(p: ShuttleParams, s: ShuttleScenario,
+                 anodic_fe3_source_mol_m2_s: float = 0.0) -> dict:
+    """Steady-state Fe³⁺ shuttle picture for one catholyte/scenario pair.
+
+    ``anodic_fe3_source_mol_m2_s`` is an Fe³⁺ flux (mol/m²/s of cathode)
+    produced directly at the electrode — e.g. the pulse-reverse anodic Fe³⁺
+    split of ``models.pulse`` — folded into the Fe³⁺ production term before
+    the shuttle/sludge split (0 → unchanged legacy behaviour).
+    """
+    r_prod = _production_rate_M_s(p, s, anodic_fe3_source_mol_m2_s)  # mol/L/s
     area_per_vol_m = p.cathode_area_m2 / (p.catholyte_volume_L / 1000.0)
     km = _km_fe3(p)
     cap = fe3_solubility_cap_M(p.pH)
@@ -136,6 +150,7 @@ def steady_state(p: ShuttleParams, s: ShuttleScenario) -> dict:
         "scenario": s.name,
         "o2_M": s.o2_fraction_of_sat * dissolved_o2_saturation_mol_L(p.temperature_C),
         "fe3_production_M_s": r_prod,
+        "anodic_fe3_source_mol_m2_s": anodic_fe3_source_mol_m2_s,
         "fe3_ss_M": fe3_ss,
         "fe3_solubility_cap_M": cap,
         "feoh3_precipitation_active": precipitated,
