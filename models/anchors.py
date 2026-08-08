@@ -473,6 +473,148 @@ ANCHORS: Dict[str, Anchor] = {
         ref="Epstein/SST core-loss certification + coating cost conventions",
         notes="Certification is the price-gate for this rung.",
     ),
+
+    # ─── Melt-shop remelt balance (melt_balance.py) ───────────────
+    "POSTHARVEST_O_PICKUP_WT_PCT": Anchor(
+        key="POSTHARVEST_O_PICKUP_WT_PCT",
+        value=0.35,
+        paper_value=0.35,
+        uncertainty=0.30,
+        ref="Passivation-film screening (Mott–Cabrera 2–4 nm film on flake "
+            "geometry, ~0.1–0.6 wt% depending on area)",
+        notes="V6 §1.2 — oxide the product gains between harvest and "
+              "furnace; product_oxidation.py will replace with physics.",
+    ),
+    "AS_DEPOSITED_O_WT_PCT": Anchor(
+        key="AS_DEPOSITED_O_WT_PCT",
+        value=0.127,
+        paper_value=0.127,
+        uncertainty=0.080,
+        ref="live fallback: models/oxygen_in_iron.py reference point "
+            "(100 mA/cm², pH 3.5, 60 °C, FE 90 %)",
+        notes="Fallback only; melt_balance calls oxygen_in_iron live.  "
+              "Screening O from co-deposited hydroxide capture.",
+    ),
+    "EAF_OXIDE_RECOVERY_FRAC": Anchor(
+        key="EAF_OXIDE_RECOVERY_FRAC",
+        value=0.90,
+        paper_value=0.90,
+        uncertainty=0.07,
+        ref="EAF carbon-injection practice (FeO carbo-reduction to metal "
+            "with foamy slag), standard EAF handbooks",
+        notes="Fraction of charged oxide oxygen removed as CO with its Fe "
+              "recovered to metal; the rest reports to slag.",
+    ),
+    "INDUCTION_OXIDE_RECOVERY_FRAC": Anchor(
+        key="INDUCTION_OXIDE_RECOVERY_FRAC",
+        value=0.80,
+        paper_value=0.80,
+        uncertainty=0.15,
+        ref="Coreless induction melt practice — no carbon boil; oxide "
+            "mostly reports to slag (fayalite)",
+        notes="Wide band: lining chemistry (silica vs alumina) and slag "
+              "skimming practice dominate.",
+    ),
+    "DUST_CAPTURE_FINES_EAF": Anchor(
+        key="DUST_CAPTURE_FINES_EAF",
+        value=0.80,
+        paper_value=0.80,
+        uncertainty=0.15,
+        ref="EAF charging of fines: off-gas carryover of un-densified "
+            "fines (high-velocity off-gas at melt-in)",
+        notes="The briquetting gate (V6 §1.4) exists to shrink fines so "
+              "this capture never bites.",
+    ),
+    "DUST_CAPTURE_FINES_INDUCTION": Anchor(
+        key="DUST_CAPTURE_FINES_INDUCTION",
+        value=0.40,
+        paper_value=0.40,
+        uncertainty=0.20,
+        ref="Induction furnace charging of fines (no off-gas blast)",
+        notes="Lower carryover but fines still bridge/hang; screening.",
+    ),
+    "DUST_FE_FRACTION": Anchor(
+        key="DUST_FE_FRACTION",
+        value=0.80,
+        paper_value=0.80,
+        uncertainty=0.10,
+        ref="EAF dust composition surveys (Fe as FeO/ZnFe2O4 dominant)",
+        notes="Fe content of the dust stream on an iron-rich feed.",
+    ),
+    "FEO_C_REDUCTION_DH_KJ_MOL": Anchor(
+        key="FEO_C_REDUCTION_DH_KJ_MOL",
+        value=149.0,
+        paper_value=149.0,
+        uncertainty=20.0,
+        ref="FeO(l) + C(s) → Fe(l) + CO(g), metallurgical thermochemistry "
+            "tabulations",
+        notes="Endothermic penalty of the carbothermic route; "
+              "~9.3 MJ per kg O removed.",
+    ),
+    "CHARGE_S_WT_PCT": Anchor(
+        key="CHARGE_S_WT_PCT",
+        value=0.010,
+        paper_value=0.010,
+        uncertainty=0.010,
+        ref="Well-rinsed counter-current wash screening (V6 §1.3 target "
+            "window)",
+        notes="Sulfate-film carryover after a proper rinse train; "
+              "rinse_carryover.py will compute it.",
+    ),
+    "LIME_PER_S_KG": Anchor(
+        key="LIME_PER_S_KG",
+        value=3.5,
+        paper_value=3.5,
+        uncertainty=1.5,
+        ref="EAF slag practice at basicity ~2.0 with partial desulfurization",
+        notes="kg CaO added per kg S charged to keep S off the metal.",
+    ),
+    "BASE_GANGUE_SLAG_KG_T": Anchor(
+        key="BASE_GANGUE_SLAG_KG_T",
+        value=15.0,
+        paper_value=15.0,
+        uncertainty=10.0,
+        ref="DRI-scrap blend gangue levels in EAF practice",
+        notes="Electrowon feed is low-gangue; mostly slag formers.",
+    ),
+    "FINES_FRACTION_PASSIVATED": Anchor(
+        key="FINES_FRACTION_PASSIVATED",
+        value=0.03,
+        paper_value=0.03,
+        uncertainty=0.02,
+        ref="Briquetted product fines after handling (PM/DRI briquette "
+            "industry handling standards)",
+        notes="V6 §1.4 — the briquette spec this fraction is defined by.",
+    ),
+    "CHARGE_H_PPM": Anchor(
+        key="CHARGE_H_PPM",
+        value=200.0,
+        paper_value=200.0,
+        uncertainty=150.0,
+        ref="Repository screening operating point (~240 ppm diffusible H, "
+            "adhesion_peel README section)",
+        notes="Diffusible H at harvest; bake-out upstream of melt is the "
+              "melt_hydrogen lever.",
+    ),
+    "SCRAP_YIELD_PCT": Anchor(
+        key="SCRAP_YIELD_PCT",
+        value=94.5,
+        paper_value=94.5,
+        uncertainty=2.0,
+        ref="EAF practice on #1 heavy melt scrap (yield bands, industry "
+            "handbooks)",
+        notes="Electrowon must clear this band to be 'qualified feed'; "
+            "scrap's ceiling is residual chemistry, not yield.",
+    ),
+    "DRI_O_WT_PCT": Anchor(
+        key="DRI_O_WT_PCT",
+        value=2.0,
+        paper_value=2.0,
+        uncertainty=0.7,
+        ref="DRI/HBI product specifications (metallization 94–96 % → "
+            "residual FeO; total O ~1.5–2.5 %)",
+        notes="Runs the same oxide-reduction engine for the DRI baseline.",
+    ),
 }
 
 

@@ -70,6 +70,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `carbon_potential.py` | Gas carburizing atmosphere: CO/CO₂ Boudouard, CH₄/H₂, dew point, O₂ probe, Acm solubility |
 | `hydrogen_embrittlement.py` | H uptake, diffusivity, bake-out kinetics, embrittlement index |
 | `bath_startup.py` | Bath make-up, conditioning and startup sequence |
+| `melt_balance.py` | **Melt-shop remelt verdict for electrowon charge (V6 §1.5):** iron yield, CO boil / carbon demand / endothermic penalty of oxide carbo-reduction, slag and fines-dust ledgers on EAF and induction routes, live H verdict from `melt_hydrogen`, live as-deposited O from `oxygen_in_iron`, baselines vs #1 scrap / DRI. The Option-A qualification ledger: "qualified / conditional / fails" with named reasons |
 
 ### Economics, uncertainty and program tooling
 

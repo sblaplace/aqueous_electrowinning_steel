@@ -13,7 +13,7 @@
     "models/cell_architecture.py": "77a08ed3afac2da7",
     "models/electrochemistry.py": "935e526a6598d30c",
     "models/technoeconomic.py": "db224bcf4b144584",
-    "models/anchors.py": "61566278cde94bf1",
+    "models/anchors.py": "cc6dde9d09b5ccac",
     "models/thermomechanical.py": "03d99ca6f2b215c2"
   }
 }
@@ -147,7 +147,7 @@ Legend: ✓ modelled, validated beyond L1 · ◐ modelled, unvalidated L1 · ◑
 | post-harvest oxidation & passivation spec | **✗** | **✗** | — | — | **✗** | **✗** | — |
 | rinse carryover → charge sulfur | **✗** | **✗** | — | — | — | — | — |
 | densification / briquetting product-form gate | **✗** | **✗** | — | — | — | — | — |
-| melt-shop remelt verdict (yield/boil/slag) | **✗** | — | — | — | — | — | — |
+| melt-shop remelt verdict (yield/boil/slag) | ◐ | — | — | — | — | — | — |
 | in-house melt + solidification/casting block | — | **✗** | — | — | — | — | — |
 | bath impurity / purification chain | ◑ | ◑ | ◑ | ◑ | ◑ | ◑ | ◑ |
 | porosity / surface spec for anode feed | — | — | — | — | — | ◐ | — |

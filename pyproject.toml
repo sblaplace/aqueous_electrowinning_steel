@@ -106,6 +106,7 @@ aq-steel-adatom-kinetics = "models.adatom_kinetics:main"
 aq-steel-edge-effect = "models.edge_effect:main"
 aq-steel-as-deposited-grade = "models.as_deposited_grade:main"
 aq-steel-product-ladder = "models.run_product_ladder:main"
+aq-steel-melt-balance = "models.melt_balance:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

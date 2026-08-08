@@ -86,6 +86,8 @@ Key papers, reviews, and supplementary literature for aqueous electrowinning of 
 14. **Foundry/induction-melting handbooks** (coreless induction furnace energy, 0.50–0.65 MWh/t Fe) — `INDUCTION_MELT_KWH_T`.
 15. **Weiss, V. (ed.),** *Steel Rolling Technology* / rolling-mill operating cost literature — `CAST_ROLL_*`, `SKINPASS_*`.
 16. **Form Energy** public materials on iron-air battery chemistry — context for the speculative `BATTERY_IRON_PRICE_T` parity band.
+17. **Turkdogan, E. T.,** *Fundamentals of Steelmaking*; IISI EAF mass-balance practice — `melt_balance.py` oxide carbo-reduction, `EAF_OXIDE_RECOVERY_FRAC`, `LIME_PER_S_KG`, `BASE_GANGUE_SLAG_KG_T`.
+18. **EAF dust composition surveys & DRI/HBI product specifications** (industry handbooks; metallization 94–96 %) — `DUST_FE_FRACTION`, `DUST_CAPTURE_FINES_*`, `DRI_O_WT_PCT`.
 
 ## Contributing
 

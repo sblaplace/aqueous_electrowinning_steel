@@ -114,10 +114,10 @@
           "gate_id": "g_melt_balance",
           "name": "melt-shop remelt verdict (yield/boil/slag)",
           "module": "melt_balance",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
           "note": "V6 \u00a71.5 proposal \u2014 UNMODELLED."
         },
         {
@@ -131,8 +131,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 5,
-      "n_l1_gates": 0,
+      "n_unmodelled_gates": 4,
+      "n_l1_gates": 1,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -1255,7 +1255,7 @@
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "61566278cde94bf1",
+      "models/anchors.py": "cc6dde9d09b5ccac",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }
