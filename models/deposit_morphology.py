@@ -481,6 +481,7 @@ def nucleation_rate_ratio(
     overpotential_V: float,
     temperature_C: float = 60.0,
     surface_energy_J_m2: float = GAMMA_FE_SURFACE,
+    nucleation_multiplier: float = 1.0,
 ) -> float:
     """
     Ratio of nucleation rate to growth rate.
@@ -494,6 +495,11 @@ def nucleation_rate_ratio(
 
     The ratio J/G is proportional to exp(-ΔG*/kT) / η (growth ∝ η).
 
+    ``nucleation_multiplier`` is the Γ-dependent factor from
+    ``leveler_kinetics`` (CHEM_PHYS_REVIEW §2.6): levelers/brighteners block
+    growth sites on stable facets and force renucleation, multiplying J/G by
+    ≥ 1.  The default 1.0 leaves the no-additive path byte-identical.
+
     Parameters
     ----------
     overpotential_V : float
@@ -502,6 +508,8 @@ def nucleation_rate_ratio(
         Bath temperature (°C).
     surface_energy_J_m2 : float
         Fe surface energy (J/m²).
+    nucleation_multiplier : float
+        Γ-dependent multiplier on the nucleation/growth ratio (≥ 1).
 
     Returns
     -------
@@ -541,7 +549,7 @@ def nucleation_rate_ratio(
     # electrodeposition occurs around η ≈ 50-100 mV
     ratio_normalized = ratio / max(math.exp(-dG_star / kT + 1.0), 1e-30)
 
-    return float(ratio_normalized)
+    return float(ratio_normalized * nucleation_multiplier)
 
 
 # ─── Main Morphology Prediction ───────────────────────────────────
@@ -595,6 +603,7 @@ def predict_morphology(
     substrate_roughness: float = 1.5,
     growth_model: Optional[MullinsSekerkaGrowthModel] = None,
     perturbation_wavelength_m: Optional[float] = None,
+    additive_package: Optional[Dict[str, float]] = None,
 ) -> MorphologyResult:
     """
     Predict deposit morphology at a given current density.
@@ -672,9 +681,18 @@ def predict_morphology(
 
     # Step 4: Nucleation regime
     overpotential = kinetics.fe_E_eq - E_operating  # cathodic overpotential for Fe
+    # Γ-dependent nucleation multiplier from the additive package
+    # (CHEM_PHYS_REVIEW §2.6).  Null package → multiplier 1.0 → unchanged.
+    if additive_package is not None:
+        from .leveler_kinetics import resolve_package
+
+        _nuc_mult = resolve_package(additive_package, kinetics.temperature_C).nucleation_multiplier
+    else:
+        _nuc_mult = 1.0
     nuc_ratio = nucleation_rate_ratio(
         overpotential_V=max(overpotential, 0.0),
         temperature_C=kinetics.temperature_C,
+        nucleation_multiplier=_nuc_mult,
     )
     if nuc_ratio > 1.0:
         factors.append("high nucleation rate (fine grain/powder risk)")

@@ -429,6 +429,7 @@ def deposit_stress_from_conditions(
     relaxation_distance_m: float = HOFFMAN_DELTA_M,
     include_point_defect_stress: bool = False,
     additive_coverage_fraction: float = 0.0,
+    additive_package: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
     """Predict residual stress end-to-end from *plating conditions* (MPa).
 
@@ -446,6 +447,14 @@ def deposit_stress_from_conditions(
     term and the chloride-bath compressive shift.  Both corrections are
     engineering estimates and are reported separately so they can never be
     mistaken for measurement.
+
+    When ``additive_package`` (dict of additive id → g/L) is supplied, the
+    single-saccharin edit is replaced by mechanism-level Langmuir adsorption
+    kinetics from ``leveler_kinetics`` (CHEM_PHYS_REVIEW §2.6): relief is
+    aggregated over the whole package and H-recombination catalysis removes a
+    fraction of the codepositable hydrogen before it can drive the hydrogen
+    term.  This is opt-in — the default (``additive_package=None``) is
+    byte-identical to the legacy ``saccharin_g_L`` / ``chloride_bath`` path.
 
     Returns signed components (positive = tensile) plus the derived
     quantities and sources, so a single operating point propagates
@@ -498,13 +507,36 @@ def deposit_stress_from_conditions(
     )
 
     # Empirical bath corrections (screening estimates; reported separately).
-    relief = (
-        SACCHARIN_RELIEF_MAX * (1.0 - math.exp(-saccharin_g_L / SACCHARIN_REF_G_L))
-        if saccharin_g_L > 0
-        else 0.0
-    )
+    # Mechanism-level additive path (CHEM_PHYS_REVIEW §2.6): when an additive
+    # *package* (g/L per id) is supplied, the single-saccharin exp fit is
+    # replaced by the Langmuir adsorption kinetics in leveler_kinetics —
+    # relief aggregated over the whole package, plus H-recombination catalysis
+    # that removes codepositable H before it can drive hydrogen stress.  When
+    # ``additive_package`` is None (the default), this is exactly the legacy
+    # ``saccharin_g_L`` / ``chloride_bath`` behaviour.
+    if additive_package is not None:
+        from .leveler_kinetics import resolve_package
+
+        _pkg = resolve_package(additive_package, temperature_C)
+        relief = float(_pkg.stress_relief_fraction)
+        f_recomb = float(_pkg.h_recomb_fraction)
+        h_eta_reduction_V = float(_pkg.h_recomb_overpotential_reduction_V)
+    else:
+        relief = (
+            SACCHARIN_RELIEF_MAX * (1.0 - math.exp(-saccharin_g_L / SACCHARIN_REF_G_L))
+            if saccharin_g_L > 0
+            else 0.0
+        )
+        f_recomb = 0.0
+        h_eta_reduction_V = 0.0
     chloride_shift = -CHLORIDE_SHIFT_MPa if chloride_bath else 0.0
     intrinsic_corrected = intrinsic * (1.0 - relief) + chloride_shift
+
+    # H-recombination catalysis leaves less codepositable H to drive the
+    # hydrogen term (the "stress relief by hydrogen recombination catalysis"
+    # mechanism §2.6 names).  No additive package → f_recomb = 0 → unchanged.
+    C_H_eff = C_H_ppm * (1.0 - f_recomb)
+    hydrogen = hydrogen_stress_MPa(C_H_eff, hydrogen_fraction_effused)
 
     # Round 5 (C2): non-equilibrium point-defect intrinsic stress, opt-in.
     point_defect_MPa = 0.0
@@ -552,6 +584,10 @@ def deposit_stress_from_conditions(
             "intrinsic_relief_fraction": float(relief),
             "chloride_shift_MPa": float(chloride_shift),
             "raw_intrinsic_MPa": float(intrinsic),
+            "additive_package_g_L": dict(additive_package) if additive_package else None,
+            "h_recomb_fraction": float(f_recomb),
+            "h_recomb_overpotential_reduction_V": float(h_eta_reduction_V),
+            "C_H_effective_ppm": float(C_H_eff),
         },
         "substrate": sub.id,
         "sources": {
