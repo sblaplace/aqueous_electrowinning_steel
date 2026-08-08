@@ -423,6 +423,9 @@ class MechanicalPropertiesModel:
         current_efficiency_percent: float = 95.0,
         her_flux_mol_m2_hr: Optional[float] = None,
         grain_size_override_um: Optional[float] = None,
+        use_nucleation_grain_model: bool = False,
+        cathodic_overpotential_V: float = 0.0,
+        additive_coverage_fraction: float = 0.0,
     ) -> MechanicalPropertiesResult:
         """Run full prediction pipeline."""
 
@@ -431,6 +434,17 @@ class MechanicalPropertiesModel:
             d_um = float(grain_size_override_um)
             if not 0.05 <= d_um <= 50:
                 raise ValueError("grain_size_override_um out of physical range")
+        elif use_nucleation_grain_model:
+            # Round 5 (C1): predict grain size from the plating recipe's
+            # overpotential + additive coverage via classical 3-D nucleation,
+            # instead of the empirical current-density correlation below.
+            from models.nucleation_grain import grain_size_um as _nuc_grain
+
+            eta = cathodic_overpotential_V
+            if eta <= 0.0:
+                # Fall back to a current-density-derived screening overpotential.
+                eta = 0.02 + 0.02 * math.log10(max(j_avg_mA_cm2, 1.0))
+            d_um = _nuc_grain(eta, temperature_C, additive_coverage_fraction)
         else:
             d_um = estimate_grain_size_um(
                 j_avg_mA_cm2=j_avg_mA_cm2,

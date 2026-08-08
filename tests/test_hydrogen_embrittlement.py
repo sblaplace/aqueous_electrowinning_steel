@@ -391,3 +391,28 @@ def test_integration_with_carburization():
     assert "core_I_HE" in spatial
     # Surface (harder from carburization) should have higher HE risk than core
     assert spatial["surface_I_HE"] >= spatial["core_I_HE"]
+
+
+def test_recombination_poison_wiring_raises_h():
+    """Passing poison concentrations must raise absorbed-H and C_H_ppm (Round 5 B1)."""
+    base = hydrogen_uptake_from_electrolysis(
+        100.0, deposition_time_s=3600.0, her_efficiency=0.10, bath_pH=3.5,
+        model="ipz",
+    )
+    poisoned = hydrogen_uptake_from_electrolysis(
+        100.0, deposition_time_s=3600.0, her_efficiency=0.10, bath_pH=3.5,
+        model="ipz", poison_concentrations_M={"sulfide": 1e-3, "arsenic": 5e-6},
+        cathodic_overpotential_V=0.3,
+    )
+    assert poisoned["C_H_diffusible_ppm"] > base["C_H_diffusible_ppm"]
+    assert poisoned["recombination_poison"]["promotion_factor"] > 1.0
+    assert poisoned["recombination_poison"]["poisoned_absorption_fraction"] > 0.0
+
+
+def test_recombination_poison_noop_without_concentrations():
+    """Without poison concentrations, result has no poison key and H is unchanged."""
+    res = hydrogen_uptake_from_electrolysis(
+        100.0, deposition_time_s=3600.0, her_efficiency=0.10, bath_pH=3.5,
+        model="ipz",
+    )
+    assert "recombination_poison" not in res

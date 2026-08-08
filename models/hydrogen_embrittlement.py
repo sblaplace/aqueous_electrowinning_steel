@@ -333,6 +333,8 @@ def hydrogen_uptake_from_electrolysis(
     k_v: float = IPZ_K_V_DEFAULT,
     k_rec: float = IPZ_K_REC_DEFAULT,
     k_abs: float = IPZ_K_ABS_DEFAULT,
+    poison_concentrations_M: Optional[Dict[str, float]] = None,
+    cathodic_overpotential_V: float = 0.0,
 ) -> Dict[str, float]:
     """
     Estimate diffusible H content (ppm) from electrolytic deposition.
@@ -372,10 +374,13 @@ def hydrogen_uptake_from_electrolysis(
     j_A_m2 = current_density_mA_cm2 * 10.0  # mA/cm² → A/m²
 
     if model == "ipz":
-        return _uptake_ipz(
+        result = _uptake_ipz(
             j_A_m2, her_efficiency, bath_pH, temperature_C,
             deposition_time_s, deposit_density_kg_m3,
             k_v, k_rec, k_abs,
+        )
+        return _apply_recombination_poisons(
+            result, poison_concentrations_M, temperature_C, cathodic_overpotential_V,
         )
     if model != "empirical":
         raise ValueError("model must be 'ipz' or 'empirical'")
@@ -421,7 +426,7 @@ def hydrogen_uptake_from_electrolysis(
 
     C_H_ppm = (H_mass_kg_m2 / deposit_mass_kg_m2) * 1e6
 
-    return {
+    result = {
         "C_H_diffusible_ppm": float(C_H_ppm),
         "H_flux_mol_m2": float(H_mol_m2),
         "H_absorbed_mol_m2": float(H_absorbed_mol_m2),
@@ -433,6 +438,9 @@ def hydrogen_uptake_from_electrolysis(
         "j_factor": float(j_factor),
         "model": "empirical",
     }
+    return _apply_recombination_poisons(
+        result, poison_concentrations_M, temperature_C, cathodic_overpotential_V,
+    )
 
 
 # ── 3b. Iyer–Pickering–Zamanzadeh (IPZ) H-entry model ───────────────────────
@@ -578,6 +586,55 @@ def ipz_parameters_from_permeation(
         "eta_V": float(eta_V),
         "entry_efficiency": float(j_entry / max(r_v, 1e-30)),
     }
+
+
+def _apply_recombination_poisons(
+    result: Dict[str, float],
+    poison_concentrations_M: Optional[Dict[str, float]],
+    temperature_C: float,
+    cathodic_overpotential_V: float,
+) -> Dict[str, float]:
+    """Scale absorbed-H by the recombination-poison promotion factor (Round 5, B1).
+
+    Recombination poisons (S, As, Sb, Se, Te, P, CN⁻) block the Tafel/Heyrovský
+    H₂-recombination step and force a larger fraction of adsorbed H into the
+    deposit. When ``poison_concentrations_M`` is provided, the base absorbed-H
+    from the IPZ or empirical path is multiplied by the promotion factor from
+    ``models.recombination_poison`` and ``C_H_diffusible_ppm`` is recomputed.
+    ``cathodic_overpotential_V`` is the (positive-magnitude) overpotential; if
+    left <= 0 and the IPZ model ran, the IPZ-computed overpotential is used.
+    """
+    if not poison_concentrations_M:
+        return result
+    from models.recombination_poison import poisoned_absorption_fraction
+
+    eta = cathodic_overpotential_V
+    if eta <= 0.0 and "ipz" in result:
+        eta = result["ipz"].get("eta_V", 0.0)
+
+    p_res = poisoned_absorption_fraction(
+        base_absorption_fraction=result.get("absorption_fraction", 0.05),
+        concentrations_M=poison_concentrations_M,
+        temperature_C=temperature_C,
+        cathodic_overpotential_V=eta,
+    )
+    factor = p_res["promotion_factor"]
+
+    deposit_mass_kg_m2 = result.get("deposit_mass_kg_m2", 1e-12)
+    M_H = 1.008e-3  # kg/mol
+    h_abs = result.get("H_absorbed_mol_m2", 0.0) * factor
+    h_mass_kg_m2 = h_abs * M_H
+    c_h_ppm = (h_mass_kg_m2 / max(deposit_mass_kg_m2, 1e-12)) * 1e6
+
+    out = dict(result)
+    out["H_absorbed_mol_m2"] = float(h_abs)
+    out["C_H_diffusible_ppm"] = float(c_h_ppm)
+    out["recombination_poison"] = {
+        "promotion_factor": float(factor),
+        "coverages": p_res["coverages"],
+        "poisoned_absorption_fraction": p_res["poisoned_absorption_fraction"],
+    }
+    return out
 
 
 def _uptake_ipz(

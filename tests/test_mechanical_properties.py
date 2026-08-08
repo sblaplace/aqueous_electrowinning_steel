@@ -126,3 +126,22 @@ def test_flags():
     # excessive carbon flag
     res_high_c = model.predict(carbon_wt_percent=6.0)
     assert "excessive_carbon" in res_high_c.flags
+
+
+def test_nucleation_grain_model_refines_with_overpotential():
+    """use_nucleation_grain_model: higher overpotential -> finer grain -> higher YS."""
+    model = MechanicalPropertiesModel()
+    low = model.predict(use_nucleation_grain_model=True, cathodic_overpotential_V=0.1)
+    high = model.predict(use_nucleation_grain_model=True, cathodic_overpotential_V=0.4)
+    assert high.grain_size_um < low.grain_size_um
+    assert high.sigma_y_MPa > low.sigma_y_MPa
+
+
+def test_nucleation_grain_additive_refines():
+    """Higher additive coverage refines the predicted grain (C1 levelers)."""
+    model = MechanicalPropertiesModel()
+    plain = model.predict(use_nucleation_grain_model=True, cathodic_overpotential_V=0.2,
+                          additive_coverage_fraction=0.0)
+    with_add = model.predict(use_nucleation_grain_model=True, cathodic_overpotential_V=0.2,
+                             additive_coverage_fraction=0.6)
+    assert with_add.grain_size_um < plain.grain_size_um
