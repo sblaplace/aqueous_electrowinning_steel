@@ -1058,6 +1058,274 @@ ANCHORS: Dict[str, Anchor] = {
         notes="Below this d50, unpassivated + H-bearing powder is "
               "handled as a pyrophoricity candidate.",
     ),
+    # ── V6 §1.4 briquetting / densification ────────────────────────────
+    "TAP_DENSITY_POWDER_REL": Anchor(
+        key="TAP_DENSITY_POWDER_REL",
+        value=0.42,
+        paper_value=0.42,
+        uncertainty=0.08,
+        ref="Electrolytic iron powder apparent-density band ~2.9–3.4 g/cm³ "
+            "of 7.874 (Höganäs/MPIF powder grades)",
+        notes="As-scraped fill state: the Heckel A = ln(1/(1−D_tap)) "
+              "rearrangement branch is pinned to this exactly.",
+    ),
+    "TAP_DENSITY_FLAKE_REL": Anchor(
+        key="TAP_DENSITY_FLAKE_REL",
+        value=0.30,
+        paper_value=0.30,
+        uncertainty=0.08,
+        ref="Flake packs poorly (high aspect ratio); PM flake fill "
+            "practice",
+        notes="Drum-and-strip harvest state; lower fill than powder is "
+              "the flake's densification handicap.",
+    ),
+    "AS_DEPOSITED_SIGMA_Y_MPA": Anchor(
+        key="AS_DEPOSITED_SIGMA_Y_MPA",
+        value=450.0,
+        paper_value=450.0,
+        uncertainty=150.0,
+        ref="Electrodeposited α-Fe yield screening band (nanocrystalline "
+            "600–1000 MPa; coarse coupon 300–600 MPa)",
+        notes="Fallback only; briquetting.py takes σ_y live from "
+              "mechanical_properties (V6 §1.4 Heckel-constant feed).",
+    ),
+    "HECKEL_FRIABLE_FACTOR": Anchor(
+        key="HECKEL_FRIABLE_FACTOR",
+        value=1.3,
+        paper_value=1.3,
+        uncertainty=0.3,
+        ref="Screening factor for crush-assisted densification of "
+            "porous/friable electrodeposit particles",
+        notes="Multiplies the Heckel K — RESEARCH_PROGRAM Option A's "
+              "inverted design goal (a friable deposit is a virtue) made "
+              "quantitative.",
+    ),
+    "PRESS_DESIGN_MPA": Anchor(
+        key="PRESS_DESIGN_MPA",
+        value=550.0,
+        paper_value=550.0,
+        uncertainty=150.0,
+        ref="Commercial iron-powder die-press band 400–830 MPa "
+            "(Höganäs/MPIF practice)",
+        notes="Design compaction pressure for the screening lines.",
+    ),
+    "PRESS_HYDRAULIC_ETA": Anchor(
+        key="PRESS_HYDRAULIC_ETA",
+        value=0.50,
+        paper_value=0.50,
+        uncertainty=0.20,
+        ref="Hydraulic-press mechanical efficiency screening band",
+        notes="Delivered press kWh/t = ideal compaction work / η.",
+    ),
+    "GREEN_STRENGTH_PRE_MPA": Anchor(
+        key="GREEN_STRENGTH_PRE_MPA",
+        value=0.45,
+        paper_value=0.45,
+        uncertainty=0.20,
+        ref="PM iron-powder green-strength master curves at 550–690 MPa "
+            "(8–20 MPa) read back through the exp(b·D) law",
+        notes="σ_g0 of σ_g = σ_g0·exp(b·D_rel); pinned with B so the "
+              "design-density state lands mid-band.",
+    ),
+    "GREEN_STRENGTH_B": Anchor(
+        key="GREEN_STRENGTH_B",
+        value=4.0,
+        paper_value=4.0,
+        uncertainty=1.0,
+        ref="PM iron-powder green-strength master curves",
+        notes="Density exponent of the green-strength law; screening.",
+    ),
+    "GREEN_STRENGTH_REF_MPA": Anchor(
+        key="GREEN_STRENGTH_REF_MPA",
+        value=15.0,
+        paper_value=15.0,
+        uncertainty=5.0,
+        ref="Reference green/crush strength at which the fines reference "
+            "was measured (tumble/drop practice)",
+        notes="fines(σ_ref) = FINES_REF_PCT by construction (ratio form).",
+    ),
+    "FINES_REF_PCT": Anchor(
+        key="FINES_REF_PCT",
+        value=1.5,
+        paper_value=1.5,
+        uncertainty=0.5,
+        ref="Tumble/drop-attrition fines of a 15 MPa-class briquette "
+            "(PM/DRI handling standards)",
+        notes="Shipped fines at the reference strength; the ratio-form "
+              "law scales against green strength.",
+    ),
+    "FINES_STRENGTH_EXP": Anchor(
+        key="FINES_STRENGTH_EXP",
+        value=1.0,
+        paper_value=1.0,
+        uncertainty=0.5,
+        ref="SPECULATIVE — no published fines-vs-strength exponent for "
+            "electrolytic iron briquettes; ratio-form screening",
+        notes="The module's weakest constant; orders the handling-fines "
+              "trade against density, nothing more.",
+    ),
+    "SPRINGBACK_MODULUS_EXP": Anchor(
+        key="SPRINGBACK_MODULUS_EXP",
+        value=3.0,
+        paper_value=3.0,
+        uncertainty=0.5,
+        ref="Phani–Niyogi family modulus-density power laws for porous "
+            "sintered compacts (m ≈ 3)",
+        notes="E(D) = E_Fe·D^m drives the springback ε = P/E screen.",
+    ),
+    "DIE_WALL_MU": Anchor(
+        key="DIE_WALL_MU",
+        value=0.10,
+        paper_value=0.10,
+        uncertainty=0.05,
+        ref="Zinc-stearate-lubricated die-wall friction, PM industry "
+            "practice",
+        notes="Ejection force fraction ≈ μ·k_radial.",
+    ),
+    "RADIAL_STRESS_FRACTION": Anchor(
+        key="RADIAL_STRESS_FRACTION",
+        value=0.30,
+        paper_value=0.30,
+        uncertainty=0.10,
+        ref="Residual radial/axial stress ratio for uniaxial iron-powder "
+            "die compaction (Poisson-based screening)",
+        notes="Second anchor of the ejection-fraction estimate.",
+    ),
+    "HOT_PRESS_T_C": Anchor(
+        key="HOT_PRESS_T_C",
+        value=600.0,
+        paper_value=600.0,
+        uncertainty=100.0,
+        ref="HBI hot-briquetting practice on DRI (~600–700 °C), Midrex "
+            "family disclosure",
+        notes="Hot die pressing is to the powder briquette what HBI is "
+              "to DRI — the recommended Option-A line.",
+    ),
+    "HOT_PRESS_SIGMA_SOFTEN": Anchor(
+        key="HOT_PRESS_SIGMA_SOFTEN",
+        value=0.25,
+        paper_value=0.25,
+        uncertainty=0.10,
+        ref="α-Fe flow-stress ratio at 600 °C vs RT, screening band from "
+            "hot-compression data",
+        notes="σ_y(T) = σ_y(ref)·soften(T); the whole hot-press leverage "
+              "rides on this one ratio.",
+    ),
+    "SINTER_T_C": Anchor(
+        key="SINTER_T_C",
+        value=700.0,
+        paper_value=700.0,
+        uncertainty=100.0,
+        ref="Optional hot dense-state sinter 600–800 °C (V6 §1.4 text)",
+        notes="Reduction-sinter branch temperature.",
+    ),
+    "SINTER_KWH_PER_T": Anchor(
+        key="SINTER_KWH_PER_T",
+        value=150.0,
+        paper_value=150.0,
+        uncertainty=75.0,
+        ref="Thermal duty (Cp·ΔT ≈ 84 kWh/t) + furnace/atmosphere "
+            "overhead, screening",
+        notes="Delivered energy of the sinter-first branch; the O-vs-energy "
+              "trade against passivate-first.",
+    ),
+    "SINTER_STRENGTH_FACTOR": Anchor(
+        key="SINTER_STRENGTH_FACTOR",
+        value=10.0,
+        paper_value=10.0,
+        uncertainty=5.0,
+        ref="Green → sintered bond strength multiplier, PM sintered-iron "
+            "strength ratios",
+        notes="Sinter fixes strength and fines, NOT density — the "
+              "sink-and-size spec still gates cold-pressed lines.",
+    ),
+    "SINTER_RESIDUAL_O_WT_PCT": Anchor(
+        key="SINTER_RESIDUAL_O_WT_PCT",
+        value=0.20,
+        paper_value=0.20,
+        uncertainty=0.10,
+        ref="H₂-reduction of nm-scale iron passive film at 600–800 °C, "
+            "screening remnant",
+        notes="Sinter-first residual O; the passivate-first branch takes "
+              "the live product_oxidation pickup instead.",
+    ),
+    "DENSITY_REL_SPEC": Anchor(
+        key="DENSITY_REL_SPEC",
+        value=0.80,
+        paper_value=0.80,
+        uncertainty=0.05,
+        ref="Sink-and-size screening target for EAF-feed briquettes "
+            "(HBI ships ~0.65–0.70 relative density; margin above)",
+        notes="Light briquettes float on slag and blow out with the fume; "
+              "this is the physical floor, screening.",
+    ),
+    "CCS_SPEC_N": Anchor(
+        key="CCS_SPEC_N",
+        value=2500.0,
+        paper_value=2500.0,
+        uncertainty=500.0,
+        ref="ISO 4700-family cold-crushing screening floor for shipped "
+            "agglomerates",
+        notes="Per-briquette crush force the logistics chain is assumed "
+              "to accept; buyer to replace with their spec.",
+    ),
+    "FINES_SPEC_PCT": Anchor(
+        key="FINES_SPEC_PCT",
+        value=2.0,
+        paper_value=2.0,
+        uncertainty=1.0,
+        ref="Buyer screening ceiling on shipped fines",
+        notes="Fines are the pyrophoric fraction (§1.2) and the fume "
+              "loss (§1.5); the ceiling prices them together.",
+    ),
+    "BRIQUETTE_SIZE_MM": Anchor(
+        key="BRIQUETTE_SIZE_MM",
+        value=40.0,
+        paper_value=40.0,
+        uncertainty=10.0,
+        ref="Pillow-briquette characteristic dimension (DRI/HBI briquette "
+            "sizing)",
+        notes="Crush face = size²; bridging rule scales with the same "
+              "dimension.",
+    ),
+    "UNCONFINED_YIELD_PA": Anchor(
+        key="UNCONFINED_YIELD_PA",
+        value=500.0,
+        paper_value=500.0,
+        uncertainty=300.0,
+        ref="Jenike shear-tester band for slightly cohesive fine iron "
+            "powder",
+        notes="Cohesive strength of the loose feed in the rathole screen.",
+    ),
+    "JENIKE_H_THETA": Anchor(
+        key="JENIKE_H_THETA",
+        value=2.2,
+        paper_value=2.2,
+        uncertainty=0.3,
+        ref="Jenike H(θ) ≈ 2.0–2.3 for conical hoppers in mass flow "
+            "(Bull. 123 charts)",
+        notes="Multiplier of the critical rathole diameter.",
+    ),
+    "MAGNETIC_COHESION_PA": Anchor(
+        key="MAGNETIC_COHESION_PA",
+        value=350.0,
+        paper_value=350.0,
+        uncertainty=300.0,
+        ref="SPECULATIVE — order-of-B_r²/(2μ₀) pressure at ~30 mT contact "
+            "induction between magnetised iron particles",
+        notes="The V6 §1.4 ferromagnetic-agglomeration screening term; "
+              "decade band, orders hopper design only.",
+    ),
+    "BRIDGING_RULE_MULTIPLE": Anchor(
+        key="BRIDGING_RULE_MULTIPLE",
+        value=7.0,
+        paper_value=7.0,
+        uncertainty=1.0,
+        ref="Bunker-design rule: outlet ≥ 6–8 × particle dimension for "
+            "coarse free-flowing bodies",
+        notes="The briquetted product's flow floor (bridging, not "
+              "ratholing).",
+    ),
 }
 
 

@@ -104,11 +104,11 @@
           "gate_id": "g_briquet",
           "name": "densification / briquetting product-form gate",
           "module": "briquetting",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.4 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.4 implemented (L1) \u2014 Heckel compaction (live \u03c3_y feed), green strength, springback, fines, Jenike rathole screen; shippable-spec block; feeds melt_balance fines live."
         },
         {
           "gate_id": "g_melt_balance",
@@ -131,8 +131,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 1,
-      "n_l1_gates": 4,
+      "n_unmodelled_gates": 0,
+      "n_l1_gates": 5,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -240,11 +240,11 @@
           "gate_id": "g_briquet",
           "name": "densification / briquetting product-form gate",
           "module": "briquetting",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.4 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.4 implemented (L1) \u2014 Heckel compaction (live \u03c3_y feed), green strength, springback, fines, Jenike rathole screen; shippable-spec block; feeds melt_balance fines live."
         },
         {
           "gate_id": "g_casting",
@@ -287,8 +287,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 2,
-      "n_l1_gates": 5,
+      "n_unmodelled_gates": 1,
+      "n_l1_gates": 6,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "4691a11ba3457ac0",
+      "models/product_ladder.py": "43f13899f86f6cd9",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "3d1dc04682c519ce",
+      "models/anchors.py": "08cff9f254eb9d35",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

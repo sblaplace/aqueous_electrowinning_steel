@@ -165,7 +165,10 @@ GATE_REGISTRY: Dict[str, GateRef] = {
                 "liquor + counter-current cascade → charge S/Na/B budgets, "
                 "conductivity endpoint; feeds melt_balance live."),
         GateRef("g_briquet", "densification / briquetting product-form gate",
-                "briquetting", "V6 §1.4 proposal — UNMODELLED."),
+                "briquetting",
+                "V6 §1.4 implemented (L1) — Heckel compaction (live σ_y "
+                "feed), green strength, springback, fines, Jenike rathole "
+                "screen; shippable-spec block; feeds melt_balance fines live."),
         GateRef("g_melt_balance", "melt-shop remelt verdict (yield/boil/slag)",
                 "melt_balance",
                 "V6 §1.5 implemented (L1) — EAF/induction remelt verdict "

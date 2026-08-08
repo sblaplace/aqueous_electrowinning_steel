@@ -166,6 +166,8 @@ charge-borne S/Na/B/P budget per tonne), feeding §1.5 and `deposit_metrology.py
 
 ### 1.4 Densification — briquetting is the product-form gate
 
+> **Status: implemented (L1)** — `models/briquetting.py` (`python -m models.briquetting`, CLI `aq-steel-briquetting`): Heckel line with live σ_y from `mechanical_properties`, green strength / springback / fines / press energy, Jenike rathole & bridging screens, and the shippable-product spec block; `melt_balance.py` consumes the shipped-fines fraction live.
+
 **The gap.** The architecture screen reports product *form* (powder / flake /
 foil) but never the last unit operation of Option A: **getting it shippable**.
 Melt shops will not pneumatically fine-powder an EAF roof; the product must be

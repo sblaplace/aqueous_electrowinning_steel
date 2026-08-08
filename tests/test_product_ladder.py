@@ -229,34 +229,39 @@ def test_gate_status_probes_live_module_tree():
     assert corr["exists"] is True
     assert corr["state"] == "modelled (L1)"
     assert corr["module"] == "deposit_corrosion"
-    # still-proposed V6 modules resolve as unmodelled — and flip when landed
+    # V6 §1.4 landed: the densification gate flipped the same way
     briq = gate_status("g_briquet")
-    assert briq["state"] == "unmodelled"
+    assert briq["exists"] is True
+    assert briq["state"] == "modelled (L1)"
     assert briq["module"] == "briquetting"
+    # still-proposed V6 modules resolve as unmodelled — and flip when landed
+    aging = gate_status("g_deposit_aging")
+    assert aging["state"] == "unmodelled"
+    assert aging["module"] == "deposit_aging"
 
 
 def test_gate_status_flips_when_module_lands():
     """Simulate implementing a V6 proposal: status flips, ladder follows."""
     from models import product_ladder
 
-    fake = types.ModuleType("models.briquetting")
+    fake = types.ModuleType("models.deposit_aging")
     fake.SCREENING_FLAG = "unvalidated (L1)"
     real_import = product_ladder.importlib.import_module
 
     def fake_import(name, *a, **k):
-        if name == "models.briquetting":
+        if name == "models.deposit_aging":
             return fake
         return real_import(name, *a, **k)
 
     try:
         product_ladder.importlib.import_module = fake_import
-        flipped = gate_status("g_briquet")
+        flipped = gate_status("g_deposit_aging")
         assert flipped["exists"] is True
         assert flipped["state"] == "modelled (L1)"
-        r = evaluate_rung(RUNGS["flake_feed"])
+        r = evaluate_rung(RUNGS["annealed_foil"])
         names_unmodelled = [g["name"] for g in r.gate_rows
                             if g["state"] == "unmodelled"]
-        assert all("briquetting" not in n.lower() for n in names_unmodelled)
+        assert all("aging" not in n.lower() for n in names_unmodelled)
     finally:
         product_ladder.importlib.import_module = real_import
 

@@ -50,6 +50,9 @@ Live derivations
 * charge S comes live from ``models/rinse_carryover.py`` (counter-current
   rinse-train carryover, V6 §1.3); anchor ``CHARGE_S_WT_PCT`` is the
   fallback.
+* shipped-product fines come live from ``models/briquetting.py``
+  (recommended densification line, V6 §1.4); anchor
+  ``FINES_FRACTION_PASSIVATED`` is the fallback.
 
 Screening flag
 --------------
@@ -186,6 +189,22 @@ def _live_charge_s_wt_pct() -> float:
         return get_anchor("CHARGE_S_WT_PCT").value
 
 
+def _live_fines_fraction() -> float:
+    """Shipped-product fines as a mass fraction from the densification line.
+
+    ``briquetting.shipped_fines_fraction`` runs the recommended Option-A
+    line (hot die-press of the column powder, V6 §1.4) live — the §1.4 →
+    §1.5 dust channel; the anchor row documents the handling band it
+    replaced.
+    """
+    try:
+        from .briquetting import shipped_fines_fraction
+
+        return float(shipped_fines_fraction())
+    except Exception:  # pragma: no cover - defensive
+        return get_anchor("FINES_FRACTION_PASSIVATED").value
+
+
 def _resolved_state(state: ChargeState) -> Dict[str, float]:
     return {
         "o_wt_pct": (
@@ -198,7 +217,7 @@ def _resolved_state(state: ChargeState) -> Dict[str, float]:
         ),
         "fines_fraction": (
             state.fines_fraction if state.fines_fraction is not None
-            else get_anchor("FINES_FRACTION_PASSIVATED").value
+            else _live_fines_fraction()
         ),
         "c_h_ppm": (
             state.c_h_ppm if state.c_h_ppm is not None
@@ -438,6 +457,8 @@ def model_scope() -> Dict[str, Any]:
             "rinse_carryover.default_charge_s_wt_pct (charge sulfur, V6 §1.3)",
             "product_oxidation.postharvest_o_pickup_wt_pct (charge O "
             "pickup, V6 §1.2)",
+            "briquetting.shipped_fines_fraction (charge fines as shipped, "
+            "V6 §1.4)",
         ],
         "exact": [
             "C / CO / FeO stoichiometry of carboreduction",
