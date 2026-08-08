@@ -10,12 +10,12 @@
   "mode": "full-grade",
   "source_hashes": {
     "models/ladder_tea.py": "3c029ccd4d1c8ddc",
-    "models/product_ladder.py": "43f13899f86f6cd9",
+    "models/product_ladder.py": "ceb7cc868dd87b72",
     "models/cell_architecture.py": "77a08ed3afac2da7",
     "models/electrochemistry.py": "935e526a6598d30c",
     "models/technoeconomic.py": "db224bcf4b144584",
     "models/thermomechanical.py": "03d99ca6f2b215c2",
-    "models/anchors.py": "08cff9f254eb9d35"
+    "models/anchors.py": "bf1c037f800c88d8"
   }
 }
 ```

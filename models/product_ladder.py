@@ -149,7 +149,9 @@ GATE_REGISTRY: Dict[str, GateRef] = {
                 "deposit_aging", "V6 §5.2 proposal — UNMODELLED."),
         GateRef("g_drum_life", "drum campaign life (oxide + hydriding)",
                 "ti_hydriding",
-                "V6 §4.1 proposal — UNMODELLED (oxide side in substrate_passivation)."),
+                "V6 §4.1 implemented (L1) — H entry × shield, α→δ case "
+                "growth, spall crit, G_c drift feed to adhesion_peel; "
+                "oxide side in substrate_passivation."),
         GateRef("g_oc_corrosion", "idle corrosion / ferric etch of deposit",
                 "deposit_corrosion",
                 "V6 §1.1 implemented (L1) — mixed-potential idle corrosion + "

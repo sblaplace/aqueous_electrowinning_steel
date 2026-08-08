@@ -396,11 +396,11 @@
           "gate_id": "g_drum_life",
           "name": "drum campaign life (oxide + hydriding)",
           "module": "ti_hydriding",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a74.1 proposal \u2014 UNMODELLED (oxide side in substrate_passivation)."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a74.1 implemented (L1) \u2014 H entry \u00d7 shield, \u03b1\u2192\u03b4 case growth, spall crit, G_c drift feed to adhesion_peel; oxide side in substrate_passivation."
         },
         {
           "gate_id": "g_strain_aging",
@@ -433,8 +433,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 1,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 2,
       "n_flag_unstated_gates": 7,
       "verdict": "clears"
     },
@@ -542,11 +542,11 @@
           "gate_id": "g_drum_life",
           "name": "drum campaign life (oxide + hydriding)",
           "module": "ti_hydriding",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a74.1 proposal \u2014 UNMODELLED (oxide side in substrate_passivation)."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a74.1 implemented (L1) \u2014 H entry \u00d7 shield, \u03b1\u2192\u03b4 case growth, spall crit, G_c drift feed to adhesion_peel; oxide side in substrate_passivation."
         },
         {
           "gate_id": "g_strain_aging",
@@ -589,8 +589,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 2,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 3,
       "n_flag_unstated_gates": 7,
       "verdict": "clears"
     },
@@ -920,11 +920,11 @@
           "gate_id": "g_drum_life",
           "name": "drum campaign life (oxide + hydriding)",
           "module": "ti_hydriding",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a74.1 proposal \u2014 UNMODELLED (oxide side in substrate_passivation)."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a74.1 implemented (L1) \u2014 H entry \u00d7 shield, \u03b1\u2192\u03b4 case growth, spall crit, G_c drift feed to adhesion_peel; oxide side in substrate_passivation."
         },
         {
           "gate_id": "g_magnetic",
@@ -957,8 +957,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 0,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 1,
       "n_flag_unstated_gates": 7,
       "verdict": "clears"
     }
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "43f13899f86f6cd9",
+      "models/product_ladder.py": "ceb7cc868dd87b72",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "08cff9f254eb9d35",
+      "models/anchors.py": "bf1c037f800c88d8",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

@@ -1326,6 +1326,84 @@ ANCHORS: Dict[str, Anchor] = {
         notes="The briquetted product's flow floor (bridging, not "
               "ratholing).",
     ),
+    # ── V6 §4.1 — Ti drum hydriding (ti_hydriding.py) ──
+    "TI_H_D_60C_M2_S": Anchor(
+        key="TI_H_D_60C_M2_S",
+        value=5.0e-12,
+        paper_value=5.0e-12,
+        uncertainty=4.0e-12,
+        ref="H diffusivity in α-Ti at 60 °C ~1e-12–1e-11 m²/s "
+            "(McQuillan & classic Ti–H compilations)",
+        notes="Fast interstitial diffusion; decade band.",
+    ),
+    "TI_H_D_EA_J_MOL": Anchor(
+        key="TI_H_D_EA_J_MOL",
+        value=27_000.0,
+        paper_value=27_000.0,
+        uncertainty=5_000.0,
+        ref="Activation energy for H diffusion in α-Ti, ~26–30 kJ/mol "
+            "(Ti–H compilations)",
+        notes="Arrhenius slope for D_H about the 60 °C reference.",
+    ),
+    "TI_H_TSS_WT_PPM_60C": Anchor(
+        key="TI_H_TSS_WT_PPM_60C",
+        value=60.0,
+        paper_value=60.0,
+        uncertainty=40.0,
+        ref="Terminal solid solubility of H in α-Ti at 60–90 °C, "
+            "≲30–100 wt-ppm (Ti–H phase-diagram reviews)",
+        notes="Crossing TSS precipitates δ-TiH₍₂₋ₓ₎ — the damage onset.",
+    ),
+    "TI_H_ENTRY_FRAC": Anchor(
+        key="TI_H_ENTRY_FRAC",
+        value=0.05,
+        paper_value=0.05,
+        uncertainty=0.045,
+        ref="Cathodic-charging H entry fraction into Ti in acid service, "
+            "order 1–10 % (screening; Ti corrosion/hydriding literature)",
+        notes="Weakest link of the chain together with TI_H_SHIELD_FRAC; "
+              "the module reports the verdict across the band.",
+    ),
+    "TI_H_SHIELD_FRAC": Anchor(
+        key="TI_H_SHIELD_FRAC",
+        value=0.01,
+        paper_value=0.01,
+        uncertainty=0.009,
+        ref="SPECULATIVE — fraction of drum area exposed to bath H "
+            "(pinholes, strip edges, peel front); the deposit shields "
+            "the rest and is itself an H sink",
+        notes="Auditable on a real drum (pinhole/edge inspection); "
+              "paired with TI_H_ENTRY_FRAC as the design target product.",
+    ),
+    "TI_HYD_H_PER_TI": Anchor(
+        key="TI_HYD_H_PER_TI",
+        value=1.7,
+        paper_value=1.7,
+        uncertainty=0.2,
+        ref="δ-TiH₍₂₋ₓ₎ stoichiometry boundary composition, H/Ti ≈ 1.5–1.9 "
+            "(Ti–H phase diagram)",
+        notes="Case inventory per unit hydride volume.",
+    ),
+    "TI_HYD_CRIT_CASE_UM": Anchor(
+        key="TI_HYD_CRIT_CASE_UM",
+        value=20.0,
+        paper_value=20.0,
+        uncertainty=15.0,
+        ref="SPECULATIVE — hydride case depth at which the TiO₂ scale "
+            "spalls / peel morphology flips (foil-machine drum-service "
+            "practice, re-skin intervals)",
+        notes="Stands in for the shelved stress/K_IC/buckling mechanics; "
+              "calibrate against first drum campaign.",
+    ),
+    "TI_HYD_GC_FLOOR_FRAC": Anchor(
+        key="TI_HYD_GC_FLOOR_FRAC",
+        value=0.4,
+        paper_value=0.4,
+        uncertainty=0.2,
+        ref="SPECULATIVE — residual G_c fraction of a fully hydrated/"
+            "scale-spalled interface (adhesion_peel practice analogy)",
+        notes="Floor of the hydride G_c drift multiplier.",
+    ),
 }
 
 
