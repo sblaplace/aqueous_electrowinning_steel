@@ -195,6 +195,18 @@ class TestDepositStressFromConditions:
         )
         assert res_pre["components"]["total_MPa"] < res_dc["components"]["total_MPa"]
 
+    def test_point_defect_stress_opt_in_adds_term(self):
+        """include_point_defect_stress adds a point_defect component (Round 5 C2)."""
+        res_base = deposit_stress_from_conditions(j_mA_cm2=300.0, current_efficiency_percent=85.0)
+        res_pd = deposit_stress_from_conditions(
+            j_mA_cm2=300.0, current_efficiency_percent=85.0,
+            include_point_defect_stress=True,
+        )
+        assert "point_defect_MPa" not in res_base["components"]
+        assert "point_defect_MPa" in res_pd["components"]
+        assert res_pd["components"]["point_defect_MPa"] > 0.0
+        assert res_pd["components"]["total_MPa"] >= res_base["components"]["total_MPa"]
+
 
 class TestStressEvolution:
     def test_evolution_local_and_average_at_zero(self):
