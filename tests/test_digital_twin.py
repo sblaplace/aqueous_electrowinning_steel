@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 
+import pytest
+
 from models.digital_twin import (
     DigitalTwin,
     AnomalyDetector,
@@ -19,6 +21,8 @@ from models.digital_twin import (
     H_jacobian,
 )
 from models.twin_physics import CellProcessModel, generate_physics_readings
+
+pytestmark = pytest.mark.slow
 
 
 class TestEKFTracksTrueState:

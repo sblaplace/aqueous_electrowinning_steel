@@ -35,6 +35,8 @@ from models.economics_from_physics import (
 from models.electrochemistry import specific_energy_kWh_per_t
 from models.gas_holdup import ChannelGeometry
 
+pytestmark = pytest.mark.slow
+
 #: #40's reachable operating point, the one this brief re-derives.
 J_REF = 150.0
 GAP_REF = 1.5e-3

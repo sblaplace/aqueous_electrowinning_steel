@@ -42,6 +42,8 @@ from models.observability import (
     state_vector_from_operating_point,
 )
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(scope="module")
 def model():
