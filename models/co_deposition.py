@@ -739,6 +739,15 @@ class GuglielmiCarbonIncorporation:
     boundary_layer_m: float = 5e-5
     current_density_for_incorporation_mA_cm2: Optional[float] = None
 
+    # Opt-in additive coupling (CHEM_PHYS_REVIEW §2.6): fractional organic
+    # coverage (0–1) from ``leveler_kinetics.AdditivePackage.theta_organic``.
+    # A leveler/leveler package forms a film that blocks the particle
+    # strong-adsorption (anchoring) step, so heavier organic coverage
+    # suppresses carbon co-deposition.  0.0 (default) → unchanged behaviour.
+    organic_coverage_theta: float = 0.0
+    # Max fraction of strong adsorption a full organic monolayer can block.
+    ORGANIC_BLOCK_MAX: float = 0.70
+
     # Empirical calibration constants (derived from composite-plating literature)
     # These should be validated against experimental incorporation data.
     k_strong_ref_mol_m2_s_per_mA_cm2: float = 3.0e-8  # Strong-adsorption rate constant
@@ -874,6 +883,14 @@ class GuglielmiCarbonIncorporation:
         sigma = (K * C_p) / (1.0 + K * C_p)
         return float(min(max(sigma, 0.0), 0.999))
 
+    def organic_anchoring_blocking_factor(self) -> float:
+        """Fraction (≤ 1) of particle anchoring left unblocked by the organic
+        film.  Organic coverage θ_org blocks up to ``ORGANIC_BLOCK_MAX`` of the
+        strong-adsorption step: ``1 − ORGANIC_BLOCK_MAX·θ_org``.  θ_org = 0 → 1.
+        """
+        theta = max(0.0, min(self.organic_coverage_theta, 1.0))
+        return float(1.0 - self.ORGANIC_BLOCK_MAX * theta)
+
     def strong_adsorption_rate_mol_m2_s(
         self,
         current_density_mA_cm2: float,
@@ -885,6 +902,8 @@ class GuglielmiCarbonIncorporation:
 
         The strong-adsorption constant ``k_strong`` is calibrated to
         literature composite-plating data (typically 3e-8 to 1e-7).
+        An organic leveler film (CHEM_PHYS_REVIEW §2.6) blocks the anchoring
+        step by ``organic_anchoring_blocking_factor()``.
         """
         if current_density_mA_cm2 <= 0:
             return 0.0
@@ -894,6 +913,7 @@ class GuglielmiCarbonIncorporation:
         # Note: ``k_strong`` is expressed per (mA/cm²) to make the product
         # dimensionally consistent with the reference calibration.
         rate = self.k_strong_ref_mol_m2_s_per_mA_cm2 * sigma * current_density_mA_cm2
+        rate *= self.organic_anchoring_blocking_factor()
         return float(rate)
 
     def particle_incorporation_rate_per_unit_area_kg_m2_s(
@@ -963,6 +983,8 @@ class GuglielmiCarbonIncorporation:
         # Size effect: smaller particles incorporate more easily
         size_corr = 1.0 / (1.0 + max(0.0, self.particle_size_um - 1.0) * 0.3)
         base_frac *= size_corr
+        # Organic leveler film blocks particle anchoring (CHEM_PHYS_REVIEW §2.6)
+        base_frac *= self.organic_anchoring_blocking_factor()
         # Cap at realistic values for aqueous composite plating
         w_c = min(max(base_frac, 0.0), 0.15)  # 15 wt% absolute maximum for aqueous plating
         return float(w_c * 100.0)
@@ -994,6 +1016,10 @@ class GuglielmiCarbonIncorporation:
             "predicted_carbon_vol_percent_approx": round(w_c / (w_c + (1.0 - w_c) * (2200.0 / 7874.0)) * 100, 2),
             "surface_blocking_factor": round(1.0 - 0.3 * sigma, 3),
             "adjusted_metal_current_efficiency_percent": round(adjusted_ce * 100.0, 1),
+            "organic_coverage_theta": round(self.organic_coverage_theta, 4),
+            "organic_anchoring_blocking_factor": round(
+                self.organic_anchoring_blocking_factor(), 3
+            ),
             "temperature_C": self.temperature_C,
             "mechanism_notes": (
                 "Loose adsorption reversible (Langmuir); strong adsorption irreversible "
