@@ -44,8 +44,8 @@ Live derivations
 ----------------
 * as-deposited O comes from ``models/oxygen_in_iron.py`` at call time
   (``ChargeState.o_wt_pct=None``), the same L1 engine the deposit gates use;
-  post-harvest pickup is an anchor add-on (``models/product_oxidation.py``
-  will replace it — V6 §1.2).
+  post-harvest pickup comes live from ``models/product_oxidation.py``
+  (passivation-film physics per product form, V6 §1.2).
 * the H verdict is a live call to ``models/melt_hydrogen.py``.
 * charge S comes live from ``models/rinse_carryover.py`` (counter-current
   rinse-train carryover, V6 §1.3); anchor ``CHARGE_S_WT_PCT`` is the
@@ -95,7 +95,8 @@ class ChargeState:
 
     ``o_wt_pct=None`` means *derive live*: as-deposited O from
     ``oxygen_in_iron.OxygenInIronModel().predict()`` at the reference
-    operating point plus the anchored post-harvest pickup (passivation film).
+    operating point plus the post-harvest pickup computed live by
+    ``product_oxidation`` for this product form (passivation film).
     """
 
     product_form: str = "briquette"   # briquette | flake | powder | foil
@@ -144,13 +145,21 @@ def route_params(route: str) -> MeltRouteParams:
     )
 
 
-def _live_as_deposited_o_wt_pct() -> float:
-    """As-deposited O (wt%) from the oxygen engine + anchored pickup.
+def _live_as_deposited_o_wt_pct(product_form: str = "briquette") -> float:
+    """As-deposited O (wt%) + live post-harvest pickup per product form.
 
-    try/except with anchor fallback, same pattern as product_ladder's
-    anneal link: the anchor row documents the screening value used.
+    Both legs try/except with anchor fallback (same pattern as
+    product_ladder's anneal link): as-deposited O from the oxygen engine;
+    post-harvest pickup from ``product_oxidation`` passivation-film
+    physics (V6 §1.2), with the anchor row documenting the screening
+    band it replaced.
     """
-    pickup = get_anchor("POSTHARVEST_O_PICKUP_WT_PCT").value
+    try:
+        from .product_oxidation import postharvest_o_pickup_wt_pct
+
+        pickup = float(postharvest_o_pickup_wt_pct(product_form))
+    except Exception:  # pragma: no cover - defensive
+        pickup = get_anchor("POSTHARVEST_O_PICKUP_WT_PCT").value
     try:
         from .oxygen_in_iron import OxygenInIronModel
 
@@ -181,7 +190,7 @@ def _resolved_state(state: ChargeState) -> Dict[str, float]:
     return {
         "o_wt_pct": (
             state.o_wt_pct if state.o_wt_pct is not None
-            else _live_as_deposited_o_wt_pct()
+            else _live_as_deposited_o_wt_pct(state.product_form)
         ),
         "s_wt_pct": (
             state.s_wt_pct if state.s_wt_pct is not None
@@ -427,6 +436,8 @@ def model_scope() -> Dict[str, Any]:
             "oxygen_in_iron.OxygenInIronModel.predict (as-deposited O)",
             "melt_hydrogen.melt_hydrogen_budget (H boil-off verdict)",
             "rinse_carryover.default_charge_s_wt_pct (charge sulfur, V6 §1.3)",
+            "product_oxidation.postharvest_o_pickup_wt_pct (charge O "
+            "pickup, V6 §1.2)",
         ],
         "exact": [
             "C / CO / FeO stoichiometry of carboreduction",
@@ -436,7 +447,6 @@ def model_scope() -> Dict[str, Any]:
             "route oxide recovery fractions",
             "fines dust capture fractions",
             "lime-per-sulfur slag practice",
-            "post-harvest O pickup (V6 §1.2 will replace with physics)",
         ],
         "out_of_scope": [
             "kinetics of the boil / bath stirring rates",

@@ -20,10 +20,11 @@
 > (junction potentials, deposit aging) that the Q3/RDE calibration campaign will
 > silently inherit if they are not bounded first.
 >
-> Items **§1.1** (`models/deposit_corrosion.py`), **§1.3**
-> (`models/rinse_carryover.py`) and **§1.5** (`models/melt_balance.py`) have
-> since been implemented at screening (L1) scope with named anchors, per repo
-> convention; everything else below remains a proposal.
+> Items **§1.1** (`models/deposit_corrosion.py`), **§1.2**
+> (`models/product_oxidation.py`), **§1.3** (`models/rinse_carryover.py`) and
+> **§1.5** (`models/melt_balance.py`) have since been implemented at screening
+> (L1) scope with named anchors, per repo convention; everything else below
+> remains a proposal.
 
 ---
 
@@ -85,6 +86,10 @@ classic iron-in-acid mixed-potential data (Stern 1955; Kelly 1965) and the
 chloride-EW ferric-etch literature (USBM RI series).
 
 ### 1.2 Product oxidation, drying, and pyrophoricity — the post-harvest oxygen budget
+
+> **Status: implemented (L1)** — `models/product_oxidation.py`
+> (`python -m models.product_oxidation`, CLI `aq-steel-product-oxidation`),
+> feeding `melt_balance.py` post-harvest O pickup live.
 
 **The gap.** `oxygen_in_iron.py` and `bubble_engulfment.py` bound the oxygen the
 deposit is *born* with. Nothing bounds the oxygen it *gains* between the
@@ -687,7 +692,8 @@ Baird's strain-aging reviews; ammoniacal iron plating literature.
   no N-in-metal or Cottrell/Lüders physics anywhere.
 
 All items above are **proposals (status: proposed) unless marked "Status:
-implemented" in their section headers** (currently §1.1, §1.3, §1.5). Each
+implemented" in their section headers** (currently §1.1, §1.2, §1.3,
+§1.5). Each
 should ship with the repo's conventions: a standalone `models/*.py` with CLI,
 `tests/test_*.py`, `pyproject.toml` entry point, `SCREENING_FLAG = "unvalidated
 (L1)"` header, and one row per numeric claim in `references/anchors.md`.

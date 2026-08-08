@@ -108,10 +108,14 @@ def test_dirty_charge_can_fail_the_yield_gate():
 
 def test_default_charge_o_comes_live_from_oxygen_engine():
     from models.oxygen_in_iron import OxygenInIronModel
+    from models.product_oxidation import postharvest_o_pickup_wt_pct
 
     live_ppm = float(OxygenInIronModel().predict()["o_ppm"])
-    expected = live_ppm / 1.0e4 + get_anchor("POSTHARVEST_O_PICKUP_WT_PCT").value
-    v = evaluate_charge()  # default state resolves live
+    # post-harvest pickup is live passivation-film physics (V6 §1.2)
+    pickup = postharvest_o_pickup_wt_pct("briquette")
+    assert get_anchor("POSTHARVEST_O_PICKUP_WT_PCT").value > pickup > 0.0
+    expected = live_ppm / 1.0e4 + pickup
+    v = evaluate_charge()  # default state (briquette) resolves live
     assert v.o_wt_pct == pytest.approx(expected, rel=1e-9)
 
 

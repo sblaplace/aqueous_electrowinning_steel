@@ -884,6 +884,180 @@ ANCHORS: Dict[str, Anchor] = {
         notes="Borate carryover → charge boron: ppm-B is boron-steel "
               "territory; tracked, not gated here.",
     ),
+    # ─── Product oxidation, drying & pyrophoricity ───────────────
+    #     (product_oxidation.py; V6 §1.2)
+    "PASSIV_FILM_LIM_NM": Anchor(
+        key="PASSIV_FILM_LIM_NM",
+        value=3.0,
+        paper_value=3.0,
+        uncertainty=1.0,
+        ref="Mott–Cabrera native passive film on iron at room temperature "
+            "(2–4 nm air-formed/fixed film)",
+        notes="Post-harvest passivation target: grow this film under "
+              "controlled p_O2/T and oxidation effectively stops.",
+    ),
+    "PASSIV_TAU_S": Anchor(
+        key="PASSIV_TAU_S",
+        value=3600.0,
+        paper_value=3600.0,
+        uncertainty=3000.0,
+        ref="Room-temperature approach to the limiting passive film "
+            "(minutes–hours), screening",
+        notes="Log-law passivation timescale; after ~5τ the RT film is "
+              "the Mott–Cabrera limiting film.",
+    ),
+    "OXIDE_O_MASS_FRAC": Anchor(
+        key="OXIDE_O_MASS_FRAC",
+        value=0.276,
+        paper_value=0.276,
+        uncertainty=0.020,
+        ref="Passive film composition proxy Fe₃O₄ (27.6 wt% O; band "
+            "FeO 0.223 – Fe₂O₃ 0.300 – FeOOH ~0.286)",
+        notes="Mass of charge oxygen per mass of passive film (the "
+              "film → charge-O converter).",
+    ),
+    "OXIDE_DENSITY_KG_M3": Anchor(
+        key="OXIDE_DENSITY_KG_M3",
+        value=5170.0,
+        paper_value=5170.0,
+        uncertainty=300.0,
+        ref="Magnetite density (passive-film proxy), standard tables",
+        notes="Pairs with OXIDE_O_MASS_FRAC to convert film nm → O mass "
+              "per unit area.",
+    ),
+    "POWDER_D50_UM": Anchor(
+        key="POWDER_D50_UM",
+        value=60.0,
+        paper_value=60.0,
+        uncertainty=40.0,
+        ref="Electrolytic / PM iron powder mesh band (−100 mesh family, "
+            "PM industry catalogs), screening",
+        notes="d50 of the rotating-column powder before any PM finishing "
+              "(pm_powder_finish will own the sizing spec).",
+    ),
+    "POWDER_ROUGHNESS_FACTOR": Anchor(
+        key="POWDER_ROUGHNESS_FACTOR",
+        value=3.0,
+        paper_value=3.0,
+        uncertainty=2.0,
+        ref="Dendritic electrowon powder vs smooth spheres (electrolytic "
+            "powder morphology), screening",
+        notes="Area multiplier on the equivalent-sphere specific surface.",
+    ),
+    "OX_RATE_REF_MOL_M2_S": Anchor(
+        key="OX_RATE_REF_MOL_M2_S",
+        value=1.0e-8,
+        paper_value=1.0e-8,
+        uncertainty=9.0e-9,
+        ref="SPECULATIVE — fine iron powder oxidation rate at 60 °C, 3 nm "
+            "film, air (parabolic inverse-film law), calibrated so "
+            "passivated −100 mesh powder hot-dries with a slim margin "
+            "while unpassivated <45 µm powder runs away (PM-industry "
+            "phenomenology)",
+        notes="mol O consumed per m² per s at the reference state; the "
+              "dominant speculative constant of the module (decade band).",
+    ),
+    "OX_EA_KJ_MOL": Anchor(
+        key="OX_EA_KJ_MOL",
+        value=90.0,
+        paper_value=90.0,
+        uncertainty=30.0,
+        ref="Parabolic oxidation activation energy screening for thin-"
+            "film iron oxidation",
+        notes="Sets the self-heating temperature leverage in the Semenov "
+              "balance.",
+    ),
+    "OX_HEAT_KJ_MOL_O": Anchor(
+        key="OX_HEAT_KJ_MOL_O",
+        value=280.0,
+        paper_value=280.0,
+        uncertainty=40.0,
+        ref="Fe₃O₄ formation enthalpy −1118 kJ/mol oxide → ~280 kJ per "
+            "mol O atoms bound (metallurgical thermochemistry)",
+        notes="Heat release per mol O in the Semenov generation term.",
+    ),
+    "DRYER_H_W_M2K": Anchor(
+        key="DRYER_H_W_M2K",
+        value=15.0,
+        paper_value=15.0,
+        uncertainty=10.0,
+        ref="Convective tray/rotary dryer bed heat-transfer screening",
+        notes="Heat-removal coefficient for the Semenov loss term.",
+    ),
+    "TRAY_BED_DEPTH_M": Anchor(
+        key="TRAY_BED_DEPTH_M",
+        value=0.02,
+        paper_value=0.02,
+        uncertainty=0.01,
+        ref="Tray bed depth screening (top-cooled lump, A/V = 1/depth)",
+        notes="Geometry of the drying lump the Semenov balance runs on.",
+    ),
+    "POWDER_BULK_DENSITY_KG_M3": Anchor(
+        key="POWDER_BULK_DENSITY_KG_M3",
+        value=2500.0,
+        paper_value=2500.0,
+        uncertainty=500.0,
+        ref="Poured/tapped electrolytic iron powder bulk density "
+            "(~30 % theoretical), screening",
+        notes="Converts bed geometry to per-kg heat loss.",
+    ),
+    "PASSIV_PO2_FRAC": Anchor(
+        key="PASSIV_PO2_FRAC",
+        value=0.010,
+        paper_value=0.010,
+        uncertainty=0.009,
+        ref="Controlled-passivation practice: ~1 % O₂ in N₂ blankets "
+            "(PM powder passivation/industry handling)",
+        notes="The passivation window's oxygen partial-pressure setting.",
+    ),
+    "PASSIV_PROTOCOL_T_C": Anchor(
+        key="PASSIV_PROTOCOL_T_C",
+        value=50.0,
+        paper_value=50.0,
+        uncertainty=20.0,
+        ref="Passivation/drying protocol temperature screening "
+            "(warm, sub-critical)",
+        notes="Warm enough to dry, cool enough that the parabolic branch "
+              "cannot outrun dissipation.",
+    ),
+    "DRYER_AIR_T_C": Anchor(
+        key="DRYER_AIR_T_C",
+        value=80.0,
+        paper_value=80.0,
+        uncertainty=20.0,
+        ref="Standard powder drying-air temperature screening",
+        notes="The hot-and-fast-dried fault case V6 §1.2 warns about; "
+              "checked against the Semenov criterion.",
+    ),
+    "PRODUCT_PASSIV_O_MAX_WT_PCT": Anchor(
+        key="PRODUCT_PASSIV_O_MAX_WT_PCT",
+        value=1.5,
+        paper_value=1.5,
+        uncertainty=0.5,
+        ref="V6 §1.2 product-spec text: 'flake, passivated, ≤1.5 wt% O, "
+            "non-pyrophoric' is a buyable article",
+        notes="The passivated-product oxygen ceiling for the spec "
+            "verdict; every 1 wt% O is ~4.5 wt% FeO the melt must boil.",
+    ),
+    "STORAGE_HOURS": Anchor(
+        key="STORAGE_HOURS",
+        value=72.0,
+        paper_value=72.0,
+        uncertainty=48.0,
+        ref="Bin/bag residence between passivation and charge, screening",
+        notes="Air-exposure budget at RT log-law film growth after the "
+              "controlled passivation step.",
+    ),
+    "COMBUSTIBLE_DUST_D50_UM": Anchor(
+        key="COMBUSTIBLE_DUST_D50_UM",
+        value=45.0,
+        paper_value=45.0,
+        uncertainty=20.0,
+        ref="NFPA/PM-industry combustible-dust classification boundary "
+            "for iron powder handling",
+        notes="Below this d50, unpassivated + H-bearing powder is "
+              "handled as a pyrophoricity candidate.",
+    ),
 }
 
 

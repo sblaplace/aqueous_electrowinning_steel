@@ -84,11 +84,11 @@
           "gate_id": "g_product_ox",
           "name": "post-harvest oxidation & passivation spec",
           "module": "product_oxidation",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.2 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.2 implemented (L1) \u2014 film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live."
         },
         {
           "gate_id": "g_rinse",
@@ -131,8 +131,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 2,
-      "n_l1_gates": 3,
+      "n_unmodelled_gates": 1,
+      "n_l1_gates": 4,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -220,11 +220,11 @@
           "gate_id": "g_product_ox",
           "name": "post-harvest oxidation & passivation spec",
           "module": "product_oxidation",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.2 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.2 implemented (L1) \u2014 film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live."
         },
         {
           "gate_id": "g_rinse",
@@ -287,8 +287,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 4,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 5,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -678,11 +678,11 @@
           "gate_id": "g_product_ox",
           "name": "post-harvest oxidation & passivation spec",
           "module": "product_oxidation",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.2 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.2 implemented (L1) \u2014 film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live."
         },
         {
           "gate_id": "g_pm_finish",
@@ -705,8 +705,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 2,
-      "n_l1_gates": 1,
+      "n_unmodelled_gates": 1,
+      "n_l1_gates": 2,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -794,11 +794,11 @@
           "gate_id": "g_product_ox",
           "name": "post-harvest oxidation & passivation spec",
           "module": "product_oxidation",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.2 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.2 implemented (L1) \u2014 film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live."
         },
         {
           "gate_id": "g_form_factor",
@@ -821,8 +821,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 1,
-      "n_l1_gates": 2,
+      "n_unmodelled_gates": 0,
+      "n_l1_gates": 3,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "241f6c904afe97cb",
+      "models/product_ladder.py": "4691a11ba3457ac0",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "c831fa21e4cc71e0",
+      "models/anchors.py": "3d1dc04682c519ce",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

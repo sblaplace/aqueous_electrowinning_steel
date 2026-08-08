@@ -156,7 +156,9 @@ GATE_REGISTRY: Dict[str, GateRef] = {
                 "ferric etch; run_record predicted ledger terms + "
                 "closed_loop campaign accounting."),
         GateRef("g_product_ox", "post-harvest oxidation & passivation spec",
-                "product_oxidation", "V6 §1.2 proposal — UNMODELLED."),
+                "product_oxidation",
+                "V6 §1.2 implemented (L1) — film growth, Semenov runaway, "
+                "passivation spec; feeds melt_balance O pickup live."),
         GateRef("g_rinse", "rinse carryover → charge sulfur",
                 "rinse_carryover",
                 "V6 §1.3 implemented (L1) — Landau–Levich film / cake "
