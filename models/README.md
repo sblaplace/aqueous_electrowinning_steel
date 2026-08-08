@@ -65,6 +65,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `purification.py` | Cementation, hydrolysis, selective electrowinning and ion exchange for Cu/Ni/Zn removal; enforces the Cu < 0.1% hot-shortness spec |
 | `impurity_codeposition.py` | Co-deposition of nobler impurities and their effect on deposit purity |
 | `deposit_morphology.py` | Mullins-Sekerka dendrite onset, HER bubble disruption, nucleation regime → coherent film / dendrite / powder classification |
+| `leveler_kinetics.py` | **Additive / leveler adsorption kinetics** (CHEM_PHYS_REVIEW §2.6): per-additive Langmuir isotherms (saccharin/thiourea/PEG/coumarin/chloride), Γ-dependent nucleation-rate multiplier, Γ-dependent H-recombination overpotential + relief, carbon-incorporation blocking, structural-grade package ranking — replaces the single `saccharin_g_L` knob, opt-in (`additive_package`) leaving defaults unchanged |
 | `steel_grade.py` | Composition → AISI grade routing (1008–8620) |
 | `tempering.py` | Andrews Ms, Koistinen-Marburger retained austenite, Hollomon-Jaffe tempering |
 | `carbon_potential.py` | Gas carburizing atmosphere: CO/CO₂ Boudouard, CH₄/H₂, dew point, O₂ probe, Acm solubility |
