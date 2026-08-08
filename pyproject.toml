@@ -93,6 +93,11 @@ aq-steel-leaching = "models.ore_leaching:main"
 aq-steel-osmosis = "models.chemical_osmosis:main"
 aq-steel-tempering-kinetics = "models.tempering_kinetics:main"
 aq-steel-solutal = "models.solutal_convection:main"
+aq-steel-recombination-poison = "models.recombination_poison:main"
+aq-steel-carbon-electrodeposition = "models.carbon_electrodeposition:main"
+aq-steel-melt-hydrogen = "models.melt_hydrogen:main"
+aq-steel-nucleation-grain = "models.nucleation_grain:main"
+aq-steel-bubble-engulfment = "models.bubble_engulfment:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"
