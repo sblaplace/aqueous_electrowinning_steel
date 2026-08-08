@@ -146,7 +146,11 @@ GATE_REGISTRY: Dict[str, GateRef] = {
         GateRef("g_strain_aging", "N pickup / Lüders-band forming gate",
                 "strain_aging", "V6 §7.1 proposal — UNMODELLED."),
         GateRef("g_deposit_aging", "RT aging between harvest & metrology",
-                "deposit_aging", "V6 §5.2 proposal — UNMODELLED."),
+                "deposit_aging",
+                "V6 §5.2 implemented (L1) — log-time σ/HV/ρ drift (Cu "
+                "self-annealing analogue), H-coupled τ_eff(T,C_H) + live "
+                "hydrogen_trapping slab egress; metrology-time standard "
+                "and QA hook."),
         GateRef("g_drum_life", "drum campaign life (oxide + hydriding)",
                 "ti_hydriding",
                 "V6 §4.1 implemented (L1) — H entry × shield, α→δ case "

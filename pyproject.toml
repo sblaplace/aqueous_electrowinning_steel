@@ -114,6 +114,7 @@ aq-steel-briquetting = "models.briquetting:main"
 aq-steel-ladder-tea = "models.run_ladder_tea:main"
 aq-steel-ti-hydriding = "models.ti_hydriding:main"
 aq-steel-ph-metrology = "models.ph_metrology:main"
+aq-steel-deposit-aging = "models.deposit_aging:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

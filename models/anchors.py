@@ -1441,6 +1441,42 @@ ANCHORS: Dict[str, Anchor] = {
         ref="IUPAC pH convention / Bates pH metrology",
         notes="Independent convention-component uncertainty, in pH units.",
     ),
+
+    # ─── Deposit self-annealing / RT aging (V6 §5.2) ───────────────
+    "DEPOSIT_AGING_A_SIGMA": Anchor(
+        key="DEPOSIT_AGING_A_SIGMA", value=0.08, paper_value=0.08,
+        uncertainty=0.05,
+        ref="Lingk & Gross; Stangl et al. Acta Mater. 56 (2008) — "
+            "nanocrystalline Cu self-annealing (log-time recovery, "
+            "hardness/resistivity/stress drift over hours–days)",
+        notes="Log-time amplitude for residual stress: σ(t)/σ0 = 1−A·ln(1+t/τ).  Fe proxy from Cu analogue.",
+    ),
+    "DEPOSIT_AGING_TAU_REF_H": Anchor(
+        key="DEPOSIT_AGING_TAU_REF_H", value=4.0, paper_value=4.0,
+        uncertainty=3.0,
+        ref="Stangl et al. 2008; Cu electrodeposit self-annealing "
+            "characteristic time at 20 °C (hours, RT recovery)",
+        notes="Anchor at 20 °C, low diffusible H; T/H shift via Arrhenius + H factor.",
+    ),
+    "DEPOSIT_AGING_EA_KJ_MOL": Anchor(
+        key="DEPOSIT_AGING_EA_KJ_MOL", value=28.0, paper_value=28.0,
+        uncertainty=12.0,
+        ref="Recovery kinetics / H diffusion screening band: "
+            "E_a ~15–45 kJ/mol (Cu self-annealing ~0.3–0.6 eV; H in bcc Fe Q≈4.6 kJ plus trapping)",
+        notes="Arrhenius slope for τ_eff(T); coarsest band in the module — calibrate against first Fe aging series.",
+    ),
+    "DEPOSIT_AGING_H_BETA_PER_PPM": Anchor(
+        key="DEPOSIT_AGING_H_BETA_PER_PPM", value=0.12, paper_value=0.12,
+        uncertainty=0.08,
+        ref="SPECULATIVE — H-accelerated recovery proxy (higher diffusible H → smaller τ)",
+        notes="Stands in for the V2 stress-H coupling made time-dependent; calibrate via H-charged vs baked foil.",
+    ),
+    "DEPOSIT_AGING_FLOOR_FRAC": Anchor(
+        key="DEPOSIT_AGING_FLOOR_FRAC", value=0.50, paper_value=0.50,
+        uncertainty=0.15,
+        ref="SPECULATIVE — residual stress fraction after prolonged RT aging (floor of log law)",
+        notes="HV/resistivity floors are mapped as 62 % and 48 % of the (1−floor) drop respectively (proxy ratios).",
+    ),
 }
 
 
