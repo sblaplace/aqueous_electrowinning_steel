@@ -5,6 +5,7 @@ from models.mechanical_properties import (
     MechanicalPropertiesModel,
     estimate_grain_size_um,
     hall_petch_yield_MPa,
+    texture_strengthening_MPa,
     solid_solution_strengthening_MPa,
     carbon_dispersion_strengthening_MPa,
     porosity_factor,
@@ -37,6 +38,41 @@ def test_hall_petch_monotonic():
     s_fine = hall_petch_yield_MPa(0.2)
     assert s_fine > s_coarse
     assert s_coarse > 50  # at least friction stress
+
+
+def test_texture_strengthening_zero_without_texture():
+    # No texture information -> no change (backward compatible).
+    assert texture_strengthening_MPa(0.0, 300.0) == 0.0
+    assert texture_strengthening_MPa(-0.5, 300.0) == 0.0
+    # Fully (110)-fibre raises the grain-size-only (isotropic) yield.
+    delta = texture_strengthening_MPa(1.0, sigma_hp_MPa=300.0)
+    assert delta > 0.0
+    # ~(M_110/M_iso - 1) ≈ 11% capped by f110=1; sanity: positive but modest.
+    assert 5.0 < delta < 60.0
+
+
+def test_texture_strengthening_scales_with_flow_stress():
+    # The Taylor-factor boost scales with the slip (Hall-Petch) stress, so
+    # finer grains (higher sigma_hp) get a larger absolute delta.
+    d_coarse = texture_strengthening_MPa(1.0, sigma_hp_MPa=200.0)
+    d_fine = texture_strengthening_MPa(1.0, sigma_hp_MPa=500.0)
+    assert d_fine > d_coarse
+
+
+def test_texture_shifts_yield_up():
+    model = MechanicalPropertiesModel()
+    no_tex = model.predict(j_avg_mA_cm2=100, waveform="dc")
+    tex = model.predict(j_avg_mA_cm2=100, waveform="dc", f110_fraction=0.9)
+    assert tex.sigma_y_MPa > no_tex.sigma_y_MPa
+    assert tex.delta_texture_MPa > 0.0
+    assert no_tex.delta_texture_MPa == 0.0
+    assert tex.f110_fraction == 0.9
+    # Texture raises the YS above the grain-size-only lower bound.
+    assert tex.sigma_y_MPa > tex.sigma_hp_MPa
+    assert "textured_strength" in tex.flags
+    # Higher f110 -> higher yield (expected direction for the grade router).
+    mid = model.predict(j_avg_mA_cm2=100, waveform="dc", f110_fraction=0.4)
+    assert mid.sigma_y_MPa < tex.sigma_y_MPa
 
 
 def test_solid_solution_positive():

@@ -179,6 +179,7 @@ from .mechanical_properties import (
     GrainSizeParams,
     estimate_grain_size_um,
     hall_petch_yield_MPa,
+    texture_strengthening_MPa,
     solid_solution_strengthening_MPa,
     carbon_dispersion_strengthening_MPa,
     porosity_factor,

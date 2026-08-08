@@ -1,6 +1,7 @@
 """Tests for deposit morphology prediction model."""
 
 import math
+import numpy as np
 import pytest
 
 from models.deposit_morphology import (
@@ -10,6 +11,7 @@ from models.deposit_morphology import (
     predict_morphology,
     morphology_map,
     viable_operating_window,
+    as_deposited_f110_fraction,
     MorphologyResult,
 )
 from models.kinetics import DepositionKinetics
@@ -209,3 +211,24 @@ class TestViableWindow:
         w = viable_operating_window(kin, min_FE=0.5)
         if w["viable"]:
             assert 0.5 <= w["FE_at_optimal"] <= 1.0
+
+
+# ─── Preferred-orientation (texture) factor ─────────────────────────
+class TestTextureF110:
+    def test_in_bounds(self):
+        for eta in (-0.1, 0.0, 0.15, 0.3, 0.6, 1.0):
+            f = as_deposited_f110_fraction(eta)
+            assert 0.0 <= f <= 1.0
+
+    def test_shifts_from_110_to_211_with_overpotential(self):
+        # Strong (110) fibre at low η, shifting toward (211) at high η.
+        low = as_deposited_f110_fraction(0.05)
+        high = as_deposited_f110_fraction(0.60)
+        assert low > 0.8   # (110)-dominated at low overpotential
+        assert high < 0.4  # (211)/(100)-dominated at high overpotential
+        assert low > high
+
+    def test_monotonic_decrease(self):
+        etas = np.linspace(0.0, 0.8, 9)
+        fracs = [as_deposited_f110_fraction(e) for e in etas]
+        assert all(fracs[i] >= fracs[i + 1] for i in range(len(fracs) - 1))

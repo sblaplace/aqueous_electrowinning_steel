@@ -47,6 +47,41 @@ GAMMA_FE_SUBSTRATE_INTERFACE = 0.5  # J/m², Fe on Fe (epitaxial, low)
 # Fe molar volume
 V_M_FE = 7.09e-6  # m³/mol (from ρ=7874 kg/m³, M=55.845 g/mol)
 
+# ─── Preferred-orientation (texture) factor ─────────────────────────────
+# As-deposited BCC iron grows a strong (110) <110> fibre at low overpotential η,
+# shifting toward (211)/(100) at high η (CHEM_PHYS_REVIEW §3.2); pulse / pulse-
+# reverse changes the relative facet areas. This preferred orientation "carries
+# into" the recrystallized texture after cold-roll + anneal. The mechanical
+# yield is otherwise isotropic Hall-Petch, so the orientation raises the true YS
+# above the grain-size-only lower bound via a Taylor-factor boost
+# (Δσ_texture = f110·(M_110/M_iso − 1)·σ_HP — see
+# ``mechanical_properties.texture_strengthening_MPa``). This helper maps
+# as-deposited conditions to an f110 fraction so the mechanical model consumes
+# it.
+
+def as_deposited_f110_fraction(
+    overpotential_V: float,
+    eta_mid_V: float = 0.30,  # overpotential at which the (110)->(211) transition is halfway
+    width_V: float = 0.10,    # transition width (V)
+    f110_min: float = 0.10,   # (211)/(100)-dominated floor at very high η
+    f110_max: float = 0.90,   # (110)-dominated ceiling at very low η
+) -> float:
+    """Volume fraction of (110) <110> fibre in an as-deposited Fe layer.
+
+    Logistic transition from a (110)-fibre-dominated deposit at low cathodic
+    overpotential η to a (211)/(100)-dominated one at high η (more negative
+    η / higher j drives renucleation off the low-energy (110) normal). Returns
+    a fraction in ``[f110_min, f110_max]``; pass it to
+    ``mechanical_properties.texture_strengthening_MPa`` (via
+    ``MechanicalProperties.predict(f110_fraction=...)`` or
+    ``ThermomechanicalParams.f110_fraction``) to fold the orientation boost
+    into the yield, making the grain-size-only YS a lower bound.
+    """
+    s = 1.0 / (1.0 + math.exp((float(overpotential_V) - eta_mid_V) / width_V))
+    return float(
+        min(max(f110_min + (f110_max - f110_min) * s, f110_min), f110_max)
+    )
+
 # ─── Deposit Outcome Classification ──────────────────────────────
 
 DepositOutcome = Literal[

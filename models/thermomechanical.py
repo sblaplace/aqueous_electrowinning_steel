@@ -54,6 +54,7 @@ import numpy as np
 from .electrochemistry import R_GAS
 from .mechanical_properties import (
     MechanicalPropertiesModel,
+    MechanicalPropertiesResult,
     MechanicalPropertiesParams,
     estimate_grain_size_um,
     GrainSizeParams,
@@ -148,6 +149,12 @@ class ThermomechanicalParams:
     cr_wt_percent: float = 0.0
     carbon_wt_percent: float = 0.0
     current_efficiency_percent: float = 95.0
+    # (110) <110> fibre fraction of the as-deposited texture, carried largely
+    # into the recrystallized texture (CHEM_PHYS_REVIEW §3.2). 0 = no texture
+    # information; feed the as-deposited Γ(η) via deposit_morphology's
+    # as_deposited_f110_fraction when a morphology/overpotential estimate is
+    # available.
+    f110_fraction: float = 0.0
     # screening kinetic coefficients (override only to calibrate)
     q_rx_kJ_mol: float = Q_RX_KJ_MOL
     k0_rx_1_s: float = K0_RX_1_S
@@ -174,6 +181,8 @@ class ThermomechanicalParams:
             raise ValueError("anneal_time_min must be positive")
         if not 0.0 < self.furnace_efficiency <= 1.0:
             raise ValueError("furnace_efficiency in (0,1]")
+        if not 0.0 <= self.f110_fraction <= 1.0:
+            raise ValueError("f110_fraction must be in [0, 1]")
 
 
 def jmak_rate_constant_1_s(
@@ -288,6 +297,11 @@ class ThermomechanicalResult:
     deposit_elongation_pct: float
     deposit_grade: str
 
+    # preferred-orientation (texture) strength contribution (CHEM_PHYS_REVIEW §3.2)
+    f110_fraction: float
+    deposit_delta_texture_MPa: float
+    annealed_delta_texture_MPa: float
+
     annealing_energy_kWh_per_kg: float
 
     # time series
@@ -317,6 +331,9 @@ class ThermomechanicalResult:
             "deposit_yield_MPa": round(self.deposit_yield_MPa, 1),
             "deposit_uts_MPa": round(self.deposit_uts_MPa, 1),
             "deposit_elongation_pct": round(self.deposit_elongation_pct, 1),
+            "f110_fraction": round(self.f110_fraction, 3),
+            "deposit_delta_texture_MPa": round(self.deposit_delta_texture_MPa, 1),
+            "annealed_delta_texture_MPa": round(self.annealed_delta_texture_MPa, 1),
             "annealing_energy_kWh_per_kg": round(self.annealing_energy_kWh_per_kg, 3),
             "flags": self.flags,
         }
@@ -348,7 +365,7 @@ class ThermomechanicalModel:
     # ------------------------------------------------------------------
     def _mechanical(
         self, grain_um: float
-    ) -> tuple[float, float, float, float, str]:
+    ) -> MechanicalPropertiesResult:
         r = self._mech_model.predict(
             grain_size_override_um=grain_um,
             ni_wt_percent=self.params.ni_wt_percent,
@@ -356,14 +373,9 @@ class ThermomechanicalModel:
             cr_wt_percent=self.params.cr_wt_percent,
             carbon_wt_percent=self.params.carbon_wt_percent,
             current_efficiency_percent=self.params.current_efficiency_percent,
+            f110_fraction=self.params.f110_fraction,
         )
-        return (
-            r.sigma_y_MPa,
-            r.uts_MPa,
-            r.vickers_hv,
-            r.elongation_pct,
-            r.grade_estimate,
-        )
+        return r
 
     def anneal_energy_kWh_per_kg(self) -> float:
         """Heating energy to bring 1 kg of deposit to the anneal temperature."""
@@ -406,7 +418,7 @@ class ThermomechanicalModel:
             flags.append("incomplete_recrystallization")
         if p.anneal_temperature_C < 550 and t_full > p.anneal_time_min:
             flags.append("anneal_too_cold_short")
-        if annealed[0] > 700:
+        if annealed.sigma_y_MPa > 700:
             flags.append("annealed_still_high_strength")
 
         # Time series
@@ -434,16 +446,19 @@ class ThermomechanicalModel:
             final_grain_um=d_final,
             fraction_recrystallized=x_final,
             t_full_rx_min=t_full / 60.0,
-            annealed_yield_MPa=annealed[0],
-            annealed_uts_MPa=annealed[1],
-            annealed_hv=annealed[2],
-            annealed_elongation_pct=annealed[3],
-            annealed_grade=annealed[4],
-            deposit_yield_MPa=deposit[0],
-            deposit_uts_MPa=deposit[1],
-            deposit_hv=deposit[2],
-            deposit_elongation_pct=deposit[3],
-            deposit_grade=deposit[4],
+            annealed_yield_MPa=annealed.sigma_y_MPa,
+            annealed_uts_MPa=annealed.uts_MPa,
+            annealed_hv=annealed.vickers_hv,
+            annealed_elongation_pct=annealed.elongation_pct,
+            annealed_grade=annealed.grade_estimate,
+            deposit_yield_MPa=deposit.sigma_y_MPa,
+            deposit_uts_MPa=deposit.uts_MPa,
+            deposit_hv=deposit.vickers_hv,
+            deposit_elongation_pct=deposit.elongation_pct,
+            deposit_grade=deposit.grade_estimate,
+            f110_fraction=p.f110_fraction,
+            deposit_delta_texture_MPa=deposit.delta_texture_MPa,
+            annealed_delta_texture_MPa=annealed.delta_texture_MPa,
             annealing_energy_kWh_per_kg=energy,
             time_s=t_grid,
             fraction_recrystallized_series=x_series,
