@@ -122,6 +122,29 @@ def test_predict_fully_recrystallized_at_defaults():
     assert res.flags == [] or "incomplete_recrystallization" not in res.flags
 
 
+def test_texture_raises_deposit_and_annealed_yield():
+    # Preferred orientation (CHEM_PHYS_REVIEW §3.2): a (110) fibre raises the
+    # grain-size-only YS for both the as-deposited and annealed states.
+    plain = ThermomechanicalModel().predict()
+    p_tex = ThermomechanicalParams(f110_fraction=0.8)
+    tex = ThermomechanicalModel(p_tex).predict()
+    assert tex.deposit_yield_MPa > plain.deposit_yield_MPa
+    assert tex.annealed_yield_MPa > plain.annealed_yield_MPa
+    assert tex.deposit_delta_texture_MPa > 0.0
+    assert tex.annealed_delta_texture_MPa > 0.0
+    assert tex.f110_fraction == 0.8
+    assert plain.deposit_delta_texture_MPa == 0.0
+    # Texture still leaves the as-deposited contrast intact (anneal softens).
+    assert tex.annealed_yield_MPa < tex.deposit_yield_MPa
+
+
+def test_texture_fraction_validated():
+    with pytest.raises(ValueError):
+        ThermomechanicalParams(f110_fraction=1.5)
+    with pytest.raises(ValueError):
+        ThermomechanicalParams(f110_fraction=-0.1)
+
+
 def test_incomplete_recrystallization_flag_low_temperature():
     params = ThermomechanicalParams(anneal_temperature_C=500, anneal_time_min=10)
     res = ThermomechanicalModel(params).predict()

@@ -81,6 +81,23 @@ UTS_OVER_YS_BASE = 1.25
 UTS_OVER_YS_HIGH_CARBON = 1.45
 ELONGATION_BASE_PCT = 22.0     # pure coarse-grained Fe (annealed) ~ 30-40%, as-deposited lower
 
+# Texture / preferred-orientation strengthening (CHEM_PHYS_REVIEW §3.2).
+# As-deposited electrodeposited iron develops a strong (110) <110> fibre texture
+# at low overpotential η, shifting toward (211)/(100) at high η, and this
+# preferred orientation is largely carried into the recrystallized texture by
+# cold-rolling + anneal. The rest of this mechanical model is isotropic
+# Hall-Petch, so the grain-size-only yield is a *lower* bound. A (110) fibre
+# raises the polycrystal Taylor factor M for BCC {110}<111> slip from the
+# random/isotropic average ~2.75 to ~3.06 (Logan & Hosford 1980; Kocks, Tomé &
+# Wenk 1998, "Texture and Anisotropy"):  Δσ/σ ≈ (M_110 − M_iso)/M_iso ≈ 0.11.
+# Because the slip flow stress scales as σ_slip = M·τ_CRSS, the orientation
+# contribution scales with the (Hall-Petch) flow stress:
+#     Δσ_texture = f110 · (M_110/M_iso − 1) · σ_HP
+# ``f110_fraction`` = 0 means no texture information (random/isotropic) and
+# yields Δσ = 0 (full backward compatibility).
+M_110_FIBRE = 3.06     # Taylor factor, <110> fibre BCC iron under uniaxial tension
+M_ISO_BCC = 2.75       # Taylor factor, random/isotropic BCC polycrystal
+
 
 @dataclass(frozen=True)
 class GrainSizeParams:
@@ -301,6 +318,31 @@ def hall_petch_yield_MPa(
     return float(p.sigma0_MPa + p.k_hp_MPa_sqrt_m / math.sqrt(d_m))
 
 
+def texture_strengthening_MPa(
+    f110_fraction: float,
+    sigma_hp_MPa: float,
+    params: Optional[MechanicalPropertiesParams] = None,
+) -> float:
+    """Yield-strength gain (MPa) from a (110) preferred orientation in Fe.
+
+    Adds the anisotropic-orientation contribution that isotropic Hall-Petch
+    omits, so the grain-size-only YS becomes a *lower* bound
+    (CHEM_PHYS_REVIEW §3.2; see module constants ``M_110_FIBRE``/``M_ISO_BCC``
+    for the Taylor-factor argument). ``f110_fraction`` is the volume fraction of
+    grains in the (110) <110> fibre orientation: 0 = random/isotropic,
+    1 = fully (110)-fibre textured. As-deposited Fe is ~(110)-fibre at low η
+    shifting toward (211) at high η, so low-η deposits get the larger boost.
+
+    Returns 0 whenever ``f110_fraction`` <= 0, so omitting texture information
+    leaves the yield unchanged (backward compatible).
+    """
+    f = float(np.clip(f110_fraction, 0.0, 1.0))
+    if f <= 0.0:
+        return 0.0
+    frac = (M_110_FIBRE - M_ISO_BCC) / M_ISO_BCC
+    return float(f * frac * max(float(sigma_hp_MPa), 0.0))
+
+
 def porosity_factor(
     current_efficiency_percent: float = 100.0,
     her_flux_mol_m2_hr: Optional[float] = None,
@@ -349,6 +391,8 @@ class MechanicalPropertiesResult:
     delta_orowan_MPa: float
     delta_lt_MPa: float
     delta_carbon_total_MPa: float
+    f110_fraction: float
+    delta_texture_MPa: float
 
     # Final properties
     sigma_y_MPa: float
@@ -370,6 +414,8 @@ class MechanicalPropertiesResult:
             "carbon_orowan_MPa": round(self.delta_orowan_MPa, 1),
             "carbon_load_transfer_MPa": round(self.delta_lt_MPa, 1),
             "carbon_total_MPa": round(self.delta_carbon_total_MPa, 1),
+            "f110_fraction": round(self.f110_fraction, 3),
+            "delta_texture_MPa": round(self.delta_texture_MPa, 1),
             "yield_strength_MPa": round(self.sigma_y_MPa, 1),
             "uts_MPa": round(self.uts_MPa, 1),
             "elongation_percent": round(self.elongation_pct, 1),
@@ -426,6 +472,7 @@ class MechanicalPropertiesModel:
         use_nucleation_grain_model: bool = False,
         cathodic_overpotential_V: float = 0.0,
         additive_coverage_fraction: float = 0.0,
+        f110_fraction: float = 0.0,
     ) -> MechanicalPropertiesResult:
         """Run full prediction pipeline."""
 
@@ -458,6 +505,13 @@ class MechanicalPropertiesModel:
         # Hall-Petch
         sigma_hp = hall_petch_yield_MPa(d_um, self.mech_params)
 
+        # Preferred-orientation strengthening (CHEM_PHYS_REVIEW §3.2): the
+        # as-deposited (110) <110> fibre and its recrystallized residue raises
+        # the Taylor factor, so the grain-size-only YS above is a lower bound.
+        delta_texture = texture_strengthening_MPa(
+            f110_fraction, sigma_hp, self.mech_params
+        )
+
         # Solid solution
         delta_ss = solid_solution_strengthening_MPa(
             ni_wt_percent, mn_wt_percent, cr_wt_percent, self.mech_params
@@ -475,7 +529,7 @@ class MechanicalPropertiesModel:
 
         # Combined yield (adds quadratically for independent mechanisms: sqrt sum squares)
         # Here use linear sum for conservative upper bound, then apply porosity knockdown
-        sigma_ideal = sigma_hp + delta_ss + delta_c_total
+        sigma_ideal = sigma_hp + delta_ss + delta_c_total + delta_texture
         sigma_y = sigma_ideal * porosity_factor_val
 
         # UTS estimate: increased ratio for high-carbon deposits (strain hardening from particles)
@@ -516,6 +570,8 @@ class MechanicalPropertiesModel:
             flags.append("nanocrystalline_grain_size")
         if sigma_y > 800:
             flags.append("very_high_strength_screening")
+        if delta_texture > 1.0:
+            flags.append("textured_strength")  # preferred orientation above grain-size-only bound
         if elong < 3.0:
             flags.append("low_ductility_risk")
 
@@ -538,6 +594,8 @@ class MechanicalPropertiesModel:
             delta_orowan_MPa=delta_orowan,
             delta_lt_MPa=delta_lt,
             delta_carbon_total_MPa=delta_c_total,
+            f110_fraction=float(np.clip(f110_fraction, 0.0, 1.0)),
+            delta_texture_MPa=float(delta_texture),
             sigma_y_MPa=float(sigma_y),
             uts_MPa=float(uts),
             elongation_pct=float(elong),
