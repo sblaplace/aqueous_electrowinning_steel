@@ -1255,7 +1255,7 @@
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "bf1c037f800c88d8",
+      "models/anchors.py": "8d9d902f7c51ce0b",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

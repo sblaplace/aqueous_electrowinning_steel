@@ -130,6 +130,7 @@ python -m models.deposit_corrosion          # Idle corrosion & ferric etch of th
 python -m models.rinse_carryover            # Rinse train → charge sulfur/salt budgets feeding melt_balance (V6 §1.3)
 python -m models.product_oxidation          # Post-harvest O budget: film growth, Semenov T_crit, passivation spec (V6 §1.2)
 python -m models.briquetting                # Densification lines → shippable-product spec (density/crush/fines/O) + flow screens (V6 §1.4)
+python -m models.ph_metrology               # Operational meter pH ↔ Pitzer convention, junction / drift ledger (V6 §5.1)
 python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 ```

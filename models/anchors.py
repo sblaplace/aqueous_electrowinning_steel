@@ -1404,6 +1404,43 @@ ANCHORS: Dict[str, Anchor] = {
             "scale-spalled interface (adhesion_peel practice analogy)",
         notes="Floor of the hydride G_c drift multiplier.",
     ),
+
+    # ─── Operational-pH metrology (V6 §5.1) ────────────────────────
+    "PH_METROLOGY_OVERLAP_M": Anchor(
+        key="PH_METROLOGY_OVERLAP_M", value=1.0e-3, paper_value=1.0e-3,
+        uncertainty=8.0e-4,
+        ref="SPECULATIVE — diffuse bridge/bath overlap concentration floor "
+            "for Planck–Henderson screening",
+        notes="Numerical regularizer standing in for bridge mixing and ion pairing; "
+              "replace with the HCl/LiCl concentration-cell check.",
+    ),
+    "PH_METROLOGY_DRIFT_MV_DAY": Anchor(
+        key="PH_METROLOGY_DRIFT_MV_DAY", value=3.0, paper_value=3.0,
+        uncertainty=2.0,
+        ref="SPECULATIVE — Fe(OH)3-colloid bridge-clogging drift scale "
+            "(glass-electrode service practice)",
+        notes="Coefficient of log(1 + bridge age / day), sign must be measured.",
+    ),
+    "PH_METROLOGY_SINGLE_ION_OFFSET_PH": Anchor(
+        key="PH_METROLOGY_SINGLE_ION_OFFSET_PH", value=0.30, paper_value=0.30,
+        uncertainty=0.20,
+        ref="IUPAC pH convention / Bates pH metrology; 0.2–0.5 pH-unit "
+            "high-ionic-strength single-ion convention band",
+        notes="Central operational-to-Pitzer convention offset, not a universal constant.",
+    ),
+    "PH_METROLOGY_JUNCTION_SIGMA_MV": Anchor(
+        key="PH_METROLOGY_JUNCTION_SIGMA_MV", value=20.0, paper_value=20.0,
+        uncertainty=10.0,
+        ref="Henderson/Planck liquid-junction-potential practice: 10–40 mV "
+            "concentrated-brine band",
+        notes="One-sigma screening uncertainty carried into pH correction.",
+    ),
+    "PH_METROLOGY_SINGLE_ION_SIGMA_PH": Anchor(
+        key="PH_METROLOGY_SINGLE_ION_SIGMA_PH", value=0.20, paper_value=0.20,
+        uncertainty=0.10,
+        ref="IUPAC pH convention / Bates pH metrology",
+        notes="Independent convention-component uncertainty, in pH units.",
+    ),
 }
 
 

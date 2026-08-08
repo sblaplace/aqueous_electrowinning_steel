@@ -113,6 +113,7 @@ aq-steel-product-oxidation = "models.product_oxidation:main"
 aq-steel-briquetting = "models.briquetting:main"
 aq-steel-ladder-tea = "models.run_ladder_tea:main"
 aq-steel-ti-hydriding = "models.ti_hydriding:main"
+aq-steel-ph-metrology = "models.ph_metrology:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

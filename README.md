@@ -107,6 +107,7 @@ aq-steel-gas-holdup                            # Gas hold-up: void fraction, cur
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 aq-steel-product-ladder                        # Which product should the cell make? Option A/B decision computed live → regenerates docs/PRODUCT_VALUE_LADDER.md
 aq-steel-ladder-tea                            # Full plant TEA per rung — does the ladder ranking survive complete costing? → regenerates docs/LADDER_TEA.md
+aq-steel-ph-metrology                          # Operational pH ↔ Pitzer convention: junction / bridge-aging bias ledger (V6 §5.1)
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
@@ -547,6 +548,16 @@ The Apache 2.0 license includes an **express patent grant**: any Contributor who
 > **Consistency note:** the repository-level `LICENSE` file and the
 > `license = {text = "Apache-2.0"}` declaration in `pyproject.toml` agree.
 > The project is Apache-2.0 licensed.
+
+---
+
+## Acknowledgments
+
+This research direction builds on foundational work in electrochemical metallurgy and is motivated by the urgent need to decarbonize the steel sector. Feedback and collaboration are highly encouraged.
+
+---
+
+*Last updated: July 2026* Apache-2.0 licensed.
 
 ---
 
