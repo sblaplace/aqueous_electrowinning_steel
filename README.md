@@ -105,6 +105,7 @@ aq-steel-stress                                # Internal stress and coupon-curv
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 aq-steel-gas-holdup                            # Gas hold-up: void fraction, current redistribution, hydrogen safety
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
+aq-steel-product-ladder                        # Which product should the cell make? Option A/B decision computed live → regenerates docs/PRODUCT_VALUE_LADDER.md
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
@@ -167,6 +168,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/gas_holdup.py` | Two-phase cathode channel: Faradaic H₂/O₂ generation as wet gas, drift-flux void-fraction profile up the electrode, Bruggeman effective conductivity, bubble surface coverage, Stephan-Vogt microconvection → effective boundary layer, equipotential current redistribution, self-consistent gas↔current↔FE fixed point, headspace LFL/dilution sizing, and the electrode-height scale-up limit |
 | `models/reference_cell_pipeline.py` | Canonical RC-1 integration boundary: CellPhysics → coupled gas hold-up → thermal balance → charge/iron/energy screening ledgers → OperatingTwin advisory replay; measured run records and process-gate evidence remain separate from predictions |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
+| `models/product_ladder.py` | **Product value ladder — which product should the cell make, recomputed live.** Seven rungs (flake feed → **own-melt bar (Option A.5)** → annealed foil → structural sheet → PM/battery/magnetic sidelines) priced against the *live* architecture/energy chain; gate statuses probe the module tree (V6-proposed modules flip from `unmodelled` as they land); regenerates the decision document **[docs/PRODUCT_VALUE_LADDER.md](docs/PRODUCT_VALUE_LADDER.md)** on every model update |
 
 ### Selected Model Results
 

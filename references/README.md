@@ -77,6 +77,16 @@ Key papers, reviews, and supplementary literature for aqueous electrowinning of 
    - Key reviewed family member: US12054837B2, *Ore dissolution and iron conversion system* (granted); active continuations and other families remain subject to claims-level review.
    - Company website: `https://electra.earth/` (formerly ElectraSteel). The public documents are useful technical sources but do not establish freedom to operate.
 
+### Product-price & downstream benchmarks (product_ladder.py anchors)
+
+10. **USGS Mineral Commodity Summaries 2025** — *Iron and Steel* (ore-based metallics, scrap, and DRI/HBI price context).
+11. **Public trade-press price bands (CRU / Fastmarkets class), 2024–26** — rebar/merchant bar, hot-rolled coil, non-oriented electrical steel. Screening bands for `FLAKE_FEED_PRICE_T`, `REBAR_PRICE_T`, `HRC_STRUCTURAL_PRICE_T`, `MAGNETIC_FOIL_PRICE_T`; replace with quoted offtakes before decisions.
+12. **Höganäs AB**, *Iron and Steel Powders for Sintered Components* (handbook series) + **MPIF** industry reviews — PM iron-powder pricing, sizing, and finishing practice (`PM_POWDER_PRICE_T`, `PM_FINISH_*`).
+13. **Historical electrolytic iron** — USBM RI-series (see §7: RI-5371/RI-7477/RI-8019) and surviving niche suppliers (electrolytic iron powder/flake list prices, Goodfellow-class vendors) — the niche where aqueous iron EW has actually persisted (`PM_POWDER_PRICE_T`, `LOWC_FOIL_PRICE_T`).
+14. **Foundry/induction-melting handbooks** (coreless induction furnace energy, 0.50–0.65 MWh/t Fe) — `INDUCTION_MELT_KWH_T`.
+15. **Weiss, V. (ed.),** *Steel Rolling Technology* / rolling-mill operating cost literature — `CAST_ROLL_*`, `SKINPASS_*`.
+16. **Form Energy** public materials on iron-air battery chemistry — context for the speculative `BATTERY_IRON_PRICE_T` parity band.
+
 ## Contributing
 
 Add BibTeX entries or PDFs here. Update the main `RESEARCH_REPORT.md` references section when adding new literature.

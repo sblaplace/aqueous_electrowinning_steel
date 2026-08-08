@@ -219,6 +219,260 @@ ANCHORS: Dict[str, Anchor] = {
               "model's lower bound (10-20 S/m) reflects Onsager "
               "over-suppression at extreme I.",
     ),
+
+    # ─── Product value ladder: price bands ($/t product) ─────────
+    # Consumer: models/product_ladder.py.  All are screening bands of the
+    # *buyer's alternative* (what the electrowon product competes with),
+    # from public market benchmarks.  Replace with quoted offtakes before
+    # any investment decision — these exist to make the Option A/B decision
+    # computed, not to price a sale.
+    "FLAKE_FEED_PRICE_T": Anchor(
+        key="FLAKE_FEED_PRICE_T",
+        value=450.0,
+        paper_value=450.0,
+        uncertainty=150.0,
+        ref="USGS Mineral Commodity Summaries 2025 (iron & steel); "
+            "Fastmarkets ore-based metallics (HBI/DRI) band 2024–26",
+        notes="HBI-parity for residual-free virgin iron units; scrap "
+              "substitution puts the floor ~$300, premium virgin units "
+              "for flat-products EAF dilution the ceiling ~$600.",
+    ),
+    "REBAR_PRICE_T": Anchor(
+        key="REBAR_PRICE_T",
+        value=750.0,
+        paper_value=750.0,
+        uncertainty=250.0,
+        ref="Public trade press rebar/merchant-bar band (CRU, US Midwest), "
+            "2024–26",
+        notes="Lowest-certification finished-steel SKU; the Option A.5 "
+              "(own-melt) endpoint product.",
+    ),
+    "LOWC_FOIL_PRICE_T": Anchor(
+        key="LOWC_FOIL_PRICE_T",
+        value=2000.0,
+        paper_value=2000.0,
+        uncertainty=800.0,
+        ref="Small-volume pure-iron foil vendor list prices "
+            "(Goodfellow-class suppliers), 2025",
+        notes="Non-structural ferritic foil niche (battery substrates, "
+              "shielding, brazing); volume is thin — the band reflects "
+              "list-price, not deep-market, evidence.",
+    ),
+    "HRC_STRUCTURAL_PRICE_T": Anchor(
+        key="HRC_STRUCTURAL_PRICE_T",
+        value=850.0,
+        paper_value=850.0,
+        uncertainty=250.0,
+        ref="CRU hot-rolled coil band, 2024–26",
+        notes="Structural sheet at HRC/CRC parity; certification premium "
+              "only after years of spec work.",
+    ),
+    "PM_POWDER_PRICE_T": Anchor(
+        key="PM_POWDER_PRICE_T",
+        value=2500.0,
+        paper_value=2500.0,
+        uncertainty=1000.0,
+        ref="PM iron-powder industry price literature (Höganäs handbook; "
+            "MPIF reviews); historical electrolytic-powder premiums",
+        notes="99.9 %-purity electrolytic powder niche where aqueous iron "
+              "EW has survived commercially; premium over atomized powder.",
+    ),
+    "BATTERY_IRON_PRICE_T": Anchor(
+        key="BATTERY_IRON_PRICE_T",
+        value=3000.0,
+        paper_value=3000.0,
+        uncertainty=1500.0,
+        ref="Form Energy iron-air public materials + anode-material "
+            "cost-parity estimate",
+        notes="SPECULATIVE — a parity target for iron-air anode feed, not "
+              "a market quote.  Widest band on the ladder by design.",
+    ),
+    "MAGNETIC_FOIL_PRICE_T": Anchor(
+        key="MAGNETIC_FOIL_PRICE_T",
+        value=4000.0,
+        paper_value=4000.0,
+        uncertainty=2000.0,
+        ref="Non-oriented electrical-steel price band (public trade press, "
+            "2024–26); pure-Fe laminate premium assumed ~2× NOES",
+        notes="The drum's 25–50 µm form factor is the eddy-current-optimal "
+              "lamination thickness; price hinges on certified core loss.",
+    ),
+
+    # ─── Post-cell unit operations: energy (kWh/t) and cash ($/t) ──
+    "DRY_PASSIVATE_KWH_T": Anchor(
+        key="DRY_PASSIVATE_KWH_T",
+        value=80.0,
+        paper_value=80.0,
+        uncertainty=30.0,
+        ref="Industrial dryer energy practice (evaporation of ~10 % w/w "
+            "residual film: 0.63 kWh/kg water) + inert-gas handling",
+        notes="V6 §1.2/§1.3 — rinse + dry + controlled-O₂ passivation of "
+              "freshly harvested flake/powder.",
+    ),
+    "RINSE_DRY_CASH_T": Anchor(
+        key="RINSE_DRY_CASH_T",
+        value=8.0,
+        paper_value=8.0,
+        uncertainty=4.0,
+        ref="Tankhouse wash-water/reagent handling conventions",
+        notes="Water, N₂ bleed, minor reagents per tonne; screening.",
+    ),
+    "BRIQUETTE_KWH_T": Anchor(
+        key="BRIQUETTE_KWH_T",
+        value=25.0,
+        paper_value=25.0,
+        uncertainty=10.0,
+        ref="Roller-press briquetting practice (DRI/HBI industry, 15–35 "
+            "kWh/t)",
+        notes="V6 §1.4 — press energy only; binder-less against Heckel "
+              "screen.",
+    ),
+    "BRIQUETTE_CASH_T": Anchor(
+        key="BRIQUETTE_CASH_T",
+        value=12.0,
+        paper_value=12.0,
+        uncertainty=6.0,
+        ref="Die/roll wear conventions, DRI briquetting cost reviews",
+        notes="Wear parts + maintenance per tonne; screening.",
+    ),
+    "INDUCTION_MELT_KWH_T": Anchor(
+        key="INDUCTION_MELT_KWH_T",
+        value=550.0,
+        paper_value=550.0,
+        uncertainty=100.0,
+        ref="Coreless induction furnace handbooks (0.50–0.65 MWh/t Fe to "
+            "1,600 °C)",
+        notes="Option A.5 core energy term; theoretical minimum ~0.34 "
+              "MWh/t, practical 0.5–0.65.",
+    ),
+    "MELT_CASH_T": Anchor(
+        key="MELT_CASH_T",
+        value=45.0,
+        paper_value=45.0,
+        uncertainty=20.0,
+        ref="EAF/induction melt-shop consumables conventions (refractories, "
+            "slag formers, melt loss)",
+        notes="Excludes the electrowon feed itself; screening.",
+    ),
+    "CAST_ROLL_KWH_T": Anchor(
+        key="CAST_ROLL_KWH_T",
+        value=150.0,
+        paper_value=150.0,
+        uncertainty=75.0,
+        ref="Thin/slab cast + hot-bar-mill energy literature",
+        notes="Reheat + rolling energy; yield loss carried in CAST_ROLL_CASH_T.",
+    ),
+    "CAST_ROLL_CASH_T": Anchor(
+        key="CAST_ROLL_CASH_T",
+        value=60.0,
+        paper_value=60.0,
+        uncertainty=30.0,
+        ref="Rolling-mill operating cost conventions (rolls, descale, "
+            "yield loss ~3–5 %)",
+        notes="Screening; buyer-side cost, uniform across products.",
+    ),
+    "ANNEAL_KWH_T": Anchor(
+        key="ANNEAL_KWH_T",
+        value=140.0,
+        paper_value=140.0,
+        uncertainty=60.0,
+        ref="models/thermomechanical.py anneal_energy_kWh_per_kg at 700 °C, "
+            "furnace efficiency 0.7 — the ladder calls this LIVE",
+        notes="Fallback anchor only; product_ladder derives the working "
+              "value from the thermomechanical model at call time.",
+    ),
+    "ANNEAL_CASH_T": Anchor(
+        key="ANNEAL_CASH_T",
+        value=25.0,
+        paper_value=25.0,
+        uncertainty=15.0,
+        ref="Batch/box-anneal operating cost conventions (atmosphere, "
+            "handling)",
+        notes="Screening; H₂/N₂ cover gas dominant.",
+    ),
+    "SKINPASS_KWH_T": Anchor(
+        key="SKINPASS_KWH_T",
+        value=30.0,
+        paper_value=30.0,
+        uncertainty=15.0,
+        ref="Temper-mill energy literature (light reductions)",
+        notes="Lüders-band suppression + gauge finish (V6 §7.1 lever).",
+    ),
+    "SKINPASS_CASH_T": Anchor(
+        key="SKINPASS_CASH_T",
+        value=40.0,
+        paper_value=40.0,
+        uncertainty=20.0,
+        ref="Temper-mill operating cost conventions",
+        notes="Rolls, coolant, yield trim; screening.",
+    ),
+    "CARBURIZE_KWH_T": Anchor(
+        key="CARBURIZE_KWH_T",
+        value=120.0,
+        paper_value=120.0,
+        uncertainty=60.0,
+        ref="models/carburization.py screening furnace energy; ASM "
+            "gas-carburizing practice",
+        notes="Option-B carbon route; in-cell alternative is V5/A1 "
+              "carbon_electrodeposition.py.",
+    ),
+    "CARBURIZE_CASH_T": Anchor(
+        key="CARBURIZE_CASH_T",
+        value=35.0,
+        paper_value=35.0,
+        uncertainty=20.0,
+        ref="Gas-carburizing atmosphere/handler cost conventions",
+        notes="Endothermic gas + quench oil + handling; screening.",
+    ),
+    "PM_FINISH_KWH_T": Anchor(
+        key="PM_FINISH_KWH_T",
+        value=40.0,
+        paper_value=40.0,
+        uncertainty=20.0,
+        ref="PM powder sizing/classification practice (screens, inert "
+            "blanket)",
+        notes="Pyrophoric-safe handling (V6 §1.2); screening.",
+    ),
+    "PM_FINISH_CASH_T": Anchor(
+        key="PM_FINISH_CASH_T",
+        value=60.0,
+        paper_value=60.0,
+        uncertainty=30.0,
+        ref="PM powder finishing/blending cost conventions",
+        notes="QA + fines management; screening.",
+    ),
+    "BATTERY_FINISH_KWH_T": Anchor(
+        key="BATTERY_FINISH_KWH_T",
+        value=50.0,
+        paper_value=50.0,
+        uncertainty=25.0,
+        ref="Specialty porous-metal finishing estimates",
+        notes="Porosity-spec sizing + QA; customer-owned spec (L1 guess).",
+    ),
+    "BATTERY_FINISH_CASH_T": Anchor(
+        key="BATTERY_FINISH_CASH_T",
+        value=80.0,
+        paper_value=80.0,
+        uncertainty=40.0,
+        ref="Specialty anode-material QA estimates",
+        notes="Highly speculative, mirrors BATTERY_IRON_PRICE_T band.",
+    ),
+    "MAGNETIC_QA_KWH_T": Anchor(
+        key="MAGNETIC_QA_KWH_T",
+        value=30.0,
+        paper_value=30.0,
+        uncertainty=15.0,
+        ref="Lamination coating/curing practice (NOES industry)",
+        notes="Interlaminar insulation coat per tonne of foil.",
+    ),
+    "MAGNETIC_QA_CASH_T": Anchor(
+        key="MAGNETIC_QA_CASH_T",
+        value=100.0,
+        paper_value=100.0,
+        uncertainty=50.0,
+        ref="Epstein/SST core-loss certification + coating cost conventions",
+        notes="Certification is the price-gate for this rung.",
+    ),
 }
 
 

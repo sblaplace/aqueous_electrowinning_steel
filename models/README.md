@@ -85,6 +85,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `process_registry.py` | Loader/validator for `processes/candidates.yaml` — the flowsheet hypothesis registry |
 | `process_gates.py` | Measurement-only gate engine: literature evidence never passes a gate |
 | `transport_sensitivity.py` | **Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine** over 10 experimental levers → ranked "which experiment to do next" (fixes the prior "sensitivity analysis of a fiction" flagged in `docs/RESEARCH_PROGRAM.md`) |
+| `product_ladder.py` | **Product value ladder — the Option A/B decision computed, not argued.** Seven product rungs (flake feed → own-melt bar → annealed foil → structural sheet → PM/battery/magnetic sidelines) priced against *live* cell economics (architecture productivity, capital charge, DC energy, zinc benchmark, anneal energy) with gate statuses probed from the module tree at call time. Recovers the README's "~5× productivity imperative" as a capital-share ratio at commodity price and regenerates `docs/PRODUCT_VALUE_LADDER.md` on every model update |
 | `uncertainty/` | Parameter registry, Monte Carlo, Sobol sensitivity, Bayesian calibration |
 
 ## Drivers
@@ -115,6 +116,7 @@ python -m models.run_pilot_costing          # Pilot CAPEX/OPEX
 python -m models.run_monte_carlo            # Uncertainty propagation and sensitivity
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> which experiment next
 python -m models.run_dark_mill              # Site-level sizing and go/no-go
+python -m models.run_product_ladder         # Product value ladder: which product should the cell make (rederives docs/PRODUCT_VALUE_LADDER.md)
 python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 ```
