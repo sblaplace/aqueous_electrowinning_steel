@@ -427,6 +427,8 @@ def deposit_stress_from_conditions(
     chloride_bath: bool = False,
     hydrogen_fraction_effused: float = 1.0,
     relaxation_distance_m: float = HOFFMAN_DELTA_M,
+    include_point_defect_stress: bool = False,
+    additive_coverage_fraction: float = 0.0,
 ) -> Dict[str, Any]:
     """Predict residual stress end-to-end from *plating conditions* (MPa).
 
@@ -504,20 +506,37 @@ def deposit_stress_from_conditions(
     chloride_shift = -CHLORIDE_SHIFT_MPa if chloride_bath else 0.0
     intrinsic_corrected = intrinsic * (1.0 - relief) + chloride_shift
 
-    total = intrinsic_corrected + hydrogen + thermal
+    # Round 5 (C2): non-equilibrium point-defect intrinsic stress, opt-in.
+    point_defect_MPa = 0.0
+    if include_point_defect_stress:
+        from .point_defect_stress import defect_injection_stress_MPa
+
+        # Screening overpotential estimate from current density (Tafel-like).
+        eta = 0.05 + 0.06 * math.log10(max(j_mA_cm2 / 100.0, 1.0))
+        pd = defect_injection_stress_MPa(
+            eta, temperature_C, deposition_time_s,
+            additive_coverage_fraction=additive_coverage_fraction,
+        )
+        point_defect_MPa = pd["net_stress_MPa"]
+
+    total = intrinsic_corrected + hydrogen + thermal + point_defect_MPa
     contributions = {
         "intrinsic": abs(intrinsic_corrected),
+        "point_defect": abs(point_defect_MPa),
         "hydrogen": abs(hydrogen),
         "thermal": abs(thermal),
     }
     dominant = max(contributions, key=contributions.get)
+    components = {
+        "intrinsic_MPa": float(intrinsic_corrected),
+        "hydrogen_MPa": float(hydrogen),
+        "thermal_MPa": float(thermal),
+        "total_MPa": float(total),
+    }
+    if include_point_defect_stress:
+        components["point_defect_MPa"] = float(point_defect_MPa)
     return {
-        "components": {
-            "intrinsic_MPa": float(intrinsic_corrected),
-            "hydrogen_MPa": float(hydrogen),
-            "thermal_MPa": float(thermal),
-            "total_MPa": float(total),
-        },
+        "components": components,
         "dominant_mechanism": dominant,
         "sign": "tensile" if total >= 0 else "compressive",
         "derived": {

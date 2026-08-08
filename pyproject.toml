@@ -98,6 +98,13 @@ aq-steel-carbon-electrodeposition = "models.carbon_electrodeposition:main"
 aq-steel-melt-hydrogen = "models.melt_hydrogen:main"
 aq-steel-nucleation-grain = "models.nucleation_grain:main"
 aq-steel-bubble-engulfment = "models.bubble_engulfment:main"
+aq-steel-hot-shortness = "models.hot_shortness:main"
+aq-steel-point-defect-stress = "models.point_defect_stress:main"
+aq-steel-marangoni = "models.marangoni:main"
+aq-steel-ligand-speciation = "models.fe_ligand_speciation:main"
+aq-steel-adatom-kinetics = "models.adatom_kinetics:main"
+aq-steel-edge-effect = "models.edge_effect:main"
+aq-steel-as-deposited-grade = "models.as_deposited_grade:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"

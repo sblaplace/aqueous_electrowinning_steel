@@ -182,3 +182,13 @@ def test_model_waveform_ranges_are_sane():
         r = m.predict(j_avg_mA_cm2=100, waveform=wf, bath_pH=3.5)
         assert np.isfinite(r["o_ppm"])
         assert r["o_ppm"] >= 0.0
+
+
+def test_edge_effect_wiring_changes_roll_gate():
+    """include_edge_effect uses edge O for the cold-roll gate (Round 5 D2)."""
+    m = OxygenInIronModel()
+    base = m.predict(j_avg_mA_cm2=150, bath_pH=3.5)
+    edge = m.predict(j_avg_mA_cm2=150, bath_pH=3.5, include_edge_effect=True)
+    assert "edge_effect" in edge
+    assert edge["edge_effect"]["edge_o_ppm"] > edge["o_ppm"]
+    assert edge["edge_effect"]["roll_gate_o_ppm"] > base["o_ppm"]

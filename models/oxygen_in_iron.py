@@ -363,6 +363,8 @@ class OxygenInIronModel:
         fe_surface_M: float = 0.9,
         precipitation_flux_mol_m2_s: Optional[float] = None,
         yield_MPa: Optional[float] = None,
+        include_edge_effect: bool = False,
+        edge_params: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """Run the oxygen-in-iron pipeline at an operating point.
 
@@ -390,14 +392,26 @@ class OxygenInIronModel:
         )
         dens = deposit_density_kg_m3(o_ppm, p.oxide_density_kg_m3)
         d_sigma = oxygen_strengthening_MPa(o_ppm)
+
+        # Round 5 (D2): edge/terminal current crowding concentrates O (and H) at
+        # the foil edges, which is the binding constraint for cold rolling.
+        edge = None
+        roll_o_ppm = o_ppm
+        if include_edge_effect:
+            from .edge_effect import edge_oh_penalty
+
+            eo = edge_oh_penalty(center_O_ppm=o_ppm, params=edge_params)
+            edge = eo
+            roll_o_ppm = eo["edge_O_ppm"]
+
         roll = cold_rollability(
-            o_ppm,
+            roll_o_ppm,
             yield_MPa=yield_MPa,
             free_o_ppm=p.free_o_ppm,
             forbidden_o_ppm=p.forbidden_o_ppm,
         )
 
-        return {
+        out = {
             "j_avg_mA_cm2": j_avg_mA_cm2,
             "waveform": waveform,
             "precipitation_flux_mol_m2_s": precip,
@@ -413,3 +427,11 @@ class OxygenInIronModel:
             "cold_rollability": roll,
             "flag": SCREENING_FLAG,
         }
+        if edge is not None:
+            out["edge_effect"] = {
+                "edge_current_ratio": edge["edge_current_ratio"],
+                "edge_o_ppm": edge["edge_O_ppm"],
+                "edge_oh_penalty": edge["oh_penalty"],
+                "roll_gate_o_ppm": roll_o_ppm,
+            }
+        return out

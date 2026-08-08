@@ -421,33 +421,64 @@ ligand-complexed" bath variants.
 |---|---|---|---|---|---|
 | B1 | `recombination_poison.py` | S/As/Sb/Se/Te/P control absorbed-H (replaces fixed `absorption_fraction`) | H content, bakeout time, feedstock purity spec | new | **implemented** |
 | A1 | `carbon_electrodeposition.py` | Co-reduction of CO₂/formate/CO → interstitial C; one-step steel | Deposit C wt%, steel grade in-cell | new | **implemented** |
-| E1 | `hot_shortness.py` | Tramp Cu/Sn surface hot-shortness ceiling for recycled feed | Recycled-feed → grade filter | new | open |
+| E1 | `hot_shortness.py` | Tramp Cu/Sn surface hot-shortness ceiling for recycled feed | Recycled-feed → grade filter | new | **implemented** |
 | B2 | `melt_hydrogen.py` | H → white-spot/flake risk in the Option-A melt-shop product | Feedstock H product spec | new | **implemented** |
 | B3 | `bubble_engulfment.py` | H₂ bubble capture → porosity/pinholes/blisters | Deposit density & foil quality | new | **implemented** |
 | C1 | `nucleation_grain.py` | Nucleation density → grain size → Hall–Petch (grain as output) | YS/grade chemistry-derived | new | **implemented** |
-| C2 | `point_defect_stress.py` | Non-equilibrium vacancy/interstitial intrinsic stress | Peel/harvest & crack gates | new | open |
-| D1 | `marangoni.py` | Thermocapillary/solutocapillary/electrocapillary stirring | δ_eff, current distribution, FE | new | open |
-| E2 | `fe_ligand_speciation.py` | Fe-ligand complexation widens pH window | Non-acidic operation, FE/morphology | new | open |
-| C3 | `adatom_kinetics.py` | Adatom surface-diffusion / kink incorporation (crystallization η) | Voltage decomposition, pulse healing | new | open |
-| D2 | `edge_effect.py` | Terminal/edge current crowding → edge thickness/O/H | Cold-roll ceiling, metrology | new | open |
-| A2 | `as_deposited_grade.py` | As-deposited Fe–C → phase fractions + grade (coupling seam) | Option-B structural-grade verdict | integration | open |
+| C2 | `point_defect_stress.py` | Non-equilibrium vacancy/interstitial intrinsic stress | Peel/harvest & crack gates | new | **implemented** |
+| D1 | `marangoni.py` | Thermocapillary/solutocapillary/electrocapillary stirring | δ_eff, current distribution, FE | new | **implemented** |
+| E2 | `fe_ligand_speciation.py` | Fe-ligand complexation widens pH window | Non-acidic operation, FE/morphology | new | **implemented** |
+| C3 | `adatom_kinetics.py` | Adatom surface-diffusion / kink incorporation (crystallization η) | Voltage decomposition, pulse healing | new | **implemented** |
+| D2 | `edge_effect.py` | Terminal/edge current crowding → edge thickness/O/H | Cold-roll ceiling, metrology | new | **implemented** |
+| A2 | `as_deposited_grade.py` | As-deposited Fe–C → phase fractions + grade (coupling seam) | Option-B structural-grade verdict | integration | **implemented** |
 
 ## Implementation status
 
-As of this revision, the five highest-leverage, most self-contained modules are
-**implemented on this branch**, each as a standalone `models/*.py` module with a
-`main()` CLI, a `tests/test_*.py` suite, a `pyproject.toml` entry point, and a
-`SCREENING_FLAG = "unvalidated (L1)"` header:
+All twelve Round-5 modules are **implemented on this branch**, each as a
+standalone `models/*.py` module with a `main()` CLI, a `tests/test_*.py` suite,
+a `pyproject.toml` entry point, and a `SCREENING_FLAG = "unvalidated (L1)"`
+header:
 
 * `models/recombination_poison.py` (+`aq-steel-recombination-poison`)
 * `models/carbon_electrodeposition.py` (+`aq-steel-carbon-electrodeposition`)
 * `models/melt_hydrogen.py` (+`aq-steel-melt-hydrogen`)
 * `models/nucleation_grain.py` (+`aq-steel-nucleation-grain`)
 * `models/bubble_engulfment.py` (+`aq-steel-bubble-engulfment`)
+* `models/hot_shortness.py` (+`aq-steel-hot-shortness`)
+* `models/point_defect_stress.py` (+`aq-steel-point-defect-stress`)
+* `models/marangoni.py` (+`aq-steel-marangoni`)
+* `models/fe_ligand_speciation.py` (+`aq-steel-ligand-speciation`)
+* `models/adatom_kinetics.py` (+`aq-steel-adatom-kinetics`)
+* `models/edge_effect.py` (+`aq-steel-edge-effect`)
+* `models/as_deposited_grade.py` (+`aq-steel-as-deposited-grade`)
 
-The remaining items (E1 hot-shortness, C2 point-defect stress, D1 Marangoni,
-E2 ligand speciation, C3 adatom kinetics, D2 edge effect, and the A2 coupling
-seam) are still open and can be implemented in later rounds.
+### Wiring into the existing pipeline
+
+Several modules are wired into the existing (previously hard-coded) model path,
+all opt-in and backwards compatible:
+
+* **B1 → `hydrogen_embrittlement.py`**: `hydrogen_uptake_from_electrolysis` now
+  accepts `poison_concentrations_M` (and `cathodic_overpotential_V`); when
+  supplied, absorbed-H and `C_H_diffusible_ppm` are scaled by the
+  recombination-poison promotion factor and a `recombination_poison` sub-dict is
+  added. Unchanged when no poisons are passed.
+* **C1 → `mechanical_properties.py`**: `MechanicalPropertiesModel.predict` gains
+  `use_nucleation_grain_model` / `cathodic_overpotential_V` /
+  `additive_coverage_fraction` to source grain size from the nucleation model
+  instead of the empirical current-density correlation (default off).
+* **C2 → `internal_stress.py`**: `deposit_stress_from_conditions` gains
+  `include_point_defect_stress` to add the point-defect intrinsic term to the
+  stress decomposition (opt-in).
+* **D2 → `oxygen_in_iron.py`**: `OxygenInIronModel.predict` gains
+  `include_edge_effect` to evaluate the cold-roll gate against the edge O
+  loading (the binding edge constraint) instead of the center value (opt-in).
+
+The remaining modules (E1, D1, E2, C3, A2, and the A1 carbon channel) are
+standalone and ready for analogous wiring into `thermomechanical.py` (rolling
+gate), `boundary_layer.py` (δ_eff), `speciation.py` (pH window),
+`voltage_decomposition.py` (crystallization η) and `steel_grade.py`
+respectively — kept as separate follow-up to avoid over-editing large existing
+modules in one pass.
 
 ## What this buys for the program's stated decisions
 
