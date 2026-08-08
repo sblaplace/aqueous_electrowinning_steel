@@ -190,6 +190,19 @@ of the deposit instead of warning after the fact. This is also
 where the AWARE "coherent foil" claim and the rotating-cylinder
 "powder" claim actually disagree.
 
+> **Resolved (task t_7b23bd93).** `deposit_morphology.MullinsSekerkaGrowthModel`
+> implements the screening length λ_c = (D·γ·Ω/(j·(∂c/∂x)|_surf))^(1/2) (Fick
+> closure ∂c/∂x|_surf = j/(zFD) by default, Nernst when surface/bulk concs are
+> given) and the growth-rate ODE da/dt = σa with dispersion
+> σ(k) = v·k·(1 − (k/k_c)²), v = j·Ω/(zF). Opt-in `predict_morphology` on
+> `PulseDepositionModel` (default off) drives the ODE with the film's own Fe²⁺
+> gradient and reports λ_c, σ, amplitude gain, and a dendrites/coherent label on
+> `PulseResult.morphology`. `predict_morphology(..., growth_model=..., ...)` and
+> `predict_dendrite_growth(...)` expose it in the current sweep. At Fe
+> electrowinning currents λ_c is nm-scale, so real (µm+) roughness is always
+> unstable — the model sides with the dendritic/powder claim absent agitation
+> or additives.
+
 ### 2.5 Pulse-reverse anodic dissolution is hard-coded as Fe²⁺ release
 **Where:** `models/pulse.py`.
 

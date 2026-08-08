@@ -58,6 +58,7 @@ import numpy as np
 from scipy.optimize import brentq
 
 from .electrochemistry import FARADAY, M_FE, RHO_FE
+from .deposit_morphology import MullinsSekerkaGrowthModel, GAMMA_FE_SURFACE, V_M_FE
 from .kinetics import (
     EA_DIFFUSION_J_MOL,
     arrhenius_diffusivity,
@@ -155,10 +156,11 @@ class PulseResult:
     waveform: PulseWaveform
     cathode_potential_V: Optional[np.ndarray] = None
     proton_limited_steps_fraction: float = 0.0
+    morphology: Optional[Dict[str, Any]] = None
 
     def summary(self) -> Dict[str, Any]:
         """Return unit-labelled summary dictionary."""
-        out = {
+        out: Dict[str, Any] = {
             "Frequency (Hz)": self.waveform.frequency_Hz,
             "Duty cycle (%)": self.waveform.duty_cycle * 100.0,
             "Average current density (mA/cm²)": self.waveform.j_avg_mA_cm2,
@@ -171,6 +173,11 @@ class PulseResult:
         if self.proton_limited_steps_fraction > 0.0:
             out["Proton-limited steps fraction (outside envelope!)"] = (
                 self.proton_limited_steps_fraction)
+        if self.morphology is not None:
+            out["Morphology (Mullins–Sekerka)"] = str(self.morphology.get("morphology"))
+            out["Dendrite growth rate σ (1/s)"] = float(self.morphology.get("growth_rate_1_s", 0.0))
+            out["Dendrite screening length λ_c (nm)"] = (
+                float(self.morphology.get("screening_length_m", 0.0)) * 1e9)
         return out
 
 
@@ -213,6 +220,9 @@ class PulseDepositionModel:
         temperature_C: float = 50.0,
         kinetics: str = "bv",
         grid_points: int = 51,
+        predict_morphology: bool = False,
+        morphology_wavelength_m: Optional[float] = None,
+        morphology_amplitude_initial: float = 1e-3,
     ) -> None:
         if boundary_layer_m <= 0.0:
             raise ValueError("boundary_layer_m must be positive")
@@ -228,6 +238,13 @@ class PulseDepositionModel:
             raise ValueError("Exchange current densities must be positive")
         if kinetics not in ("bv", "heuristic"):
             raise ValueError("kinetics must be 'bv' or 'heuristic'")
+        if predict_morphology and (
+            morphology_wavelength_m is None or morphology_wavelength_m <= 0.0
+        ):
+            raise ValueError(
+                "morphology_wavelength_m must be given (>0) when predict_morphology=True")
+        if morphology_amplitude_initial <= 0.0:
+            raise ValueError("morphology_amplitude_initial must be positive")
 
         self.boundary_layer_m = boundary_layer_m
         self.fe_bulk_M = fe_bulk_M
@@ -249,6 +266,21 @@ class PulseDepositionModel:
         # Spatial grid (0 = cathode surface, boundary_layer_m = bulk)
         self.x_m = np.linspace(0.0, boundary_layer_m, grid_points)
         self.dx = boundary_layer_m / (grid_points - 1)
+
+        # Opt-in Mullins–Sekerka morphology predictor (CHEM_PHYS_REVIEW 2.4).
+        self.predict_morphology = bool(predict_morphology)
+        self.morphology_wavelength_m = morphology_wavelength_m
+        self.morphology_amplitude_initial = morphology_amplitude_initial
+        self.morphology_model = (
+            MullinsSekerkaGrowthModel(
+                diffusivity_m2_s=self.diffusivity_fe,
+                surface_energy_J_m2=GAMMA_FE_SURFACE,
+                molar_volume_m3_mol=V_M_FE,
+                z=2,
+            )
+            if predict_morphology
+            else None
+        )
 
     def simulate(
         self,
@@ -281,6 +313,14 @@ class PulseDepositionModel:
         j_her = np.zeros(n_steps + 1)
         inst_eff = np.zeros(n_steps + 1)
         n_proton_limited = 0
+
+        # Opt-in morphology: track a surface perturbation through the growth ODE.
+        # Amplitude is accumulated in log-domain (dA/dt = σA ⇒ d ln A = σ dt) so a
+        # huge σ never overflows the stored/gain numbers.
+        morph_loggain = np.zeros(n_steps + 1)
+        morph_sigma = np.zeros(n_steps + 1)
+        morph_lamc = np.zeros(n_steps + 1)
+        log_gain = 0.0
 
         # Record initial state
         applied_j[0] = waveform.evaluate_current_A_m2(0.0)
@@ -324,6 +364,18 @@ class PulseDepositionModel:
             c_fe = self._step_cn(c_fe, c_fe_bulk, A_fe, B_fe, self.diffusivity_fe, dt, flux_fe)
             c_h = self._step_cn(c_h, c_h_bulk, A_h, B_h, self.diffusivity_h, dt, flux_h)
 
+            # Opt-in growth-ODE morphology tracking.  Drive the Mullins–Sekerka
+            # screening with the metal deposition partial current and the film's
+            # own surface Fe²⁺ gradient *after* this step's flux (so the initial
+            # flat film's transient is not an artifact).  Amplitude evolves in
+            # log-domain.
+            if self.morphology_model is not None:
+                log_gain, sigma, lam_c = self._step_morphology(
+                    c_fe, i_fe_step, dt, log_gain)
+                morph_loggain[step + 1] = log_gain
+                morph_sigma[step + 1] = sigma
+                morph_lamc[step + 1] = lam_c
+
             surf_fe[step + 1] = max(c_fe[0], 0.0) / 1000.0
             surf_ph[step + 1] = -np.log10(max(c_h[0] / 1000.0, 1e-14))
 
@@ -361,6 +413,9 @@ class PulseDepositionModel:
         peak_depletion = float(np.min(surf_fe) / self.fe_bulk_M)
         max_ph = float(np.max(surf_ph))
 
+        morphology = self._build_morphology_result(
+            morph_sigma, morph_lamc, morph_loggain)
+
         return PulseResult(
             time_s=time_arr,
             applied_current_A_m2=applied_j,
@@ -377,7 +432,64 @@ class PulseDepositionModel:
             waveform=waveform,
             cathode_potential_V=pot_arr,
             proton_limited_steps_fraction=n_proton_limited / max(n_steps, 1),
+            morphology=morphology,
         )
+
+    def _build_morphology_result(
+        self,
+        morph_sigma: np.ndarray,
+        morph_lamc: np.ndarray,
+        morph_loggain: np.ndarray,
+    ) -> Optional[Dict[str, Any]]:
+        """Assemble the morphology prediction dict, or None when disabled."""
+        if self.morphology_model is None:
+            return None
+        wavelength = self.morphology_wavelength_m
+        assert wavelength is not None  # validated in __init__
+        sigma_final = float(morph_sigma[-1])
+        if sigma_final > 1e-14:
+            label = "dendrites"
+        elif sigma_final < -1e-14:
+            label = "coherent"
+        else:
+            label = "marginal"
+        gain = math.exp(max(min(float(morph_loggain[-1]), 60.0), -60.0))
+        max_gain = math.exp(max(min(float(np.max(morph_loggain)), 60.0), -60.0))
+        return {
+            "model": "mullins_sekerka",
+            "wavelength_m": float(wavelength),
+            "screening_length_m": float(morph_lamc[-1]),
+            "growth_rate_1_s": sigma_final,
+            "amplitude_initial": float(self.morphology_amplitude_initial),
+            "amplitude_final": float(self.morphology_amplitude_initial * gain),
+            "amplitude_gain": gain,
+            "morphology": label,
+            "max_amplitude_gain": max_gain,
+        }
+
+    def _step_morphology(
+        self,
+        c_fe: np.ndarray,
+        i_fe_step: float,
+        dt: float,
+        log_gain: float,
+    ) -> Tuple[float, float, float]:
+        """Advance the opt-in growth-ODE morphology one step (log-domain amplitude).
+
+        Returns ``(log_gain, sigma, lambda_c)``.  Uses the film's own Fe²⁺
+        surface gradient (c[1]-c[0])/dx to drive the Mullins–Sekerka screening
+        and the metal deposition partial current as the destabilising drive.
+        """
+        assert self.morphology_model is not None
+        wavelength = self.morphology_wavelength_m
+        assert wavelength is not None and wavelength > 0.0  # validated in __init__
+        grad = (c_fe[1] - c_fe[0]) / self.dx
+        lam_c = self.morphology_model.screening_length(
+            abs(i_fe_step), surface_gradient_mol_m4=abs(grad))
+        sigma = self.morphology_model.growth_rate(
+            wavelength, i_fe_step, surface_gradient_mol_m4=grad)
+        log_gain += max(min(sigma * dt, 30.0), -30.0)
+        return log_gain, sigma, lam_c
 
     def _kinetic_split(self, j_app: float, c_fe_surf_mol_m3: float, c_h_surf_mol_m3: float) -> Tuple[float, float, float, Optional[float]]:
         """Split applied current into Fe and HER partial currents.
