@@ -53,6 +53,11 @@ from .pourbaix import (
     ksp_feoh2,
     logksp_feoh2,
 )
+from .pourbaix_at_T import (
+    PourbaixAtT,
+    e0_at_T,
+    boundary_sweep,
+)
 from .kinetics import (
     DepositionKinetics,
     TafelBranch,

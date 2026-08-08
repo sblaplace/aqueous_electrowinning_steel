@@ -8,6 +8,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 |--------|----------|
 | `electrochemistry.py` | Constants, Faraday's law, cell-voltage decomposition, specific energy |
 | `pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER/OER water window, HER thermodynamic margin |
+| `pourbaix_at_T.py` | Operating-temperature Fe–H₂O Pourbaix: E0(T) drift via standard-reaction entropies on every boundary, HER margin at 60–90 °C (additive; 25 °C module kept) |
 | `kinetics.py` | Butler–Volmer / Tafel partial currents for Fe deposition vs. HER, Koutecký–Levich mass-transport limit, galvanostatic current efficiency |
 | `boundary_layer.py` | Steady cathode film: local pH, Fe²⁺ depletion, Fe(OH)₂ precipitation, concentration profiles |
 | `transport.py` | Steady 1-D Nernst–Planck film: diffusion **+ migration**, electroneutral multi-ion profiles, migration-corrected limiting current, diffusion potential |
