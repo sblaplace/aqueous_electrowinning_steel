@@ -60,6 +60,7 @@ from .ferric_hydroxide_phases import (
 )
 from .twin_physics import CellProcessModel
 from .env_coupling import DisturbanceInputs
+from .water_drag import water_volume_flux_L_m2_hr
 
 
 # ---------------------------------------------------------------------------
@@ -133,6 +134,14 @@ BATH_DYNAMICS_DEFAULTS: Dict[str, Any] = {
 
     # --- Current density setpoint tracking ---
     "tau_j_hr": 0.5,                       # hr — current density setpoint tracking
+
+    # --- Electro-osmotic water drag (CSTR extension; OFF by default → byte-identical) ---
+    # Water crosses the membrane with the H⁺ current (models/water_drag.py),
+    # leaving the catholyte and concentrating its non-volatile solutes.  When
+    # off every added term is exactly 0.0/identity, so default runs are
+    # byte-identical.  ``membrane_area_m2`` defaults to the electrode area.
+    "water_drag_enabled": False,
+    "membrane_area_m2": None,
 }
 
 
@@ -169,6 +178,13 @@ class BathAux:
     # the phase fresh precipitation lands in for this bath's anion.
     ferric_phase_inventory: Dict[str, float] = None  # type: ignore[assignment]
     ferric_phase_initial: str = "ferrihydrite_2line"
+    # Electro-osmotic water drag (CSTR extension; only touched while
+    # ``water_drag_enabled`` is on).  ``catholyte_volume_L`` is the running
+    # catholyte volume (L) after trans-membrane water loss — None means "use
+    # the design-point volume" (the default, drag off).  ``membrane_age_hr``
+    # accumulates operating hours for the drag-coefficient aging term.
+    catholyte_volume_L: Optional[float] = None
+    membrane_age_hr: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -180,6 +196,8 @@ class BathAux:
             "fe3_sludge_cumulative_mol": self.fe3_sludge_cumulative_mol,
             "ferric_phase_inventory": dict(self.ferric_phase_inventory or {}),
             "ferric_phase_initial": self.ferric_phase_initial,
+            "catholyte_volume_L": self.catholyte_volume_L,
+            "membrane_age_hr": self.membrane_age_hr,
         }
 
     @classmethod
@@ -196,6 +214,8 @@ class BathAux:
             ferric_phase_inventory=inv_dict,
             ferric_phase_initial=str(
                 d.get("ferric_phase_initial", "ferrihydrite_2line")),
+            catholyte_volume_L=d.get("catholyte_volume_L"),
+            membrane_age_hr=d.get("membrane_age_hr", 0.0),
         )
 
 
@@ -220,6 +240,8 @@ def get_aux(design_point: Dict[str, Any]) -> BathAux:
         ferric_phase_inventory=dict(design_point.get("ferric_phase_inventory") or {}),
         ferric_phase_initial=str(design_point.get("ferric_phase_initial",
             initial_phase_for_bath(design_point.get("bath_anion", "sulfate")))),
+        catholyte_volume_L=design_point.get("catholyte_volume_L"),
+        membrane_age_hr=design_point.get("membrane_age_hr", 0.0),
     )
 
 
@@ -292,6 +314,8 @@ def step(
             fe3_sludge_cumulative_mol=aux.fe3_sludge_cumulative_mol,
             ferric_phase_inventory=dict(aux.ferric_phase_inventory or {}),
             ferric_phase_initial=aux.ferric_phase_initial,
+            catholyte_volume_L=aux.catholyte_volume_L,
+            membrane_age_hr=aux.membrane_age_hr,
         )
 
     dp = design_point
@@ -312,6 +336,14 @@ def step(
     # --- Design-point parameters ---
     area_m2 = dp.get("electrode_area_m2", 1.0)
     V_cath_L = _dp(dp, "catholyte_volume_L")
+    # Electro-osmotic water drag (opt-in).  Running catholyte volume used in
+    # the concentration-carrying mass-balance denominators: equal to the design
+    # volume when drag is off (byte-identical default), shrinks each step when
+    # on as water leaves the catholyte through the membrane.
+    water_drag_enabled = bool(_dp(dp, "water_drag_enabled"))
+    V_cath_dyn = V_cath_L
+    if water_drag_enabled and aux.catholyte_volume_L is not None:
+        V_cath_dyn = max(aux.catholyte_volume_L, 0.01 * V_cath_L)
     V_anol_L = _dp(dp, "anolyte_volume_L")
     V_res_L = _dp(dp, "reservoir_volume_L")
     flow_L_hr = _dp(dp, "recirculation_flow_L_hr")
@@ -446,10 +478,10 @@ def step(
     # =====================================================================
     # Consumption by Faraday deposition: d(fe2)/dt = -j_A_m2*FE*area / (z*F*V_cath)
     # in mol/m³/s → convert to M/hr
-    consumption_M_hr = (j_fe_her_A_m2 * FE / (Z_FE * FARADAY)) * area_m2 * 3600.0 / V_cath_L
+    consumption_M_hr = (j_fe_her_A_m2 * FE / (Z_FE * FARADAY)) * area_m2 * 3600.0 / V_cath_dyn
 
     # Recirculation exchange: (flow/V_cath) * (fe2_res - fe2)
-    recirc_fe2_M_hr = (flow_L_hr / V_cath_L) * (aux.fe2_reservoir_M - fe2)
+    recirc_fe2_M_hr = (flow_L_hr / V_cath_dyn) * (aux.fe2_reservoir_M - fe2)
 
     # Makeup source (direct to catholyte for L0; reservoir makeup tracked in aux)
     makeup_M_hr = _dp(dp, "fe2_makeup_rate_M_hr")
@@ -469,7 +501,7 @@ def step(
     # For L0: makeup goes to reservoir, return flow brings depleted catholyte back
     # Net: flow brings fe2 back from cell, makeup adds to reservoir
     dfe2_res_dt = (flow_L_hr / V_res_L) * (fe2 - aux.fe2_reservoir_M) + \
-                  makeup_M_hr * (V_cath_L / V_res_L)
+                  makeup_M_hr * (V_cath_dyn / V_res_L)
     fe2_res_next = max(1e-6, aux.fe2_reservoir_M + dfe2_res_dt * dt_hr)
 
     # =====================================================================
@@ -479,7 +511,7 @@ def step(
     # OH- production rate (mol/s) = j_A_m2 * (1-FE) / (1 * F) * area
     # (1 mol OH- per mol e- for HER; the Fe3+ shuttle makes no OH-)
     OH_production_mol_s = j_fe_her_A_m2 * (1.0 - FE) / FARADAY * area_m2
-    OH_production_M_hr = OH_production_mol_s * 3600.0 / V_cath_L
+    OH_production_M_hr = OH_production_mol_s * 3600.0 / V_cath_dyn
 
     # Acid dose: explicit rate + pH feedback holding the pH setpoint (a real
     # cell doses acid to hold pH against HER hydroxide production).  The steady-
@@ -502,7 +534,7 @@ def step(
                        - r_prod_M_hr + 3.0 * precip_rate_M_hr)
 
     # Recirculation mixing for pH
-    recirc_pH_hr = (flow_L_hr / V_cath_L) * (aux.pH_reservoir - pH)
+    recirc_pH_hr = (flow_L_hr / V_cath_dyn) * (aux.pH_reservoir - pH)
 
     dpH_dt = -net_proton_M_hr / max(beta, 1e-6) + recirc_pH_hr
     # Ingress dilution drags pH toward neutral rainwater (coupling-on).
@@ -649,6 +681,43 @@ def step(
     deposit_rate_shuttle = deposit_rate_um_hr * (j_fe_her_A_m2 / j_A_m2)
     x_next[5] = max(0.0, deposit + deposit_rate_shuttle * dt_hr)
 
+    # =====================================================================
+    # 7. ELECTRO-OSMOTIC WATER DRAG (CSTR extension — OFF by default)
+    # =====================================================================
+    # Water leaves the catholyte through the membrane with the H⁺ current
+    # (models/water_drag.py), shrinking the catholyte volume and concentrating
+    # its non-volatile solutes.  Two effects, both only when ``water_drag_enabled``:
+    #   (a) the running volume V_cath_dyn (already threaded into the fe2/pH
+    #       mass-balance denominators above) shrinks, so source/sink fluxes
+    #       distribute over a smaller volume;
+    #   (b) the solutes already present concentrate by the volume ratio.
+    # The reservoir volume is treated as the balance tank that absorbs the
+    # exiting water (anolyte composition is not a tracked state here), so the
+    # closed electrolyte balance is represented in the catholyte ledger.
+    cath_vol_next = aux.catholyte_volume_L
+    mem_age_next = aux.membrane_age_hr
+    if water_drag_enabled:
+        # Starting volume: the running volume, or the design volume on first step.
+        vol_old = V_cath_dyn
+        if aux.catholyte_volume_L is None:
+            vol_old = V_cath_L
+        mem_area_m2 = dp.get("membrane_area_m2") or area_m2
+        drag_L_m2_hr = water_volume_flux_L_m2_hr(
+            j_A_m2=j_A_m2,
+            temperature_C=max(0.0, T_cath),
+            membrane_age_hr=mem_age_next,
+        )
+        dV_L = drag_L_m2_hr * mem_area_m2 * dt_hr
+        vol_new = max(vol_old - dV_L, 0.25 * vol_old)  # safety floor
+        if vol_new != vol_old:
+            ratio = vol_old / vol_new
+            # Non-volatile solutes concentrate: [Fe²⁺] ∝ V⁻¹, and [H⁺] ∝ V⁻¹
+            # so pH falls by log10(ratio).
+            x_next[2] = max(1e-6, x_next[2] * ratio)
+            x_next[3] = max(0.0, min(14.0, x_next[3] - math.log10(ratio)))
+        cath_vol_next = vol_new
+        mem_age_next = mem_age_next + dt_hr
+
     # --- Assemble next aux ---
     aux_next = BathAux(
         T_reservoir_C=T_res_next,
@@ -662,6 +731,8 @@ def step(
             else dict(aux.ferric_phase_inventory or {})),
         ferric_phase_initial=(ferric_initial if (fe3_enabled and ferric_aging_enabled)
                               else aux.ferric_phase_initial),
+        catholyte_volume_L=cath_vol_next,
+        membrane_age_hr=mem_age_next,
     )
 
     return x_next, aux_next
@@ -746,6 +817,23 @@ def apply_fe3_scenario(design_point: Dict[str, Any], scenario: "Any") -> Dict[st
     design_point["fe3_shuttle_enabled"] = True
     design_point["fe3_o2_fraction_of_sat"] = scenario.o2_fraction_of_sat
     design_point["fe3_crossover_o2_flux_mol_m2_s"] = scenario.crossover_o2_flux_mol_m2_s
+    return design_point
+
+
+def enable_water_drag(
+    design_point: Dict[str, Any],
+    membrane_area_m2: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Enable the electro-osmotic water-drag CSTR term (mutates and returns
+    the design point).
+
+    Sets ``water_drag_enabled`` and optionally ``membrane_area_m2`` (defaults
+    to the electrode area).  The drag coefficient knobs (n_w_ref, etc.) tune
+    via models/water_drag defaults; no scenario object is needed.
+    """
+    design_point["water_drag_enabled"] = True
+    if membrane_area_m2 is not None:
+        design_point["membrane_area_m2"] = membrane_area_m2
     return design_point
 
 

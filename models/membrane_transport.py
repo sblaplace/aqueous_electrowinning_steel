@@ -80,6 +80,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .electrochemistry import FARADAY
+from .water_drag import water_volume_flux_L_m2_hr, water_volume_flux_m3_m2_s
 
 # ─── Iron redox constants ──────────────────────────────────────────────
 E0_FE3_FE2 = 0.771        # V vs. SHE  (Fe³⁺ + e⁻ → Fe²⁺)
@@ -317,6 +318,15 @@ class MembraneSimulationResult:
         Times at which the anolyte was purged.
     fe_crossover_loss_pct : float
         Cumulative Fe lost to crossover as a percentage of Fe deposited.
+    catholyte_volume_L : np.ndarray
+        Running catholyte volume (L) vs. time.  Constant at the initial value
+        when electro-osmotic drag is off (the additive default); shrinks each
+        step when :attr:`MembraneTransportModel.water_drag_enabled`.
+    water_drag_flux_m3_m2_s : np.ndarray
+        Electro-osmotic water flux out of the catholyte (m³/(m²·s)) vs. time.
+        All zeros when drag is disabled.
+    water_drag_cumulative_lost_L : float
+        Total volume of water removed from the catholyte by drag (L).
     """
 
     time_hr: np.ndarray
@@ -331,6 +341,13 @@ class MembraneSimulationResult:
     crossover_current_A_m2: np.ndarray
     purge_events: list = field(default_factory=list)
     fe_crossover_loss_pct: float = 0.0
+    # Always populated by :meth:`MembraneTransportModel.simulate`; zeros when
+    # electro-osmotic drag is disabled (the additive default).
+    catholyte_volume_L: np.ndarray = field(
+        default_factory=lambda: np.zeros(0))
+    water_drag_flux_m3_m2_s: np.ndarray = field(
+        default_factory=lambda: np.zeros(0))
+    water_drag_cumulative_lost_L: float = 0.0
 
     def summary(self) -> dict:
         return {
@@ -367,6 +384,15 @@ class MembraneTransportModel:
         Anolyte Fe³⁺ concentration (mol/L) that triggers a purge.
     purge_fraction : float
         Fraction of anolyte volume replaced during a purge event.
+    water_drag_enabled : bool
+        Enable electro-osmotic water drag (models/water_drag.py).  When False
+        (default) the catholyte volume is constant and the baseline is
+        byte-identical to the pre-drag model.  When True, water leaves the
+        catholyte each time step, so the catholyte volume shrinks and its
+        solutes (Fe³⁺, H⁺) concentrate.
+    membrane_age_hr : float
+        Cumulative membrane operating age (h) used for the drag-coefficient
+        aging term.  Advances by dt each simulated step while drag is on.
     """
 
     def __init__(
@@ -379,6 +405,8 @@ class MembraneTransportModel:
         catholyte: CatholyteState | None = None,
         purge_fe3_threshold_M: float = 0.5,
         purge_fraction: float = 0.2,
+        water_drag_enabled: bool = False,
+        membrane_age_hr: float = 0.0,
     ) -> None:
         self.membrane = membrane or NAFION_N117
         self.electrode_area_m2 = electrode_area_m2
@@ -388,6 +416,8 @@ class MembraneTransportModel:
         self.catholyte = catholyte or CatholyteState()
         self.purge_fe3_threshold_M = purge_fe3_threshold_M
         self.purge_fraction = purge_fraction
+        self.water_drag_enabled = bool(water_drag_enabled)
+        self.membrane_age_hr = membrane_age_hr
 
         if electrode_area_m2 <= 0:
             raise ValueError("electrode_area_m2 must be positive")
@@ -563,6 +593,28 @@ class MembraneTransportModel:
         V_cat = self.catholyte.volume_L * 1e-3  # L → m³
         return float(h_f * self.electrode_area_m2 / V_cat / 1000.0)  # mol/m³/s → mol/L/s
 
+    # ─── Water electro-osmotic drag (opt-in) ──────────────────────────
+    def water_drag_volume_flux_m3_m2_s(
+        self,
+        membrane_age_hr: float | None = None,
+        j_A_m2: float | None = None,
+    ) -> float:
+        """Electro-osmotic water flux out of the catholyte (m³/(m²·s)).
+
+        Zero when :attr:`water_drag_enabled` is False (the additive default).
+        The flux is computed at the current temperature/current density with
+        the given (or accumulated) membrane age — see models/water_drag.py.
+        """
+        if not self.water_drag_enabled:
+            return 0.0
+        age = self.membrane_age_hr if membrane_age_hr is None else membrane_age_hr
+        j = j_A_m2 if j_A_m2 is not None else self.j_A_m2
+        return water_volume_flux_m3_m2_s(
+            j_A_m2=j,
+            temperature_C=self.temperature_C,
+            membrane_age_hr=age,
+        )
+
     # ─── Time integration ─────────────────────────────────────────────
     def simulate(
         self,
@@ -592,6 +644,15 @@ class MembraneTransportModel:
         V_cat = self.catholyte.volume_L * 1e-3
         CE = current_efficiency
 
+        # Running catholyte volume (m³).  Electro-osmotic drag (opt-in)
+        # removes water from the catholyte each step, shrinking it and
+        # concentrating the non-volatile solutes.  When drag is off this
+        # stays exactly equal to V_cat, so the baseline is byte-identical.
+        water_on = self.water_drag_enabled
+        vol_cat_m3 = V_cat
+        age_hr = self.membrane_age_hr  # running membrane age for the drag term
+        cum_water_lost_m3 = 0.0
+
         # Clone state to avoid mutating the caller's objects
         fe2_a = self.anolyte.fe2_M
         fe3_a = self.anolyte.fe3_M
@@ -611,6 +672,8 @@ class MembraneTransportModel:
         h_flux_arr = np.zeros(n_steps)
         v_drop_arr = np.zeros(n_steps)
         j_xover_arr = np.zeros(n_steps)
+        cat_vol_L = np.zeros(n_steps)
+        drag_flux = np.zeros(n_steps)
         purge_events: list[tuple[float, float]] = []
 
         for i in range(n_steps):
@@ -620,6 +683,9 @@ class MembraneTransportModel:
             an_h[i] = h_a
             cat_fe3[i] = fe3_c
             cat_h[i] = h_c
+            cat_vol_L[i] = vol_cat_m3 * 1000.0  # L
+            if water_on:
+                drag_flux[i] = self.water_drag_volume_flux_m3_m2_s(age_hr)
 
             # Evaluate fluxes at current concentrations
             step = self.evaluate(fe3_a, fe3_c)
@@ -663,20 +729,39 @@ class MembraneTransportModel:
             dfe2_a = -(r_anode - r_xover) * dt_s / (V_an * 1000.0)
 
             # ── Catholyte: Fe³⁺ arrives from crossover ──────────────
-            dfe3_c = step.fe3_crossover_flux * A / (V_cat * 1000.0) * dt_s
+            # Mass-balance dilution volume: the (shrinking) running volume when
+            # drag is on, else the fixed V_cat (byte-identical default).
+            v_w = vol_cat_m3 if water_on else V_cat
+            dfe3_c = step.fe3_crossover_flux * A / (v_w * 1000.0) * dt_s
 
             # H⁺ arrives from membrane; consumed by HER (fraction = 1-CE)
             # HER: 2H⁺ + 2e⁻ → H₂   consumes H⁺ proportional to HER current
             j_her = j * (1.0 - CE)
             r_her = j_her * A / (2.0 * FARADAY)  # mol H₂/s, consumes 2 H⁺ per
-            dh_c = (step.h_flux * A - 2.0 * r_her) / (V_cat * 1000.0) * dt_s
+            dh_c = (step.h_flux * A - 2.0 * r_her) / (v_w * 1000.0) * dt_s
 
-            # Apply changes
+            # Anolyte / catholyte changes
             fe2_a = max(fe2_a + dfe2_a, 0.0)
             fe3_a = max(fe3_a + dfe3_a, 0.0)
             h_a = max(h_a + dh_a, 1e-10)
-            fe3_c = max(fe3_c + dfe3_c, 0.0)
-            h_c = max(h_c + dh_c, 1e-10)
+
+            if water_on:
+                # Electro-osmotic drag: water leaves the catholyte.  This both
+                # shrinks the volume the crossover dilutes into (v_w above) and
+                # concentrates the solutes already there.  Conservative-solute
+                # scaling V_old/V_new captures the second effect exactly.
+                flux_m3_m2_s = self.water_drag_volume_flux_m3_m2_s(age_hr)
+                dV_cat = -flux_m3_m2_s * A * dt_s
+                v_old = vol_cat_m3
+                vol_cat_m3 = max(vol_cat_m3 + dV_cat, 0.25 * v_old)  # safety floor
+                cum_water_lost_m3 += (v_old - vol_cat_m3)
+                ratio = v_old / vol_cat_m3
+                fe3_c = max((fe3_c + dfe3_c) * ratio, 0.0)
+                h_c = max((h_c + dh_c) * ratio, 1e-10)
+                age_hr += dt_hr
+            else:
+                fe3_c = max(fe3_c + dfe3_c, 0.0)
+                h_c = max(h_c + dh_c, 1e-10)
 
             # Cumulative charge
             Q += j * A * dt_s / 3600.0  # A·h
@@ -696,6 +781,12 @@ class MembraneTransportModel:
             100.0 * total_fe_crossover_mol / max(total_fe_deposited_mol, 1e-30)
         )
 
+        # Persist the accumulated membrane age so repeated simulate() calls on
+        # the same model keep fouling monotonically (membrane_age_hr is a
+        # running total, not just an initial condition).
+        if water_on:
+            self.membrane_age_hr = age_hr
+
         return MembraneSimulationResult(
             time_hr=t_arr,
             anolyte_fe2_M=an_fe2,
@@ -709,6 +800,9 @@ class MembraneTransportModel:
             crossover_current_A_m2=j_xover_arr,
             purge_events=purge_events,
             fe_crossover_loss_pct=fe_loss_pct,
+            catholyte_volume_L=cat_vol_L,
+            water_drag_flux_m3_m2_s=drag_flux,
+            water_drag_cumulative_lost_L=cum_water_lost_m3 * 1000.0,
         )
 
     # ─── Purge criterion ──────────────────────────────────────────────
