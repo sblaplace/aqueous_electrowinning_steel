@@ -481,12 +481,12 @@
     "mode": "full-grade",
     "source_hashes": {
       "models/ladder_tea.py": "3c029ccd4d1c8ddc",
-      "models/product_ladder.py": "9e6eae35150b894d",
+      "models/product_ladder.py": "ceca6e410b01309b",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
       "models/thermomechanical.py": "03d99ca6f2b215c2",
-      "models/anchors.py": "5475ddb75275d6a3"
+      "models/anchors.py": "63dc27f4a0b4bfe8"
     }
   }
 }

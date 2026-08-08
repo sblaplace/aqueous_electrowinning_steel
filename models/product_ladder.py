@@ -144,7 +144,11 @@ GATE_REGISTRY: Dict[str, GateRef] = {
         GateRef("g_grade", "deposit → anneal → steel grade routing",
                 "as_deposited_grade", "Coupling seam built (V5/A2); L1."),
         GateRef("g_strain_aging", "N pickup / Lüders-band forming gate",
-                "strain_aging", "V6 §7.1 proposal — UNMODELLED."),
+                "strain_aging",
+                "V6 §7.1 implemented (L1) — ammoniacal [N] uptake via "
+                "ammonium_buffer free NH₃, Cottrell–Bilby t★(T,C_N) "
+                "return (Wert–Zener D_N), Δσ_sat(C_N) and grain-scaled "
+                "Lüders strain + skin-pass prescription."),
         GateRef("g_deposit_aging", "RT aging between harvest & metrology",
                 "deposit_aging",
                 "V6 §5.2 implemented (L1) — log-time σ/HV/ρ drift (Cu "

@@ -406,11 +406,11 @@
           "gate_id": "g_strain_aging",
           "name": "N pickup / L\u00fcders-band forming gate",
           "module": "strain_aging",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a77.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a77.1 implemented (L1) \u2014 ammoniacal [N] uptake via ammonium_buffer free NH\u2083, Cottrell\u2013Bilby t\u2605(T,C_N) return (Wert\u2013Zener D_N), \u0394\u03c3_sat(C_N) and grain-scaled L\u00fcders strain + skin-pass prescription."
         },
         {
           "gate_id": "g_deposit_aging",
@@ -433,8 +433,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 1,
-      "n_l1_gates": 3,
+      "n_unmodelled_gates": 0,
+      "n_l1_gates": 4,
       "n_flag_unstated_gates": 7,
       "verdict": "clears"
     },
@@ -552,11 +552,11 @@
           "gate_id": "g_strain_aging",
           "name": "N pickup / L\u00fcders-band forming gate",
           "module": "strain_aging",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a77.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a77.1 implemented (L1) \u2014 ammoniacal [N] uptake via ammonium_buffer free NH\u2083, Cottrell\u2013Bilby t\u2605(T,C_N) return (Wert\u2013Zener D_N), \u0394\u03c3_sat(C_N) and grain-scaled L\u00fcders strain + skin-pass prescription."
         },
         {
           "gate_id": "g_deposit_aging",
@@ -589,8 +589,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 1,
-      "n_l1_gates": 4,
+      "n_unmodelled_gates": 0,
+      "n_l1_gates": 5,
       "n_flag_unstated_gates": 7,
       "verdict": "clears"
     },
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "9e6eae35150b894d",
+      "models/product_ladder.py": "ceca6e410b01309b",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "5475ddb75275d6a3",
+      "models/anchors.py": "63dc27f4a0b4bfe8",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

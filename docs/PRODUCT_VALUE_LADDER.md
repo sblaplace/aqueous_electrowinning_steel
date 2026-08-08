@@ -9,11 +9,11 @@
   "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
   "mode": "full-grade",
   "source_hashes": {
-    "models/product_ladder.py": "9e6eae35150b894d",
+    "models/product_ladder.py": "ceca6e410b01309b",
     "models/cell_architecture.py": "77a08ed3afac2da7",
     "models/electrochemistry.py": "935e526a6598d30c",
     "models/technoeconomic.py": "db224bcf4b144584",
-    "models/anchors.py": "5475ddb75275d6a3",
+    "models/anchors.py": "63dc27f4a0b4bfe8",
     "models/thermomechanical.py": "03d99ca6f2b215c2"
   }
 }
@@ -140,7 +140,7 @@ Legend: ✓ modelled, validated beyond L1 · ◐ modelled, unvalidated L1 · ◑
 | coherent foil peels from the drum | — | — | ◑ | ◑ | — | — | ◑ |
 | deposit stress & hydrogen control in-window | — | — | ◑ | ◑ | — | — | ◑ |
 | deposit → anneal → steel grade routing | — | ◐ | ◐ | ◐ | — | — | — |
-| N pickup / Lüders-band forming gate | — | — | **✗** | **✗** | — | — | — |
+| N pickup / Lüders-band forming gate | — | — | ◐ | ◐ | — | — | — |
 | RT aging between harvest & metrology | — | — | ◐ | ◐ | — | — | ◐ |
 | drum campaign life (oxide + hydriding) | — | — | ◐ | ◐ | — | — | ◐ |
 | idle corrosion / ferric etch of deposit | ◐ | ◐ | — | — | ◐ | ◐ | — |
@@ -155,7 +155,7 @@ Legend: ✓ modelled, validated beyond L1 · ◐ modelled, unvalidated L1 · ◑
 | PM powder sizing & fines spec | — | — | — | — | **✗** | — | — |
 | tramp-element hot-shortness ceiling | — | ◐ | — | ◐ | — | — | — |
 
-Gate notes: **g_fe_gate** (diffusion_layer_1d): FE engine; calibration pending (Q3/RDE campaign).; **g_energy_gate** (cell_physics): Voltage decomposition; needs divided-cell measurement.; **g_arch_gate** (cell_architecture): Screen only; hardware evidence absent.; **g_loop** (closed_loop): CSTR screen; long-run drift unmeasured.; **g_peel** (adhesion_peel): Coupon test specified, not yet run.; **g_stress_h** (internal_stress): σ(h) screen + bent-strip protocol pending.; **g_grade** (as_deposited_grade): Coupling seam built (V5/A2); L1.; **g_strain_aging** (strain_aging): V6 §7.1 proposal — UNMODELLED.; **g_deposit_aging** (deposit_aging): V6 §5.2 implemented (L1) — log-time σ/HV/ρ drift (Cu self-annealing analogue), H-coupled τ_eff(T,C_H) + live hydrogen_trapping slab egress; metrology-time standard and QA hook.; **g_drum_life** (ti_hydriding): V6 §4.1 implemented (L1) — H entry × shield, α→δ case growth, spall crit, G_c drift feed to adhesion_peel; oxide side in substrate_passivation.; **g_oc_corrosion** (deposit_corrosion): V6 §1.1 implemented (L1) — mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting.; **g_product_ox** (product_oxidation): V6 §1.2 implemented (L1) — film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live.; **g_rinse** (rinse_carryover): V6 §1.3 implemented (L1) — Landau–Levich film / cake liquor + counter-current cascade → charge S/Na/B budgets, conductivity endpoint; feeds melt_balance live.; **g_briquet** (briquetting): V6 §1.4 implemented (L1) — Heckel compaction (live σ_y feed), green strength, springback, fines, Jenike rathole screen; shippable-spec block; feeds melt_balance fines live.; **g_melt_balance** (melt_balance): V6 §1.5 implemented (L1) — EAF/induction remelt verdict with live O and H inputs.; **g_casting** (strip_casting): Option A.5 gap beyond V6 — UNMODELLED (liquidus, segregation, cast-ability, incl. flotation).; **g_purity** (purification): Train screen exists; feed-fingerprint L1.; **g_form_factor** (bubble_engulfment): V5/B3 porosity model — L1.; **g_magnetic** (magnetic_properties): V6 short-list proposal — UNMODELLED.; **g_pm_finish** (pm_powder_finish): V6 short-list proposal — UNMODELLED.; **g_hot_short** (hot_shortness): V5/E1 ceiling model — L1.
+Gate notes: **g_fe_gate** (diffusion_layer_1d): FE engine; calibration pending (Q3/RDE campaign).; **g_energy_gate** (cell_physics): Voltage decomposition; needs divided-cell measurement.; **g_arch_gate** (cell_architecture): Screen only; hardware evidence absent.; **g_loop** (closed_loop): CSTR screen; long-run drift unmeasured.; **g_peel** (adhesion_peel): Coupon test specified, not yet run.; **g_stress_h** (internal_stress): σ(h) screen + bent-strip protocol pending.; **g_grade** (as_deposited_grade): Coupling seam built (V5/A2); L1.; **g_strain_aging** (strain_aging): V6 §7.1 implemented (L1) — ammoniacal [N] uptake via ammonium_buffer free NH₃, Cottrell–Bilby t★(T,C_N) return (Wert–Zener D_N), Δσ_sat(C_N) and grain-scaled Lüders strain + skin-pass prescription.; **g_deposit_aging** (deposit_aging): V6 §5.2 implemented (L1) — log-time σ/HV/ρ drift (Cu self-annealing analogue), H-coupled τ_eff(T,C_H) + live hydrogen_trapping slab egress; metrology-time standard and QA hook.; **g_drum_life** (ti_hydriding): V6 §4.1 implemented (L1) — H entry × shield, α→δ case growth, spall crit, G_c drift feed to adhesion_peel; oxide side in substrate_passivation.; **g_oc_corrosion** (deposit_corrosion): V6 §1.1 implemented (L1) — mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting.; **g_product_ox** (product_oxidation): V6 §1.2 implemented (L1) — film growth, Semenov runaway, passivation spec; feeds melt_balance O pickup live.; **g_rinse** (rinse_carryover): V6 §1.3 implemented (L1) — Landau–Levich film / cake liquor + counter-current cascade → charge S/Na/B budgets, conductivity endpoint; feeds melt_balance live.; **g_briquet** (briquetting): V6 §1.4 implemented (L1) — Heckel compaction (live σ_y feed), green strength, springback, fines, Jenike rathole screen; shippable-spec block; feeds melt_balance fines live.; **g_melt_balance** (melt_balance): V6 §1.5 implemented (L1) — EAF/induction remelt verdict with live O and H inputs.; **g_casting** (strip_casting): Option A.5 gap beyond V6 — UNMODELLED (liquidus, segregation, cast-ability, incl. flotation).; **g_purity** (purification): Train screen exists; feed-fingerprint L1.; **g_form_factor** (bubble_engulfment): V5/B3 porosity model — L1.; **g_magnetic** (magnetic_properties): V6 short-list proposal — UNMODELLED.; **g_pm_finish** (pm_powder_finish): V6 short-list proposal — UNMODELLED.; **g_hot_short** (hot_shortness): V5/E1 ceiling model — L1.
 
 ## 6. What the uniform economics hide (read before acting)
 

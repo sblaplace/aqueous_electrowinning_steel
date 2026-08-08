@@ -1477,6 +1477,51 @@ ANCHORS: Dict[str, Anchor] = {
         ref="SPECULATIVE — residual stress fraction after prolonged RT aging (floor of log law)",
         notes="HV/resistivity floors are mapped as 62 % and 48 % of the (1−floor) drop respectively (proxy ratios).",
     ),
+
+    # ─── Interstitial strain aging / Lüders (V6 §7.1) ───────────────
+    "STRAIN_AGING_N_PPM_PER_M_NH3": Anchor(
+        key="STRAIN_AGING_N_PPM_PER_M_NH3", value=4000.0, paper_value=4000.0,
+        uncertainty=3000.0,
+        ref="SPECULATIVE — deposit [N] per M free NH₃ (ammoniacal iron plating analogue; "
+            "NHₓ-decomposition → interstitial N, screening decade band)",
+        notes="Borate-route floor 6 ppm; 1 M NH₄ at pH 5.5 (≈1.6e-3 M free NH₃ at 60 °C) → ~12 ppm total; at pH 6.5 (≈1.6e-2 M) → ~70 ppm (cap).  Calibrate via combustion N on first ammoniacal foils.",
+    ),
+    "STRAIN_AGING_D0_N_M2_S": Anchor(
+        key="STRAIN_AGING_D0_N_M2_S", value=5.0e-7, paper_value=5.0e-7,
+        uncertainty=4.0e-7,
+        ref="Wert & Zener (1949); Fast (1976) — interstitial N in bcc α-Fe: D₀ ≈ 2–8e-7 m²/s",
+        notes="Pre-exponential for D_N(T)=D₀·exp(−Q/RT).",
+    ),
+    "STRAIN_AGING_Q_N_KJ_MOL": Anchor(
+        key="STRAIN_AGING_Q_N_KJ_MOL", value=76.0, paper_value=76.0,
+        uncertainty=10.0,
+        ref="Wert & Zener (1949); Baird review — N diffusion in α-Fe Q_N ≈ 72–85 kJ/mol (≈0.8 eV)",
+        notes="Sets t★(T) Arrhenius; Cottrell return is exponentially T-sensitive.",
+    ),
+    "STRAIN_AGING_TAU_REF_H": Anchor(
+        key="STRAIN_AGING_TAU_REF_H", value=24.0, paper_value=24.0,
+        uncertainty=18.0,
+        ref="Cottrell & Bilby (1949); Baird — strain-aging return time at 20 °C, 20 ppm N: hours to tens of hours",
+        notes="Anchored at 20 °C (293 K), 20 ppm interstitial N; scales ∝1/C_N and 1/D_N(T).",
+    ),
+    "STRAIN_AGING_SIGMA_PER_PPM_MPA": Anchor(
+        key="STRAIN_AGING_SIGMA_PER_PPM_MPA", value=1.4, paper_value=1.4,
+        uncertainty=0.6,
+        ref="Low-C steel strain-aging: Δσ_max ≈ 20–60 MPa for 10–40 ppm free N (Baird; Leslie)",
+        notes="Linear to the Cottrell-atmosphere saturation cap; 20 ppm → ~28 MPa mid-band.",
+    ),
+    "STRAIN_AGING_SIGMA_CAP_MPA": Anchor(
+        key="STRAIN_AGING_SIGMA_CAP_MPA", value=60.0, paper_value=60.0,
+        uncertainty=20.0,
+        ref="Yield-point return ceiling in ultra-low-C ferrite (saturation of Cottrell locking)",
+        notes="Δσ_sat = min(σ_cap, σ_per_ppm·C_N).",
+    ),
+    "STRAIN_AGING_LUDERS_PCT_PER_MPA": Anchor(
+        key="STRAIN_AGING_LUDERS_PCT_PER_MPA", value=0.035, paper_value=0.035,
+        uncertainty=0.015,
+        ref="Lüders strain vs yield return in annealed low-C sheet: ~1–2 % at 30–50 MPa (industrial press-shop data)",
+        notes="Screening at 20 µm grain: ε_L = k_L·Δσ·√(d/20µm); 50 MPa → ~1.8 % Lüders.",
+    ),
 }
 
 

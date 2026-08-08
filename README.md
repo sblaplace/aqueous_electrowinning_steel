@@ -109,6 +109,7 @@ aq-steel-product-ladder                        # Which product should the cell m
 aq-steel-ladder-tea                            # Full plant TEA per rung — does the ladder ranking survive complete costing? → regenerates docs/LADDER_TEA.md
 aq-steel-ph-metrology                          # Operational pH ↔ Pitzer convention: junction / bridge-aging bias ledger (V6 §5.1)
 aq-steel-deposit-aging                         # RT self-annealing σ/HV/ρ drift + metrology-time standard (V6 §5.2)
+aq-steel-strain-aging                          # Ammoniacal N → Cottrell t★(T,C_N) → Δσ_y & Lüders, skin-pass prescription (V6 §7.1)
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
@@ -177,6 +178,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/product_oxidation.py` | **Product oxidation, drying & pyrophoricity — the post-harvest oxygen budget (V6 §1.2).** Mott–Cabrera film ↔ parabolic hot-branch growth on product-form specific surface, Semenov thermal-runaway T_crit with ignition-delay transient, and the passivation protocol that becomes the product spec (≤1.5 wt% O, non-pyrophoric). Feeds `melt_balance` O pickup live: passivated −100 mesh powder hot-dries with a slim margin; unpassivated fines in a hot dryer run away |
 | `models/briquetting.py` | **Briquetting / densification — the product-form gate (V6 §1.4).** Heckel compaction with 1/K = 3σ_y (deposit σ_y live from `mechanical_properties`), green strength / porous-modulus springback / die-wall ejection, press work → delivered kWh/t, handling-fines ratio form, Jenike rathole vs bridging flow screens (ferromagnetic agglomeration term), and the shippable-product spec block (density / crush / fines / residual O). Feeds `melt_balance` shipped fines live: cold pressing at the design force lands conditional on sink-and-size and fines; HBI-style hot pressing at 600 °C clears both — the friable deposit of Option A is a pressability virtue, not a defect |
 | `models/deposit_aging.py` | **Deposit self-annealing — the time-stamped σ/HV/ρ (V6 §5.2).** Log-time recovery σ(t)/σ0 = 1−A ln(1+t/τ_eff) (HV/ρ track at 62 %/48 % with H-coupled τ_eff(T,C_H)), slab D_eff H-egress for foil thickness live from `hydrogen_trapping`. Defines the 24 h (18–30 h @ 20±2 °C) metrology standard and a fail-soft `aging_hours` QA hook for `run_record` so 4 h vs 48 h runs are comparable — \"does saccharin move the number, or does the clock?\" |
+| `models/strain_aging.py` | **Strain aging — N pins the press (V6 §7.1).** Ammoniacal [N] uptake via live `ammonium_buffer` free-NH₃, Cottrell–Bilby t★(T,C_N) with Wert–Zener D_N(T), Δσ_sat(C_N) yield-point return (2/3 law) and grain-scaled Lüders strain. Verdicts `clears / conditional (1–2 % skin-pass) / fails` and makes “ammonium vs boric buffer” a composition, not just regulatory, choice |
 
 ### Selected Model Results
 
