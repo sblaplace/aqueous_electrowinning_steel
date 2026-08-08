@@ -30,8 +30,10 @@ jobs:
           pip install ruff
 
       - name: Lint (ruff)
-        continue-on-error: true
-        run: ruff check models/ tests/
+        # Hard gate on real-bug (F-codes) lint. Style/complexity rules
+        # (E402, E702, C901, E741) remain advisory debt by design — see
+        # pyproject.toml [tool.ruff.lint] and the lint-fixes PR series.
+        run: ruff check models/ tests/ --select F
 
       - name: Run fast-tier tests
         run: pytest -q -n auto -m "not slow"

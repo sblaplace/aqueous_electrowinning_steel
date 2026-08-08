@@ -43,7 +43,6 @@ from typing import Dict, Any, Literal, Optional, Tuple
 import numpy as np
 
 from .electrochemistry import FARADAY, R_GAS, E0_FE, M_FE, Z_FE
-from .impurity_codeposition import BathKinetics as _BathKinetics
 from .impurity_codeposition import limiting_current_density  # noqa: F401  (re-export parity)
 
 # ── Honesty flag ─────────────────────────────────────────────────────────────
@@ -202,7 +201,6 @@ class BathImpurityCoDeposition:
     def _fe_current(self, j_mA_cm2: float) -> Tuple[float, float]:
         """Fe cathode potential and partial current at the applied j
         (assume applied ≈ Fe current)."""
-        kin = self.kinetics
         j_A_m2 = j_mA_cm2 * 10.0
         c_fe = self.fe_conc_M * 1000.0
         E_eq = E0_FE + (R_GAS * self.T_K / (Z_FE * FARADAY)) * np.log(
@@ -362,7 +360,6 @@ def route_steel_grade(
         }
 
     # 3 — best-fit 10xx by C & Mn
-    best, best_name, best_score = None, None, None
     for name, th in grades:
         c_ok = th["c_min"] <= c_wt_percent <= th["c_max"]
         mn_ok = mn_wt_percent <= th["mn_max"]

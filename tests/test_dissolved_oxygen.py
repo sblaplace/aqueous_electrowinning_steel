@@ -2,7 +2,6 @@
 Unit tests for dissolved oxygen solubility, ORR, and homogeneous Fe(II) kinetics.
 """
 
-import pytest
 from models.dissolved_oxygen import (
     DissolvedOxygenParams,
     pure_water_o2_saturation_M,

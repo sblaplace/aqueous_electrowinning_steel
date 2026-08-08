@@ -2,7 +2,6 @@
 Unit tests for Mullins-Sekerka morphological wave instability and adatom surface diffusion.
 """
 
-import pytest
 from models.mullins_sekerka import (
     MullinsSekerkaParams,
     get_surface_diffusivity_m2_s,

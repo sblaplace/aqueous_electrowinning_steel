@@ -34,12 +34,10 @@ channel).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Sequence
+from dataclasses import dataclass
+from typing import Any, Dict
 
-import numpy as np
 
-from .electrochemistry import FARADAY
 
 # ─── Physical constants (screening values) ───────────────────────────
 MU0 = 4.0 * math.pi * 1e-7          # H/m, vacuum permeability
