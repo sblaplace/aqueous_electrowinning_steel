@@ -43,7 +43,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import List
 
 
 @dataclass(frozen=True)
@@ -235,7 +235,7 @@ def main() -> None:
         print(f"  Fe(OH)₂ Solubility Product Ksp: {model.ksp_feoh2:.2e}")
         
         # Speciation at different pH values
-        print(f"  Speciation for 1.5 M Fe²⁺ + 1.0 M Total Ammonium:")
+        print("  Speciation for 1.5 M Fe²⁺ + 1.0 M Total Ammonium:")
         for ph in [3.0, 5.0, 7.0, 8.0, 9.0]:
             res = model.solve_speciation(ph, 1.5, 1.0)
             complexed_fe = sum(res.fe_ammine_M)

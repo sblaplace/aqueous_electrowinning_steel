@@ -2,7 +2,6 @@
 Unit tests for crystallite coalescence stress, Hall-Petch strength, and Griffith cracking.
 """
 
-import pytest
 from models.coalescence_stress import (
     CoalescenceStressParams,
     get_temperature_dependent_youngs_modulus_Pa,

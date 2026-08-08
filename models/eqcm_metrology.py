@@ -19,11 +19,9 @@ Scope: screening Level-1 model.  No real EQCM data exists in the repository.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-import numpy as np
 
 from .electrochemistry import FARADAY
 

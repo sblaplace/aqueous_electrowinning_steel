@@ -5,7 +5,6 @@ They follow the repository convention of screening-level assertions with
 clear tolerance bands.
 """
 
-import math
 import pytest
 
 # The new modules are pure enough that we can import their core functions
@@ -17,7 +16,6 @@ try:
         compute_mhd_solution,
         effective_mass_transfer_with_mhd,
         lorentz_velocity_scale,
-        mhd_boundary_layer_reduction,
     )
     from models.sonoelectrochemistry import (
         compute_sonoelectro_result,

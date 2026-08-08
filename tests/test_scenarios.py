@@ -18,7 +18,6 @@ from models.scenarios import (
     SOLUBLE_FE_ACIDIC,
     Scenario,
     AWARE_BASE_HER_I0_ACID,
-    chloride_theta_block,
     derive_aware_current_efficiency,
     derive_aware_her_suppression,
     derive_aware_ir_drop_V,
