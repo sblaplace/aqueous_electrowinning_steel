@@ -88,6 +88,8 @@ Key papers, reviews, and supplementary literature for aqueous electrowinning of 
 16. **Form Energy** public materials on iron-air battery chemistry — context for the speculative `BATTERY_IRON_PRICE_T` parity band.
 17. **Turkdogan, E. T.,** *Fundamentals of Steelmaking*; IISI EAF mass-balance practice — `melt_balance.py` oxide carbo-reduction, `EAF_OXIDE_RECOVERY_FRAC`, `LIME_PER_S_KG`, `BASE_GANGUE_SLAG_KG_T`.
 18. **EAF dust composition surveys & DRI/HBI product specifications** (industry handbooks; metallization 94–96 %) — `DUST_FE_FRACTION`, `DUST_CAPTURE_FINES_*`, `DRI_O_WT_PCT`.
+19. **Stern, M. (1955),** *J. Electrochem. Soc.* 102 — mixed-potential corrosion of iron in acid media (Tafel slopes, passivity); **Kelly, E. J. (1965),** *J. Electrochem. Soc.* 112 — the active iron electrode — `deposit_corrosion.py` anchors `FE_ACID_JCORR_REF_UA_CM2`, `FE_ACID_ANODIC_TAFEL_MV_DEC`, `FE_ACID_HER_TAFEL_MV_DEC`, `FE_CORR_EA_KJ_MOL`; plus standard aqueous-diffusivity tables for `O2_DIFFUSIVITY_25C_M2_S` (companion to the Weiss (1970) solubility anchor in `bath_startup.py`).
+20. **USBM RI-series chloride iron-EW flowsheets** (see §7 above: RI-7477 et al.) — ferric etch (`2Fe³⁺ + Fe → 3Fe²⁺`) as the classical current-efficiency killer — `deposit_corrosion.py` anchors `FE3_ETCH_*` (SPECULATIVE screening; cross-checked against FeCl₃-class iron etching practice).
 
 ## Contributing
 

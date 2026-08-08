@@ -70,6 +70,7 @@ Electrochemical and process simulation code for aqueous electrowinning of iron/s
 | `carbon_potential.py` | Gas carburizing atmosphere: CO/CO₂ Boudouard, CH₄/H₂, dew point, O₂ probe, Acm solubility |
 | `hydrogen_embrittlement.py` | H uptake, diffusivity, bake-out kinetics, embrittlement index |
 | `bath_startup.py` | Bath make-up, conditioning and startup sequence |
+| `deposit_corrosion.py` | **Idle corrosion & ferric etch — the silent iron-ledger leak (V6 §1.1):** mixed-potential open-circuit corrosion of the unpowered deposit (self-pinned Tafel solve: H⁺ kinetics + O₂ transport limit), half-order Fe³⁺ etch with stagnant-bath supply depletion, per-event and campaign mass-loss → µm / g / charge-equivalent. Wired into `run_record.py` as *predicted, not measured* ledger terms (`setup.idle.hours` manifest block) and into `closed_loop.py` as `campaign_idle_accounting` (nights & weekends vs production, apparent-FE bias). The gravimetric-FE "leak that never closes the ledger" made quantitative |
 | `melt_balance.py` | **Melt-shop remelt verdict for electrowon charge (V6 §1.5):** iron yield, CO boil / carbon demand / endothermic penalty of oxide carbo-reduction, slag and fines-dust ledgers on EAF and induction routes, live H verdict from `melt_hydrogen`, live as-deposited O from `oxygen_in_iron`, baselines vs #1 scrap / DRI. The Option-A qualification ledger: "qualified / conditional / fails" with named reasons |
 
 ### Economics, uncertainty and program tooling
@@ -118,6 +119,8 @@ python -m models.run_monte_carlo            # Uncertainty propagation and sensit
 python -m models.run_transport_sensitivity  # Sobol GSA of the FE engine -> which experiment next
 python -m models.run_dark_mill              # Site-level sizing and go/no-go
 python -m models.run_product_ladder         # Product value ladder: which product should the cell make (rederives docs/PRODUCT_VALUE_LADDER.md)
+python -m models.melt_balance               # Melt-shop remelt verdict for electrowon charge (yield/boil/slag, EAF vs induction)
+python -m models.deposit_corrosion          # Idle corrosion & ferric etch of the unpowered deposit (ledger leak, campaign cost)
 python -m models.run_all                    # Full suite (17 steps) + master_report.json + dashboard
 python -m models.run_all --quick            # Same but skips heavy pulse frequency sweep
 ```

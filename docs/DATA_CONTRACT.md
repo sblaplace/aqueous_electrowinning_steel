@@ -125,6 +125,42 @@ The JSON QA report contains three independent ledgers:
 A mass-only FE above 100% is retained as a QA signal. It is never clipped and
 never relabeled as verified iron FE.
 
+### Predicted (not measured) idle-corrosion terms
+
+If the run included an **unpowered soak** (idle, shutdown, weekend hold),
+declare it in the manifest and the QA pipeline attaches a *predicted* term
+from `models/deposit_corrosion.py` (L1 screening) to the charge and iron
+ledgers:
+
+```json
+"setup": {
+  "idle": {
+    "hours": 8.0,
+    "pH": 2.0,
+    "T_C": 40.0,
+    "a_fe3_M": 1.0e-4,
+    "o2_fraction_of_sat": 0.05,
+    "theta_additive": 0.5,
+    "mixing": "stagnant",
+    "deposit_thickness_um": 50.0
+  },
+  "cathode": {"area_cm2": 100.0}
+}
+```
+
+- `hours` is required; every other field is an optional override of the
+  anchored defaults (bath Fe³⁺ defaults to the live `fe3_shuttle` steady
+  state at the run's pH).
+- The prediction **annotates residuals, it never rewrites measured or
+  derived values**: the charge ledger gains
+  `predicted_idle_redissolution_charge_C` and
+  `unresolved_charge_after_predicted_idle_C`; the iron ledger gains
+  `predicted_idle_transfer_to_bath_fe_mol`. Idle redissolution moves Fe
+  deposit→bath, so it biases gravimetric FE low while **conserving** the
+  mol-scale iron closure — do not "close" the closure by hand with it.
+- The prediction is advisory: a missing or malformed block changes nothing
+  and is never a QA error.
+
 ## Gate evidence
 
 A QA-ready run is not automatically a process-gate pass. To create measured

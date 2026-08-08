@@ -335,3 +335,120 @@ class PhaseIVClosedLoop:
                 + treatment_cost + ligand_cost + anode_cost
             ) / max(production_t, 1e-30),
         }
+
+
+# ────────────────────────────────────────────────────────────────────────
+#  Campaign idle accounting — nights & weekends in the Fe inventory
+# ────────────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class CampaignCalendar:
+    """Operating calendar for the campaign-level idle accounting."""
+
+    days: int = 30
+    hours_on_per_day: float = 16.0
+    off_days_per_week: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.days <= 0:
+            raise ValueError("days must be positive")
+        if not 0.0 < self.hours_on_per_day < 24.0:
+            raise ValueError("hours_on_per_day must lie in (0, 24)")
+        if not 0.0 <= self.off_days_per_week <= 7.0:
+            raise ValueError("off_days_per_week must lie in [0, 7]")
+
+
+def campaign_idle_accounting(
+    operating: Optional[PhaseIVOperatingPoint] = None,
+    state: Optional["object"] = None,
+    calendar: Optional[CampaignCalendar] = None,
+) -> dict:
+    """Campaign Fe-inventory cost of unpowered intervals (nights/weekends).
+
+    Complements :class:`PhaseIVClosedLoop`, which integrates the *powered*
+    balances: between shifts and over weekends the deposit keeps
+    dissolving at open circuit (``models/deposit_corrosion.py``, V6 §1.1)
+    and the campaign iron ledger must see that.  Weekly structure
+    (screening): every on-day is followed by a ``(24 − hours_on_per_day)``
+    h idle segment, and each week may carry ``off_days_per_week``
+    contiguous 24 h idle segments (a 5-day week).  Each segment's loss is
+    evaluated with ``deposit_corrosion.mass_loss_over_idle`` at the cell's
+    cathode area (≈ anode area at screening — ``PhaseIVOperatingPoint``
+    carries a single area), so stagnant-bath Fe³⁺ depletion applies *per
+    segment* rather than across the whole campaign.
+
+    ``state`` is a ``deposit_corrosion.IdleBathState`` (imported lazily to
+    keep this module's import surface unchanged).  The dissolved iron is a
+    deposit→bath transfer (it returns to the CSTR inventory, biasing
+    campaign gravimetry low); the returned ``apparent_fe_bias_pp`` is the
+    sign-carrying version for the run_record/charge-ledger story:
+
+        FE_gravimetric ≈ CE×(1 − idle/produced)  →  bias ≈ −CE×idle/produced
+
+    L1 prediction, not a measurement; not gate evidence.
+    """
+    from .deposit_corrosion import (
+        SCREENING_FLAG as DC_FLAG,
+        IdleBathState,
+        mass_loss_over_idle,
+    )
+
+    op = operating or PhaseIVOperatingPoint()
+    cal = calendar or CampaignCalendar()
+    st = replace(state or IdleBathState(), area_m2=op.anode_area_m2)
+
+    weeks = cal.days / 7.0
+    on_days = weeks * (7.0 - cal.off_days_per_week)
+    off_segments = weeks * cal.off_days_per_week
+
+    prod_mol = op.fe_removal_mol_hr * cal.hours_on_per_day * on_days
+
+    night_s = (24.0 - cal.hours_on_per_day) * 3600.0
+    night = mass_loss_over_idle(night_s, state=st)
+    per_segment: dict = {"night_8h_equivalent": night}
+    idle_mol = night["fe_mol"] * on_days
+    if off_segments > 0:
+        offday = mass_loss_over_idle(24.0 * 3600.0, state=st)
+        per_segment["off_day_24h"] = offday
+        idle_mol += offday["fe_mol"] * off_segments
+
+    idle_g = idle_mol * M_FE * 1000.0
+    idle_frac = idle_mol / prod_mol if prod_mol > 0 else 0.0
+    acid_g = idle_g * (
+        night["um_from_acid"] / night["um_lost"] if night["um_lost"] > 0 else 0.0
+    )
+    return {
+        "screening_flag": DC_FLAG,
+        "calendar": {
+            "days": cal.days,
+            "hours_on_per_day": cal.hours_on_per_day,
+            "off_days_per_week": cal.off_days_per_week,
+        },
+        "production_fe_mol": prod_mol,
+        "production_fe_kg": prod_mol * M_FE,
+        "night_segment": {
+            "duration_h": night_s / 3600.0,
+            "um_lost": night["um_lost"],
+            "fe_g": night["fe_g"],
+        },
+        "idle_fe_mol": idle_mol,
+        "idle_fe_g": idle_g,
+        "idle_from_acid_g": acid_g,
+        "idle_from_etch_g": idle_g - acid_g,
+        "idle_loss_pct_of_production": 100.0 * idle_frac,
+        "apparent_fe_bias_pp": -100.0 * op.current_efficiency * idle_frac,
+        "segments": {
+            "night_count": on_days,
+            "off_day_count": off_segments,
+            "per_segment_um_lost": {
+                name: seg["um_lost"] for name, seg in per_segment.items()
+            },
+        },
+        "cathode_area_m2_assumed": op.anode_area_m2,
+        "note": (
+            "L1 prediction (deposit_corrosion.py) — the loss is a "
+            "deposit→bath transfer, so it is invisible to a bath-inclusive "
+            "mol closure and shows up as low gravimetric FE and late Fe in "
+            "the first post-idle bath analysis; not gate evidence."
+        ),
+    }

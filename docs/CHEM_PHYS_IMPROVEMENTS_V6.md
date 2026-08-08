@@ -20,8 +20,10 @@
 > (junction potentials, deposit aging) that the Q3/RDE calibration campaign will
 > silently inherit if they are not bounded first.
 >
-> Nothing below is implemented. Every item is stated at screening (L1) scope with
-> named anchors, per repo convention.
+> Items **§1.1** (`models/deposit_corrosion.py`) and **§1.5**
+> (`models/melt_balance.py`) have since been implemented at screening (L1) scope
+> with named anchors, per repo convention; everything else below remains a
+> proposal.
 
 ---
 
@@ -36,6 +38,8 @@ out, no surprises**. Today the repo cannot even in principle generate one,
 because five of its seven line items do not exist as physics.
 
 ### 1.1 Deposit corrosion at open circuit and ferric etch — the silent leak in the iron ledger
+
+> **Status: implemented (L1)** — `models/deposit_corrosion.py` (`python -m models.deposit_corrosion`, CLI `aq-steel-deposit-corrosion`), wired into `run_record.py` (predicted idle ledger terms) and `closed_loop.py` (`campaign_idle_accounting`).
 
 **The gap.** `run_record.py` demands a closed charge/mass/electrolyte balance;
 NEXT_STEPS §1 makes the iron ledger gate evidence. But there is no model for
@@ -184,6 +188,8 @@ Anchors: Heckel (1961); PM iron-powder compaction data (e.g., Höganäs
 electrolytic-powder grade literature).
 
 ### 1.5 The melt-shop verdict — a remelt mass/energy balance for electrowon charge
+
+> **Status: implemented (L1)** — `models/melt_balance.py` (`python -m models.melt_balance`, CLI `aq-steel-melt-balance`).
 
 **The gap.** `melt_hydrogen.py` (Round 5, B2) answers the buyer's hydrogen
 question. The buyer's other three questions have **no model anywhere**: (a)
@@ -672,7 +678,8 @@ Baird's strain-aging reviews; ammoniacal iron plating literature.
 - Nitrogen/strain aging: `ammonium_buffer.py` (Round 4) is bath chemistry only;
   no N-in-metal or Cottrell/Lüders physics anywhere.
 
-All items above are **proposals (status: proposed, not implemented)**. Each
+All items above are **proposals (status: proposed) unless marked "Status:
+implemented" in their section headers** (currently §1.1, §1.5). Each
 should ship with the repo's conventions: a standalone `models/*.py` with CLI,
 `tests/test_*.py`, `pyproject.toml` entry point, `SCREENING_FLAG = "unvalidated
 (L1)"` header, and one row per numeric claim in `references/anchors.md`.

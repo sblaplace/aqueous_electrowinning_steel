@@ -615,6 +615,153 @@ ANCHORS: Dict[str, Anchor] = {
             "residual FeO; total O ~1.5–2.5 %)",
         notes="Runs the same oxide-reduction engine for the DRI baseline.",
     ),
+    # ─── Deposit corrosion at open circuit & ferric etch ────────
+    #     (deposit_corrosion.py; V6 §1.1)
+    "FE_ACID_JCORR_REF_UA_CM2": Anchor(
+        key="FE_ACID_JCORR_REF_UA_CM2",
+        value=10.0,
+        paper_value=10.0,
+        uncertainty=9.0,
+        ref="Stern (1955); Kelly (1965) — mixed-potential corrosion of "
+            "iron in deaerated dilute acid",
+        notes="Reference state: pH 2.0, 25 °C, deaerated, clean "
+              "(additive-free) Fe.  V6 §1.1 screening band 1–50 µA/cm²; "
+              "aerated warm acid sits at the top of the band because O₂ "
+              "mass transfer adds cathodic current — that part is derived "
+              "live in deposit_corrosion, not anchored.",
+    ),
+    "FE_ACID_ANODIC_TAFEL_MV_DEC": Anchor(
+        key="FE_ACID_ANODIC_TAFEL_MV_DEC",
+        value=40.0,
+        paper_value=40.0,
+        uncertainty=10.0,
+        ref="Stern (1955) — Fe dissolution Tafel slope in acid, "
+            "b_a ≈ 30–44 mV/dec",
+        notes="Bockris/Heusler mechanism band; screening central value 40.",
+    ),
+    "FE_ACID_HER_TAFEL_MV_DEC": Anchor(
+        key="FE_ACID_HER_TAFEL_MV_DEC",
+        value=120.0,
+        paper_value=120.0,
+        uncertainty=20.0,
+        ref="Stern (1955) — H₂ evolution on iron in acid, "
+            "b_c ≈ 0.10–0.12 V/dec",
+        notes="2.3×(2RT/F) family; screening central value 120.",
+    ),
+    "FE_CORR_EA_KJ_MOL": Anchor(
+        key="FE_CORR_EA_KJ_MOL",
+        value=40.0,
+        paper_value=40.0,
+        uncertainty=20.0,
+        ref="Apparent Arrhenius activation energy for iron corrosion in "
+            "dilute acid (Stern-family data)",
+        notes="Applied to both half-reaction exchange currents (screening); "
+              "literature apparent Ea spans ~30–60 kJ/mol.",
+    ),
+    "O2_DIFFUSIVITY_25C_M2_S": Anchor(
+        key="O2_DIFFUSIVITY_25C_M2_S",
+        value=2.10e-9,
+        paper_value=2.10e-9,
+        uncertainty=0.3e-9,
+        ref="Standard aqueous diffusivity tables, O₂ in water at 25 °C",
+        notes="Companion to the Weiss (1970) solubility anchor already "
+              "used in bath_startup.fe2_oxidation_rate.",
+    ),
+    "DIFFUSION_EA_KJ_MOL": Anchor(
+        key="DIFFUSION_EA_KJ_MOL",
+        value=15.0,
+        paper_value=15.0,
+        uncertainty=5.0,
+        ref="Stokes–Einstein screening for aqueous diffusivity T-scaling",
+        notes="Applied to D_O2 and D_Fe3 in deposit_corrosion; same "
+              "family as the temperature scaling used across the "
+              "transport modules.",
+    ),
+    "DIFFUSION_LAYER_IDLE_M": Anchor(
+        key="DIFFUSION_LAYER_IDLE_M",
+        value=50e-6,
+        paper_value=50e-6,
+        uncertainty=25e-6,
+        ref="Screening boundary layer for a stagnant bath, same family as "
+            "fe3_shuttle.py boundary_layer_m (50 µm)",
+        notes="Quasi-steady layer thickness for the stirred/O₂-limited "
+              "channels at idle; for the stagnant Fe³⁺ etch the layer "
+              "grows as sqrt(2·D·t) instead — see module docstring.",
+    ),
+    "FE3_ETCH_K_REF_MOL_M2_S": Anchor(
+        key="FE3_ETCH_K_REF_MOL_M2_S",
+        value=5.0e-7,
+        paper_value=5.0e-7,
+        uncertainty=4.5e-7,
+        ref="USBM RI-series chloride iron-EW flowsheets — ferric etch as "
+            "the classical current-efficiency killer; FeCl₃-class iron "
+            "etching practice, half-order in a_Fe3",
+        notes="SPECULATIVE screening central value at the reference state "
+              "(a_Fe3 = 0.05 M, pH 2.0, 25 °C).  order-of-magnitude band "
+              "5e-8–5e-6; the V6 §1.1 text lists the etch as 'half-order "
+              "in a_Fe3, strong T dependence, acid-catalysed'.  Replace "
+              "with a measured coupon rate before relying on the number.",
+    ),
+    "FE3_ETCH_REF_M": Anchor(
+        key="FE3_ETCH_REF_M",
+        value=0.05,
+        paper_value=0.05,
+        uncertainty=0.02,
+        ref="Definition — reference Fe³⁺ activity for the half-order "
+            "etch law",
+        notes="Chosen inside the membrane-crossover/PRE screening window "
+              "for bath Fe³⁺; not a measurement.",
+    ),
+    "FE3_ETCH_H_ORDER": Anchor(
+        key="FE3_ETCH_H_ORDER",
+        value=0.5,
+        paper_value=0.5,
+        uncertainty=0.5,
+        ref="V6 §1.1 'acid-catalysed' — screening reaction order in a_H",
+        notes="Screening only; order 0–1 reported across etching systems.",
+    ),
+    "FE3_ETCH_EA_KJ_MOL": Anchor(
+        key="FE3_ETCH_EA_KJ_MOL",
+        value=50.0,
+        paper_value=50.0,
+        uncertainty=25.0,
+        ref="Chemical etching Arrhenius screening ('strong T dependence', "
+            "V6 §1.1)",
+        notes="SPECULATIVE; wet-etch practice values span ~30–60 kJ/mol.",
+    ),
+    "ADDITIVE_BLOCKING_COVERAGE": Anchor(
+        key="ADDITIVE_BLOCKING_COVERAGE",
+        value=0.5,
+        paper_value=0.5,
+        uncertainty=0.4,
+        ref="Organic-additive adsorption blocking of iron corrosion — "
+            "pickling-inhibitor / brightener practice, screening",
+        notes="Fraction of the surface blocked for the kinetic "
+              "(H⁺ and Fe) terms; the O₂-limiting transport term is "
+              "coverage-insensitive at this level of modelling.",
+    ),
+    "IDLE_BATH_FE3_M": Anchor(
+        key="IDLE_BATH_FE3_M",
+        value=1.0e-4,
+        paper_value=1.0e-4,
+        uncertainty=9.0e-5,
+        ref="Fallback only — live default derives from fe3_shuttle "
+            "steady-state [Fe³⁺] (open-headspace scenario)",
+        notes="Screening band 1e-5–1e-3 M residual ferric in a "
+              "hydrolysis-capped sulfate bath at pH ~2.",
+    ),
+    "O2_FRACTION_SAT_IDLE": Anchor(
+        key="O2_FRACTION_SAT_IDLE",
+        value=0.05,
+        paper_value=0.05,
+        uncertainty=0.05,
+        ref="Screening stand-in for headspace contact during idle — same "
+            "convention as fe3_shuttle.ShuttleScenario.o2_fraction_of_sat",
+        notes="Sealed cell ≈ 0.005 (fe3_shuttle.sealed_divided_cell); "
+              "idle-with-access ≈ 0.05 central; open headspace ≈ 1.0.  "
+              "O₂ mass transfer is the dominant idle-corrosion driver, so "
+              "this knob moves the answer most.",
+    ),
 }
 
 

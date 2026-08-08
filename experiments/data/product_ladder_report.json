@@ -74,11 +74,11 @@
           "gate_id": "g_oc_corrosion",
           "name": "idle corrosion / ferric etch of deposit",
           "module": "deposit_corrosion",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.1 implemented (L1) \u2014 mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting."
         },
         {
           "gate_id": "g_product_ox",
@@ -118,7 +118,7 @@
           "flag": "unvalidated (L1)",
           "state": "modelled (L1)",
           "unvalidated_L1": true,
-          "note": "V6 \u00a71.5 proposal \u2014 UNMODELLED."
+          "note": "V6 \u00a71.5 implemented (L1) \u2014 EAF/induction remelt verdict with live O and H inputs."
         },
         {
           "gate_id": "g_purity",
@@ -131,8 +131,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 4,
-      "n_l1_gates": 1,
+      "n_unmodelled_gates": 3,
+      "n_l1_gates": 2,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -210,11 +210,11 @@
           "gate_id": "g_oc_corrosion",
           "name": "idle corrosion / ferric etch of deposit",
           "module": "deposit_corrosion",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.1 implemented (L1) \u2014 mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting."
         },
         {
           "gate_id": "g_product_ox",
@@ -287,8 +287,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 5,
-      "n_l1_gates": 2,
+      "n_unmodelled_gates": 4,
+      "n_l1_gates": 3,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -668,11 +668,11 @@
           "gate_id": "g_oc_corrosion",
           "name": "idle corrosion / ferric etch of deposit",
           "module": "deposit_corrosion",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.1 implemented (L1) \u2014 mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting."
         },
         {
           "gate_id": "g_product_ox",
@@ -705,8 +705,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 3,
-      "n_l1_gates": 0,
+      "n_unmodelled_gates": 2,
+      "n_l1_gates": 1,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -784,11 +784,11 @@
           "gate_id": "g_oc_corrosion",
           "name": "idle corrosion / ferric etch of deposit",
           "module": "deposit_corrosion",
-          "exists": false,
-          "flag": null,
-          "state": "unmodelled",
-          "unvalidated_L1": false,
-          "note": "V6 \u00a71.1 proposal \u2014 UNMODELLED."
+          "exists": true,
+          "flag": "unvalidated (L1)",
+          "state": "modelled (L1)",
+          "unvalidated_L1": true,
+          "note": "V6 \u00a71.1 implemented (L1) \u2014 mixed-potential idle corrosion + ferric etch; run_record predicted ledger terms + closed_loop campaign accounting."
         },
         {
           "gate_id": "g_product_ox",
@@ -821,8 +821,8 @@
           "note": "Train screen exists; feed-fingerprint L1."
         }
       ],
-      "n_unmodelled_gates": 2,
-      "n_l1_gates": 1,
+      "n_unmodelled_gates": 1,
+      "n_l1_gates": 2,
       "n_flag_unstated_gates": 5,
       "verdict": "clears"
     },
@@ -1251,11 +1251,11 @@
     "recipe": "python -m models.run_product_ladder  (full-grade; screening constants are L1 by declaration, not by mode)",
     "mode": "full-grade",
     "source_hashes": {
-      "models/product_ladder.py": "f06a23dab69534ce",
+      "models/product_ladder.py": "408db9edbaae45de",
       "models/cell_architecture.py": "77a08ed3afac2da7",
       "models/electrochemistry.py": "935e526a6598d30c",
       "models/technoeconomic.py": "db224bcf4b144584",
-      "models/anchors.py": "cc6dde9d09b5ccac",
+      "models/anchors.py": "df009136da232bfe",
       "models/thermomechanical.py": "03d99ca6f2b215c2"
     }
   }

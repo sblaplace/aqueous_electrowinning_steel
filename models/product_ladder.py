@@ -151,7 +151,10 @@ GATE_REGISTRY: Dict[str, GateRef] = {
                 "ti_hydriding",
                 "V6 §4.1 proposal — UNMODELLED (oxide side in substrate_passivation)."),
         GateRef("g_oc_corrosion", "idle corrosion / ferric etch of deposit",
-                "deposit_corrosion", "V6 §1.1 proposal — UNMODELLED."),
+                "deposit_corrosion",
+                "V6 §1.1 implemented (L1) — mixed-potential idle corrosion + "
+                "ferric etch; run_record predicted ledger terms + "
+                "closed_loop campaign accounting."),
         GateRef("g_product_ox", "post-harvest oxidation & passivation spec",
                 "product_oxidation", "V6 §1.2 proposal — UNMODELLED."),
         GateRef("g_rinse", "rinse carryover → charge sulfur",
@@ -159,7 +162,9 @@ GATE_REGISTRY: Dict[str, GateRef] = {
         GateRef("g_briquet", "densification / briquetting product-form gate",
                 "briquetting", "V6 §1.4 proposal — UNMODELLED."),
         GateRef("g_melt_balance", "melt-shop remelt verdict (yield/boil/slag)",
-                "melt_balance", "V6 §1.5 proposal — UNMODELLED."),
+                "melt_balance",
+                "V6 §1.5 implemented (L1) — EAF/induction remelt verdict "
+                "with live O and H inputs."),
         GateRef("g_casting", "in-house melt + solidification/casting block",
                 "strip_casting",
                 "Option A.5 gap beyond V6 — UNMODELLED (liquidus, segregation, "
