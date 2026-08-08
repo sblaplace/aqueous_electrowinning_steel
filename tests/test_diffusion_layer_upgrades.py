@@ -12,6 +12,7 @@ from models.diffusion_layer_1d import (
     DiffusionLayer1D,
     K_FESO4_PAIR_25,
     D_FESO4_RATIO,
+    D_FE2_COMPOSITION_SLOPE,
 )
 
 
@@ -252,3 +253,88 @@ class TestCombinedCorrections:
         result = model.solve(300.0)
         assert 0.3 < result.current_efficiency < 1.0
         assert result.converged
+
+
+class TestCompositionDiffusivity:
+    """Composition-dependent D(γ, c) — Tier 2.2 (CHEM_PHYS_REVIEW).
+
+    D_FE2=7.2e-10 is infinite-dilution; in 1.5 M FeSO4 + 0.5 M Na2SO4 the
+    real D is 30-50 % lower.  The Stokes-Einstein factor 10^(−k·I) must
+    land in that band at the reference bath, be backward compatible when
+    off, and not double-count with the FeSO4-pair correction.
+    """
+
+    REF = dict(fe_conc_M=1.5, pH_bulk=2.0, support_conc_M=0.5, temperature_C=60.0)
+
+    def test_disable_preserves_current_d(self):
+        """Default (off) returns the flat infinite-dilution D_feff."""
+        base = DiffusionLayer1D(**self.REF, composition_diffusivity=False)
+        comp = DiffusionLayer1D(**self.REF, composition_diffusivity=True)
+        # off: D_fe is the plain Arrhenius-corrected infinite-dilution value
+        assert base.D_fe > comp.D_fe
+        assert base._composition_diffusivity_factor() == 1.0
+        assert base.diffusion_limit_A_m2 > comp.diffusion_limit_A_m2
+
+    def test_factor_lands_in_literature_band(self):
+        """Reference-bath D reduction lands in the cited 30-50 % band."""
+        comp = DiffusionLayer1D(**self.REF, composition_diffusivity=True)
+        f = comp._composition_diffusivity_factor()
+        # f = 10^(−k·I); 1−f should be 30-50 %
+        assert 0.30 <= (1.0 - f) <= 0.50, f"reduction {(1-f):.1%} outside 30-50%"
+
+    def test_factor_monotone_in_conc(self):
+        """Higher ionic strength → lower D (more concentrated → more viscous)."""
+        dilute = DiffusionLayer1D(fe_conc_M=0.1, pH_bulk=2.0, support_conc_M=0.0,
+                                  composition_diffusivity=True)
+        conc = DiffusionLayer1D(fe_conc_M=2.0, pH_bulk=2.0, support_conc_M=1.0,
+                                composition_diffusivity=True)
+        assert dilute._composition_diffusivity_factor() > conc._composition_diffusivity_factor()
+
+    def test_result_carries_diagnostic(self):
+        """Result exposes the factor and (pitzer) gamma when enabled."""
+        comp = DiffusionLayer1D(**self.REF, composition_diffusivity=True,
+                                activity_model="pitzer")
+        r = comp.solve(100.0)
+        assert 0.3 < r.d_composition_factor < 0.7
+        assert 0.0 < r.gamma_fe_bulk < 1.0
+        # and zero-effect diagnostics when off
+        base = DiffusionLayer1D(**self.REF)
+        rb = base.solve(100.0)
+        assert rb.d_composition_factor == 1.0
+        assert rb.gamma_fe_bulk == 1.0
+
+    def test_composes_with_pair_correction_without_double_count(self):
+        """D(γ,c) and the FeSO4-pair correction are independent mechanisms.
+
+        The pair correction shifts free-Fe²⁺ into a neutral pair (speciation);
+        D(γ,c) lowers the mobility of the (remaining) free Fe²⁺ (viscosity).
+        They are distinct physics, so with both on the transport-limit
+        reduction equals the product of the two individual reductions — NOT
+        a double-count of the same effect, and NOT an over-suppression below
+        the physical pair+mobility floor.
+        """
+        base = DiffusionLayer1D(**self.REF)
+        comp = DiffusionLayer1D(**self.REF, composition_diffusivity=True)
+        pair = DiffusionLayer1D(**self.REF, fes04_pair_correction=True)
+        both = DiffusionLayer1D(**self.REF, composition_diffusivity=True,
+                                fes04_pair_correction=True)
+        r_comp = comp.diffusion_limit_A_m2 / base.diffusion_limit_A_m2
+        r_pair = pair.diffusion_limit_A_m2 / base.diffusion_limit_A_m2
+        r_both = both.diffusion_limit_A_m2 / base.diffusion_limit_A_m2
+        # both ≈ product of the two independent reductions (±5 %)
+        assert r_both == pytest.approx(r_comp * r_pair, rel=0.05)
+        # and stays above a physical floor (the two corrections together
+        # do not collapse transport to zero)
+        assert r_both > 0.4
+
+    def test_slope_constant_positive(self):
+        """The module-level slope constant is positive and in a sane range."""
+        assert 0 < D_FE2_COMPOSITION_SLOPE < 0.5
+
+    def test_dilute_returns_near_unity(self):
+        """In a dilute bath the factor approaches 1 (no viscosity drag)."""
+        model = DiffusionLayer1D(fe_conc_M=0.05, pH_bulk=2.0, support_conc_M=0.0,
+                                 composition_diffusivity=True)
+        f = model._composition_diffusivity_factor()
+        assert f > 0.9
+

@@ -137,6 +137,13 @@ DIFF_EA_J_MOL = DIFFUSION_EA_J_MOL
 K_FESO4_PAIR_25 = getattr(_speciation, 'K_FESO4_PAIR_25', 200.0)  # L/mol
 D_FESO4_RATIO = 0.6  # D_FeSO4 / D_Fe2 (Stokes-Einstein, ~20% larger species)
 
+# ─── Composition-dependent diffusivity D(γ, c) slope ──────────────
+# Stokes-Einstein viscosity factor: log10(D/D0) = −k·I.  k anchored to the
+# Lobo & Quaresma 1989 screening value for Fe²⁺ (0.05 per unit ionic
+# strength) already used by fe_chloride_speciation.  See the
+# ``composition_diffusivity`` flag docstring on DiffusionLayer1D.
+D_FE2_COMPOSITION_SLOPE = 0.05
+
 
 # ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -236,6 +243,11 @@ class DiffusionLayerResult:
     # Zero when fes04_pair_correction=False; otherwise the bulk pair
     # fraction (typically 0.15–0.25 in 1.5 M FeSO₄ at pH 2).
     fe_pair_fraction_bulk: float = 0.0
+    # Composition-dependent diffusivity diagnostics (Tier 2.2).  1.0 when
+    # composition_diffusivity=False; otherwise the Stokes-Einstein D factor
+    # f = 10^(−k·I) applied to D_Fe²⁺ and the Pitzer bulk γ_Fe²⁺.
+    d_composition_factor: float = 1.0
+    gamma_fe_bulk: float = 1.0
 
     @property
     def fe_percent(self) -> float:
@@ -374,6 +386,32 @@ class DiffusionLayer1D:
     # lower diffusivity (D_FeSO4 ≈ 0.6 × D_Fe2).  The net effect is a
     # small reduction in j_lim (typically 5–15% in 1.5 M FeSO₄).
     fes04_pair_correction: bool = False
+    # Composition-dependent Fe²⁺ diffusivity D(γ, c) (Tier 2.2 from
+    # CHEM_PHYS_REVIEW.md).  When True, the infinite-dilution/Arrhenius
+    # D_Fe²⁺ is scaled by a Stokes-Einstein viscosity factor that accounts
+    # for the real bath composition — in 1.5 M FeSO₄ + 0.5 M Na₂SO₄ the
+    # physical D is 30–50 % below its infinite-dilution value (Lobo &
+    # Quaresma).  The factor is applied across the whole Nernst-Planck
+    # film (both the diffusion-only limit and the reactive ODE), so it
+    # lowers both j_lim and the migration-enhanced transport limit.
+    #
+    #   D_Fe2+_eff(c) = D_Fe2+_T(T) · 10^(−k · I(c))
+    #
+    # with I(c) the bulk ionic strength from ``_estimate_ionic_strength``
+    # (the same composition signal the FeSO₄⁰ pair correction uses) and
+    # k = D_COMPOSITION_SLOPE.  The slope is anchored to the Lobo &
+    # Quaresma Fe²⁺/NaClO₄/Cl⁻ screening value already used by
+    # ``fe_chloride_speciation.fe2_diffusivity_in_chloride_bath``, so the
+    # reference-bath reduction lands at ~46 % (inside the cited 30–50 %).
+    # Pitzer γ_Fe²⁺ is surfaced as a companion diagnostic (see
+    # ``gamma_fe_bulk``) but the closure itself is viscosity-driven on the
+    # ionic strength, not a direct γ power-law.
+    #
+    # Backward compatible: default False leaves D_Fe²⁺ exactly as before.
+    composition_diffusivity: bool = False
+    # Stokes-Einstein viscosity slope, log10(D/D0) per unit ionic strength
+    # (Lobo & Quaresma 1989 screening value for the Fe²⁺ system).
+    d_composition_slope: float = 0.05
 
     def __post_init__(self) -> None:
         if self.fe_conc_M <= 0.0:
@@ -418,7 +456,20 @@ class DiffusionLayer1D:
 
     @property
     def D_fe(self) -> float:
-        return _diffusivity_T(D_FE2, self.T)
+        """Fe²⁺ diffusivity at the operating T (and composition if enabled).
+
+        Base value is the Arrhenius-corrected infinite-dilution D.  When
+        ``composition_diffusivity`` is True, it is further scaled by the
+        Stokes-Einstein viscosity factor 10^(−k·I) so the film transport
+        reflects the real (30–50 % lower) mobility in a concentrated
+        sulfate bath.  Returning a *scalar* keeps the ODE solve untouched —
+        the same reduced D flows into both the diffusion limit and the
+        reactive Nernst-Planck integration.
+        """
+        base = _diffusivity_T(D_FE2, self.T)
+        if self.composition_diffusivity:
+            base = base * self._composition_diffusivity_factor()
+        return base
 
     @property
     def D_h(self) -> float:
@@ -565,6 +616,26 @@ class DiffusionLayer1D:
         c_hso4 = c_total_so4 * (1 - f_so4)
         I = 0.5 * (c_fe * 4 + c_na * 1 + c_so4 * 4 + c_hso4 * 1 + c_h * 1)
         return max(I, 0.01)  # floor at 0.01 to avoid K_eff = K_thermo
+
+    # ─── Composition-dependent diffusivity D(γ, c) ───────────────────
+
+    def _composition_diffusivity_factor(self) -> float:
+        """Stokes-Einstein viscosity factor on D_Fe²⁺ (0 < f ≤ 1).
+
+        f = 10^(−k · I), with I the bulk ionic strength and k the
+        Stokes-Einstein viscosity slope (Lobo & Quaresma).  Returns 1.0
+        when ``composition_diffusivity`` is False (backward compatible),
+        or when the ionic strength is negligible (dilute → f → 1).
+
+        This is the gamma/activity-coupled composition signal: Fe²⁺
+        mobility in a concentrated FeSO₄/Na₂SO₄ bath is 30–50 % lower
+        than the infinite-dilution value (CHEM_PHYS_REVIEW Tier 2.2).
+        """
+        if not self.composition_diffusivity:
+            return 1.0
+        k = self.d_composition_slope if self.d_composition_slope > 0 else D_FE2_COMPOSITION_SLOPE
+        I = self._estimate_ionic_strength()
+        return float(10.0 ** (-k * I))
 
     @property
     def _bulk_pair_fraction(self) -> float:
@@ -1253,6 +1324,9 @@ class DiffusionLayer1D:
             sludge_rate_g_m2_s=sludge_g,
             her_i0_surface_state_ratio=her_i0_ratio,
             fe_pair_fraction_bulk=self._bulk_pair_fraction if self.fes04_pair_correction else 0.0,
+            d_composition_factor=self._composition_diffusivity_factor()
+            if self.composition_diffusivity else 1.0,
+            gamma_fe_bulk=self.gamma_fe,
         )
 
     # ─── Convenience methods ───────────────────────────────────────
