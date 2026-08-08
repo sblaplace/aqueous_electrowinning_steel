@@ -25,6 +25,12 @@ from scipy.optimize import brentq
 
 from .electrochemistry import FARADAY, M_FE, R_GAS, Z_FE
 from .pourbaix import her_line
+from .frumkin import (
+    LAMBDA_DEFAULT_J_MOL,
+    FrumkinCorrectedBV,
+    FrumkinParams,
+    organic_psi1_shift,
+)
 
 # Adapter reference: ``models.surface_state.SurfaceStateKinetics``
 # wraps ``DepositionKinetics`` behind the ``her_i0`` seam.  The
@@ -326,6 +332,21 @@ class DepositionKinetics:
     fe_anodic_slope_V: float = FE_ANODIC_SLOPE_V
     her_anodic_slope_V: float = HER_ANODIC_SLOPE_V
 
+    # ─── α_eff / Frumkin opt-in (CHEM_PHYS_REVIEW.md §2.3) ──────────
+    # OFF by default: the constant-α BV path above is byte-identical.  When
+    # enabled, the Fe and HER BV branches are re-derived per-point with a
+    # Marcus-like α_eff(η, ψ₁) and a heat-of-activation i₀ correction, and a
+    # leveler/aditive organic dipole can shift ψ₁.  All screening values.
+    use_frumkin_alpha_eff: bool = False
+    frumkin_psi1_V: float = 0.0        # inner-Helmholtz potential (V), signed
+    frumkin_lambda_J_mol: float = LAMBDA_DEFAULT_J_MOL
+    fe_frumkin_n: int = 2              # Fe²⁺+2e⁻→Fe (RDS n assumed cathodic)
+    her_frumkin_n: int = 1             # 2H⁺+2e⁻→H₂ (single-electron RDS)
+    # organic leveler: Γ·μ dipole layer shifts ψ₁ (saccharin/thiourea/Cl⁻)
+    organic_gamma_mol_m2: float = 0.0
+    organic_mu_dipole_C_m: float = 0.0
+    organic_eps_r: float = 6.0
+
     @property
     def T(self) -> float:
         return self.temperature_C + 273.15
@@ -377,6 +398,67 @@ class DepositionKinetics:
             None, self.her_anodic_slope_V,
         )
 
+    # ─── α_eff / Frumkin branches (opt-in; §2.3) ─────────────────────
+    @property
+    def resolved_psi1_V(self) -> float:
+        """ψ₁ including any organic leveler dipole-layer shift.
+
+        ψ₁_total = ψ₁(base) + Δψ₁, with Δψ₁ = Γ·N_A·μ/(ε₀·ε_r) < 0 for a
+        dipole-down organic.  The Frumkin effect enters α_eff through
+        η_eff = η − ψ₁_total.
+        """
+        delta = organic_psi1_shift(
+            self.organic_gamma_mol_m2,
+            self.organic_mu_dipole_C_m,
+            self.organic_eps_r,
+        )
+        return self.frumkin_psi1_V + delta
+
+    @staticmethod
+    def _alpha0_from_tafel_slope(tafel_slope_V: float, n: int, T_K: float) -> float:
+        """Equilibrium α₀ that reproduces a given cathodic Tafel slope.
+
+        α₀ = 2.303·R·T / (b·n·F).  Calibrating the Marcus branch's α₀ to the
+        branch's own slope means the opt-in path is *identical* to the
+        constant-α BV branch at low η and differs only by the Marcus
+        alpha-drop / heat correction at high |η| — the honest additive
+        wiring §2.3 wants (the 'explore over the kinetics Tafel slopes'
+        constraint).
+        """
+        return 2.303 * R_GAS * T_K / (tafel_slope_V * n * FARADAY)
+
+    def fe_frumkin_branch(self) -> FrumkinCorrectedBV:
+        return FrumkinCorrectedBV(
+            self.fe_i0_T,
+            self.fe_E_eq,
+            FrumkinParams(
+                psi_1_V=self.resolved_psi1_V,
+                n=self.fe_frumkin_n,
+                alpha0=self._alpha0_from_tafel_slope(
+                    self.fe_tafel_V, self.fe_frumkin_n, self.T
+                ),
+                lambda_J_mol=self.frumkin_lambda_J_mol,
+                T_K=self.T,
+            ),
+            i_lim=self.i_lim,
+        )
+
+    def her_frumkin_branch(self) -> FrumkinCorrectedBV:
+        return FrumkinCorrectedBV(
+            self.her_i0_T,
+            float(her_line(self.pH, self.T)),
+            FrumkinParams(
+                psi_1_V=self.resolved_psi1_V,
+                n=self.her_frumkin_n,
+                alpha0=self._alpha0_from_tafel_slope(
+                    self.her_tafel_V, self.her_frumkin_n, self.T
+                ),
+                lambda_J_mol=self.frumkin_lambda_J_mol,
+                T_K=self.T,
+            ),
+            i_lim=None,
+        )
+
     # ─── Partial currents ─────────────────────────────────────────────
     def partial_currents(self, E):
         """Return (i_Fe, i_HER, i_total) in A/m^2 at potential E (V vs. SHE).
@@ -386,7 +468,15 @@ class DepositionKinetics:
         H₂ ionisation), so ``i_total`` and ``i_Fe`` can go anodic.  Current
         efficiency is only a meaningful galvanostatic quantity where both
         partial currents are cathodic.
+
+        With ``use_frumkin_alpha_eff`` the Fe and HER branches are replaced
+        by the α_eff(η, ψ₁) Marcus-corrected BV branches (values differ only
+        at high |η| ≳ 200 mV); otherwise behaviour is unchanged.
         """
+        if self.use_frumkin_alpha_eff:
+            i_fe = self.fe_frumkin_branch().current(E)
+            i_h = self.her_frumkin_branch().current(E)
+            return i_fe, i_h, i_fe + i_h
         if self.use_butler_volmer:
             i_fe = self.fe_branch_bv.current(E)
             i_h = self.her_branch_bv.current(E)
