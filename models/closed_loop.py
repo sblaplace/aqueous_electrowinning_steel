@@ -335,3 +335,93 @@ class PhaseIVClosedLoop:
                 + treatment_cost + ligand_cost + anode_cost
             ) / max(production_t, 1e-30),
         }
+
+    # ── Stress-relaxation screen (additive, default-off) ─────────────────────
+    # Reuses the already-integrated PhaseIVResult to report a stress-driven
+    # defect rate per step (CHEM_PHYS_REVIEW Tier 3.5).  Does not alter
+    # ``simulate`` — callers opt in explicitly; default behaviour is unchanged.
+
+    def stress_relaxation_screen(
+        self,
+        result: PhaseIVResult,
+        temperature_C: float = 60.0,
+        bath_pH: float = 3.0,
+        ambient_temperature_C: float = 25.0,
+        substrate="ti_passive_tio2",
+        saccharin_g_L: float = 0.0,
+        chloride_bath: bool = False,
+        C_H_ppm: float | None = None,
+        params=None,
+        sigma_survival_threshold_MPa: float = 150.0,
+    ) -> dict:
+        """Optional: per-step stress-mechanism defect rate over a closed-loop run.
+
+        Every closed-loop time step gets the ``internal_stress`` snapshot
+        re-derived at the operating j/FE (Faraday thickness growth), then the
+        ``stress_relaxation`` log-linear closure is applied against elapsed
+        time to yield retained stress, a stress-mechanism defect rate, and a
+        drum-winding survival verdict.  Returns per-step arrays plus the
+        terminal state.  Off by default — callers must opt in explicitly.
+        """
+        from .stress_relaxation import (
+            seed_stress_snapshot_Mpa,
+            sigma_relaxation_series,
+            sigma_relaxed,
+            stress_defect_rate,
+            survives_drum_winding,
+        )
+
+        t_hr = np.asarray(result.time_hr, dtype=float)
+        j = self.operating.current_density_mA_cm2
+        fe_percent = self.operating.current_efficiency * 100.0
+
+        # Re-derive the deposition-time at each step from the run's Faraday
+        # throughput so sigma0 grows with thickness, matching how the deposit
+        # actually accumulates on the drum.
+        snap = seed_stress_snapshot_Mpa(
+            j_mA_cm2=j,
+            current_efficiency_percent=fe_percent,
+            deposition_time_s=max(float(t_hr[-1]) * 3600.0, 1e-6),
+            bath_pH=bath_pH,
+            temperature_C=temperature_C,
+            substrate=substrate,
+            saccharin_g_L=saccharin_g_L,
+            chloride_bath=chloride_bath,
+        )
+        sigma0 = float(snap["sigma0_MPa"])
+        c_h = C_H_ppm if C_H_ppm is not None else float(
+            snap["derived"]["C_H_diffusible_ppm"]
+        )
+
+        sigma_t = sigma_relaxation_series(
+            sigma0, t_hr, temperature_C=temperature_C, C_H_ppm=float(c_h), params=params
+        )
+        # Defect rate per step from the retained stress.
+        rates = np.array(
+            [
+                stress_defect_rate(float(s), sigma0, params)["defect_rate_per_hr"]
+                for s in sigma_t
+            ]
+        )
+        terminal = sigma_relaxed(
+            sigma0, float(t_hr[-1]),
+            temperature_C=temperature_C, C_H_ppm=float(c_h), params=params,
+        )
+        terminal_life = survives_drum_winding(
+            terminal["sigma_MPa"], sigma_survival_threshold_MPa, params
+        )
+        return {
+            "time_hr": t_hr,
+            "sigma0_MPa": float(sigma0),
+            "sigma_MPa": sigma_t,
+            "retained_fraction": sigma_t / max(sigma0, 1e-30),
+            "defect_rate_per_hr": rates,
+            "C_H_ppm": float(c_h),
+            "tau_hr": float(terminal["tau_hr"]),
+            "terminal_sigma_MPa": float(terminal["sigma_MPa"]),
+            "terminal_defect_rate_per_hr": float(stress_defect_rate(
+                terminal["sigma_MPa"], sigma0, params
+            )["defect_rate_per_hr"]),
+            "winding_verdict": terminal_life,
+            "default_unchanged": True,  # simulate() is untouched by this screen
+        }
