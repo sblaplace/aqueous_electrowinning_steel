@@ -32,7 +32,7 @@ References:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, Tuple
 import math
 import numpy as np
 
@@ -92,6 +92,10 @@ class MorphologyResult:
 
     # Physical reasoning
     limiting_factors: list = field(default_factory=list)
+
+    # Growth-ODE criterion (only populated with a growth_model; CHEM_PHYS_REVIEW 2.4)
+    dendrite_growth_rate_1_s: Optional[float] = None
+    screening_length_m: Optional[float] = None
 
     @property
     def is_coherent(self) -> bool:
@@ -199,6 +203,232 @@ def dendrite_critical_current(
     j_dendrite = i_lim / (1.0 + 0.5 * stability_factor)
 
     return j_dendrite
+
+
+# ─── Mullins-Sekerka / Barton-Bockris growth model ────────────────
+
+class MullinsSekerkaGrowthModel:
+    """Screening-length stability + growth-rate ODE for deposit morphology.
+
+    Converts the static ``dendrite_critical_current`` threshold into a
+    *dynamic* model (CHEM_PHYS_REVIEW.md Tier 2.4): it predicts whether a
+    surface perturbation of wavelength ``lambda`` grows, and integrates its
+    amplitude through the growth-rate ODE
+
+        da/dt = sigma(k) * a ,      sigma(k) = v·k·(1 − (k/k_c)²)
+
+    where k = 2π/λ is the perturbation wavenumber and k_c = 2π/λ_c the
+    critical wavenumber set by the Mullins–Sekerka screening length
+
+        λ_c = ( D·γ·Ω / ( j·(∂c/∂x)|_surf ) )^(1/2)
+
+    with D the Fe²⁺ diffusivity, γ the surface energy, Ω the Fe molar
+    volume, j the Fe deposition current density, and (∂c/∂x)|_surf the
+    Fe²⁺ concentration gradient at the cathode surface (mol m⁻⁴; default
+    Fick closure j/(zFD)).  v = j·Ω/(zF) is the planar-front velocity.
+
+    Behavior:
+
+      * λ > λ_c  (k < k_c) : σ > 0  → perturbation grows (dendritic)
+      * λ = λ_c  (k = k_c) : σ = 0  → marginally stable
+      * λ < λ_c  (k > k_c) : σ < 0  → perturbation decays (flat / stable)
+
+    This is the classic Barton–Bockris / Mullins–Sekerka balance: the
+    growing metal front destabilizes long wavelengths while surface tension
+    (capillary) stabilizes short ones.  Because it only *advances* an
+    existing perturbation amplitude, a transient film (``pulse.py``) can
+    track morphology step-by-step instead of warning after the fact.
+    """
+
+    def __init__(
+        self,
+        diffusivity_m2_s: float = 7.2e-10,
+        surface_energy_J_m2: float = GAMMA_FE_SURFACE,
+        molar_volume_m3_mol: float = V_M_FE,
+        z: int = 2,
+    ) -> None:
+        if diffusivity_m2_s <= 0.0 or surface_energy_J_m2 <= 0.0 or molar_volume_m3_mol <= 0.0:
+            raise ValueError("diffusivity, surface energy and molar volume must be positive")
+        if z <= 0:
+            raise ValueError("charge number z must be positive")
+        self.diffusivity = float(diffusivity_m2_s)
+        self.surface_energy = float(surface_energy_J_m2)
+        self.molar_volume = float(molar_volume_m3_mol)
+        self.z = int(z)
+
+    # -- helpers ------------------------------------------------------------
+
+    def surface_concentration_gradient(
+        self,
+        current_density_A_m2: float,
+        surface_fe_conc_M: Optional[float] = None,
+        boundary_layer_m: Optional[float] = None,
+        bulk_fe_conc_M: Optional[float] = None,
+    ) -> float:
+        """Surface Fe²⁺ gradient (∂c/∂x)|_surf in mol/m⁴.
+
+        Uses the Nernst gradient (c_bulk − c_surf)/δ when the surface and
+        bulk concentrations plus the boundary-layer thickness are supplied;
+        otherwise falls back to the Fick closure j/(zFD) — the gradient a
+        flat front establishes by transporting its own deposition flux.
+        """
+        if (
+            surface_fe_conc_M is not None
+            and bulk_fe_conc_M is not None
+            and boundary_layer_m is not None
+            and boundary_layer_m > 0.0
+        ):
+            c_bulk = bulk_fe_conc_M * 1000.0
+            c_surf = surface_fe_conc_M * 1000.0
+            return max((c_bulk - c_surf) / boundary_layer_m, 0.0)
+        j = max(abs(current_density_A_m2), 1e-12)
+        return j / (self.z * FARADAY * self.diffusivity)
+
+    def screening_length(
+        self,
+        current_density_A_m2: float,
+        surface_fe_conc_M: Optional[float] = None,
+        boundary_layer_m: Optional[float] = None,
+        bulk_fe_conc_M: Optional[float] = None,
+        surface_gradient_mol_m4: Optional[float] = None,
+    ) -> float:
+        """Mullins–Sekerka screening length λ_c = (D·γ·Ω/(j·(∂c/∂x)))^(1/2) (m)."""
+        j = max(abs(current_density_A_m2), 1e-12)
+        grad = surface_gradient_mol_m4
+        if grad is None:
+            grad = self.surface_concentration_gradient(
+                j, surface_fe_conc_M, boundary_layer_m, bulk_fe_conc_M)
+        grad = max(abs(grad), 1e-12)
+        return math.sqrt(
+            self.diffusivity * self.surface_energy * self.molar_volume
+            / (j * grad)
+        )
+
+    def front_velocity(self, current_density_A_m2: float) -> float:
+        """Planar deposition front velocity v = j·Ω/(zF) (m/s)."""
+        return abs(current_density_A_m2) * self.molar_volume / (self.z * FARADAY)
+
+    # -- dispersion & ODE ---------------------------------------------------
+
+    def growth_rate(
+        self,
+        wavelength_m: float,
+        current_density_A_m2: float,
+        surface_fe_conc_M: Optional[float] = None,
+        boundary_layer_m: Optional[float] = None,
+        bulk_fe_conc_M: Optional[float] = None,
+        surface_gradient_mol_m4: Optional[float] = None,
+    ) -> float:
+        """Amplification rate σ(k) (1/s) of a perturbation of ``wavelength_m``.
+
+        Positive → grows (dendritic); negative → decays (flat); zero at the
+        screening length (marginal).
+        """
+        if wavelength_m <= 0.0:
+            raise ValueError("wavelength_m must be positive")
+        k = 2.0 * math.pi / wavelength_m
+        k_c = 2.0 * math.pi / max(
+            self.screening_length(
+                current_density_A_m2, surface_fe_conc_M, boundary_layer_m,
+                bulk_fe_conc_M, surface_gradient_mol_m4,
+            ),
+            1e-15,
+        )
+        v = self.front_velocity(current_density_A_m2)
+        return v * k * (1.0 - (k / k_c) ** 2)
+
+    def is_unstable(
+        self,
+        wavelength_m: float,
+        current_density_A_m2: float,
+        **kwargs: Any,
+    ) -> bool:
+        """True when a perturbation of ``wavelength_m`` grows (σ > 0)."""
+        return self.growth_rate(wavelength_m, current_density_A_m2, **kwargs) > 1e-14
+
+    def advance_amplitude(
+        self,
+        amplitude: float,
+        time_step_s: float,
+        wavelength_m: float,
+        current_density_A_m2: float,
+        **kwargs: Any,
+    ) -> float:
+        """Advance the stored perturbation amplitude by one ODE step.
+
+        Integrates da/dt = σ a with σ held fixed over the step (exact for a
+        piecewise-constant drive):  a(t+dt) = a(t)·exp(σ·dt).
+        """
+        sigma = self.growth_rate(wavelength_m, current_density_A_m2, **kwargs)
+        # Clamp the single-step exponent so an atomically-short screening length
+        # (huge σ) can never overflow to inf; the sign-based classification is
+        # unaffected.
+        return amplitude * math.exp(max(min(sigma * time_step_s, 30.0), -30.0))
+
+    def growth_predictor(
+        self,
+        amplitude_initial: float,
+        time_s: float,
+        wavelength_m: float,
+        current_density_A_m2: float,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Morphology prediction closing the static threshold into a model.
+
+        Returns a dict carrying the screening length, growth rate, integrated
+        amplitude gain, and a three-way morphology label (dendrites /
+        marginal / coherent) for the perturbation over ``time_s``.
+        """
+        lam_c = self.screening_length(current_density_A_m2, **kwargs)
+        sigma = self.growth_rate(wavelength_m, current_density_A_m2, **kwargs)
+        amplitude_final = amplitude_initial * math.exp(
+            max(min(sigma * time_s, 30.0), -30.0))
+        if sigma > 1e-14:
+            label = "dendrites"
+        elif sigma < -1e-14:
+            label = "coherent"
+        else:
+            label = "marginal"
+        return {
+            "model": "mullins_sekerka",
+            "wavelength_m": float(wavelength_m),
+            "screening_length_m": float(lam_c),
+            "growth_rate_1_s": float(sigma),
+            "amplitude_initial": float(amplitude_initial),
+            "amplitude_final": float(amplitude_final),
+            "amplitude_gain": float(amplitude_final / max(amplitude_initial, 1e-30)),
+            "morphology": label,
+        }
+
+
+def predict_dendrite_growth(
+    current_density_A_m2: float,
+    wavelength_m: float,
+    time_s: float = 1.0,
+    amplitude_initial: float = 1e-3,
+    diffusivity_m2_s: float = 7.2e-10,
+    surface_energy_J_m2: float = GAMMA_FE_SURFACE,
+    molar_volume_m3_mol: float = V_M_FE,
+    **kwargs: Any,
+) -> Dict[str, Any]:
+    """One-shot convenience wrapper around :class:`MullinsSekerkaGrowthModel`.
+
+    Predicts whether a surface perturbation of ``wavelength_m`` grows at a
+    given Fe deposition current density, closing the static dendrite
+    threshold into a growth-rate ODE (see the class docstring for physics).
+    """
+    model = MullinsSekerkaGrowthModel(
+        diffusivity_m2_s=diffusivity_m2_s,
+        surface_energy_J_m2=surface_energy_J_m2,
+        molar_volume_m3_mol=molar_volume_m3_mol,
+    )
+    return model.growth_predictor(
+        amplitude_initial=amplitude_initial,
+        time_s=time_s,
+        wavelength_m=wavelength_m,
+        current_density_A_m2=current_density_A_m2,
+        **kwargs,
+    )
 
 
 # ─── HER Disruption Model ─────────────────────────────────────────
@@ -316,6 +546,45 @@ def nucleation_rate_ratio(
 
 # ─── Main Morphology Prediction ───────────────────────────────────
 
+def _dendrite_criterion(
+    j_A_m2: float,
+    kinetics: DepositionKinetics,
+    growth_model: Optional[MullinsSekerkaGrowthModel],
+    perturbation_wavelength_m: Optional[float],
+) -> Tuple[float, Optional[float], Optional[float], Optional[str]]:
+    """Dendrite criterion: static threshold, or opt-in growth ODE.
+
+    Returns ``(dendrite_ratio, sigma, screening_len, factor)``.  Without a
+    growth model this is the unchanged static j/j_dendrite criterion.  With a
+    growth model and a perturbing wavelength, the ratio is exp(σ·τ_ref),
+    τ_ref=1 s (clamped so a huge σ cannot overflow): >1 when the perturbation
+    grows, <1 when it decays.  The static path has no resolved surface
+    concentration, so the growth path uses the well-defined Fick gradient the
+    deposition current itself establishes, ∂c/∂x|surf = j/(zFD).
+    """
+    if (growth_model is not None and perturbation_wavelength_m is not None
+            and perturbation_wavelength_m > 0.0):
+        sigma = growth_model.growth_rate(perturbation_wavelength_m, j_A_m2)
+        screening_len = growth_model.screening_length(j_A_m2)
+        dendrite_ratio = math.exp(max(min(sigma, 30.0), -30.0))
+        factor = None
+        if dendrite_ratio > 1.0:
+            factor = (f"dendrite growth (σ={sigma:.3g}/s, "
+                      f"λ_c={screening_len:.3g} m)")
+        return dendrite_ratio, sigma, screening_len, factor
+    j_dendrite = dendrite_critical_current(
+        fe_conc_M=kinetics.fe_conc_M,
+        boundary_layer_m=kinetics.boundary_layer_m,
+        diffusivity_m2_s=kinetics.diffusivity_m2_s,
+        temperature_C=kinetics.temperature_C,
+    )
+    dendrite_ratio = j_A_m2 / max(j_dendrite, 1e-10)
+    factor = None
+    if dendrite_ratio > 1.0:
+        factor = f"dendrite onset (j/j_dendrite={dendrite_ratio:.2f})"
+    return dendrite_ratio, None, None, factor
+
+
 def predict_morphology(
     j_mA_cm2: float,
     kinetics: DepositionKinetics,
@@ -324,6 +593,8 @@ def predict_morphology(
     feoh2_supersaturation: float = 0.0,
     boundary_layer_m: Optional[float] = None,
     substrate_roughness: float = 1.5,
+    growth_model: Optional[MullinsSekerkaGrowthModel] = None,
+    perturbation_wavelength_m: Optional[float] = None,
 ) -> MorphologyResult:
     """
     Predict deposit morphology at a given current density.
@@ -347,6 +618,14 @@ def predict_morphology(
         Boundary layer thickness (m). If None, uses kinetics default.
     substrate_roughness : float
         Surface roughness factor (>1 for rough substrates).
+    growth_model : MullinsSekerkaGrowthModel, optional
+        If supplied together with ``perturbation_wavelength_m``, replaces
+        the static dendrite threshold with the Mullins–Sekerka growth-ODE
+        criterion (CHEM_PHYS_REVIEW Tier 2.4): the dendrite onset ratio is
+        then exp(σ·τ_ref) — >1 when the perturbation grows, <1 when it
+        decays.  This is opt-in; the default path is unchanged.
+    perturbation_wavelength_m : float, optional
+        Wavelength of the surface perturbation to track with ``growth_model``.
 
     Returns
     -------
@@ -375,16 +654,11 @@ def predict_morphology(
     i_Fe, i_HER, i_total = kinetics.partial_currents(E_operating)
     FE = i_Fe / max(i_total, 1e-30)
 
-    # Step 2: Dendrite criterion
-    j_dendrite = dendrite_critical_current(
-        fe_conc_M=kinetics.fe_conc_M,
-        boundary_layer_m=delta,
-        diffusivity_m2_s=kinetics.diffusivity_m2_s,
-        temperature_C=kinetics.temperature_C,
-    )
-    dendrite_ratio = j_A_m2 / max(j_dendrite, 1e-10)
-    if dendrite_ratio > 1.0:
-        factors.append(f"dendrite onset (j/j_dendrite={dendrite_ratio:.2f})")
+    # Step 2: Dendrite criterion — static threshold, or opt-in growth ODE
+    dendrite_ratio, sigma, screening_len, dend_factor = _dendrite_criterion(
+        j_A_m2, kinetics, growth_model, perturbation_wavelength_m)
+    if dend_factor:
+        factors.append(dend_factor)
 
     # Step 3: HER disruption criterion
     f_HER = i_HER / max(i_total, 1e-30)
@@ -452,6 +726,8 @@ def predict_morphology(
         outcome=outcome,
         confidence=confidence,
         limiting_factors=factors,
+        dendrite_growth_rate_1_s=float(sigma) if sigma is not None else None,
+        screening_length_m=float(screening_len) if screening_len is not None else None,
     )
 
 
@@ -525,6 +801,8 @@ def morphology_map(
     kinetics: DepositionKinetics,
     j_range_mA_cm2: Optional[np.ndarray] = None,
     n_points: int = 50,
+    growth_model: Optional[MullinsSekerkaGrowthModel] = None,
+    perturbation_wavelength_m: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Compute morphology classification across a range of current densities.
@@ -539,10 +817,17 @@ def morphology_map(
         Current densities to evaluate (mA/cm²). If None, auto-range.
     n_points : int
         Number of points in the sweep.
+    growth_model : MullinsSekerkaGrowthModel, optional
+        If supplied together with ``perturbation_wavelength_m``, the dendrite
+        criterion uses the opt-in growth ODE instead of the static threshold.
+    perturbation_wavelength_m : float, optional
+        Wavelength of the surface perturbation to track with ``growth_model``.
 
     Returns
     -------
-    dict with 'j_mA_cm2', 'outcomes', 'FE', 'dendrite_ratio', etc.
+    dict with 'j_mA_cm2', 'outcomes', 'FE', 'dendrite_ratio', etc.  When a
+    growth model is used, 'dendrite_growth_rate' and 'screening_length_m' are
+    also included.
     """
     if j_range_mA_cm2 is None:
         # Auto-range from 1 mA/cm² to 2× the limiting current
@@ -551,10 +836,12 @@ def morphology_map(
 
     results = []
     for j in j_range_mA_cm2:
-        r = predict_morphology(float(j), kinetics)
+        r = predict_morphology(
+            float(j), kinetics, growth_model=growth_model,
+            perturbation_wavelength_m=perturbation_wavelength_m)
         results.append(r)
 
-    return {
+    out = {
         "j_mA_cm2": j_range_mA_cm2.tolist(),
         "outcomes": [r.outcome for r in results],
         "FE": [r.faradaic_efficiency for r in results],
@@ -565,6 +852,10 @@ def morphology_map(
         "i_HER_A_m2": [r.i_HER_A_m2 for r in results],
         "results": results,
     }
+    if growth_model is not None:
+        out["dendrite_growth_rate"] = [r.dendrite_growth_rate_1_s for r in results]
+        out["screening_length_m"] = [r.screening_length_m for r in results]
+    return out
 
 
 def viable_operating_window(
