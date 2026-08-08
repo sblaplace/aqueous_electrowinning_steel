@@ -389,7 +389,26 @@ class DiffusionLayer1D:
     # correction replaces the constant her_i0 with an effective i₀,H
     # that depends on η, bath composition, and facet mix — i.e. it
     # predicts why Cl⁻ suppresses HER instead of having that as an
-    # exogenous scenario knob.  Default False for backward compatibility.
+    # exogenous scenario knob.  The wiring binds i₀,H to the anion-free
+    # site fraction only (1 − θ_block); it deliberately omits the Temkin
+    # θ_H·(1−θ_H) factor, which collapses to ~0 at operating η and drives
+    # FE → 1 in every bath (see _surface_state_her_i0).
+    #
+    # Default stays OFF (validated 2026-08-07, t_521f769a).  A mode-wide
+    # (j × pH × T) comparison against the constant-i₀ branch shows
+    # surface_state=True is NOT a drop-in default:
+    #   * Sulfate FE jumps ~+0.04…+0.16 to ~0.98–0.995; the chloride
+    #     (aware) bath saturates to FE ≈ 0.999–1.000 (her_i0 ratio
+    #     ~0.0075) — the FE→1 degeneracy the sister h2_safety module
+    #     (FE≈80% ⇒ 20% HER) assumes against.
+    #   * The site-blocking correction is ~constant in (j, pH, T) at a
+    #     given bath (ratio 0.105 sulfate / 0.0075 aware), so it flattens
+    #     the FE(j) and FE(T) shape that constant-i₀ preserves —
+    #     regressing test_diffusion_layer_1d (6 failures: FE-sweep peak,
+    #     surface-pH-above-bulk, pH rise w/ j, precipitation, water-reduction
+    #     branches).
+    # Flip to True only once the anion K's are calibrated against Phase I
+    # data so HER stays non-degenerate at the operating point.
     surface_state: bool = False
     bath_type: str = "sulfate"   # "sulfate", "aware", or "mixed"
     # FeSO₄⁰ neutral contact-pair correction (Tier 2 from V2 review).
