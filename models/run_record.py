@@ -718,6 +718,7 @@ def compute_ledgers(  # noqa: C901
     bath_batch: dict[str, Any] | None = None,
     characterization: pd.DataFrame | None = None,
     energy_log: pd.DataFrame | None = None,
+    predicted_idle: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Compute charge, iron, and energy ledgers from measured inputs.
 
@@ -726,6 +727,18 @@ def compute_ledgers(  # noqa: C901
     iron ledger becomes quantitative only when deposit Fe composition is
     independently recorded; an energy ledger remains partial until auxiliary
     energy loads are measured.
+
+    ``predicted_idle`` (optional) carries the *predicted, not measured*
+    open-circuit redissolution term from
+    ``models/deposit_corrosion.py`` (L1) — shape
+    ``deposit_corrosion.predicted_idle_terms(manifest)``.  When present it is
+    attached to the charge ledger (idle redissolution explains part of
+    ``unresolved_charge_C`` — gravimetric FE is biased low by replated-then-
+    dissolved iron) and to the iron ledger (a deposit→bath transfer that
+    *conserves* bath+deposit Fe and therefore cannot open the mol-scale
+    closure).  Residuals are tested against the prediction, never silently
+    absorbed into uncertainty; the prediction never changes any measured or
+    derived value.
     """
     fe_fraction, fe_note = _fe_mass_fraction(characterization)
     deposit_mass = derived.net_deposit_mass_g
@@ -807,7 +820,7 @@ def compute_ledgers(  # noqa: C901
     stack_energy = float(derived.energy_Wh)
     total_energy = stack_energy + sum(auxiliary_by_component.values())
 
-    return {
+    ledgers: dict[str, Any] = {
         "charge": {
             "status": "partial" if deposit_fe_charge is None else "partial_with_fe_deposit",
             "applied_cathodic_charge_C": float(derived.charge_C),
@@ -845,6 +858,37 @@ def compute_ledgers(  # noqa: C901
             "note": "Stack energy is integrated from measured V×I; auxiliary loads are included only when logged.",
         },
     }
+    if predicted_idle:
+        # Advisory L1 prediction (deposit_corrosion.py).  It never rewrites
+        # measured/derived entries; it only annotates the residuals to test.
+        pred_note = (
+            "Predicted, not measured "
+            f"(models/deposit_corrosion.py, "
+            f"{predicted_idle.get('screening_flag', 'unvalidated (L1)')}): "
+            "idle open-circuit redissolution moves Fe deposit→bath — it "
+            "biases gravimetric FE low (unresolved charge) but cannot open "
+            "the mol-scale iron closure."
+        )
+        try:
+            pred_charge = float(predicted_idle["charge_C"])
+        except (KeyError, TypeError, ValueError):
+            pred_charge = None
+        try:
+            pred_mol = float(predicted_idle["fe_mol"])
+        except (KeyError, TypeError, ValueError):
+            pred_mol = None
+        unresolved = ledgers["charge"]["unresolved_charge_C"]
+        if pred_charge is not None:
+            ledgers["charge"]["predicted_idle_redissolution_charge_C"] = pred_charge
+            if unresolved is not None:
+                ledgers["charge"]["unresolved_charge_after_predicted_idle_C"] = (
+                    unresolved - pred_charge
+                )
+            ledgers["charge"]["predicted_terms_note"] = pred_note
+        if pred_mol is not None:
+            ledgers["iron"]["predicted_idle_transfer_to_bath_fe_mol"] = pred_mol
+            ledgers["iron"]["predicted_terms_note"] = pred_note
+    return ledgers
 
 
 def _metric_observations(
@@ -1139,11 +1183,22 @@ def build_qa_report(run_dir: str | Path) -> dict[str, Any]:  # noqa: C901
                 cathodic_sign=sign,
             )
             anomalies = detect_anomalies(timeseries)
+            predicted_idle = None
+            try:
+                # Advisory only: the idle-corrosion prediction (L1) must
+                # never block or gate QA; attach when the manifest declares
+                # an idle soak (setup.idle.hours — docs/DATA_CONTRACT.md).
+                from .deposit_corrosion import predicted_idle_terms
+
+                predicted_idle = predicted_idle_terms(manifest)
+            except Exception:  # pragma: no cover - prediction is advisory
+                predicted_idle = None
             ledgers = compute_ledgers(
                 derived,
                 bath_batch=bath_batch,
                 characterization=characterization,
                 energy_log=energy_log,
+                predicted_idle=predicted_idle,
             )
             metrics = {
                 key: {

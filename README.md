@@ -105,6 +105,11 @@ aq-steel-stress                                # Internal stress and coupon-curv
 aq-steel-rde                                   # RDE kinetics/transport separation (Levich + Koutecky-Levich)
 aq-steel-gas-holdup                            # Gas hold-up: void fraction, current redistribution, hydrogen safety
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
+aq-steel-product-ladder                        # Which product should the cell make? Option A/B decision computed live → regenerates docs/PRODUCT_VALUE_LADDER.md
+aq-steel-ladder-tea                            # Full plant TEA per rung — does the ladder ranking survive complete costing? → regenerates docs/LADDER_TEA.md
+aq-steel-ph-metrology                          # Operational pH ↔ Pitzer convention: junction / bridge-aging bias ledger (V6 §5.1)
+aq-steel-deposit-aging                         # RT self-annealing σ/HV/ρ drift + metrology-time standard (V6 §5.2)
+aq-steel-strain-aging                          # Ammoniacal N → Cottrell t★(T,C_N) → Δσ_y & Lüders, skin-pass prescription (V6 §7.1)
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 
@@ -167,6 +172,13 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/gas_holdup.py` | Two-phase cathode channel: Faradaic H₂/O₂ generation as wet gas, drift-flux void-fraction profile up the electrode, Bruggeman effective conductivity, bubble surface coverage, Stephan-Vogt microconvection → effective boundary layer, equipotential current redistribution, self-consistent gas↔current↔FE fixed point, headspace LFL/dilution sizing, and the electrode-height scale-up limit |
 | `models/reference_cell_pipeline.py` | Canonical RC-1 integration boundary: CellPhysics → coupled gas hold-up → thermal balance → charge/iron/energy screening ledgers → OperatingTwin advisory replay; measured run records and process-gate evidence remain separate from predictions |
 | `models/transport_sensitivity.py` | Saltelli-Sobol global sensitivity of the 1D diffusion-layer FE engine over 10 experimental levers → ranked "which experiment to do next" (first-order S1 + total-order ST for FE/V_cell/surface-pH) |
+| `models/product_ladder.py` | **Product value ladder — which product should the cell make, recomputed live.** Seven rungs (flake feed → **own-melt bar (Option A.5)** → annealed foil → structural sheet → PM/battery/magnetic sidelines) priced against the *live* architecture/energy chain; gate statuses probe the module tree (V6-proposed modules flip from `unmodelled` as they land); regenerates the decision document **[docs/PRODUCT_VALUE_LADDER.md](docs/PRODUCT_VALUE_LADDER.md)** on every model update |
+| `models/deposit_corrosion.py` | **Idle corrosion & ferric etch — the unpowered leak in the iron ledger (V6 §1.1).** Mixed-potential corrosion of the deposit at open circuit (Tafel solve self-pinned to the anchored reference state: H⁺ kinetics + O₂ transport limit) plus the half-order Fe³⁺ etch channel with stagnant-bath supply depletion; per-event and campaign mass loss → µm, grams, charge-equivalents. Wired into `run_record.py` as *predicted, not measured* ledger terms and into `closed_loop.py` as campaign nightly/weekend Fe-inventory accounting — the gravimetric-FE leak made quantitative |
+| `models/rinse_carryover.py` | **Rinse chemistry — bath liquor becomes melt-shop sulfur (V6 §1.3).** Landau–Levich film on withdrawn webs (live `bath_rheology` viscosity fixed-point) + powder-cake liquor; exact counter-current cascade; charge-borne S/Na/B budgets per tonne with water demand and tank-return loop. Feeds `melt_balance` charge S live: unrinsed foil carries ~0.4 wt% S, three counterflow stages puts powder at 15 ppm — rinsing computed as a steel-grade decision, not a plumbing one |
+| `models/product_oxidation.py` | **Product oxidation, drying & pyrophoricity — the post-harvest oxygen budget (V6 §1.2).** Mott–Cabrera film ↔ parabolic hot-branch growth on product-form specific surface, Semenov thermal-runaway T_crit with ignition-delay transient, and the passivation protocol that becomes the product spec (≤1.5 wt% O, non-pyrophoric). Feeds `melt_balance` O pickup live: passivated −100 mesh powder hot-dries with a slim margin; unpassivated fines in a hot dryer run away |
+| `models/briquetting.py` | **Briquetting / densification — the product-form gate (V6 §1.4).** Heckel compaction with 1/K = 3σ_y (deposit σ_y live from `mechanical_properties`), green strength / porous-modulus springback / die-wall ejection, press work → delivered kWh/t, handling-fines ratio form, Jenike rathole vs bridging flow screens (ferromagnetic agglomeration term), and the shippable-product spec block (density / crush / fines / residual O). Feeds `melt_balance` shipped fines live: cold pressing at the design force lands conditional on sink-and-size and fines; HBI-style hot pressing at 600 °C clears both — the friable deposit of Option A is a pressability virtue, not a defect |
+| `models/deposit_aging.py` | **Deposit self-annealing — the time-stamped σ/HV/ρ (V6 §5.2).** Log-time recovery σ(t)/σ0 = 1−A ln(1+t/τ_eff) (HV/ρ track at 62 %/48 % with H-coupled τ_eff(T,C_H)), slab D_eff H-egress for foil thickness live from `hydrogen_trapping`. Defines the 24 h (18–30 h @ 20±2 °C) metrology standard and a fail-soft `aging_hours` QA hook for `run_record` so 4 h vs 48 h runs are comparable — \"does saccharin move the number, or does the clock?\" |
+| `models/strain_aging.py` | **Strain aging — N pins the press (V6 §7.1).** Ammoniacal [N] uptake via live `ammonium_buffer` free-NH₃, Cottrell–Bilby t★(T,C_N) with Wert–Zener D_N(T), Δσ_sat(C_N) yield-point return (2/3 law) and grain-scaled Lüders strain. Verdicts `clears / conditional (1–2 % skin-pass) / fails` and makes “ammonium vs boric buffer” a composition, not just regulatory, choice |
 
 ### Selected Model Results
 
@@ -540,6 +552,16 @@ The Apache 2.0 license includes an **express patent grant**: any Contributor who
 > **Consistency note:** the repository-level `LICENSE` file and the
 > `license = {text = "Apache-2.0"}` declaration in `pyproject.toml` agree.
 > The project is Apache-2.0 licensed.
+
+---
+
+## Acknowledgments
+
+This research direction builds on foundational work in electrochemical metallurgy and is motivated by the urgent need to decarbonize the steel sector. Feedback and collaboration are highly encouraged.
+
+---
+
+*Last updated: July 2026* Apache-2.0 licensed.
 
 ---
 
