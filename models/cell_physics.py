@@ -7,13 +7,14 @@ predicts V_cell, FE, transport limits, and surface chemistry — the numbers
 that dark_mill.py currently assumes.
 
 Data flow:
-    BathRecipe + ProcessConditions
-        → solve_speciation()         activities, free [Fe²⁺], conductivity
-        → NernstPlanckFilm.solve(j)  FE, surface pH, transport limit
-        → CellVoltageModel.V_cell    voltage decomposition
-        → OperatingPoint             everything at one j
-        → sweep()                    OperatingWindow across j range
-        → find_optimal_j()           best operating point for areal productivity
+    BathRecipe or BathSpec + ProcessConditions
+        → BathSpec.solve_bulk_speciation()  sulfate/chloride/ammonium/O₂ diagnostics
+        → chemistry-rich current ledger     ORR and Fe³⁺ side branches, if enabled
+        → DiffusionLayer1D.solve(j_core)    Fe/HER FE, surface pH, transport limit
+        → CellVoltageModel.V_cell           voltage decomposition at applied j
+        → OperatingPoint                    FE/V/deposit/current-breakdown at one j
+        → sweep()                           OperatingWindow across j range
+        → find_optimal_j()                  best operating point for areal productivity
 
 References
 ----------
@@ -31,7 +32,8 @@ from dataclasses import dataclass
 from typing import Dict, List, Any, Optional, Literal
 import numpy as np
 
-from .speciation import SolutionComposition, solve_speciation
+from .speciation import SolutionComposition
+from .bath_spec import BathSpec
 from .transport import NernstPlanckFilm, NernstPlanckState
 from .diffusion_layer_1d import DiffusionLayer1D, DiffusionLayerResult
 from .electrochemistry import (
@@ -40,6 +42,17 @@ from .electrochemistry import (
 )
 from .kinetics import DepositionKinetics
 from .anode import AnodeKinetics, AnodeMaterial, DSA_IRO2_TA2O5
+from .dissolved_oxygen import (
+    cathodic_orr_limiting_current_A_m2,
+    dissolved_oxygen_solubility_M,
+    homogeneous_fe2_oxidation_rate_M_s,
+)
+from .fe3_shuttle import (
+    D_FE3_REF_M2_S,
+    ShuttleParams,
+    ShuttleScenario,
+    steady_state as fe3_shuttle_steady_state,
+)
 
 
 # ─── Inputs ───────────────────────────────────────────────────────
@@ -99,7 +112,14 @@ class CellGeometry:
 
 @dataclass
 class ProcessConditions:
-    """Operating conditions for the cell."""
+    """Operating conditions for the cell.
+
+    ``chemistry_coupling="legacy"`` preserves the historical cell solve.  Set
+    ``chemistry_coupling="rich"`` (or use :meth:`rich`) to attach the shared
+    :class:`models.bath_spec.BathSpec` inventory to the central prediction path:
+    surface-state HER, FeSO₄⁰ pairing, Fe(OH)₂ film diagnostics, dissolved-O₂
+    ORR, and Fe³⁺ shuttle losses are all evaluated from one bath state.
+    """
     temperature_C: float = 50.0
     boundary_layer_m: float = 50e-6        # 50 µm (moderate agitation)
     flow_regime: str = "moderate"           # "still", "moderate", "vigorous"
@@ -108,11 +128,33 @@ class ProcessConditions:
     # A/B fallback for legacy comparisons.
     transport_model: Literal["reactive", "dilute_np"] = "reactive"
 
+    # Chemistry coupling mode.  Individual booleans below are additive: they
+    # can enable one correction in legacy mode, while rich mode enables all of
+    # them unless the caller chooses a new ProcessConditions object.
+    chemistry_coupling: Literal["legacy", "rich"] = "legacy"
+    surface_state_her: bool = False
+    fe_pair_correction: bool = False
+    feoh2_film: bool = False
+    dissolved_oxygen: bool = False
+    fe3_shuttle: bool = False
+
     # Kinetic parameters (literature defaults for Fe/FeSO4 on Fe cathode)
     fe_i0: float = 1.0e-2                  # A/m² exchange current density
     her_i0: float = 1.0e-6                 # A/m² — suppressed HER (additive/overpotential)
     fe_tafel_V: float = 0.120
     her_tafel_V: float = 0.140
+
+    @classmethod
+    def rich(cls, **kwargs: Any) -> "ProcessConditions":
+        """Convenience constructor for the chemistry-rich central path."""
+        kwargs.setdefault("chemistry_coupling", "rich")
+        return cls(**kwargs)
+
+    def chemistry_enabled(self, feature: str) -> bool:
+        """Return True when a named chemistry correction should be active."""
+        if self.chemistry_coupling == "rich":
+            return True
+        return bool(getattr(self, feature))
 
 
 # ─── Outputs ──────────────────────────────────────────────────────
@@ -157,6 +199,20 @@ class OperatingPoint:
     # NOTE: specific_energy_kWh_t still uses gross FE (V/FE); net rate is for
     # mass-balance diagnostics. At RC-1 (S~1e-8) gross==net; they diverge only
     # when precipitation is active, which RC-1 never reaches.
+
+    # Chemistry-rich current accounting.  ``current_efficiency`` above is the
+    # applied-current FE after these parasitic branches are subtracted; the
+    # legacy transport-only FE is retained here for A/B residual dashboards.
+    applied_current_A_m2: float = 0.0
+    transport_current_efficiency: float = 0.0
+    fe_current_A_m2: float = 0.0
+    her_current_A_m2: float = 0.0
+    orr_current_A_m2: float = 0.0
+    fe3_shuttle_current_A_m2: float = 0.0
+    parasitic_current_A_m2: float = 0.0
+    current_breakdown_A_m2: Dict[str, float] = None
+    current_breakdown_fraction: Dict[str, float] = None
+    chemistry_diagnostics: Dict[str, Any] = None
 
 
 @dataclass
@@ -216,16 +272,29 @@ class CellPhysics:
 
     def __init__(
         self,
-        bath: BathRecipe,
+        bath: BathRecipe | BathSpec,
         geometry: CellGeometry = CellGeometry(),
         conditions: ProcessConditions = ProcessConditions(),
     ):
-        self.bath = bath
+        # ``BathRecipe`` remains supported for backward compatibility; the new
+        # ``BathSpec`` is retained as the richer chemistry inventory.  Internally
+        # the sulfate-native film still needs the legacy recipe view.
+        if isinstance(bath, BathSpec):
+            self.bath_spec = bath
+            self.bath = BathRecipe(**bath.to_legacy_bath_recipe_kwargs())
+        else:
+            self.bath = bath
+            self.bath_spec = BathSpec.from_legacy_recipe(
+                bath, temperature_C=conditions.temperature_C
+            )
         self.geometry = geometry
         self.conditions = conditions
 
-        # Run speciation once (depends on T and composition, not j)
-        self._spec = solve_speciation(bath.to_speciation(conditions.temperature_C))
+        # Run bulk speciation once (depends on T and composition, not j).  The
+        # BathSpec path enriches this with chloride/ammonium/O₂ diagnostics when
+        # those inventories are present; legacy sulfate recipes produce the same
+        # Pitzer keys the old solver exposed.
+        self._spec = self.bath_spec.solve_bulk_speciation(conditions.temperature_C)
         # A recipe can specify both acid loading and a measured/setpoint pH.
         # Keep the declared pH as the transport boundary condition, but expose
         # the activity-pH mismatch instead of silently pretending the two are
@@ -233,13 +302,13 @@ class CellPhysics:
         # quantity is authoritative for a run.
         pH_activity = self._spec.get("pH_activity")
         if pH_activity is not None:
-            self._spec["recipe_pH"] = float(bath.pH)
-            self._spec["pH_activity_delta_from_recipe"] = float(pH_activity - bath.pH)
-            self._spec["pH_consistency_warning"] = bool(abs(pH_activity - bath.pH) > 0.25)
+            self._spec["recipe_pH"] = float(self.bath.pH)
+            self._spec["pH_activity_delta_from_recipe"] = float(pH_activity - self.bath.pH)
+            self._spec["pH_consistency_warning"] = bool(abs(pH_activity - self.bath.pH) > 0.25)
             self._spec["pH_boundary_source"] = "BathRecipe.pH (declared/measured setpoint)"
 
         # Cache derived quantities
-        self._free_fe2_M = self._spec.get("c_Fe2_free_M", bath.c_FeSO4_M)
+        self._free_fe2_M = self._spec.get("c_Fe2_free_M", self.bath.c_FeSO4_M)
         self._activity_fe2 = self._spec.get("a_Fe2", self._free_fe2_M)
         self._conductivity = self._spec.get("conductivity_S_m", 10.0)
         self._gamma2 = self._spec.get("gamma_Fe2", 1.0)
@@ -270,6 +339,10 @@ class CellPhysics:
                 activity_model="pitzer",
                 grid_points=61,
                 fast_mode=True,
+                surface_state=self.conditions.chemistry_enabled("surface_state_her"),
+                bath_type=self.bath_spec.surface_state_bath_type(),
+                fes04_pair_correction=self.conditions.chemistry_enabled("fe_pair_correction"),
+                feoh2_film=self.conditions.chemistry_enabled("feoh2_film"),
             )
         if self.conditions.transport_model == "dilute_np":
             return NernstPlanckFilm(
@@ -379,21 +452,135 @@ class CellPhysics:
             j_operating_mA_cm2=j_mA_cm2,
         )
 
+    def _enabled_chemistry_features(self) -> Dict[str, bool]:
+        """Feature switches actually active for this solver instance."""
+        return {
+            "surface_state_her": self.conditions.chemistry_enabled("surface_state_her"),
+            "fe_pair_correction": self.conditions.chemistry_enabled("fe_pair_correction"),
+            "feoh2_film": self.conditions.chemistry_enabled("feoh2_film"),
+            "dissolved_oxygen": self.conditions.chemistry_enabled("dissolved_oxygen"),
+            "fe3_shuttle": self.conditions.chemistry_enabled("fe3_shuttle"),
+        }
+
+    def _chemistry_parasitics_A_m2(self, j_mA_cm2: float) -> tuple[Dict[str, float], Dict[str, Any]]:
+        """Current branches not represented inside the Fe/HER film solve.
+
+        The diffusion-layer solver returns a self-consistent Fe/HER split for
+        the current it is asked to carry.  Oxygen reduction and Fe³⁺ reduction
+        are additional cathodic branches that consume applied galvanostatic
+        current first; the Fe/HER film is solved on the remaining current.
+        A 95 % cap prevents an uncalibrated side-branch estimate from driving
+        the main solve to zero current while preserving the warning in the
+        diagnostics.
+        """
+        target_A_m2 = j_mA_cm2 * 10.0
+        raw = {"orr_A_m2": 0.0, "fe3_shuttle_A_m2": 0.0}
+        diagnostics: Dict[str, Any] = {
+            "chemistry_coupling": self.conditions.chemistry_coupling,
+            "enabled_features": self._enabled_chemistry_features(),
+            "bath_inventory": self.bath_spec.feature_inventory(),
+            "bath_spec": self.bath_spec.to_record(),
+        }
+
+        ionic_strength = float(
+            self._spec.get("ionic_strength_M", self._spec.get("ionic_strength_molal", 0.0))
+        )
+        o2_fraction = float(self.bath_spec.dissolved_o2_fraction_sat)
+        if self.conditions.chemistry_enabled("dissolved_oxygen") and o2_fraction > 0.0:
+            params = self.bath_spec.oxygen_params(
+                T_C=self.conditions.temperature_C,
+                ionic_strength_M=ionic_strength,
+                boundary_layer_m=self.conditions.boundary_layer_m,
+            )
+            raw["orr_A_m2"] = cathodic_orr_limiting_current_A_m2(params, o2_fraction)
+            o2_sat = dissolved_oxygen_solubility_M(
+                self.conditions.temperature_C, ionic_strength
+            )
+            diagnostics["dissolved_oxygen"] = {
+                "bulk_M": o2_sat * o2_fraction,
+                "saturation_M": o2_sat,
+                "fraction_sat": o2_fraction,
+                "orr_limiting_current_A_m2_uncapped": raw["orr_A_m2"],
+                "fe3_generation_M_s": homogeneous_fe2_oxidation_rate_M_s(params, o2_fraction),
+                "basis": "mass-transfer-limited ORR branch subtracted before Fe/HER solve",
+            }
+
+        if self.conditions.chemistry_enabled("fe3_shuttle"):
+            direct_i = 0.0
+            if self.bath_spec.fe3_M > 0.0:
+                km = D_FE3_REF_M2_S / self.conditions.boundary_layer_m
+                direct_i = FARADAY * km * self.bath_spec.fe3_M * 1000.0
+
+            steady_i = 0.0
+            steady_diag: Dict[str, Any] | None = None
+            if o2_fraction > 0.0:
+                md = dict(self.bath_spec.metadata)
+                shuttle_params = ShuttleParams(
+                    temperature_C=self.conditions.temperature_C,
+                    pH=self.bath.pH,
+                    fe2_M=self.bath_spec.fe2_total_M,
+                    cathode_area_m2=float(md.get("cathode_area_m2", 1.0e-3)),
+                    catholyte_volume_L=float(md.get("catholyte_volume_L", 0.5)),
+                    boundary_layer_m=self.conditions.boundary_layer_m,
+                )
+                scenario = ShuttleScenario("bath_spec_dissolved_o2", o2_fraction)
+                steady_diag = fe3_shuttle_steady_state(shuttle_params, scenario)
+                steady_i = float(steady_diag["i_shuttle_A_m2"])
+
+            # If a measured Fe³⁺ inventory is present, use it; otherwise use the
+            # steady-state O₂-generation estimate as a screening branch.
+            raw["fe3_shuttle_A_m2"] = direct_i if self.bath_spec.fe3_M > 0.0 else steady_i
+            diagnostics["fe3_shuttle"] = {
+                "direct_from_measured_fe3_A_m2": direct_i,
+                "steady_state_from_o2_A_m2": steady_i,
+                "used_A_m2_uncapped": raw["fe3_shuttle_A_m2"],
+                "steady_state_diagnostics": steady_diag,
+                "basis": "Fe3+ + e- -> Fe2+ mass-transfer-limited shuttle",
+            }
+
+        raw_total = sum(raw.values())
+        cap_A_m2 = 0.95 * target_A_m2
+        scale = 1.0 if raw_total <= cap_A_m2 or raw_total <= 0.0 else cap_A_m2 / raw_total
+        currents = {k: v * scale for k, v in raw.items()}
+        diagnostics["parasitic_current_uncapped_A_m2"] = raw_total
+        diagnostics["parasitic_current_cap_A_m2"] = cap_A_m2
+        diagnostics["parasitic_current_scale"] = scale
+        diagnostics["parasitic_current_capped"] = bool(scale < 1.0)
+        return currents, diagnostics
+
     def solve_at_j(self, j_mA_cm2: float) -> OperatingPoint:
         """
-        Solve the full physics at one current density.
+        Solve the full physics at one applied current density.
 
-        Returns a self-consistent OperatingPoint with FE, V_cell,
-        transport limits, and surface chemistry all computed from physics.
+        In legacy mode the applied current is the Fe/HER film current, matching
+        the historical solver.  In chemistry-rich mode the shared ``BathSpec``
+        first estimates additional cathodic branches (ORR and Fe³⁺ shuttle),
+        subtracts them from the galvanostatic current, and then solves the
+        Fe/HER diffusion layer on the remaining current.  The reported
+        ``current_efficiency`` is always Fe current divided by the *applied*
+        current.
         """
+        if j_mA_cm2 <= 0.0:
+            raise ValueError("j_mA_cm2 must be positive")
+
+        applied_A_m2 = j_mA_cm2 * 10.0
+        parasitic, chemistry_diag = self._chemistry_parasitics_A_m2(j_mA_cm2)
+        orr_A_m2 = float(parasitic.get("orr_A_m2", 0.0))
+        fe3_A_m2 = float(parasitic.get("fe3_shuttle_A_m2", 0.0))
+        parasitic_A_m2 = orr_A_m2 + fe3_A_m2
+        fe_her_target_A_m2 = max(applied_A_m2 - parasitic_A_m2, 1.0e-9)
+        fe_her_target_mA_cm2 = fe_her_target_A_m2 / 10.0
+
         transport = self._build_transport()
-        transport_result = transport.solve(j_mA_cm2)
+        transport_result = transport.solve(fe_her_target_mA_cm2)
 
         if isinstance(transport_result, DiffusionLayerResult):
             # The reactive film solver carries the activity-corrected
             # equilibrium and the richer local chemistry itself.
             potential_V = transport_result.V_cathode_V
-            fe = transport_result.current_efficiency
+            transport_fe = transport_result.current_efficiency
+            fe_current_A_m2 = transport_result.fe_current_A_m2
+            her_current_A_m2 = transport_result.her_current_A_m2
             surface_pH = transport_result.surface_pH
             surface_fe_M = transport_result.surface_fe_M
             transport_limit_A_m2 = transport_result.transport_limit_A_m2
@@ -405,7 +592,9 @@ class CellPhysics:
         else:
             np_state: NernstPlanckState = transport_result
             potential_V = np_state.potential_V
-            fe = np_state.current_efficiency
+            transport_fe = np_state.current_efficiency
+            fe_current_A_m2 = np_state.fe_current_A_m2
+            her_current_A_m2 = np_state.her_current_A_m2
             surface_pH = np_state.surface_pH
             surface_fe_M = np_state.surface_fe_M
             transport_limit_A_m2 = np_state.transport_limit_A_m2
@@ -415,20 +604,37 @@ class CellPhysics:
             precipitation_active = np_state.precipitation_active
             converged = np_state.converged
 
-        # Cathode overpotential from the same bulk activity used by the
-        # voltage model.  The reactive path and the dilute A/B path therefore
-        # share one voltage reference even though their film closures differ.
-        E_cathode_eq = self._spec.get("E_rev_Fe_V_SHE", E0_FE)
-        eta_cathode = max(E_cathode_eq - potential_V, 0.0)
+        # Fast film solves can miss the galvanostatic target by ~0.1 %.  Keep
+        # the solved potential/surface chemistry, but rescale the Fe/HER
+        # branch ledger to the exact current left after ORR/Fe³⁺ parasitics so
+        # the operating-point charge accounting always closes.
+        solved_fe_her_A_m2 = fe_current_A_m2 + her_current_A_m2
+        branch_rescale = 1.0
+        if solved_fe_her_A_m2 > 0.0:
+            branch_rescale = fe_her_target_A_m2 / solved_fe_her_A_m2
+            fe_current_A_m2 *= branch_rescale
+            her_current_A_m2 *= branch_rescale
 
-        # Build voltage model with physics-derived overpotential
+        # Cathode overpotential from the same bulk activity used by the
+        # voltage model.  The Fe(OH)₂ passivation-film resistance is a cathodic
+        # overpotential increment and therefore enters the same voltage model
+        # term, preserving decomposition closure.
+        E_cathode_eq = self._spec.get("E_rev_Fe_V_SHE", E0_FE)
+        film_eta_V = float(getattr(transport_result, "feoh2_film_overpotential_V", 0.0))
+        eta_cathode = max(E_cathode_eq - potential_V, 0.0) + film_eta_V
+
+        # Build voltage model with physics-derived overpotential and the full
+        # applied current for IR losses.
         vm = self._build_voltage_model(j_mA_cm2, eta_cathode)
         V_cell = vm.V_cell
         V_decomp = vm.V_decomposition
 
-        # Deposition rate
-        j_A_m2 = j_mA_cm2 * 10.0
-        mass_flux = j_A_m2 * fe * M_FE / (Z_FE * FARADAY)  # kg/(m²·s)
+        # Applied-current FE after O₂/Fe³⁺ parasitics.
+        fe = fe_current_A_m2 / max(applied_A_m2, 1e-30)
+        fe = float(max(0.0, min(1.0, fe)))
+
+        # Deposition rate from the actual Fe partial current.
+        mass_flux = fe_current_A_m2 * M_FE / (Z_FE * FARADAY)  # kg/(m²·s)
         rho = 7874.0  # kg/m³
         dep_rate = mass_flux / rho * 3600.0 * 1e6  # µm/hr
 
@@ -436,10 +642,37 @@ class CellPhysics:
         precip_flux = getattr(transport_result, "precipitation_flux_mol_m2_s", 0.0)
         precip_frac = getattr(transport_result, "precipitation_fraction", 0.0)
         sludge_g = getattr(transport_result, "sludge_rate_g_m2_s", 0.0)
-        # Net deposition after subtracting Fe that precipitates as sludge
-        fe_mol_flux_total = j_A_m2 * fe / (Z_FE * FARADAY)
+        # Net deposition after subtracting Fe that precipitates as sludge.
+        fe_mol_flux_total = fe_current_A_m2 / (Z_FE * FARADAY)
         fe_mol_flux_net = max(fe_mol_flux_total - precip_flux, 0.0)
         dep_rate_net = fe_mol_flux_net * (55.845e-3) / 7874.0 * 3600.0 * 1e6
+
+        current_breakdown = {
+            "applied_A_m2": float(applied_A_m2),
+            "Fe_deposition_A_m2": float(fe_current_A_m2),
+            "HER_A_m2": float(her_current_A_m2),
+            "ORR_A_m2": float(orr_A_m2),
+            "Fe3_shuttle_A_m2": float(fe3_A_m2),
+        }
+        assigned = sum(v for k, v in current_breakdown.items() if k != "applied_A_m2")
+        current_breakdown["unassigned_A_m2"] = float(applied_A_m2 - assigned)
+        current_fraction = {
+            k.replace("_A_m2", "_fraction"): float(v / max(applied_A_m2, 1e-30))
+            for k, v in current_breakdown.items()
+            if k != "applied_A_m2"
+        }
+        chemistry_diag["transport_core_current_mA_cm2"] = fe_her_target_mA_cm2
+        chemistry_diag["transport_branch_current_rescale"] = float(branch_rescale)
+        chemistry_diag["transport_current_efficiency_Fe_over_FeHER"] = float(transport_fe)
+        chemistry_diag["reactive_film"] = {
+            "her_i0_surface_state_ratio": float(
+                getattr(transport_result, "her_i0_surface_state_ratio", 1.0)
+            ),
+            "fe_pair_fraction_bulk": float(getattr(transport_result, "fe_pair_fraction_bulk", 0.0)),
+            "feoh2_film_overpotential_V": film_eta_V,
+            "surface_state_bath_type": self.bath_spec.surface_state_bath_type(),
+        }
+
         return OperatingPoint(
             j_mA_cm2=j_mA_cm2,
             current_efficiency=fe,
@@ -463,6 +696,16 @@ class CellPhysics:
             conductivity_S_m=self._conductivity,
             speciation=self._spec,
             transport_converged=converged,
+            applied_current_A_m2=float(applied_A_m2),
+            transport_current_efficiency=float(transport_fe),
+            fe_current_A_m2=float(fe_current_A_m2),
+            her_current_A_m2=float(her_current_A_m2),
+            orr_current_A_m2=float(orr_A_m2),
+            fe3_shuttle_current_A_m2=float(fe3_A_m2),
+            parasitic_current_A_m2=float(parasitic_A_m2),
+            current_breakdown_A_m2=current_breakdown,
+            current_breakdown_fraction=current_fraction,
+            chemistry_diagnostics=chemistry_diag,
         )
 
     def sweep(
@@ -536,9 +779,12 @@ class CellPhysics:
         if best_j is None:
             return None
 
-        # Validate with full Nernst-Planck at the optimal point
+        # Validate with full Nernst-Planck at the optimal point.  In chemistry-
+        # rich mode the validation may include ORR/Fe³⁺ parasitics that the
+        # coarse Fe/HER-only pre-screen did not see, so re-check the FE floor.
         try:
-            return self.solve_at_j(best_j)
+            pt = self.solve_at_j(best_j)
+            return pt if pt.current_efficiency >= min_FE else None
         except (ValueError, RuntimeError):
             return None
 
@@ -557,10 +803,22 @@ class CellPhysics:
             },
             "Operating point": {
                 "j (mA/cm²)": j_mA_cm2,
-                "FE (%)": round(pt.current_efficiency * 100, 1),
+                "FE applied-current (%)": round(pt.current_efficiency * 100, 1),
+                "FE Fe/(Fe+HER) before parasitics (%)": round(pt.transport_current_efficiency * 100, 1),
                 "V_cell (V)": round(pt.V_cell, 3),
                 "Energy (kWh/t)": round(pt.specific_energy_kWh_t, 0),
                 "Deposition (µm/hr)": round(pt.deposition_rate_um_hr, 1),
+            },
+            "Current breakdown (A/m²)": {
+                k: round(v, 6) for k, v in (pt.current_breakdown_A_m2 or {}).items()
+            },
+            "Chemistry coupling": {
+                "mode": self.conditions.chemistry_coupling,
+                "enabled": pt.chemistry_diagnostics.get("enabled_features", {}) if pt.chemistry_diagnostics else {},
+                "surface-state bath type": (
+                    pt.chemistry_diagnostics.get("reactive_film", {}).get("surface_state_bath_type")
+                    if pt.chemistry_diagnostics else None
+                ),
             },
             "Transport": {
                 "i_lim diffusion (mA/cm²)": round(pt.diffusion_limit_mA_cm2, 0),

@@ -27,6 +27,7 @@ from .fe_chloride_speciation import (
     fe2_diffusivity_in_chloride_bath,
     log10_k_fecl_species,
 )
+from .bath_spec import BathSpec, BathFamily
 from .anchors import Anchor, ANCHORS, get_anchor, audit_anchors
 from .electrochemistry import (
     CellVoltageModel,
@@ -657,6 +658,8 @@ from .cross_modal_theory import (
 )
 
 __all__ = [
+    "BathSpec",
+    "BathFamily",
     "buffer_capacity_M_per_pH",
     "diffusivity_at_temperature",
     "CellVoltageModel",

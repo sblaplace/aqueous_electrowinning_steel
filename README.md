@@ -131,6 +131,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/electrochemistry.py` | Faraday's law, cell-voltage decomposition, specific energy |
 | `models/pourbaix.py` | Fe–H₂O potential–pH equilibria, hydrolysis boundaries, HER thermodynamic margin |
 | `models/speciation.py` + `models/pitzer.py` | **Pitzer** multicomponent activities for the concentrated Fe²⁺–Na⁺–H⁺ ∥ SO₄²⁻–HSO₄⁻ bath (validated against NaCl/Na₂SO₄/MgSO₄/FeSO₄ anchors), bisulfate dissociation, water activity, conductivity, Nernst reversible potentials; per-parameter T-form framework (frozen 25 °C coefficients); legacy Davies path retained for comparison |
+| `models/bath_spec.py` | **Unified bath inventory** for sulfate/chloride/mixed Fe²⁺/Fe³⁺, ammonium, borate, dissolved O₂, additives and impurities; feeds `CellPhysics` rich chemistry and exposes one merged diagnostic record |
 | `models/kinetics.py` | **Full Butler–Volmer** Fe/HER partial currents (i(E_eq)≡0, dissolution branch anodic of E_eq) with **Arrhenius-temperature** exchange currents, mass-transport limits, current efficiency |
 | `models/her_microkinetics.py` | DFT-anchored (ΔG_H* ≈ −0.40 eV, Fe(110)) Volmer–Heyrovský HER check: reproduces the empirical slope within ~20 % at θ_H≈1; guides T/pH direction, empirical branch stays default |
 | `models/fe3_shuttle.py` | Fe³⁺ shuttle & O₂ bath aging: autoxidation + crossover → mt-limited cathodic shuttle, Fe(OH)₃ cap → sludge bleed; CE loss <0.2 pp even open — the iron-inventory story, not a CE story |
@@ -157,7 +158,7 @@ open RESEARCH_REPORT.md   # or cat RESEARCH_REPORT.md
 | `models/calibration.py` | QA-gated Phase-I LSV kinetic calibration plus optional EIS consistency fitting |
 | `models/characterization.py` | Validated SEM/EDS, combustion, and XRD characterization records |
 | `models/cell_architecture.py` | Reactor-type screen: plate-and-frame vs rotating cylinder vs drum vs belt vs fluidized bed — Sherwood transport, harvest duty cycle, areal productivity, $/m² and kill criterion #3 |
-| `models/diffusion_layer_1d.py` | 1-D Nernst-Planck diffusion layer with borate buffering, surface pH and Fe(OH)₂ criterion — the FE prediction engine |
+| `models/diffusion_layer_1d.py` | 1-D Nernst-Planck diffusion layer with borate buffering, surface pH, surface-state HER / FeSO₄⁰ pairing / Fe(OH)₂-film options, and Fe(OH)₂ criterion — the FE prediction engine |
 | `models/purification.py` | Cu/Ni/Zn removal train: cementation, hydrolysis, selective EW, ion exchange |
 | `models/technoeconomic.py` | CAPEX, OPEX, levelized cost of iron, sensitivity analysis |
 | `models/scenarios.py` | Literature-anchored operating scenarios |

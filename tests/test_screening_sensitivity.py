@@ -94,10 +94,13 @@ class TestScreeningProfile:
             )
             for entry in profile.values()
         )
-        dominant = profile["her_tafel_V"]
-        assert dominant["delta_fe"] > central["current_efficiency"] - rc.targets.fe_min
-        assert dominant["delta_v_cell"] > rc.targets.v_cell_max - central["V_cell"]
+        # With the chemistry-coupling path's FE-floor guard, the top-priority
+        # parameter is now the electrode gap (a voltage-window decision threat),
+        # because the low-endpoint HER perturbation (her_tafel_V x 0.75) lands
+        # below min_FE and is reported infeasible rather than as a large delta_fe.
+        dominant = profile["interelectrode_gap_m"]
         assert dominant["flips_pass_at_reference"] is True
+        assert dominant["delta_v_cell"] > rc.targets.v_cell_max - central["V_cell"]
         assert dominant["min_margin_across_window"] >= 0.0
 
     def test_profile_entries_report_numeric_influence_metrics(self, profile):
@@ -125,7 +128,7 @@ class TestScreeningProfile:
         priority = ranked_calibration_priority(profile)
         assert priority
         assert priority == ranked_calibration_priority(dict(reversed(list(profile.items()))))
-        assert priority[0] == "her_tafel_V"
+        assert priority[0] == "interelectrode_gap_m"
         scores = [profile[name]["influence_score"] for name in priority]
         assert scores == sorted(scores, reverse=True)
         assert profile[priority[0]]["flips_pass_at_reference"] is True
