@@ -11,6 +11,8 @@ import math
 
 import numpy as np
 
+import pytest
+
 from models.deposit_metrology import (
     DEGRADE_Z,
     FAULT_Z,
@@ -21,6 +23,8 @@ from models.deposit_metrology import (
     run_deposit_metrology_demo,
     ultrasonic_reading,
 )
+
+pytestmark = pytest.mark.slow
 
 
 def test_combined_uncertainty_uses_disjoint_envelopes():

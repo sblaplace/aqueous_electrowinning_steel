@@ -36,6 +36,8 @@ from models.g0_co_location import (
     verify_co_location_contract,
 )
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(scope="module")
 def model():

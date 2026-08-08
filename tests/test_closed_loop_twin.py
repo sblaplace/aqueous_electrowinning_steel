@@ -20,6 +20,8 @@ from models.closed_loop_twin import (
     DEFAULT_MIN_FE_FLOOR,
 )
 
+pytestmark = pytest.mark.slow
+
 
 # ---------------------------------------------------------------------------
 # Helpers

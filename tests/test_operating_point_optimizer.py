@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from models.operating_point_optimizer import (
     solve_window,
     energy_gate_reachable,
@@ -10,6 +12,8 @@ from models.operating_point_optimizer import (
     reference_cell,
 )
 from models.contact_resistance_protocol import expected_contact_resistance_range
+
+pytestmark = pytest.mark.slow
 
 
 def test_solve_window_transport_limit_enforced():

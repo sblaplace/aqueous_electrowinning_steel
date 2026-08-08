@@ -13,6 +13,8 @@ from models.economics_from_physics import (
 )
 from models.electrochemistry import specific_energy_kWh_per_t
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(scope="module")
 def cell():

@@ -1,7 +1,11 @@
 """Safety invariants for the scripted composed-twin replay."""
 
+import pytest
+
 from models.operating_twin import OperatingTwin, SensorSnapshot, ShutdownRequest, TwinConfig
 from models.twin_replay import run_replay
+
+pytestmark = pytest.mark.slow
 
 
 def test_full_fault_matrix_degrades_safely():
