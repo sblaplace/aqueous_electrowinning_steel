@@ -106,6 +106,7 @@ aq-steel-rde                                   # RDE kinetics/transport separati
 aq-steel-gas-holdup                            # Gas hold-up: void fraction, current redistribution, hydrogen safety
 aq-steel-hull-inverse                          # Thickness profile → FE(j) calibration (inverse Hull analysis)
 aq-steel-product-ladder                        # Which product should the cell make? Option A/B decision computed live → regenerates docs/PRODUCT_VALUE_LADDER.md
+aq-steel-ladder-tea                            # Full plant TEA per rung — does the ladder ranking survive complete costing? → regenerates docs/LADDER_TEA.md
 aq-steel-reference-cell-design                 # RC-1 design synthesis → deployable geometry / utility report
 aq-steel-reference-cell-deployment             # RC-1 P&ID, wiring/sensor schedule, controlled BOM
 

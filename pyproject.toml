@@ -111,6 +111,7 @@ aq-steel-deposit-corrosion = "models.deposit_corrosion:main"
 aq-steel-rinse-carryover = "models.rinse_carryover:main"
 aq-steel-product-oxidation = "models.product_oxidation:main"
 aq-steel-briquetting = "models.briquetting:main"
+aq-steel-ladder-tea = "models.run_ladder_tea:main"
 
 [project.urls]
 Repository = "https://github.com/sblaplace/aqueous_electrowinning_steel"
