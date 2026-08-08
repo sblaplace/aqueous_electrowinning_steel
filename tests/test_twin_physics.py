@@ -7,52 +7,56 @@ import pytest
 
 from models.twin_physics import CellProcessModel, ProcessPrediction
 
+pytestmark = pytest.mark.slow
 
-def _small_model(tmp_path) -> CellProcessModel:
-    """Fast-to-build surrogate on a coarse grid."""
+
+@pytest.fixture(scope="module")
+def small_model(tmp_path_factory):
+    """Surrogate built ONCE per module; every test reuses it (the ~10 s
+    grid build is the dominant per-test cost otherwise)."""
     return CellProcessModel(
         j_grid=(100.0, 150.0),
         T_grid=(50.0, 70.0),
         fe2_grid=(0.8, 1.2),
-        cache_path=str(tmp_path / "tiny_cache.json"),
+        cache_path=str(tmp_path_factory.mktemp("tp") / "tiny_cache.json"),
     )
 
 
 class TestBuildAndPredict:
-    def test_predict_returns_process_prediction(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_predict_returns_process_prediction(self, small_model):
+        m = small_model
         p = m.predict(125.0, 60.0, 1.0)
         assert isinstance(p, ProcessPrediction)
 
-    def test_fe_within_physical_bounds(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_fe_within_physical_bounds(self, small_model):
+        m = small_model
         for j in (100.0, 125.0, 150.0):
             for fe2 in (0.8, 1.0, 1.2):
                 p = m.predict(j, 60.0, fe2)
                 assert 0.0 <= p.current_efficiency <= 1.0
                 assert 0.0 <= p.fe_percent <= 100.0
 
-    def test_v_cell_positive_and_reasonable(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_v_cell_positive_and_reasonable(self, small_model):
+        m = small_model
         p = m.predict(125.0, 60.0, 1.0)
         assert p.v_cell_V > 0.5
         assert p.v_cell_V < 20.0
 
-    def test_deposit_rate_positive(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_deposit_rate_positive(self, small_model):
+        m = small_model
         p = m.predict(100.0, 50.0, 0.8)
         assert p.deposit_rate_um_hr > 0.0
 
-    def test_surface_pH_near_bulk(self, tmp_path):
+    def test_surface_pH_near_bulk(self, small_model):
         # Nernst-Planck keeps surface pH near bulk in a buffered divided cell
-        m = _small_model(tmp_path)
+        m = small_model
         p = m.predict(125.0, 60.0, 1.0)
         assert p.surface_pH >= 0.0
         assert abs(p.surface_pH - 2.0) < 1.0
 
-    def test_faraday_cross_check(self, tmp_path):
+    def test_faraday_cross_check(self, small_model):
         # deposit rate should scale with j*FE: doubling j roughly doubles rate
-        m = _small_model(tmp_path)
+        m = small_model
         p1 = m.predict(100.0, 60.0, 1.0)
         p2 = m.predict(150.0, 60.0, 1.0)
         ratio = p2.deposit_rate_um_hr / p1.deposit_rate_um_hr
@@ -60,8 +64,8 @@ class TestBuildAndPredict:
 
 
 class TestInterpolation:
-    def test_interpolates_between_grid_points(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_interpolates_between_grid_points(self, small_model):
+        m = small_model
         # exactly on a grid node
         on_node = m.predict(100.0, 50.0, 0.8)
         assert math.isfinite(on_node.v_cell_V)
@@ -70,8 +74,8 @@ class TestInterpolation:
         assert math.isfinite(between.v_cell_V)
         assert 0.0 <= between.current_efficiency <= 1.0
 
-    def test_online_speed(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_online_speed(self, small_model):
+        m = small_model
         import time as _t
         t = _t.perf_counter()
         for _ in range(2000):
@@ -98,8 +102,8 @@ class TestCache:
 
 
 class TestNominal:
-    def test_nominal_is_reasonable(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_nominal_is_reasonable(self, small_model):
+        m = small_model
         n = m.nominal
         assert "temperature_C" in n and "j_avg_mA_cm2" in n and "cell_voltage_V" in n
         assert 0 < n["cell_voltage_V"] < 20.0
@@ -114,16 +118,16 @@ class TestValidityGuard:
     clamps the physical outputs to the calibrated envelope.
     """
 
-    def test_in_bounds_is_flagged_false(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_in_bounds_is_flagged_false(self, small_model):
+        m = small_model
         assert m.in_bounds(125.0, 60.0, 1.0)
         assert m.predict(125.0, 60.0, 1.0).extrapolated is False
         assert not m.in_bounds(800.0, 60.0, 1.0)
         assert not m.in_bounds(125.0, 5.0, 1.0)
         assert not m.in_bounds(125.0, 60.0, 5.0)
 
-    def test_oob_query_is_flagged_and_clamped(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_oob_query_is_flagged_and_clamped(self, small_model):
+        m = small_model
         p = m.predict(800.0, 5.0, 0.01)  # far outside every axis
         assert p.extrapolated is True
         # Physical impossibility clamps: no negative growth, no absurd cell V.
@@ -131,21 +135,21 @@ class TestValidityGuard:
         assert m.dep_map.min() <= p.deposit_rate_um_hr <= m.dep_map.max()
         assert m.vcell_map.min() <= p.v_cell_V <= m.vcell_map.max()
 
-    def test_deposit_rate_never_negative(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_deposit_rate_never_negative(self, small_model):
+        m = small_model
         # Sweep a wide OOB neighbourhood; no query may return negative growth.
         for j, T, fe2 in ((800.0, 60.0, 1.0), (0.0, 60.0, 1.0),
                           (125.0, 5.0, 1.0), (125.0, 100.0, 1.0),
                           (125.0, 60.0, 0.0), (300.0, 100.0, 3.0)):
             assert m.predict(j, T, fe2).deposit_rate_um_hr >= 0.0, (j, T, fe2)
 
-    def test_in_bounds_predict_preserved(self, tmp_path):
+    def test_in_bounds_predict_preserved(self, small_model):
         # Guard is a pure no-op for in-grid queries (backward compatible).
-        m = _small_model(tmp_path)
+        m = small_model
         assert m.predict(125.0, 60.0, 1.0).extrapolated is False
 
-    def test_grid_bounds_reports_validity_envelope(self, tmp_path):
-        m = _small_model(tmp_path)
+    def test_grid_bounds_reports_validity_envelope(self, small_model):
+        m = small_model
         b = m.grid_bounds
         assert b["j_mA_cm2"] == (100.0, 150.0)
         assert b["temperature_C"] == (50.0, 70.0)

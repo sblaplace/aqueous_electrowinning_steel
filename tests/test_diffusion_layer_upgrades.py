@@ -12,6 +12,8 @@ from models.diffusion_layer_1d import (
     D_FESO4_RATIO,
 )
 
+pytestmark = pytest.mark.slow
+
 
 class TestFeSO4PairCorrection:
     """FeSO₄⁰ neutral pair reduces effective transport limit."""

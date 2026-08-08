@@ -14,10 +14,14 @@ from __future__ import annotations
 
 import numpy as np
 
+import pytest
+
 from models.bath_dynamics import BathAux, step
 from models.digital_twin import DigitalTwin
 from models.env_coupling import DisturbanceInputs, disturbance_from_environment
 from models.twin_physics import CellProcessModel
+
+pytestmark = pytest.mark.slow
 
 X0 = np.array([60.0, 60.0, 1.0, 3.5, 150.0, 0.0, 5.0])
 AUX0 = BathAux(T_reservoir_C=60.0, fe2_reservoir_M=1.0, pH_reservoir=3.5)

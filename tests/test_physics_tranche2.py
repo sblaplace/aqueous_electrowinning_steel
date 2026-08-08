@@ -16,6 +16,8 @@ from models.diffusion_layer_1d import DiffusionLayer1D
 from models.membrane_transport import donnan_potential_V, donnan_partition_coefficient
 from models.cell_physics import BathRecipe, CellGeometry, CellPhysics, ProcessConditions
 
+pytestmark = pytest.mark.slow
+
 
 # ─── Donnan ─────────────────────────────────────────────────────────────
 
