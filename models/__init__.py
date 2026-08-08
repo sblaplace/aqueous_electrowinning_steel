@@ -18,6 +18,15 @@ from .surface_state import (
     diagnostic_table,
     chloride_aware_default,
 )
+from .frumkin import (
+    alpha_eff,
+    tafel_slope_from_alpha,
+    heat_of_activation,
+    organic_psi1_shift,
+    FrumkinParams,
+    FrumkinCorrectedBV,
+    DEBYE,
+)
 from .fe_chloride_speciation import (
     FECL2_PITZER,
     ChlorideBathComposition,
@@ -1110,6 +1119,14 @@ __all__ = [
     "volmer_coverage",
     "diagnostic_table",
     "chloride_aware_default",
+    # ── α_eff / Frumkin potential- & double-layer-aware kinetics (§2.3) ─
+    "alpha_eff",
+    "tafel_slope_from_alpha",
+    "heat_of_activation",
+    "organic_psi1_shift",
+    "FrumkinParams",
+    "FrumkinCorrectedBV",
+    "DEBYE",
     # ── Fe²⁺/Cl⁻ Pitzer speciation (Tier-1.4 chemistry add) ────────
     "FECL2_PITZER",
     "ChlorideBathComposition",
