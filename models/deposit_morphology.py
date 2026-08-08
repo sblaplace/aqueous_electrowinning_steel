@@ -180,7 +180,6 @@ def dendrite_critical_current(
     delta = boundary_layer_m
     D = diffusivity_m2_s
     gamma = surface_energy_J_m2
-    T = temperature_C + 273.15
     F = FARADAY
 
     # Diffusion-limited current

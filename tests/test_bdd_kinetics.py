@@ -2,9 +2,7 @@
 Unit tests for Bockris–Dražic–Despic (BDD) multi-step iron deposition microkinetics.
 """
 
-import pytest
 from models.bdd_kinetics import (
-    BDDKineticParams,
     feoh_plus_concentration_mol_L,
     solve_bdd_kinetics,
 )

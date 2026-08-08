@@ -2,7 +2,6 @@
 Unit tests for shrinking core ore leaching and reductive leaching kinetics.
 """
 
-import pytest
 from models.ore_leaching import (
     OreSpec,
     simulate_ore_leaching,

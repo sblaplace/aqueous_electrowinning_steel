@@ -48,9 +48,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, Tuple
+from typing import Optional
 
-import numpy as np
 
 # Physical and metallurgical constants
 R_GAS = 8.314462618        # J/(mol·K)

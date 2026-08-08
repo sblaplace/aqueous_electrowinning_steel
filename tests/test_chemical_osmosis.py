@@ -2,9 +2,7 @@
 Unit tests for chemical osmosis and coupled transmembrane water flux.
 """
 
-import pytest
 from models.chemical_osmosis import (
-    MembraneWaterParams,
     estimate_water_activity,
     solve_transmembrane_water_flux,
 )

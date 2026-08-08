@@ -15,14 +15,12 @@ Usage:
 from __future__ import annotations
 import argparse
 import json
-import sys
 import time
 from pathlib import Path
 
-import numpy as np
 
 # PySCF imports
-from pyscf import gto, scf
+from pyscf import gto
 from skala.pyscf import SkalaKS
 
 
@@ -89,7 +87,6 @@ def add_h_adatom(slab, site: str, miller: int, height: float = 1.7):
 
     Returns a new ASE Atoms object with H added.
     """
-    from ase.build import add_adsorbate
     import copy
 
     s = copy.deepcopy(slab)
@@ -287,7 +284,7 @@ def main():
               f"time={slab_result.get('time_seconds', 0):.0f}s")
 
         if not slab_result.get('converged'):
-            print(f"  WARNING: bare slab did not converge!")
+            print("  WARNING: bare slab did not converge!")
             results['surfaces'][str(miller)] = {'bare': slab_result, 'sites': {}}
             continue
 

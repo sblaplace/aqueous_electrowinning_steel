@@ -83,7 +83,7 @@ def main() -> None:
         result.cu_final_M * 1e6,
     ]
     colors = ["#d62728", "#ff7f0e", "#2ca02c", "#1f77b4", "#9467bd"]
-    bars = ax.bar(stages, cu_levels, color=colors, edgecolor="black")
+    ax.bar(stages, cu_levels, color=colors, edgecolor="black")
     ax.axhline(0.01 * model.feedstock.fe2_M * 1e6 * 63.546 / 55.845,
                color="tab:red", linestyle="--", label="0.01 wt% limit")
     ax.set(ylabel="Cu²⁺ (µmol/L)", title="Stage-by-stage Cu removal")

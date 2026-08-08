@@ -53,7 +53,7 @@ class TestPIDController:
                                        mv_min=-100.0, mv_max=100.0,
                                        derivative_filter_tau=2.0))
         # Step PV from 0 to 50
-        mv1 = ctrl.update(0.0, dt=0.1)
+        ctrl.update(0.0, dt=0.1)
         mv2 = ctrl.update(50.0, dt=0.1)  # big PV jump
         # D term should be filtered, not a huge spike
         assert abs(mv2) < 200.0, "Filtered D should not produce extreme spike"

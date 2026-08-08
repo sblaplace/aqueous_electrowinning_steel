@@ -2,7 +2,6 @@
 Unit tests for the Round 3 advanced physical and chemical modeling runner.
 """
 
-import pytest
 from models.run_physics_tranche3 import run_physics_tranche3
 
 

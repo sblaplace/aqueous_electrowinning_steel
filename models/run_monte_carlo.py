@@ -75,7 +75,7 @@ def plot_output_distributions(result: MonteCarloResult, out_path: Path) -> None:
         return
 
     fig, ax = plt.subplots(figsize=(max(12, len(data) * 1.2), 6))
-    parts = ax.violinplot(data, showmeans=True, showmedians=True)
+    ax.violinplot(data, showmeans=True, showmedians=True)
     ax.set_xticks(range(1, len(labels) + 1))
     ax.set_xticklabels(labels, fontsize=7, rotation=45, ha="right")
     ax.set_title(f"Output Distributions (N={result.n_samples})", fontweight="bold")

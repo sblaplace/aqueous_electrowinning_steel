@@ -166,9 +166,9 @@ def plot_mitigation_impact(fmea: FMEAReport, out_path: Path) -> None:
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(10, max(6, len(mitigated) * 0.4)))
-    bars1 = ax.barh(x - width / 2, current_rpns, width, label="Current RPN",
+    ax.barh(x - width / 2, current_rpns, width, label="Current RPN",
                      color="#e41a1c", alpha=0.8)
-    bars2 = ax.barh(x + width / 2, residual_rpns, width, label="Residual RPN",
+    ax.barh(x + width / 2, residual_rpns, width, label="Residual RPN",
                      color="#4daf4a", alpha=0.8)
 
     ax.set_yticks(x)

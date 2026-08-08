@@ -2,12 +2,7 @@
 Unit tests for FeSO4 temperature-dependent solubility and retrograde scaling model.
 """
 
-import pytest
 from models.fe_sulfate_solubility import (
-    MELANTERITE,
-    SZOMOLNOKITE,
-    ROZENITE,
-    T_TRANSITION_C,
     stable_solid_phase,
     feso4_binary_solubility_mol_L,
     feso4_solubility_with_common_ion,

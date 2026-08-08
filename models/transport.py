@@ -309,8 +309,6 @@ class NernstPlanckFilm:
         d_fe = self.diffusivity_fe_m2_s
         d_h = self.diffusivity_h_m2_s
         d_oh = self.diffusivity_oh_m2_s
-        d_na = self.diffusivity_na_m2_s
-        d_so4 = self.diffusivity_so4_m2_s
 
         # Proton-pair coupling: C_OH = Kw/C_H, so both derivatives follow C_H.
         k = KW_SI / c_h**2                       # -dC_OH/dC_H

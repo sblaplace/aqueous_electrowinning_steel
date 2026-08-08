@@ -340,7 +340,6 @@ def fit_diffusivity_domain(data: pd.DataFrame) -> FitResult:
         "D0_m2_s": result["D_fit_m2_s"],
         "surface_C_wt_percent": result["Cs_fit_wt_percent"],
     }
-    perr = result.get("perr_logD_Cs", [None, None])
     ci = {
         "D0_m2_s": (np.nan, np.nan),
         "surface_C_wt_percent": (np.nan, np.nan),
@@ -854,7 +853,7 @@ def generate_calibration_figures(
         names = list(params.keys())
         values = [params[n] for n in names]
         colors = ["#2ecc71" if result.converged else "#e74c3c"] * len(names)
-        bars = ax.barh(names, values, color=colors, alpha=0.8)
+        ax.barh(names, values, color=colors, alpha=0.8)
         ax.set_xlabel("Fitted value")
         ax.set_title("Fitted Parameters")
         ax.grid(alpha=0.25)

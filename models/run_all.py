@@ -256,8 +256,6 @@ def _make_dashboard(quick: bool = False) -> Path:
     """Make a 2x3 dashboard from existing figures / reports."""
 
     # Load scenario report for text summary
-    scenario_report = _load_json(DATA_DIR / "scenario_comparison_report.json")
-    techno_report = _load_json(DATA_DIR / "technoeconomic_report.json")
     mech_report = _load_json(DATA_DIR / "mechanical_properties_report.json")
 
     fig, axes = plt.subplots(2, 3, figsize=(16, 9))
@@ -381,9 +379,9 @@ def main(
 
     cache = StepCache(enabled=cache_enabled, force_steps=force_steps or set())
     if cache_enabled:
-        print(f"  Step cache: enabled (manifest: experiments/data/.step_cache/manifest.json)")
+        print("  Step cache: enabled (manifest: experiments/data/.step_cache/manifest.json)")
     else:
-        print(f"  Step cache: disabled (--no-cache)")
+        print("  Step cache: disabled (--no-cache)")
 
     master = {
         "title": "Aqueous Electrowinning — Master Report",
@@ -505,7 +503,7 @@ def main(
                                    "alloy_vs_mechanical.png"])) as hit:
         if not hit:
             try:
-                mech_report = _run_mechanical_properties(co_summary) if co_summary else _run_mechanical_properties(
+                _run_mechanical_properties(co_summary) if co_summary else _run_mechanical_properties(
                     {"hydroxide_suppression": {"at_100_mA_cm2": {"alloy_kinetics": {"ni_wt_percent": 2.0},
                                                                 "carbon_incorporation": {"predicted_carbon_wt_percent": 0.5,
                                                                                         "adjusted_ce_percent": 93}}}}

@@ -239,7 +239,6 @@ def calibrate_ensemble(
         # Forward model for each ensemble member
         H_ensemble = np.zeros((n_ensemble, n_obs))
         for j in range(n_ensemble):
-            params_dict = {name: ensemble[j, i] for i, name in enumerate(param_names)}
             pred = model_fn(ensemble[j, :], priors)
             for k, obs_name in enumerate(obs_names):
                 H_ensemble[j, k] = pred.get(obs_name, 0.0)

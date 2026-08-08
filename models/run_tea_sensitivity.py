@@ -293,7 +293,7 @@ def plot_pareto_front(data: dict, pareto: dict):
         s=2, alpha=0.4,
         vmin=200, vmax=2000,
     )
-    cbar = plt.colorbar(sc, ax=ax, label="LCOFe ($/t Fe)")
+    plt.colorbar(sc, ax=ax, label="LCOFe ($/t Fe)")
 
     # Draw DRI-H2 contour (approximate: find samples near target)
     target = DRI_H2_MID

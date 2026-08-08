@@ -324,10 +324,6 @@ def plan_validation_experiments(
         total_gain += _experiment_information_gain(exp, registry, sensitivity)
 
     total_duration = sum(e.duration_hours for e in selected)
-    total_variance = sum(
-        _param_variance({"std": p.std, "bounds": p.bounds})
-        for p in registry.values()
-    )
     expected_reduction = total_gain  # in normalized units
 
     return ValidationPlan(

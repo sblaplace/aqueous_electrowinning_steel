@@ -55,9 +55,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, Tuple
+from typing import Literal, Optional
 
-import numpy as np
 
 # Physical and gravitational constants
 G_GRAVITY = 9.80665        # m/s²

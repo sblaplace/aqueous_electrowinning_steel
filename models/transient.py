@@ -490,11 +490,6 @@ def simulate_shutdown(
             return cfg.target_current_density_mA_cm2 * (1.0 - t / ramp_down_min)
         return 0.0
 
-    furnace_cool_duration = (
-        (cfg.furnace_operating_temp_C - AMBIENT_TEMP_C)
-        / SAFE_FURNACE_COOL_RATE_C_PER_MIN
-    )
-
     def furnace_target(t: float) -> float:
         temp = cfg.furnace_operating_temp_C - SAFE_FURNACE_COOL_RATE_C_PER_MIN * t
         return max(temp, AMBIENT_TEMP_C)
@@ -654,7 +649,6 @@ def _upset_temperature_excursion(
     quench_t[0] = cfg.quench_operating_temp_C
 
     for i in range(n):
-        ti = t_arr[i]
         fl: List[str] = []
         current[i] = cfg.target_current_density_mA_cm2
 

@@ -12,7 +12,6 @@ import pytest
 from models.kinetics import DepositionKinetics
 from models.operating_twin import OperatingTwin, SensorSnapshot, TwinConfig, TwinMode
 from models.closed_loop_twin import (
-    CellQualification,
     ClosedLoopLiveControlTwin,
     CalibrationEvidence,
     ObservabilityEvidence,

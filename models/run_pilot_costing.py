@@ -244,11 +244,11 @@ def main():
     print("\n" + "=" * 70)
     print("GENERATING FIGURES")
     print("=" * 70)
-    fig1 = plot_capex_by_scale(scales)
-    fig2 = plot_capex_category(scales)
-    fig3 = plot_opex_breakdown(opex)
+    plot_capex_by_scale(scales)
+    plot_capex_category(scales)
+    plot_opex_breakdown(opex)
     sensitivity = capex_sensitivity_tornado()
-    fig4 = plot_tornado(sensitivity)
+    plot_tornado(sensitivity)
 
     # JSON report
     report = {

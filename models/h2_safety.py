@@ -41,10 +41,9 @@ Times: seconds (internally), minutes (public API).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from dataclasses import dataclass
+from typing import Tuple
 
-import numpy as np
 
 from .electrochemistry import FARADAY
 

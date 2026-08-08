@@ -99,7 +99,6 @@ def plot_carbon_footprint(result: LCAResult):
 
 def plot_comparison(result: LCAResult):
     """Bar chart: electrowinning vs reference routes."""
-    table = compare_routes(result)
 
     fig, ax = plt.subplots(figsize=(10, 5))
 
@@ -110,7 +109,7 @@ def plot_comparison(result: LCAResult):
 
     colours = ["#78909C", "#78909C", "#78909C", "#78909C", "#4CAF50"]
     x = np.arange(len(routes))
-    bars = ax.bar(x, mids, color=colours, edgecolor="white", width=0.6)
+    ax.bar(x, mids, color=colours, edgecolor="white", width=0.6)
 
     # Error bars for ranges
     err_low = [m - l for m, l in zip(mids, lows)]
@@ -154,8 +153,6 @@ def plot_electricity_sensitivity():
 
     names = list(results.keys())
     gwps = [results[n].gwp_kgCO2eq for n in names]
-    waters = [results[n].water_L for n in names]
-
     colours = plt.cm.RdYlGn_r(np.linspace(0.1, 0.9, len(names)))
 
     ax = axes[0]

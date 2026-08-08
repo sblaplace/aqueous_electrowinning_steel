@@ -480,7 +480,6 @@ def plot_confidence_report(
     # Mark spec boundaries
     for spec in report.specs:
         if spec.output_key in key_outputs and spec.operator == ">=":
-            idx = key_outputs.index(spec.output_key)
             arr = report.mc_result.output_distributions.get(spec.output_key)
             if arr is not None:
                 valid = arr[~np.isnan(arr)]

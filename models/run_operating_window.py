@@ -64,7 +64,7 @@ def main():
     X, Y = np.meshgrid(j_vals, pH_vals)
 
     # Plot 1: Pass/Fail Mask (Golden Window)
-    c1 = ax1.pcolormesh(X, Y, map_res["pass_mask"].astype(int), cmap='RdYlGn', vmin=0, vmax=1, shading='auto')
+    ax1.pcolormesh(X, Y, map_res["pass_mask"].astype(int), cmap='RdYlGn', vmin=0, vmax=1, shading='auto')
     ax1.set_xlabel("Current Density j (mA/cm²)")
     ax1.set_ylabel("Bulk pH")
     ax1.set_title("Pre-Lab Viable Operating Window (Green = PASS)")

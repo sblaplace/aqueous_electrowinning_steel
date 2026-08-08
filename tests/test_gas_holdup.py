@@ -30,7 +30,6 @@ from models.gas_holdup import (
     THETA_MAX_H2,
     UFL_H2_VOL_FRAC,
     Z_H2,
-    Z_O2,
     ChannelGeometry,
     bruggeman_conductivity,
     combined_boundary_layer_m,

@@ -2,7 +2,6 @@
 Unit tests for solutal buoyancy and mixed convection in vertical cathode channels.
 """
 
-import pytest
 from models.solutal_convection import (
     SolutalChannelParams,
     solve_solutal_mixed_convection,

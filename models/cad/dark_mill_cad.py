@@ -9,7 +9,6 @@ Requires CadQuery + OCC (needs libGL on headless systems).
 
 from __future__ import annotations
 
-import math
 
 try:
     import cadquery as cq
@@ -90,8 +89,6 @@ def build_roof(cfg: DarkMillConfig):
     """Sloped roof panel for rainwater runoff."""
     L = cfg.enclosure_length - 2 * cfg.frame_member_size
     W = cfg.enclosure_width - 2 * cfg.frame_member_size
-    slope_rad = math.radians(cfg.roof_slope_deg)
-    height_diff = W * math.tan(slope_rad)
 
     H_base = cfg.enclosure_height - cfg.frame_member_size
 
@@ -147,7 +144,6 @@ def build_walls(cfg: DarkMillConfig):
 def build_door(cfg: DarkMillConfig):
     """Double swing door (shown open at 90°)."""
     L, W = cfg.enclosure_length, cfg.enclosure_width
-    s = cfg.frame_member_size
     dw = cfg.door_width
     dh = cfg.door_height
     t = cfg.wall_thickness
@@ -177,7 +173,6 @@ def build_cell_stacks(cfg: DarkMillConfig):
 
     stack_w = cfg.electrode_width + 2 * cfg.stack_frame_width
     stack_d = cfg.electrode_height + 2 * cfg.stack_frame_width
-    stack_h = cfg.stack_height
 
     # Position stacks in rows
     margin = cfg.side_clearance
@@ -212,7 +207,6 @@ def build_electrolyte_tanks(cfg: DarkMillConfig):
     """Feed and product electrolyte tanks."""
     result = cq.Workplane("XY")
 
-    L = cfg.enclosure_length
     s = cfg.frame_member_size
     t = cfg.tank_wall_thickness
 
@@ -314,7 +308,6 @@ def build_lifting_lugs(cfg: DarkMillConfig):
     r = cfg.lug_diameter / 2
     h = cfg.lug_height
     s = cfg.frame_member_size
-    L, W = cfg.enclosure_length, cfg.enclosure_height
 
     for x in [s/2, cfg.enclosure_length - s/2]:
         for y in [s/2, cfg.enclosure_width - s/2]:

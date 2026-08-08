@@ -292,7 +292,6 @@ def effective_diffusivity_m2_s(
     traps = trap_density_m3(grain_size_um, dislocation_density_m2, carbon_wt_percent, params_trap)
     p = params_trap or TrapSiteParams()
 
-    T_K = temperature_C + 273.15
     # Weighted average binding factor across trap types
     K_disl = trap_binding_factor(p.E_dislocation_kJ_mol, temperature_C)
     K_gb = trap_binding_factor(p.E_gb_kJ_mol, temperature_C)
@@ -713,7 +712,6 @@ def bakeout_time_hr(
     -------
     dict with bakeout_time_hr, D_eff, Fourier number, residual_C_H_ppm
     """
-    p = params or BakeoutParams()
 
     # Get effective diffusivity at bake-out temperature
     D_eff, D_lattice, trap_info = effective_diffusivity_m2_s(
@@ -1222,7 +1220,6 @@ def synthetic_h_uptake_data(
 
     Returns dict of arrays for j, T, pH sweeps with corresponding H content.
     """
-    model = HydrogenEmbrittlementModel()
 
     if j_range_mA_cm2 is None:
         j_range_mA_cm2 = np.linspace(10, 200, 20)

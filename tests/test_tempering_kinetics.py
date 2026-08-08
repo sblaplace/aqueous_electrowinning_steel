@@ -2,10 +2,8 @@
 Unit tests for 4-stage tempering kinetics and LSW Ostwald ripening model.
 """
 
-import pytest
 from models.tempering_kinetics import (
     SteelMicrostructureSpec,
-    lsw_coarsening_rate_constant,
     simulate_tempering_kinetics,
 )
 

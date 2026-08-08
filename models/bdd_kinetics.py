@@ -54,9 +54,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, Union
+from typing import Optional
 
-import numpy as np
 
 # Physical constants
 FARADAY = 96485.33212      # C/mol
@@ -154,7 +153,6 @@ def solve_bdd_kinetics(
     f_rt = FARADAY / (R_GAS * t_k)
 
     c_feoh = feoh_plus_concentration_mol_L(fe2_mol_L, ph, t_k)  # mol/L
-    c_feoh_si = c_feoh * 1e3                                     # mol/m³
 
     # Potential-dependent rate coefficients (cathodic eta is positive driving force)
     # v1 = k1_f * [FeOH+] * (1 - theta) * exp(beta1 * F * eta / RT)
