@@ -8,7 +8,6 @@ from models.carbon_electrodeposition import (
     CarbonElectrodepositionParams,
     additive_carbon_wt_percent,
     carbon_limiting_current_density_A_m2,
-    carbon_partial_current_density_A_m2,
     deposit_carbon_wt_percent,
     steel_grade_for_carbon,
 )

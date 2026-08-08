@@ -137,7 +137,6 @@ def poison_coverage_fraction(
     poisons present; the metal surface fraction left free is 1 - sum(theta).
     """
     p = params or PoisonParams()
-    t_k = temperature_C + 273.15
 
     # Potential factor (saturating power law), applies uniformly to poisons that
     # are cathode-deposited / adsorbed under cathodic polarisation.

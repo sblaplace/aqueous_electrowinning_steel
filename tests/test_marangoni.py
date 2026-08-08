@@ -5,7 +5,6 @@ Unit tests for Marangoni / electrocapillary surface flows (Round 5, D1).
 import pytest
 
 from models.marangoni import (
-    MarangoniParams,
     effective_diffusion_layer_um,
     marangoni_velocity_m_s,
     surface_tension_N_m,

@@ -77,7 +77,6 @@ def nucleation_density_1_m2(
     """
     p = params or NucleationParams()
     eta = max(float(cathodic_overpotential_V), 0.0)
-    t_k = temperature_C + 273.15
 
     # Nucleation rate; exponentially suppressed at low overpotential.
     if eta > 1e-6:

@@ -5,7 +5,6 @@ Unit tests for non-equilibrium point-defect intrinsic stress (Round 5, C2).
 import pytest
 
 from models.point_defect_stress import (
-    PointDefectStressParams,
     defect_injection_stress_MPa,
 )
 

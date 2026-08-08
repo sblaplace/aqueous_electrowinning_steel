@@ -2,7 +2,6 @@
 Unit tests for tramp Cu/Sn surface hot-shortness (Round 5, E1).
 """
 
-import pytest
 
 from models.hot_shortness import (
     HotShortnessParams,

@@ -2,10 +2,8 @@
 Unit tests for nucleation-density -> grain-size -> Hall-Petch (Round 5, C1).
 """
 
-import pytest
 
 from models.nucleation_grain import (
-    NucleationParams,
     grain_size_um,
     hall_petch_yield_MPa,
     nucleation_density_1_m2,

@@ -2,7 +2,6 @@
 Unit tests for adatom surface-diffusion / kink incorporation (Round 5, C3).
 """
 
-import pytest
 
 from models.adatom_kinetics import (
     crystallization_overpotential_V,

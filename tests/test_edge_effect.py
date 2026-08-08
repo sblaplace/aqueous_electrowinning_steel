@@ -2,7 +2,6 @@
 Unit tests for edge/terminal current crowding (Round 5, D2).
 """
 
-import pytest
 
 from models.edge_effect import (
     EdgeEffectParams,
